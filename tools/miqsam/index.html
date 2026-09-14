@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="مِقسام — قسّم تلاوة السورة إلى آيات منفصلة تلقائيًا بدقة أسطورية، محليًا 100% بدون رفع.">
+  <meta name="theme-color" content="#0E2F2A">
+  <title>مِقسام ✦ مقسّم الآيات الأسطوري</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231C4A41'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%23E4C989'%3E%D8%A2%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="bg" aria-hidden="true"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div><div class="pattern"></div></div>
+<div class="top-progress" id="topProgress"><span></span></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="wrap">
+  <nav class="topbar">
+    <div class="brand"><span class="brand-mark">۞</span><span class="brand-text"><b>مِقسام</b><i>QURAN SPLITTER • v2</i></span></div>
+    <div class="top-actions">
+      <span class="pill pill-live"><span class="dot"></span> يعمل محليًا 100%</span>
+      <button class="icon-btn top-btn" id="themeToggle" title="ليلي / نهاري">🌙</button>
+      <button class="icon-btn top-btn" id="helpBtn" title="مساعدة">؟</button>
+    </div>
+  </nav>
+  <header class="hero">
+    <p class="kicker">✦ أداة التلاوة الاحترافية ✦</p>
+    <h1>كل آيةٍ <em>وحدَها</em></h1>
+    <p class="lede">ارفع تسجيل السورة كاملة، فيُقسَّم تلقائيًا إلى آياتٍ منفصلة بتحليل <b>السكتات + حدّة الصوت</b> (معلّم / طفل). راجع بالموجة، صحّح بنقرة، ثم نزّل الكل ZIP.</p>
+    <div class="hero-badges"><span class="badge">🔒 خصوصية مطلقة</span><span class="badge">🎙️ تمييز المعلّم والطفل</span><span class="badge">⚡ دفعات للمصحف</span></div>
+    <ol class="steps"><li><span class="step-n">1</span><div><b>ارفع التلاوة</b><small>ملف أو مجلد</small></div></li><li><span class="step-n">2</span><div><b>راجع ودقّق</b><small>استمع وصحّح</small></div></li><li><span class="step-n">3</span><div><b>نزّل الآيات</b><small>WAV + ZIP</small></div></li></ol>
+  </header>
+  <section class="card upload-card">
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="رفع ملف صوتي">
+    <input type="file" id="fileInput" accept="audio/*">
+    <div class="drop-icon">◈</div>
+    <div class="drop-label">اسحب الملف الصوتي هنا، أو انقر للاختيار</div>
+    <div class="drop-sub">تلاوة سورة كاملة • على جهازك فقط</div>
+    <div class="chips"><span>MP3</span><span>WAV</span><span>M4A</span><span>OGG</span></div>
+  </div>
+
+  <div class="folder-tools">
+    <input type="file" id="folderInput" webkitdirectory directory multiple accept="audio/*">
+    <button class="btn ghost" id="folderBtn" type="button">📁 مجلد التلاوة</button>
+    <button class="btn ghost" id="directoryPickerBtn" type="button">🗂️ متقدم</button>
+    <select class="surah-select" id="surahSelect" aria-label="اختيار السورة"></select>
+    <button class="btn gold" id="batchBtn" type="button" disabled>⚡ تقسيم الكل وتنزيلها</button>
+    <span class="folder-note" id="folderNote"></span>
+    <span class="batch-status" id="batchStatus"></span>
+      <div class="batch-progress" id="batchProgress" hidden><span id="batchProgressBar"></span></div>
+  </div>
+  </section>
+  <section class="card tool" id="tool">
+    <div class="file-row">
+      <div class="file-id"><span class="file-ic">🎧</span><div><span class="file-name" id="fileName"></span><span class="file-meta" id="fileMeta"></span></div></div>
+      <div class="file-actions"><button class="btn xs ghost" id="undoBtn" disabled>↩ تراجع</button><button class="btn xs ghost" id="exportJsonBtn">⏱ JSON</button></div>
+    </div>
+
+    <div class="status" id="status"><div class="spinner"></div><span>جارٍ تحليل الصوت… لحظات إتقان</span></div>
+
+    <div id="waveWrap" style="display:none;">
+      <div class="waveform-box">
+        <div class="wave-head"><b>الموجة التفاعلية</b><span class="legend"><i class="lg-teacher"></i> معلّم <i class="lg-child"></i> طفل <i class="lg-weak"></i> محتملة</span></div>
+        <canvas id="wave"></canvas>
+        <div class="wave-foot"><span id="waveTime">00:00 / 00:00</span><span>انقر داخل آية للتقسيم • بين آيتين للدمج</span></div>
+      </div>
+      <details class="hint"><summary>كيف تضمن دقة 100%؟ اضغط للتفاصيل ✦</summary><div style="margin-top:8px">التقسيم يعتمد على <b>السكتات + حدّة الصوت</b>. الخطوط <b>المنقطة</b> سكتات قصيرة — انقر قربها للترقية. <b>للتصحيح:</b> انقر داخل آية للتقسيم، وبين آيتين للدمج، ثم استعمل <b>تدقيق ▶</b> قبل التنزيل.</div></details>
+
+      <div class="count-bar">
+        <div>
+          <h2 id="ayahCount">— آية</h2>
+          <div class="sens-meta" id="sensMeta"></div>
+          <div class="sens-meta err" id="diagnoseMeta" style="display:none;"></div>
+        </div>
+        <div class="count-btns">
+          <button class="btn ghost" id="focusBtn">🔍 دقّق أكثر</button>
+          <button class="btn ghost" id="bestBtn">💎 نتيجة أفضل</button>
+          <button class="btn ghost" id="resetBtn">↺ إعادة التلقائي</button>
+          <button class="btn ghost danger" id="diagnoseBtn">🩺 كشف الأخطاء</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <input class="search" id="searchInput" placeholder="🔎 ابحث برقم الآية…">
+        <select class="filter" id="roleFilter"><option value="">كل الأصوات</option><option value="معلم">معلّم فقط</option><option value="طفل">طفل فقط</option><option value="issue">⚠ ملاحظة فقط</option></select>
+        <span class="stat-mini" id="statMini"></span>
+      </div>
+
+      <div class="ayah-list" id="ayahList"></div>
+
+      <div class="footer-actions">
+        <span class="kbd-hint"><kbd>Space</kbd> تشغيل • <kbd>←→</kbd> تنقل • <kbd>Ctrl+Z</kbd> تراجع</span>
+        <span style="flex:1"></span>
+        <button class="btn ghost" id="reviewBtn">تدقيق ▶</button>
+        <button class="btn gold big" id="downloadAllBtn">⬇ تنزيل الكل (ZIP)</button>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">صُنع بإتقان لخدمة كتاب الله ✦ <b>مِقسام الأسطوري</b> — كل المعالجة على جهازك.</footer>
+</div>
+<dialog class="help-dialog" id="helpDialog"><h3>دليل الأسطورة ✦</h3><ul><li>🎙️ الأفضل: تسجيل هادئ وسكتة واضحة بين الآيات.</li><li>🖱️ <b>تقسيم:</b> انقر داخل مقطع. <b>دمج:</b> انقر بين مقطعين.</li><li>⌨️ مسافة = تشغيل • أسهم = تنقل • Ctrl+Z = تراجع.</li><li>💎 <b>نتيجة أفضل</b> للتلاوة السريعة • 🩺 <b>كشف الأخطاء</b> للتدقيق.</li></ul><button class="btn" id="helpClose">فهمت، هيا بنا ✦</button></dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

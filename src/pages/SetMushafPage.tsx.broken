@@ -1,0 +1,14 @@
+import { useState, useRef, useCallback } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Upload, CheckCircle, Trash2, RotateCcw, Image as ImageIcon, Layers, Palette, Save, FileText } from "lucide-react";
+import { getAllSurahs } from "../data/quranData";
+import { savePageAyahBoxes, getPageAyahBoxes, PAGE_IMAGE_SIZE, type AyahBox } from "../data/ayahCoordinates";
+import { savePageSurahRegions, getPageSurahRegions, type SurahRegion } from "../data/surahRegions";
+import { getCustomPages, addCustomPage } from "../data/customPages";
+import { upsertPageImage } from "../services/imageOrderService";
+import { toast } from "../hooks/use-toast";
+import { syncShadingFromServer, getAyahShadingStyle, DEFAULT_SETTINGS } from "../services/shadingSyncService";
+
+type Tab = "upload" | "surahs" | "shading";
+
+export default function SetMushafPage() {

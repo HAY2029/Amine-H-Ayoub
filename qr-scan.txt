@@ -1,0 +1,18 @@
+127 | interface PageInfo { name: string; src: string; surahs: SurahAudio[]; }
+129 | const BASE_PAGES: PageInfo[] = [
+180 | const [hfImages, setHfImages] = useState<HFImage[]>([]);
+181 | const [hfOrder, setHfOrder] = useState<string[]>([]);
+182 | const [hfImagesMap, setHfImagesMap] = useState<Record<string, string>>({});
+231 | try { localStorage.setItem("mushaf:hfImageSrcs:v1", JSON.stringify(srcList)); } catch { /* ignore */ }
+250 | const imgSrcFor = (src: string) => customImgs[src] || hfImagesMap[src] || src;
+348 | const basePagesMap = new Map(BASE_PAGES.map(p => [p.src, p]));
+351 | const validHfImages = hfImages.filter(img => img.url && img.url.length > 10);
+353 | // 1. ترتيب صور HF الصحيحة حسب hfOrder
+355 | if (hfOrder && hfOrder.length > 0) {
+359 | if (hfOrder.includes(img.name)) map.set(img.name, img);
+363 | hfOrder.forEach(name => {
+405 | ...BASE_PAGES.map(p => p.src),
+435 | if (BASE_PAGES.some(bp => bp.src === cp.src)) return true; // صفحة أساسية محلية
+507 | [...BASE_PAGES, ...extra].forEach(p => {
+514 | }, [customPageList, customImgs, hfImages, hfOrder]);
+541 | }, [currentPage, pages, customImgs, hfImagesMap]);

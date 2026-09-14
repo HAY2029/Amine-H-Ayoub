@@ -1,0 +1,2 @@
+src/pages/SetMushafPage.tsx(14,42): error TS1005: '}' expected.
+

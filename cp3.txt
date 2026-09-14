@@ -1,0 +1,8 @@
+[
+ "/** قائمة src الافتراضية للصفحات (لترجمة ترتيب src القديم → فهارس) */",
+ "function getKnownPageSrcs(): string[] {",
+ "  return [\"/pages/fatiha.jpg\", \"/pages/600.jpg\", \"/pages/601.jpg\", \"/pages/602.jpg\", \"/pages/603.jpg\", \"/pages/604.jpg\"];",
+ "}",
+ "",
+ "/** يُرجع الترتيب الخام كما هو محفوظ (نصوص src) — للمعايرة وواجهة الترتيب */"
+]

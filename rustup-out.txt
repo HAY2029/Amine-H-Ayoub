@@ -1,0 +1,8 @@
+info: syncing channel updates for stable-x86_64-pc-windows-gnu
+info: latest update on 2026-09-03 for version 1.98.1 (48a229cea 2026-09-01)
+info: downloading 7 components
+
+  stable-x86_64-pc-windows-gnu installed - rustc 1.98.1 (48a229cea 2026-09-01)
+
+info: checking for self-update (current version: 1.29.0)
+error: could not download file from 'https://static.rust-lang.org/rustup/release-stable.toml' to 'C:\Users\E15E~1\AppData\Local\Temp\rustup-updateGFP6ln\release-stable.toml': error downloading file: error sending request for url (https://static.rust-lang.org/rustup/release-stable.toml): client error (Connect): tcp connect error: An established connection was aborted by the software in your host machine. (os error 10053)

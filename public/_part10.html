@@ -1,0 +1,76 @@
+
+// ======================================================================
+//  المعايرة التلقائية — تحليل طبيعة الملف وتعديل الإعدادات تلقائياً
+// ======================================================================
+function autoCalibrate(buf){
+    const ch=buf.getChannelData(0), sr=buf.sampleRate, dur=buf.duration;
+    const items=[];
+
+    // 1) تحليل مستوى الصوت الكلي — RMS
+    let sum=0;
+    for(let i=0;i<ch.length;i+=10) sum+=ch[i]*ch[i];
+    const rms=Math.sqrt(sum/(ch.length/10));
+    const rmsDb=20*Math.log10(rms);
+    items.push({l:'مستوى الصوت الكلي',v:rmsDb.toFixed(1)+' dB',s:rmsDb>-45?'جيد - واضح':rmsDb>-55?'متوسط':'ضعيف - صوت هادئ',c:rmsDb>-45?'good':rmsDb>-55?'warn':'warn'});
+
+    // 2) تحليل معدل القمم والانفجارات
+    let peak=0,peaks=0;
+    for(let i=0;i<ch.length;i++){
+        const a=Math.abs(ch[i]);
+        if(a>peak)peak=a;
+        if(a>0.85)peaks++;
+    }
+    items.push({l:'أعلى قمة',v:(peak*100).toFixed(0)+'%',s:peak>0.9?'قريب من القص ⚠️':peak>0.6?'جيد - نطاق واسع':'نطاق ضيق',c:peak>0.9?'warn':'good'});
+    items.push({l:'الانفجارات (القص)',v:peaks,s:peaks===0?'لا قص ✅':peaks<500?'قليل (مقبول)':'قص شديد ⚠️',c:peaks===0?'good':peaks<500?'warn':'warn'});
+
+    // 3) تحليل كثافة الانقطاعات (الصمت) — عد المقاطع الهادئة
+    const w=Math.ceil(sr*0.05);
+    let sil=0,spch=0,curSil=0,curSpch=0;
+    const silSegs=[],spchSegs=[];
+    for(let i=0;i<ch.length;i+=w){
+        let psum=0;
+        const end=Math.min(i+w,ch.length);
+        for(let j=i;j<end;j+=4) psum+=ch[j]*ch[j];
+        const rmsW=Math.sqrt(psum/((end-i)/4));
+        const rmsDbW=20*Math.log10(rmsW+1e-10);
+        const th=parseFloat($('rThresh').value);
+        const isSil=rmsDbW<th;
+        if(isSil){ if(curSpch>0.15){spchSegs.push(curSpch);} curSil+=(w/sr); curSpch=0; }
+        else{ if(curSil>0.1){silSegs.push(curSil);} curSpch+=(w/sr); curSil=0; }
+    }
+    if(curSpch>0.15)spchSegs.push(curSpch);
+    if(curSil>0.1)silSegs.push(curSil);
+    items.push({l:'فترات الصمت',v:silSegs.length,s:silSegs.length>=3?'توزيع صحي ✅':'قليلة',c:silSegs.length>=3?'good':'warn'});
+    items.push({l:'أجزاء الكلام',v:spchSegs.length,s:'عدد التدخلات الصوتية',c:'good'});
+
+    // 4) تحليل التردد الأساسي التقريبي (طريقة العبور الصفري)
+    let zeroCross=0;
+    for(let i=1;i<ch.length;i+=8){
+        if((ch[i]>=0&&ch[i-1]<0)||(ch[i]<0&&ch[i-1]>=0))zeroCross++;
+    }
+    const zcrRate=(zeroCross/(ch.length/8))*((ch.length/8)/dur)/1000;
+    items.push({l:'معدل العبور الصفري',v:zcrRate.toFixed(1)+'k/s',s:zcrRate>5?'صوت حاد (طفل محتمل)':'صوت عميق (معلم محتمل)',c:'good'});
+
+    // 5) التوصية التلقائية للإعدادات
+    const avgSil=silSegs.length?(silSegs.reduce((a,b)=>a+b,0)/silSegs.length):0.6;
+    const recMinSil=Math.max(0.2,Math.min(2.0,avgSil*0.8)).toFixed(1);
+    const recMinSeg=avgSil>1.5?'0.8':avgSil>0.8?'0.6':'0.4';
+    const recMode=spchSegs.length>silSegs.length*1.5?'alternating':'frequency';
+    items.push({l:'الإعداد الموصى به',v:`صمت: ${recMinSil}ث`,s:`نمط مقترح: ${recMode==='alternating'?'تلقين متبادل':'تحليل التردد'}`,c:'good'});
+
+    // 6) عرض النتائج في البطاقة
+    $('calibGrid').innerHTML=items.map(it=>`
+        <div class="calib-item ${it.c}">
+            <div class="ci-label">${it.l}</div>
+            <div class="ci-value">${it.v}</div>
+            <div class="ci-sub">${it.s}</div>
+        </div>
+    `).join('');
+
+    // 7) تطبيق التوصيات تلقائياً على الواجهة
+    $('rMinSil').value=recMinSil;
+    $('vMinSil').textContent=recMinSil+' ث';
+    $('rMinSeg').value=recMinSeg;
+    $('vMinSeg').textContent=recMinSeg+' ث';
+    $('mode').value=recMode;
+}

@@ -1,0 +1,9 @@
+{
+  "name": "miqsam-legend",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Miqsam — Quran ayah splitter (legendary edition)",
+  "scripts": {
+    "test": "node tests/run-tests.js"
+  }
+}

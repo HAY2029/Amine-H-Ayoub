@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hugging Face Quran - نموذج تجريبي 3</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700;900&display=swap');
+    body { font-family: 'Cairo', sans-serif; background: #fdf4ff; }
+    .quran-text { font-family: 'Amiri', serif; font-size: 2.2rem; line-height: 2.2; }
+    .active-ayah { background-color: #fef08a; border-radius: 8px; padding: 2px 8px; transition: background-color 0.3s; }
+    .completed-ayah { color: #16a34a; transition: color 0.3s; }
+    .pulse-mic { animation: pulse-purple 1.5s infinite; }
+    @keyframes pulse-purple {
+      0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); }
+      70% { box-shadow: 0 0 0 15px rgba(168, 85, 247, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-10 px-4">
+
+  <div class="max-w-4xl w-full bg-white rounded-3xl shadow-xl p-8 border border-fuchsia-100">
+    <h1 class="text-3xl font-black text-fuchsia-800 mb-2 text-center">اختبار نماذج الذكاء الاصطناعي المتخصصة 🎙️</h1>
+    <p class="text-slate-500 text-center mb-6 font-bold">نموذج لاختبار التلاوة عبر Hugging Face Inference API</p>
+
+    <!-- إعدادات الـ API -->
+    <div class="bg-fuchsia-50 p-6 rounded-2xl border border-fuchsia-200 mb-8 space-y-4">
+      <div>
+        <label class="block text-sm font-bold text-fuchsia-900 mb-1">مفتاح Hugging Face API (hf_...)</label>
+        <input type="password" id="hf-token" value="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" placeholder="أدخل المفتاح هنا..." class="w-full p-3 rounded-xl border border-fuchsia-200 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 text-left" dir="ltr">
+        <p class="text-[10px] text-fuchsia-600 mt-1">لن يتم حفظ المفتاح، يستخدم محلياً فقط للإرسال.</p>
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-fuchsia-900 mb-1">اختر النموذج (الرواية)</label>
+        <select id="model-select" class="w-full p-3 rounded-xl border border-fuchsia-200 focus:outline-none focus:ring-2 focus:ring-fuchsia-500">
+          <option value="tarteel-ai/whisper-base-ar-quran">حفص: tarteel-ai/whisper-base-ar-quran</option>
+          <option value="benhadjermed/tahkik-basic-warsh">ورش: benhadjermed/tahkik-basic-warsh</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- واجهة المراقبة -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center">
+        <h3 class="text-xs font-bold text-slate-400 mb-1">حالة التسجيل</h3>
+        <p class="font-black text-lg text-slate-600" id="record-status">متوقف</p>
+      </div>
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center">
+        <h3 class="text-xs font-bold text-slate-400 mb-1">زمن الاستجابة (Latency)</h3>
+        <p class="font-black text-2xl text-fuchsia-600" id="latency-val">0ms</p>
+      </div>
+    </div>
+
+    <!-- زر التحكم (تشغيل مستمر مع تقطيع ذكي) -->
+    <div class="flex justify-center mb-8">
+      <button id="toggle-btn" class="px-8 py-3 bg-fuchsia-500 hover:bg-fuchsia-600 text-white rounded-full font-black text-lg shadow-lg flex items-center gap-2 transition-all active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+        <span>بدء جلسة التلاوة</span>
+      </button>
+    </div>
+
+    <!-- نص السورة -->
+    <div class="bg-amber-50 border border-amber-100 rounded-3xl p-8 mb-8 text-center" dir="rtl">
+      <p id="surah-container" class="quran-text text-slate-800 font-bold leading-loose"></p>
+    </div>
+
+    <!-- الكلمات المسموعة من النموذج -->
+    <div class="bg-slate-800 text-fuchsia-300 p-6 rounded-2xl min-h-[120px]" dir="rtl">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-slate-400 text-sm font-bold">النص العائد من النموذج:</span>
+        <span id="match-badge" class="px-3 py-1 bg-slate-700 rounded-lg text-xs font-bold hidden text-white"></span>
+      </div>
+      <p id="hf-text" class="text-xl font-bold leading-relaxed">...</p>
+      <p id="api-error" class="text-rose-400 text-sm font-bold mt-2 hidden"></p>
+    </div>
+
+  </div>
+
+  <script>
+    // الآيات
+    const ayahs = [
+      "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+      "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+      "الرَّحْمَٰنِ الرَّحِيمِ",
+      "مَالِكِ يَوْمِ الدِّينِ",
+      "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+      "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+      "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ"
+    ];
+
+    let currentAyahIndex = 0;
+    
+    const container = document.getElementById('surah-container');
+    function renderAyahs() {
+      container.innerHTML = '';
+      ayahs.forEach((ayah, index) => {
+        const span = document.createElement('span');
+        span.id = `ayah-${index}`;
+        span.textContent = ayah + ` ﴿${index+1}﴾ `;
+        if (index === currentAyahIndex) span.className = 'active-ayah';
+        else if (index < currentAyahIndex) span.className = 'completed-ayah';
+        container.appendChild(span);
+      });
+    }
+    renderAyahs();
+
+    function normalizeArabic(text) {
+      if (!text) return "";
+      return text
+        .replace(/[\u0617-\u061A\u064B-\u0652]/g, '') 
+        .replace(/[أإآا]/g, 'ا')
+        .replace(/[يى]/g, 'ي')
+        .replace(/[ةه]/g, 'ه')
+        .replace(/[^\u0600-\u06FF\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function getSimilarity(s1, s2) {
+      let longer = s1.length > s2.length ? s1 : s2;
+      let shorter = s1.length > s2.length ? s2 : s1;
+      let longerLength = longer.length;
+      if (longerLength === 0) return 1.0;
+      let costs = new Array();
+      for (let i = 0; i <= s1.length; i++) {
+        let lastValue = i;
+        for (let j = 0; j <= s2.length; j++) {
+          if (i == 0) costs[j] = j;
+          else if (j > 0) {
+            let newValue = costs[j - 1];
+            if (s1.charAt(i - 1) !== s2.charAt(j - 1)) newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+            costs[j - 1] = lastValue;
+            lastValue = newValue;
+          }
+        }
+        if (i > 0) costs[s2.length] = lastValue;
+      }
+      return (longerLength - costs[s2.length]) / parseFloat(longerLength);
+    }
+
+    let isSessionActive = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    
+    // Silence detection
+    let audioContext, analyser, microphone, scriptProcessor;
+    let silenceStart = Date.now();
+    let isSpeaking = false;
+    const SILENCE_THRESHOLD = 5;
+    const MAX_SILENCE_MS = 1500;
+    const MAX_RECORD_MS = 6000;
+
+    const btn = document.getElementById('toggle-btn');
+    const recordStatus = document.getElementById('record-status');
+    const latencyVal = document.getElementById('latency-val');
+    const hfText = document.getElementById('hf-text');
+    const matchBadge = document.getElementById('match-badge');
+    const apiError = document.getElementById('api-error');
+
+    async function startSession() {
+      const token = document.getElementById('hf-token').value.trim();
+      if (!token) {
+        alert("الرجاء إدخال مفتاح Hugging Face API أولاً.");
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        isSessionActive = true;
+        updateBtnState(true);
+        currentAyahIndex = 0;
+        renderAyahs();
+        
+        setupAudioAnalysis(stream);
+        startNewChunk(stream);
+      } catch (err) {
+        alert("لم يتم العثور على ميكروفون: " + err.message);
+      }
+    }
+
+    function stopSession() {
+      isSessionActive = false;
+      updateBtnState(false);
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
+      if (audioContext) {
+        audioContext.close();
+      }
+    }
+
+    function setupAudioAnalysis(stream) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      microphone = audioContext.createMediaStreamSource(stream);
+      scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+      
+      analyser.smoothingTimeConstant = 0.8;
+      analyser.fftSize = 256;
+      
+      microphone.connect(analyser);
+      analyser.connect(scriptProcessor);
+      scriptProcessor.connect(audioContext.destination);
+      
+      scriptProcessor.onaudioprocess = function() {
+        if (!isSessionActive) return;
+        
+        const array = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(array);
+        
+        let sum = 0;
+        for (let i = 0; i < array.length; i++) sum += array[i];
+        let average = sum / array.length;
+
+        if (average > SILENCE_THRESHOLD) {
+          if (!isSpeaking) {
+            isSpeaking = true;
+            recordStatus.textContent = "يتحدث...";
+            recordStatus.className = "font-black text-lg text-emerald-600";
+          }
+          silenceStart = Date.now();
+        } else {
+          if (isSpeaking && Date.now() - silenceStart > MAX_SILENCE_MS) {
+            isSpeaking = false;
+            recordStatus.textContent = "صمت (جاري الإرسال...)";
+            recordStatus.className = "font-black text-lg text-amber-500";
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+              mediaRecorder.stop();
+            }
+          }
+        }
+      };
+    }
+
+    let chunkStartTime = 0;
+    
+    function startNewChunk(stream) {
+      if (!isSessionActive) return;
+      
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      chunkStartTime = Date.now();
+      
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) audioChunks.push(e.data);
+      };
+      
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        if (Date.now() - chunkStartTime > 800) {
+          sendToHuggingFace(audioBlob);
+        }
+        
+        if (isSessionActive) {
+          startNewChunk(stream);
+        }
+      };
+      
+      mediaRecorder.start();
+      
+      setTimeout(() => {
+        if (isSessionActive && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+        }
+      }, MAX_RECORD_MS);
+    }
+
+    async function sendToHuggingFace(blob) {
+      const token = document.getElementById('hf-token').value.trim();
+      const model = document.getElementById('model-select').value;
+      const API_URL = `https://api-inference.huggingface.co/models/${model}`;
+      
+      const startTime = Date.now();
+      apiError.classList.add('hidden');
+      hfText.textContent = "جاري التحليل السحابي...";
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${token}` },
+          body: blob
+        });
+        
+        const result = await response.json();
+        const latency = Date.now() - startTime;
+        latencyVal.textContent = `${latency}ms`;
+        
+        if (result.error) {
+          apiError.textContent = `خطأ: ${result.error} (المودل قيد الإقلاع، حاول مجدداً)`;
+          apiError.classList.remove('hidden');
+          hfText.textContent = "...";
+          return;
+        }
+        
+        const transcript = result.text || "";
+        hfText.textContent = transcript || "(صمت)";
+        evaluateTranscript(transcript);
+        
+      } catch (err) {
+        apiError.textContent = "فشل الاتصال بالخادم.";
+        apiError.classList.remove('hidden');
+      }
+    }
+
+    function evaluateTranscript(transcript) {
+      if (!transcript || currentAyahIndex >= ayahs.length) return;
+
+      const targetAyah = normalizeArabic(ayahs[currentAyahIndex]);
+      const spoken = normalizeArabic(transcript);
+      
+      if (!spoken) return;
+
+      const similarity = getSimilarity(targetAyah, spoken);
+      const percentage = Math.round(similarity * 100);
+
+      matchBadge.classList.remove('hidden', 'bg-emerald-600', 'bg-amber-500', 'bg-rose-500');
+      
+      if (percentage >= 70) {
+        matchBadge.textContent = `🌟 عالٍ (${percentage}%)`;
+        matchBadge.classList.add('bg-emerald-600');
+        
+        currentAyahIndex++;
+        renderAyahs();
+        if (currentAyahIndex >= ayahs.length) {
+          stopSession();
+          hfText.textContent = "🎉 أتممت السورة بنجاح!";
+        }
+      } else if (percentage >= 40) {
+        matchBadge.textContent = `💪 متوسط (${percentage}%)`;
+        matchBadge.classList.add('bg-amber-500');
+      } else {
+        matchBadge.textContent = `🎯 منخفض (${percentage}%)`;
+        matchBadge.classList.add('bg-rose-500');
+      }
+    }
+
+    function updateBtnState(isActive) {
+      if (isActive) {
+        btn.innerHTML = `<span>إيقاف الجلسة</span>`;
+        btn.classList.replace('bg-fuchsia-500', 'bg-slate-700');
+        btn.classList.replace('hover:bg-fuchsia-600', 'hover:bg-slate-800');
+        btn.classList.add('pulse-mic');
+      } else {
+        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg> <span>بدء جلسة التلاوة</span>`;
+        btn.classList.replace('bg-slate-700', 'bg-fuchsia-500');
+        btn.classList.replace('hover:bg-slate-800', 'hover:bg-fuchsia-600');
+        btn.classList.remove('pulse-mic');
+        recordStatus.textContent = "متوقف";
+        recordStatus.className = "font-black text-lg text-slate-600";
+      }
+    }
+
+    btn.addEventListener('click', () => {
+      if (isSessionActive) stopSession();
+      else startSession();
+    });
+
+  </script>
+</body>
+</html>

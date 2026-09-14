@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, ChevronLeft, ChevronRight, Play, Pause, Maximize2, Minimize2, X, Shuffle, Pencil, Check, Settings, Bell, SplitSquareHorizontal, Volume2, VolumeX, Menu, Eye, EyeOff, List, Lock, Baby, Bookmark as BookmarkIcon, Trash2, Plus, Wrench, Headphones, Download, Mic, Repeat } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Play, Pause, Maximize2, Minimize2, X, Shuffle, Pencil, Check, Settings, Bell, SplitSquareHorizontal, SplitSquareVertical, Volume2, VolumeX, Menu, Eye, EyeOff, List, Lock, Baby, Bookmark as BookmarkIcon, Trash2, Plus, Wrench, Headphones, Download, Mic, Repeat, Palette, LayoutGrid, GripVertical, SkipForward, SkipBack } from "lucide-react";
 import { getSurahAudioUrl, hasCloudAudio, getFallbackAudioUrl } from "@/data/audioUrls";
 import { getPageAyahBoxes, PAGE_IMAGE_SIZE } from "@/data/ayahCoordinates";
 import AppFooter from "@/components/AppFooter";
 import { getSavedTimings, getSurahTimings } from "@/data/ayahTimings";
-import { getCustomPages, getAllPageImages, getPageOrder } from "@/data/customPages";
+import { getCustomPages, getAllPageImages, syncAllPageImagesFromServer, syncCustomPagesFromServer, getPageOrder, getPageOrderSrcs, savePageOrder, syncPageOrderFromServer, normalizeImageKey } from "@/data/customPages";
 import { getPageSurahRegions } from "@/data/surahRegions";
 import { addReadingMinutes, addCoins, kidsEnabled as getKidsEnabled, getProgress, isPureMode, setAppMode } from "@/data/kidsProfile";
 import { recordTodayActivity } from "@/data/kidsBadges";
@@ -15,6 +15,17 @@ import { isKidsMode, setKidsLocked, hasKidsPin } from "@/data/kidsLock";
 import ParentalGateModal from "@/components/ParentalGateModal";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { fetchHuggingFaceImages, HFImage } from "@/services/huggingFaceService";
+import { syncImageOrderFromServer, saveImageOrder } from "@/services/imageOrderService";
+import {
+  getLocalShadingSettings,
+  saveShadingToServer,
+  syncShadingFromServer,
+  hexToRgba,
+  getAyahShadingStyle,
+  PRESET_SHADING_COLORS,
+  type ShadingSettings
+} from "@/services/shadingSyncService";
 import { isTauri, checkOfflineStatus, getOfflineAudioUrl, downloadSurah, listenToDownloadProgress } from "../utils/tauriUtils";
 import { resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
 import { useAudioContext } from "@/contexts/audioContext";
@@ -24,9 +35,46 @@ import { updateMediaSession, setMediaPlaybackState, isBackgroundAudioEnabled } f
 
 const audioPath = (n: number) => (hasCloudAudio(n) ? getSurahAudioUrl(n) : getFallbackAudioUrl(n));
 
-// ألوان تمييز الآيات عند التلاوة
-const previewHighlight = "rgb(255, 200, 0)";
-const previewStroke = "rgb(200, 150, 0)";
+// ألوان التظليل — الثيمات الجاهزة أدناه تحمل القيم (ذهبي/نعناعي/وردي)
+const SHADING_HIDE_KEY = "mushaf:hideShading";
+const SHADING_OPACITY_KEY = "mushaf:shadingOpacity:v1";
+const SHADING_THEME_KEY = "mushaf:shadingTheme:v1";
+
+// === أنماط التظليل الجاهزة (ثيمات) — تُطبَّق فوراً وتُحفظ ===
+interface ShadingTheme {
+  key: string; label: string;
+  defaultFill: string; defaultStroke: string;
+  teacher: { bg: string; glow: string; text: string };
+  kids: { bg: string; glow: string; text: string };
+}
+const SHADING_THEMES: ShadingTheme[] = [
+  {
+    key: "gold", label: "ذهبي",
+    defaultFill: "rgba(250,204,21,0.18)", defaultStroke: "rgba(180,130,20,0.55)",
+    teacher: { bg: "rgba(250,204,21,0.45)", glow: "rgba(217,119,6,0.9)", text: "#92400e" },
+    kids: { bg: "rgba(56,189,248,0.45)", glow: "rgba(2,132,199,0.9)", text: "#075985" },
+  },
+  {
+    key: "mint", label: "نعناعي",
+    defaultFill: "rgba(52,211,153,0.16)", defaultStroke: "rgba(5,150,105,0.5)",
+    teacher: { bg: "rgba(52,211,153,0.45)", glow: "rgba(4,120,87,0.9)", text: "#065f46" },
+    kids: { bg: "rgba(251,191,36,0.45)", glow: "rgba(180,83,9,0.9)", text: "#92400e" },
+  },
+  {
+    key: "rose", label: "وردي",
+    defaultFill: "rgba(244,114,182,0.15)", defaultStroke: "rgba(190,24,93,0.5)",
+    teacher: { bg: "rgba(244,114,182,0.45)", glow: "rgba(157,23,77,0.9)", text: "#831843" },
+    kids: { bg: "rgba(167,139,250,0.45)", glow: "rgba(109,40,217,0.9)", text: "#4c1d95" },
+  },
+];
+
+// === القارئ يقرأ الثيم المحفوظ (localStorage) ===
+function loadShadingTheme(): ShadingTheme {
+  try {
+    const k = localStorage.getItem(SHADING_THEME_KEY);
+    return SHADING_THEMES.find(t => t.key === k) || SHADING_THEMES[0];
+  } catch { return SHADING_THEMES[0]; }
+}
 
 // === Page naming from settings ===
 const PAGE_NAMES_KEY = "mushaf:pageNames:v1";
@@ -119,35 +167,87 @@ const BASE_PAGES: PageInfo[] = [
   },
 ];
 
-const speakerColors: Record<Speaker, { bg: string; glow: string; text: string }> = {
-  teacher: { bg: "rgba(250,204,21,0.30)", glow: "rgba(250,204,21,0.55)", text: "#b40909ff" },
-  kids: { bg: "rgba(56,189,248,0.30)", glow: "rgba(56,189,248,0.55)", text: "#0369a1" },
-};
-
-import MushafComingSoon from "@/components/MushafComingSoon";
+const SPEAKER_LABELS: Record<Speaker, string> = { teacher: "المعلم", kids: "الأطفال" };
 
 export default function QuranReader() {
-  return <MushafComingSoon />;
-}
-
-function UnusedQuranReader() {
   const navigate = useNavigate();
   const { requestPlay, notifyStop, registerAudio, unregisterAudio, simultaneousMode, setSimultaneousMode } = useAudioContext();
 
-  // الصفحات المرفوعة من المعايرة تظهر في المصحف هنا (صورة + تظليل + سور من المناطق)
   const [customPageList, setCustomPageList] = useState(() => getCustomPages());
   const [customImgs, setCustomImgs] = useState<Record<string, string>>({});
   const [orderVersion, setOrderVersion] = useState(0);
-  // يُعيد القراءة عند العودة للقارئ / عند اكتمال المزامنة من السيرفر (بلا تحديث يدوي)
+  
+  const [hfImages, setHfImages] = useState<HFImage[]>([]);
+  const [hfOrder, setHfOrder] = useState<string[]>([]);
+  const [hfImagesMap, setHfImagesMap] = useState<Record<string, string>>({});
+
+  // اختصار لوحة المفاتيح Z لفتح إعدادات التظليل
   useEffect(() => {
-    const refresh = () => { setCustomPageList(getCustomPages()); getAllPageImages().then(setCustomImgs).catch(() => {}); setOrderVersion(v => v + 1); setBookmarks(getBookmarks()); };
-    refresh();
-    window.addEventListener("focus", refresh);
-    document.addEventListener("visibilitychange", refresh);
-    window.addEventListener("mushaf:sync_complete", refresh);
-    return () => { window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); window.removeEventListener("mushaf:sync_complete", refresh); };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'z' || e.key === 'Z' || e.key === 'ئ') {
+        navigate("/settings");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigate]);
+
+  // يُعيد القراءة عند العودة للقارئ / عند اكتمال المزامنة من السيرفر (بلا تحديث يدوي)
+  // خفض تكرار (throttle): لا نُعيد المزامنة الكاملة أكثر من مرة كل 45 ثانية — للسرعة
+  const _lastRefreshRef = useRef(0);
+  useEffect(() => {
+    const REFRESH_MIN_MS = 45_000; // لا مزامنة كاملة أكثر من مرة كل 45 ثانية — للسرعة
+    const refresh = async (force = false) => { 
+      const now = Date.now();
+      if (!force && now - _lastRefreshRef.current < REFRESH_MIN_MS) return;
+      _lastRefreshRef.current = now;
+      // أولاً: مزامنة قائمة صفحات السيرفر (إن لم تكن قد وصلت بعد)
+      await syncCustomPagesFromServer().catch(() => {});
+      setCustomPageList(getCustomPages()); 
+      // تحميل الصور من السيرفر (Supabase) ومن المحلي معاً
+      syncAllPageImagesFromServer().then(setCustomImgs).catch(() => {});
+      setBookmarks(getBookmarks()); 
+      
+      try {
+        const [images, order] = await Promise.all([
+          fetchHuggingFaceImages(),
+          syncImageOrderFromServer()
+        ]);
+        setHfImages(images);
+        setHfOrder(order || []);
+        
+        const map: Record<string, string> = {};
+        const srcList: string[] = [];
+        images.forEach(img => {
+          // img.name قد يكون "pages/600.jpg" — نوحّد المفتاح إلى "/pages/600.jpg"
+          const clean = img.name.replace(/^pages\//, "").replace(/^\/pages\//, "");
+          const src = `/pages/${clean}`;
+          map[src] = img.url;
+          srcList.push(src);
+        });
+        setHfImagesMap(map);
+        try { localStorage.setItem("mushaf:hfImageSrcs:v1", JSON.stringify(srcList)); } catch { /* ignore */ }
+      } catch (e) {
+        console.error(e);
+      }
+      
+      setOrderVersion(v => v + 1); 
+    };
+    refresh(true);
+    const onFocus = () => refresh();
+    const onVis = () => refresh();
+    // ملاحظة: لا نستمع لحدث "mushaf:sync_complete" نهائياً — هذا الحدث يُطلق
+    // من عدة أماكن (shadingSyncService وغيره) أثناء دورات مزامنة ذاتية، والاستماع
+    // إليه يسبب سلسلة لا نهائية: مزامنة ← حدث ← مزامنة ← حدث... مع طلبات شبكة
+    // متكررة تملأ الكونسول بأخطاء 404/500. التحديث عند التركيز والرؤية يكفي.
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVis);
+    return () => { window.removeEventListener("focus", onFocus); document.removeEventListener("visibilitychange", onVis); };
   }, []);
-  const imgSrcFor = (src: string) => customImgs[src] || src;
+  
+  const imgSrcFor = (src: string) => customImgs[src] || hfImagesMap[src] || src;
   // تتبّع تحميل صور الصفحات: لا نُظهر التظليل إلا بعد ظهور الصورة (يمنع «تظليل فوق صفحة فارغة»)
   const [loadedImgs, setLoadedImgs] = useState<Set<string>>(() => new Set());
   const markLoaded = useCallback((src: string) => setLoadedImgs(prev => (prev.has(src) ? prev : new Set(prev).add(src))), []);
@@ -202,8 +302,141 @@ function UnusedQuranReader() {
       flushMinutes();
     };
   }, []);
+  // === تطبيق ترتيب الصفحات المحفوظ من الإعدادات (دالة عادية قبل pages) ===
+  const applyPageOrder = (allPages: PageInfo[]): PageInfo[] => {
+    try {
+      const savedOrder = localStorage.getItem("mushaf:customPageOrder:v1");
+      if (!savedOrder) return allPages;
+      const order = JSON.parse(savedOrder) as string[];
+      if (!Array.isArray(order) || order.length === 0) return allPages;
+      // ترتيب تالف: إذا كان يحتوي صفحة "0.jpg" خاطئة أو مرجعاً غير موجود نهائياً
+      // نتجاهله كلياً — هذا سبب بقاء "0" أولاً بعد الإصلاح.
+      const validSrcs = new Set(allPages.map(p => p.src));
+      const polluted = order.some(o => /(^|\/|pages\/)0\.jpe?g$/i.test(o) || !validSrcs.has(o));
+      if (polluted) {
+        try { localStorage.removeItem("mushaf:customPageOrder:v1"); } catch { /* ignore */ }
+        return allPages;
+      }
+      
+      const pageMap = new Map<string, PageInfo>();
+      allPages.forEach(p => pageMap.set(p.src, p));
+      
+      const ordered: PageInfo[] = [];
+      const added = new Set<string>();
+      
+      for (const src of order) {
+        if (pageMap.has(src) && !added.has(src)) {
+          ordered.push(pageMap.get(src)!);
+          added.add(src);
+        }
+      }
+      
+      for (const p of allPages) {
+        if (!added.has(p.src)) {
+          ordered.push(p);
+          added.add(p.src);
+        }
+      }
+      
+      return ordered.length > 0 ? ordered : allPages;
+    } catch {
+      return allPages;
+    }
+  };
+
   const pages = useMemo<PageInfo[]>(() => {
-    const extra: PageInfo[] = customPageList.map(cp => {
+    const basePagesMap = new Map(BASE_PAGES.map(p => [p.src, p]));
+    
+    // فلترة صور HF الصحيحة (استبعاد الفارغة أو الخاطئة)
+    const validHfImages = hfImages.filter(img => img.url && img.url.length > 10);
+    
+    // 1. ترتيب صور HF الصحيحة حسب hfOrder
+    let orderedHfImages = [...validHfImages];
+    if (hfOrder && hfOrder.length > 0) {
+      const map = new Map<string, HFImage>();
+      const unordered: HFImage[] = [];
+      validHfImages.forEach(img => {
+        if (hfOrder.includes(img.name)) map.set(img.name, img);
+        else unordered.push(img);
+      });
+      const sorted: HFImage[] = [];
+      hfOrder.forEach(name => {
+        const img = map.get(name);
+        if (img) sorted.push(img);
+      });
+      orderedHfImages = [...sorted, ...unordered];
+    }
+
+    const hfPageInfos: PageInfo[] = orderedHfImages.map(img => {
+      // img.name قد يكون "pages/600.jpg" أو "600.jpg" — نوحّد إلى "/pages/XXX.jpg" بدون تكرار
+      const clean = img.name.replace(/^pages\//, "").replace(/^\/pages\//, "");
+      const src = `/pages/${clean}`;
+      const regions = getPageSurahRegions(src);
+      // جرّب أيضاً المفتاح الخام (للتوافق مع بيانات قديمة مخزنة بـ pages/...)
+      const boxes = [...getPageAyahBoxes(src), ...getPageAyahBoxes(`pages/${clean}`), ...getPageAyahBoxes(clean)];
+      const regionsAlt = [...regions, ...getPageSurahRegions(`pages/${clean}`)];
+      
+      let surahs: SurahAudio[] = [];
+      if (regionsAlt.length > 0) {
+        surahs = regionsAlt.filter(r => r.surah).map(r => ({
+          name: r.name || `سورة ${r.surah}`,
+          number: r.surah as number,
+          src: audioPath(r.surah as number),
+          ayahCount: boxes.filter(b => b.surah === r.surah).length || 0,
+        }));
+      } else if (basePagesMap.has(src)) {
+        surahs = basePagesMap.get(src)!.surahs;
+      }
+      
+      const defaultName = basePagesMap.has(src)
+        ? basePagesMap.get(src)!.name
+        : img.pageNumber > 0
+          ? `صفحة ${img.pageNumber}`
+          : img.name.replace(/\.jpe?g$/i, "").replace(/^pages\//, "");
+      return { name: defaultName, src, surahs };
+    });
+
+    const hfSrcs = new Set(hfPageInfos.map(p => p.src));
+    
+    // صور السيرفر (custom:xxx / /pages/xxx من bucket) المخزّنة في customImgs —
+    // ابنِ لها صفحات قارئ تلقائياً حتى تظهر كل الصور القادمة من السيرفر.
+    const coveredSrcs = new Set<string>([
+      ...hfPageInfos.map(p => p.src),
+      ...BASE_PAGES.map(p => p.src),
+      ...customPageList.map(p => p.src),
+    ]);
+    const serverOnlySrcs = Object.keys(customImgs).filter(
+      (src) => !coveredSrcs.has(src) && customImgs[src] && String(customImgs[src]).length > 10
+    );
+    const serverOnlyPages: PageInfo[] = serverOnlySrcs.map((src) => {
+      const regions = getPageSurahRegions(src);
+      const boxes = getPageAyahBoxes(src);
+      const surahs: SurahAudio[] = regions
+        .filter((r) => r.surah)
+        .map((r) => ({
+          name: r.name || `سورة ${r.surah}`,
+          number: r.surah as number,
+          src: audioPath(r.surah as number),
+          ayahCount: boxes.filter((b) => b.surah === r.surah).length || 0,
+        }));
+      const num = parseInt(src.replace(/\D/g, ""), 10);
+      return {
+        name: regions[0]?.name || (num ? `صفحة ${num}` : "صفحة من السيرفر"),
+        src,
+        surahs,
+      };
+    });
+
+    // 3. Add Custom Pages — فقط الصفحات التي لها صورة حقيقية موجودة فعلاً
+    // (من Supabase أو محلياً) — نستبعد أي صفحة وهمية حُذفت صورتها حتى لا تظهر فارغة
+    const extra: PageInfo[] = customPageList
+      .filter(cp => {
+        if (customImgs[cp.src]) return true;                       // صورة موجودة (سيرفر/محلي)
+        if (BASE_PAGES.some(bp => bp.src === cp.src)) return true; // صفحة أساسية محلية
+        if (hfSrcs.has(cp.src)) return true;                       // صورة من السيرفر
+        return false; // لا صورة → صفحة وهمية → استبعاد
+      })
+      .map(cp => {
       const regions = getPageSurahRegions(cp.src);
       const boxes = getPageAyahBoxes(cp.src);
       const surahs: SurahAudio[] = regions
@@ -216,22 +449,129 @@ function UnusedQuranReader() {
         }));
       return { name: cp.name, src: cp.src, surahs };
     });
-    return [...BASE_PAGES, ...extra];
-  }, [customPageList]);
 
+    // ─── الدمج النهائي: صور السيرفر فقط + إزالة أي تكرار ───
+    // المستخدم طلب: المصدر الوحيد هو السيرفر (Supabase) — لا صفحات محلية مكررة.
+    // نستخدم مفتاحاً موحّداً (normalizeImageKey) بحيث أي نسخة مكرّرة بنفس الرقم
+    // (بصيغ مختلفة: 600.jpg / pages/600.jpg / /pages/600.jpg) تُدمج في صفحة واحدة.
+    const dedupeMap = new Map<string, PageInfo>();
+    const normKey = (p: PageInfo) => {
+      const n = normalizeImageKey(p.src);
+      return n || p.src;
+    };
+    [...hfPageInfos, ...extra, ...serverOnlyPages].forEach(p => {
+      if (p && p.src) dedupeMap.set(normKey(p), p); // آخر نسخة تكسب
+    });
+    let allPages = Array.from(dedupeMap.values());
+
+    // ─── تنظيف نهائي: لا "0" خاطئة ولا مكررات ───
+    // صفحة اسمها "0" (أرقام = صفر) خاطئة دائماً → تُحذف كلياً.
+    // صفحة بلا أرقام (مثل fatiha) تُبقى بنسخة واحدة فقط.
+    // تكراران بنفس الرقم → يُبقى الأفضل (الأساسية/الاسم الوصفي).
+    const byNum = new Map<number, PageInfo>();
+    const cleaned: PageInfo[] = [];
+    for (const p of allPages) {
+      const m = p.src.match(/(\d+)/);
+      const num = m ? parseInt(m[1], 10) : -1;
+      if (num === 0) continue; // "0.jpg" صفحة خاطئة — احذفها دائماً
+      if (num === -1) {
+        // بلا أرقام (فاتحة/مخصّصة) — نسخة واحدة فقط
+        if (!cleaned.some(q => normKey(q) === normKey(p))) cleaned.push(p);
+        continue;
+      }
+      const existing = byNum.get(num);
+      if (existing) {
+        // مكرر بنفس الرقم: نُبقي الأفضل (الأساسية أو صاحبة الاسم الوصفي)
+        const better = basePagesMap.has(p.src) ? p : (!existing.name.startsWith("صفحة") && existing.name !== p.name ? existing : p);
+        byNum.set(num, better);
+        continue;
+      }
+      byNum.set(num, p);
+      cleaned.push(p);
+    }
+    allPages = cleaned;
+
+    // ─── الترتيب: الفاتحة (فاتحة/1) أولاً ثم 581→604 تصاعدياً ───
+    const pageNum = (p: PageInfo) => {
+      const n = parseInt(p.src.replace(/\D/g, ""), 10);
+      if (n > 0) return n;
+      if (/fatiha/i.test(p.src) || p.name.includes("الفاتحة")) return 1;
+      return 99999; // صفحات مخصصة بلا رقم → النهاية
+    };
+    allPages.sort((a, b) => pageNum(a) - pageNum(b));
+
+    // احتياط تام: إذا لم تصل أي صورة سيرفر إطلاقاً (شبكة مقطوعة + سيرفر فارغ)
+    // نعرض الصفحات الأساسية المحلية فقط حتى لا تبقى الشاشة فارغة.
+    if (allPages.length === 0) {
+      const fallback = new Map<string, PageInfo>();
+      [...BASE_PAGES, ...extra].forEach(p => {
+        if (p && p.src) fallback.set(normKey(p), p);
+      });
+      allPages = Array.from(fallback.values());
+    }
+
+    return applyPageOrder(allPages);
+  }, [customPageList, customImgs, hfImages, hfOrder]);
+
+  // === حالة الصفحة: نحفظ src الصفحة (لا الفهرس) ليظل الموضع صحيحاً بعد تحميل صور السيرفر ===
   const [currentPage, setCurrentPage] = useState(() => {
+    // المحاولة الأولى: قراءة src المحفوظة
+    const savedSrc = localStorage.getItem(STORAGE_KEY + ":src");
+    if (savedSrc) {
+      // سنحاول إيجاد الفهرس بعد تحميل الصفحات (pages) — مؤقتاً نبدأ 0
+    }
+    // قراءة الفهرس القديم (للتوافق)
     const s = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
-    return isNaN(s) || s < 0 || s >= pages.length ? 0 : s;
+    return isNaN(s) || s < 0 ? 0 : s;
   });
+  // === تحميل مسبق للصفحات المجاورة (±1 و ±2) → تصفح فوري بلا انتظار ===
+  useEffect(() => {
+    if (pages.length === 0) return;
+    const cur = Math.min(Math.max(currentPage, 0), pages.length - 1);
+    [cur + 1, cur - 1, cur + 2, cur - 2].forEach((i) => {
+      const p = pages[i];
+      if (!p) return;
+      const src = imgSrcFor(p.src);
+      if (!src) return;
+      const im = new Image();
+      im.decoding = "async";
+      im.src = src;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pages, customImgs, hfImagesMap]);
+
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : false);
   const [controlsOpen, setControlsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [skipBismillah, setSkipBismillah] = useState(() => {
+    // افتراضياً: تخطي البسملة والبدء من الصفحة 2
+    const saved = localStorage.getItem("mushaf:skipBismillah:v1");
+    return saved !== null ? saved === "true" : true;
+  });
+
+  // حفظ إعداد تخطي البسملة
+  useEffect(() => {
+    localStorage.setItem("mushaf:skipBismillah:v1", skipBismillah ? "true" : "false");
+  }, [skipBismillah]);
+
+  // تخطي البسملة عند التحميل الأول: إذا كانت الصفحة 0 والإعداد مفعل، انتقل للصفحة 1
+  useEffect(() => {
+    if (skipBismillah && currentPage === 0 && pages.length > 1) {
+      const timer = setTimeout(() => {
+        setCurrentPage(1);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [skipBismillah, pages.length]); // يُنفذ مرة واحدة بعد تحميل الصفحات
 
   // Audio state
   const [activeSurah, setActiveSurah] = useState<SurahAudio | null>(null);
   const [selectedSurahIdx, setSelectedSurahIdx] = useState(0);
   const [selectedAyah, setSelectedAyah] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
+  // === الآية النشطة + المتكلم + السورة النشطة (رسم التظليل من React state مباشرة) ===
+  const [activeSurahNum, setActiveSurahNum] = useState(-1);
+  const [activeAyahNum, setActiveAyahNum] = useState(-1);
   const [playMode, _setPlayMode] = useState<PlayMode>("teacher");
   const [continuousPlay, _setContinuousPlay] = useState(true);
   const [repeatCount, _setRepeatCount] = useState(0);
@@ -240,6 +580,7 @@ function UnusedQuranReader() {
   const playModeRef = useRef<PlayMode>(playMode);
   const continuousPlayRef = useRef(continuousPlay);
   const repeatCountRef = useRef(repeatCount);
+  const hideShadingRef = useRef(false);
 
   // Wrapper setters that keep refs in sync
   const setPlayMode = useCallback((v: PlayMode | ((prev: PlayMode) => PlayMode)) => {
@@ -271,7 +612,7 @@ function UnusedQuranReader() {
   // ترتيب الصفحات (من شاشة «ترتيب» في المعايرة، مُخزَّن على السيرفر كقائمة src).
   // يُعاد حسابه عند تغيّر الصفحات أو اكتمال المزامنة (orderVersion).
   const customPageOrder = useMemo<number[]>(() => {
-    const srcs = getPageOrder();
+    const srcs = getPageOrderSrcs();
     if (srcs.length === 0) return [];
     const order = srcs.map((s: string) => pages.findIndex(p => p.src === s)).filter((i: number) => i >= 0);
     pages.forEach((_, i) => { if (!order.includes(i)) order.push(i); });
@@ -281,13 +622,188 @@ function UnusedQuranReader() {
 
   // Split view state
   const [isSplitView, setIsSplitView] = useState(false);
-  const [hideShading, setHideShading] = useState(false);
+
+  // ─── التظليل: حالة مزامَنة مع السيرفر ───
+  const [shadingSettings, setShadingSettings] = useState<ShadingSettings>(() => getLocalShadingSettings());
+  const [hideShading, setHideShading] = useState<boolean>(() => getLocalShadingSettings().hidden);
+  const [shadingOpacity, setShadingOpacity] = useState<number>(() => getLocalShadingSettings().opacity);
+  const [activeSpeaker, setActiveSpeaker] = useState<Speaker>(() => getLocalShadingSettings().speaker as Speaker);
+  const [shadingTheme, setShadingThemeState] = useState<ShadingTheme>(() => {
+    const s = getLocalShadingSettings();
+    return SHADING_THEMES.find(t => t.key === s.theme) || SHADING_THEMES[0];
+  });
+
+  // مزامنة التظليل من السيرفر عند التحميل والتركيز
+  useEffect(() => {
+    const syncShading = async () => {
+      const synced = await syncShadingFromServer();
+      setShadingSettings(synced);
+      setHideShading(synced.hidden);
+      setShadingOpacity(synced.opacity);
+      setActiveSpeaker(synced.speaker as Speaker);
+      const theme = SHADING_THEMES.find(t => t.key === synced.theme) || SHADING_THEMES[0];
+      setShadingThemeState(theme);
+    };
+    syncShading();
+    const handler = () => syncShading();
+    window.addEventListener("mushaf:sync_complete", handler);
+    window.addEventListener("focus", handler);
+    return () => {
+      window.removeEventListener("mushaf:sync_complete", handler);
+      window.removeEventListener("focus", handler);
+    };
+  }, []);
+
+  const persistHideShading = useCallback((v: boolean) => {
+    hideShadingRef.current = v;
+    setHideShading(v);
+    if (v) { setActiveAyahNum(-1); setActiveSurahNum(-1); }
+    saveShadingToServer({ hidden: v });
+  }, []);
+
+  const persistShadingOpacity = useCallback((v: number) => {
+    const clamped = Math.min(1, Math.max(0.3, v));
+    setShadingOpacity(clamped);
+    saveShadingToServer({ opacity: clamped });
+  }, []);
+
+  const persistShadingTheme = useCallback((t: ShadingTheme) => {
+    setShadingThemeState(t);
+    setShadingSettings(prev => ({ ...prev, theme: t.key }));
+    saveShadingToServer({ theme: t.key });
+  }, []);
+
+  const [shadingTab, setShadingTab] = useState<"teacher" | "kids">("teacher");
+
+  const persistTeacherColor = useCallback((color: string) => {
+    setShadingSettings(prev => ({ ...prev, teacherColor: color }));
+    saveShadingToServer({ teacherColor: color });
+  }, []);
+
+  const persistKidsColor = useCallback((color: string) => {
+    setShadingSettings(prev => ({ ...prev, kidsColor: color }));
+    saveShadingToServer({ kidsColor: color });
+  }, []);
+
+  // الاستماع لأي تغيير في التظليل يحدث من صفحة الإعدادات أو غيرها
+  useEffect(() => {
+    const handleShadingChanged = (e: Event) => {
+      const detail = (e as CustomEvent<ShadingSettings>).detail;
+      if (detail) {
+        setShadingSettings(detail);
+        if (typeof detail.hidden === "boolean") setHideShading(detail.hidden);
+        if (typeof detail.opacity === "number") setShadingOpacity(detail.opacity);
+        if (detail.speaker) setActiveSpeaker(detail.speaker as Speaker);
+      }
+    };
+    window.addEventListener("mushaf:shading_changed", handleShadingChanged);
+    return () => window.removeEventListener("mushaf:shading_changed", handleShadingChanged);
+  }, []);
+
   // ركن الأطفال (قفل برمز) + لوحة التنقّل
   const [kidsMode, setKidsModeState] = useState(isKidsMode);
   const [kidsCorner, setKidsCorner] = useState(getKidsEnabled);   // ركن الأطفال مُفعَّل؟ (ليس وضع وليّ الأمر فقط)
   const [pinAction, setPinAction] = useState<null | "enter" | "exit" | "settings" >(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [surahListOpen, setSurahListOpen] = useState(false);
+  const [reorderOpen, setReorderOpen] = useState(false);
+  const [reorderMode, setReorderMode] = useState<"grid" | "list">("grid");
+  const [reorderedPages, setReorderedPages] = useState<PageInfo[]>([]);
+  const [pageOrderOpen, setPageOrderOpen] = useState(false);
+  const [splitToolOpen, setSplitToolOpen] = useState(false);
+  const [pageOrderSrcs, setPageOrderSrcs] = useState<string[]>(() => getPageOrderSrcs());
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  // مزامنة ترتيب الصفحات من السيرفر
+  useEffect(() => {
+    if (!pageOrderOpen) return;
+    syncPageOrderFromServer().then(order => {
+      if (order.length > 0) setPageOrderSrcs(getPageOrderSrcs());
+    });
+  }, [pageOrderOpen]);
+
+  const openReorder = useCallback(() => {
+    const allPages = isShuffled
+      ? shuffledPageOrder.map(i => pages[i]).filter((p): p is PageInfo => !!p)
+      : pages;
+    setReorderedPages([...allPages]);
+    setReorderOpen(true);
+  }, [isShuffled, shuffledPageOrder, pages]);
+
+  const saveReorder = useCallback(async () => {
+    if (reorderedPages.length === 0) return;
+    const newOrder = reorderedPages.map(p => p.src);
+    if (isShuffled) {
+      // تحويل srcs إلى فهارس لقائمة الخلط
+      setShuffledPageOrder(
+        reorderedPages.map(p => pages.findIndex(x => x.src === p.src)).filter(i => i >= 0)
+      );
+    } else {
+      await saveImageOrder(newOrder);
+      localStorage.setItem("mushaf:pageOrder:v1", JSON.stringify(newOrder));
+      dispatchEvent(new CustomEvent("mushaf:order_changed", { detail: newOrder }));
+    }
+    setReorderOpen(false);
+    toast({ title: "✅ تم حفظ ترتيب الصفحات" });
+  }, [reorderedPages, isShuffled, pages]);
+
+  const movePage = useCallback((fromIdx: number, toIdx: number) => {
+    setReorderedPages(prev => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, moved);
+      return next;
+    });
+  }, []);
+
+  const handleSavePageOrder = useCallback(() => {
+    // تحويل srcs إلى الفهارس الفعلية
+    const srcToIdx: Record<string, number> = {};
+    pages.forEach((p, i) => { srcToIdx[p.src] = i; });
+    const idxOrder = pageOrderSrcs.map(s => srcToIdx[s]).filter(i => i !== undefined && i >= 0);
+    // إضافة أي صفحات غير موجودة في الترتيب في النهاية
+    for (let i = 0; i < pages.length; i++) {
+      if (!idxOrder.includes(i)) idxOrder.push(i);
+    }
+    savePageOrder(idxOrder.map(i => pages[i].src));
+    setOrderVersion(v => v + 1);
+    setPageOrderOpen(false);
+    toast({ title: "✅ تم حفظ ترتيب الصفحات", description: "سيظهر الترتيب الجديد عند إعادة فتح المصحف" });
+  }, [pageOrderSrcs]);
+
+  const handleResetPageOrder = useCallback(() => {
+    savePageOrder([]);
+    setPageOrderSrcs([]);
+    setOrderVersion(v => v + 1);
+    setPageOrderOpen(false);
+    toast({ title: "✅ تم إعادة تعيين الترتيب", description: "سيعود الترتيب الأصلي" });
+  }, []);
+
+  const handleDragStart = useCallback((idx: number) => {
+    setDraggedIdx(idx);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    setDragOverIdx(idx);
+  }, []);
+
+  const handleDrop = useCallback((targetIdx: number) => {
+    if (draggedIdx === null || draggedIdx === targetIdx) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+    setPageOrderSrcs(prev => {
+      const next = [...prev];
+      const [moved] = next.splice(draggedIdx, 1);
+      next.splice(targetIdx, 0, moved);
+      return next;
+    });
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  }, [draggedIdx]);
   const [navTab, setNavTab] = useState<"surahs" | "bookmarks">("surahs");
   const [bookmarks, setBookmarks] = useState<Bookmark[]>(getBookmarks);
   useEffect(() => { const h = () => setKidsModeState(isKidsMode()); window.addEventListener("mushaf:kidsmode", h); return () => window.removeEventListener("mushaf:kidsmode", h); }, []);
@@ -339,7 +855,7 @@ function UnusedQuranReader() {
   const requestExitKids = () => setPinAction("exit");
   // الإعدادات محميّة: تتطلّب رمز ولي الأمر إن كان مضبوطاً
   const openSettings = () => { if (hasKidsPin()) setPinAction("settings"); else navigate("/settings"); };
-  const openTools = () => { /* أدوات المعلّم معطّلة */ };
+  const openTools = () => { if (hasKidsPin()) setPinAction("settings"); else navigate("/teacher-tools"); };
 
   // ── قائمة كل السور للانتقال المباشر ──
   const allSurahsList = useMemo(() => {
@@ -473,33 +989,18 @@ function UnusedQuranReader() {
   }, []);
 
 
+  // === التظليل عبر React state — لا DOM مباشر ===
   const clearAllHighlights = useCallback(() => {
-    const rects = document.querySelectorAll('.ayah-rect');
-    rects.forEach(r => {
-      const el = r as SVGRectElement;
-      el.style.fill = previewHighlight;
-      el.style.stroke = previewStroke;
-      el.style.strokeWidth = "1.5";
-      el.classList.remove('animate-pulse', 'glow-kids');
-    });
+    setActiveAyahNum(-1);
+    setActiveSurahNum(-1);
   }, []);
 
-  const highlightAyah = useCallback((surahNum: number, ayahNum: number, speaker: Speaker, boxIndex?: number) => {
-    clearAllHighlights();
-    // Use surah+ayah selector to match across all pages (works for dual-page)
-    const selector = `.ayah-rect-${surahNum}-${ayahNum}`;
-    const boxes = document.querySelectorAll(selector);
-    boxes.forEach(r => {
-      const el = r as SVGRectElement;
-      el.style.fill = speakerColors[speaker].bg;
-      el.style.stroke = speakerColors[speaker].glow;
-      el.style.strokeWidth = "5";
-      el.classList.add('animate-pulse');
-      if (speaker === 'kids') {
-        el.classList.add('glow-kids');
-      }
-    });
-  }, [clearAllHighlights]);
+  const highlightAyah = useCallback((surahNum: number, ayahNum: number, speaker: Speaker, _boxIndex?: number) => {
+    if (hideShadingRef.current) return;
+    setActiveSpeaker(speaker);
+    setActiveSurahNum(prev => (prev === surahNum ? prev : surahNum));
+    setActiveAyahNum(prev => (prev === ayahNum ? prev : ayahNum));
+  }, []);
 
   // Shuffle handlers
   const handleShuffle = useCallback(() => {
@@ -559,7 +1060,29 @@ function UnusedQuranReader() {
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, String(currentPage)); }, [currentPage]);
+  // حفظ الصفحة: نحفظ src + الفهرس معاً (يبقى الموضع صحيحاً حتى بعد تحميل صور السيرفر)
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, String(currentPage));
+    const curPage = pages[currentPage];
+    if (curPage) {
+      localStorage.setItem(STORAGE_KEY + ":src", curPage.src);
+    }
+  }, [currentPage, pages]);
+
+  // عند تحميل الصفحات أول مرة (مثلاً بعد وصول صور HF) استعادة الموضع من src المحفوظة
+  const pageSrcRestoredRef = useRef(false);
+  useEffect(() => {
+    if (pageSrcRestoredRef.current) return;
+    if (pages.length === 0) return;
+    const savedSrc = localStorage.getItem(STORAGE_KEY + ":src");
+    if (savedSrc) {
+      const idx = pages.findIndex(p => p.src === savedSrc);
+      if (idx >= 0 && idx !== currentPage) {
+        setCurrentPage(idx);
+      }
+    }
+    pageSrcRestoredRef.current = true;
+  }, [pages, currentPage]);
 
   useEffect(() => {
     // تغيُّر الصفحة بسبب متابعة التشغيل لسورة ممتدّة على صفحتين: لا توقف الصوت ولا تُصفّر الحالة
@@ -1035,8 +1558,21 @@ function UnusedQuranReader() {
   const step = 1; // صفحة واحدة دائماً (حاسوب وجوال)
   const totalDisplayPages = isShuffled ? shuffledPageOrder.length : pages.length;
   const goToPage = useCallback((i: number) => { if (i >= 0 && i < totalDisplayPages) setCurrentPage(i); }, [totalDisplayPages]);
-  const goPrev = useCallback(() => goToPage(Math.max(0, currentPage - step)), [currentPage, goToPage, step]);
-  const goNext = useCallback(() => goToPage(Math.min(totalDisplayPages - 1, currentPage + step)), [currentPage, totalDisplayPages, goToPage, step]);
+  
+  // === التنقّل مع مراعاة تخطي البسملة ===
+  const goPrev = useCallback(() => {
+    let prevPage = currentPage - step;
+    if (skipBismillah && currentPage === 1) { prevPage = 0; }
+    else if (skipBismillah && currentPage === 0) { return; }
+    goToPage(Math.max(0, prevPage));
+  }, [currentPage, goToPage, step, skipBismillah]);
+  
+  const goNext = useCallback(() => {
+    let nextPage = currentPage + step;
+    // إذا كان تخطي البسملة مفعّلاً ونحن في الصفحة 0 (البسملة)، الانتقال مباشرة للصفحة 2
+    if (skipBismillah && currentPage === 0 && totalDisplayPages > 1) { nextPage = 1; }
+    goToPage(Math.min(totalDisplayPages - 1, nextPage));
+  }, [currentPage, totalDisplayPages, goToPage, step, skipBismillah]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -1210,9 +1746,8 @@ function UnusedQuranReader() {
               >
                 <img src={imgSrcFor(page.src)} alt={page.name}
                   className={`absolute inset-0 w-full h-full select-none transition-opacity duration-300 ${loadedImgs.has(page.src) ? "opacity-100" : "opacity-0"}`}
-                  draggable={false} decoding="async"
-                  onLoad={() => markLoaded(page.src)} onError={() => markLoaded(page.src)}
-                  ref={(el) => { if (!el) return; (el as HTMLImageElement & { fetchPriority?: string }).fetchPriority = "high"; if (el.complete && el.naturalWidth > 0) markLoaded(page.src); }} />
+                  draggable={false} decoding="async" referrerPolicy="no-referrer"
+                  onLoad={() => markLoaded(page.src)} onError={() => markLoaded(page.src)} />
                 {/* هيكل تحميل لطيف حتى تظهر الصورة (لا تظليل فوق فراغ) */}
                 {!loadedImgs.has(page.src) && (
                   <div className="absolute inset-0 flex items-center justify-center bg-card">
@@ -1221,15 +1756,30 @@ function UnusedQuranReader() {
                 )}
                 {loadedImgs.has(page.src) && !hideShading && (
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${PAGE_IMAGE_SIZE.width} ${PAGE_IMAGE_SIZE.height}`} preserveAspectRatio="none">
-                  {getPageAyahBoxes(page.src).map((box, i) => (
-                    <rect
-                      key={`ayah-rect-${box.surah}-${box.ayah}-${i}`}
-                      className={`ayah-rect ayah-rect-${box.surah}-${box.ayah}`}
-                      x={box.x} y={box.y} width={box.width} height={box.height} rx="18" ry="14"
-                      fill={previewHighlight.replace(/rgb\(([^)]+)\)/, "rgba($1, 0.3)")} stroke={previewStroke} strokeWidth={1.5}
-                      style={{ transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }}
-                    />
-                  ))}
+                  {getPageAyahBoxes(page.src).map((box, i) => {
+                    const isAct = activeSurahNum === box.surah && activeAyahNum === box.ayah;
+                    const currentColor = activeSpeaker === "kids"
+                      ? (shadingSettings.kidsColor || "#0ea5e9")
+                      : (shadingSettings.teacherColor || "#f59e0b");
+                    const actStyle = getAyahShadingStyle(currentColor, shadingOpacity);
+                    const inactFill = hexToRgba(shadingSettings.teacherColor || "#f59e0b", 0.14);
+                    const inactStroke = hexToRgba(shadingSettings.teacherColor || "#f59e0b", 0.45);
+                    return (
+                      <rect
+                        key={`ayah-rect-${box.surah}-${box.ayah}-${i}`}
+                        className={`ayah-rect ${isAct ? "ayah-active" : ""}`}
+                        x={box.x} y={box.y} width={box.width} height={box.height} rx="18" ry="14"
+                        fill={isAct ? actStyle.fill : inactFill}
+                        stroke={isAct ? actStyle.stroke : inactStroke}
+                        strokeWidth={isAct ? 3.5 : 1.5}
+                        opacity={shadingOpacity}
+                        style={{
+                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                          filter: isAct ? `drop-shadow(0 0 6px ${actStyle.glow})` : "none",
+                        }}
+                      />
+                    );
+                  })}
                 </svg>
                 )}
                 <div className="absolute inset-0">
@@ -1301,16 +1851,13 @@ function UnusedQuranReader() {
 
       {/* ── أيقونات الخيارات (منفصلة، أسفل وسط الشاشة) ── */}
       {!controlsOpen && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2" dir="rtl">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 flex-wrap justify-center max-w-[90vw]" dir="rtl">
           {([
             { key: "back", icon: <ArrowRight className="w-5 h-5 text-foreground" />, label: "رجوع", onClick: () => navigate("/audio"), active: false },
-            { key: "hide", icon: hideShading ? <Eye className="w-5 h-5 text-foreground" /> : <EyeOff className="w-5 h-5 text-foreground" />, label: hideShading ? "إظهار التظليل" : "إخفاء التظليل", onClick: () => setHideShading(v => !v), active: hideShading },
-            { key: "surahs", icon: <List className="w-5 h-5 text-foreground" />, label: "قائمة السور", onClick: () => setSurahListOpen(true), active: surahListOpen },
             kidsMode && !isPureMode() && { key: "games", icon: <Baby className="w-5 h-5 text-foreground" />, label: "الألعاب", onClick: () => navigate("/games"), active: false },
             kidsMode
               ? { key: "lock", icon: <Lock className="w-5 h-5 text-foreground" />, label: "خروج من ركن الأطفال", onClick: requestExitKids, active: true }
               : (kidsCorner && !isPureMode() && { key: "kids", icon: <Baby className="w-5 h-5 text-foreground" />, label: "ركن الأطفال", onClick: enterKids, active: false }),
-            !kidsMode && { key: "notifications", icon: <Bell className="w-5 h-5 text-foreground" />, label: "الإشعارات", onClick: () => setShowNotifications(true), active: false },
             !kidsMode && { key: "settings", icon: <Settings className="w-5 h-5 text-foreground" />, label: "الإعدادات", onClick: openSettings, active: false },
           ].filter(Boolean) as { key: string; icon: JSX.Element; label: string; onClick: () => void; active: boolean }[]).map(b => (
             <button
@@ -1368,6 +1915,154 @@ function UnusedQuranReader() {
           </div>
         </div>
       )}
+
+      {/* ── (لوحة التظليل تم نقلها بالكامل إلى الإعدادات) ── */}
+
+      {/* ── لوحة ترتيب الصفحات — صديقة الهاتف ── */}
+      {pageOrderOpen && (
+        <div className="absolute inset-0 z-[56] flex items-end justify-center bg-black/55 animate-fade-in" onClick={() => setPageOrderOpen(false)}>
+          <div
+            className="w-full max-w-lg max-h-[85vh] rounded-t-3xl animate-slide-up-short pointer-events-auto overflow-hidden flex flex-col"
+            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.92) 100%)', backdropFilter: 'blur(24px)' }}
+            onClick={e => e.stopPropagation()}
+            dir="rtl"
+          >
+            {/* رأس اللوحة */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-muted/50">
+              <div className="flex items-center gap-2">
+                <span className="h-8 w-8 rounded-xl bg-accent/10 flex items-center justify-center"><List className="w-4 h-4 text-accent" /></span>
+                <div>
+                  <h3 className="font-bold text-base text-foreground">ترتيب الصفحات</h3>
+                  <p className="text-[10px] text-muted-foreground">اسحب وأفلت لإعادة الترتيب</p>
+                </div>
+              </div>
+              <button onClick={() => setPageOrderOpen(false)} aria-label="إغلاق" className="w-9 h-9 rounded-full bg-foreground/5 flex items-center justify-center active:scale-90">
+                <X className="w-4 h-4 text-foreground/70" />
+              </button>
+            </div>
+
+            {/* قائمة الصفحات بالسحب */}
+            <div className="flex-1 overflow-y-auto px-4 py-3">
+              {pageOrderSrcs.length === 0 ? (
+                <button
+                  onClick={() => setPageOrderSrcs(pages.map(p => p.src))}
+                  className="w-full py-4 rounded-2xl border-2 border-dashed border-muted-foreground/30 text-muted-foreground font-bold text-sm active:scale-[0.98] transition-transform"
+                >
+                  📋 تحميل كل الصفحات للترتيب
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  {pageOrderSrcs.map((src, idx) => {
+                    const page = pages.find(p => p.src === src);
+                    if (!page) return null;
+                    const isOver = dragOverIdx === idx;
+                    return (
+                      <div
+                        key={src}
+                        draggable
+                        onDragStart={() => handleDragStart(idx)}
+                        onDragOver={(e) => handleDragOver(e, idx)}
+                        onDrop={() => handleDrop(idx)}
+                        onDragEnd={() => { setDraggedIdx(null); setDragOverIdx(null); }}
+                        className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all cursor-grab active:cursor-grabbing select-none ${isOver ? "border-accent bg-accent/10 scale-[1.02]" : "border-transparent bg-foreground/5"} ${draggedIdx === idx ? "opacity-50 scale-95" : ""}`}
+                      >
+                        <span className="text-[10px] font-bold text-muted-foreground bg-muted/50 w-6 h-6 rounded-full flex items-center justify-center">{idx + 1}</span>
+                        <div className="w-12 h-16 rounded-lg bg-muted/30 overflow-hidden shrink-0">
+                          <img src={imgSrcFor(page.src)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="block font-bold text-sm text-foreground truncate">{page.name}</span>
+                          <span className="block text-[11px] text-muted-foreground">{page.surahs?.map(s => s.name).join(" • ") || "—"}</span>
+                        </div>
+                        <GripVertical className="w-4 h-4 text-muted-foreground/50" />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* أزرار الحفظ */}
+            {pageOrderSrcs.length > 0 && (
+              <div className="px-5 py-4 border-t border-muted/50 space-y-2">
+                <button
+                  onClick={handleSavePageOrder}
+                  className="w-full py-3 rounded-2xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.97] shadow-lg"
+                >
+                  <Check className="w-4 h-4" /> حفظ الترتيب
+                </button>
+                <button
+                  onClick={handleResetPageOrder}
+                  className="w-full py-2.5 rounded-2xl bg-foreground/5 text-foreground/70 font-bold text-xs flex items-center justify-center gap-2 active:scale-[0.97]"
+                >
+                  🔄 إعادة تعيين الترتيب الأصلي
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── لوحة تقسيم الصوت — صديقة الهاتف ── */}
+      {splitToolOpen && (() => {
+        const surah = selectedSurah || currentPageSurahs[0];
+        const surahNum = surah?.number ?? 0;
+        const timings = getSurahTimings(surahNum);
+        const segList: { start: number; end: number; type: 'teacher' | 'kids' }[] = [];
+        if (timings?.teacher?.length) {
+          for (let i = 0; i < timings.teacher.length; i += 2)
+            segList.push({ start: timings.teacher[i], end: timings.teacher[i + 1] ?? timings.teacher[i] + 2, type: 'teacher' });
+        }
+        if (timings?.kids?.length) {
+          for (let i = 0; i < timings.kids.length; i += 2)
+            segList.push({ start: timings.kids[i], end: timings.kids[i + 1] ?? timings.kids[i] + 2, type: 'kids' });
+        }
+        segList.sort((a, b) => a.start - b.start);
+        const stats = { t: segList.filter(s => s.type === 'teacher').length, k: segList.filter(s => s.type === 'kids').length };
+        return (
+          <div className="absolute inset-0 z-[57] flex items-end justify-center bg-black/55 animate-fade-in" onClick={() => setSplitToolOpen(false)}>
+            <div className="w-full max-w-lg max-h-[88vh] rounded-t-3xl animate-slide-up-short overflow-hidden flex flex-col" style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)' }} onClick={e => e.stopPropagation()} dir="rtl">
+              <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-muted/50">
+                <div className="flex items-center gap-2">
+                  <span className="h-8 w-8 rounded-xl bg-violet-500/10 flex items-center justify-center"><SplitSquareHorizontal className="w-4 h-4 text-violet-600" /></span>
+                  <div>
+                    <h3 className="font-bold text-base text-foreground">تقسيم الصوت</h3>
+                    <p className="text-[10px] text-muted-foreground">{surah ? `${surah.name}` : 'اختر سورة'}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSplitToolOpen(false)} aria-label="إغلاق" className="w-9 h-9 rounded-full bg-foreground/5 flex items-center justify-center active:scale-90"><X className="w-4 h-4 text-foreground/70" /></button>
+              </div>
+              <div className="px-5 py-3 grid grid-cols-3 gap-2 border-b border-muted/30">
+                <div className="rounded-xl bg-amber-500/10 p-2 text-center"><span className="block text-[10px] text-muted-foreground">المعلم</span><span className="block text-lg font-extrabold text-amber-600">{stats.t}</span></div>
+                <div className="rounded-xl bg-sky-500/10 p-2 text-center"><span className="block text-[10px] text-muted-foreground">الطفل</span><span className="block text-lg font-extrabold text-sky-600">{stats.k}</span></div>
+                <div className="rounded-xl bg-emerald-500/10 p-2 text-center"><span className="block text-[10px] text-muted-foreground">الإجمالي</span><span className="block text-lg font-extrabold text-emerald-600">{segList.length}</span></div>
+              </div>
+              <div className="flex-1 overflow-y-auto px-4 py-3">
+                {segList.length === 0 ? (
+                  <div className="text-center py-8"><span className="block text-3xl mb-2">🎙️</span><p className="font-bold text-sm text-foreground mb-1">لا توجد توقيتات بعد</p><p className="text-[11px] text-muted-foreground">اذهب لصفحة التوقيت لتسجيل المقاطع.</p></div>
+                ) : (
+                  <div className="space-y-2">
+                    {segList.map((seg, i) => (
+                      <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl border-2 ${seg.type === 'teacher' ? 'border-amber-500/30 bg-amber-500/5' : 'border-sky-500/30 bg-sky-500/5'}`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${seg.type === 'teacher' ? 'bg-amber-500/20 text-amber-700' : 'bg-sky-500/20 text-sky-700'}`}>{seg.type === 'teacher' ? '🎓 معلم' : '👶 طفل'}</span>
+                        <div className="flex-1 min-w-0">
+                          <span className="block font-bold text-sm">{Math.floor(seg.start / 60)}:{String(Math.floor(seg.start % 60)).padStart(2, '0')} — {Math.floor(seg.end / 60)}:{String(Math.floor(seg.end % 60)).padStart(2, '0')}</span>
+                          <span className="block text-[11px] text-muted-foreground">المدة: {(seg.end - seg.start).toFixed(1)} ث</span>
+                        </div>
+                        <button onClick={() => { const a = audioRef.current; if (a) { a.src = surah?.src || ''; a.currentTime = seg.start; a.play().catch(() => {}); setIsPlaying(true); setActiveSurah(surah); } }} className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center active:scale-90"><Play className="w-4 h-4 text-accent" /></button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="px-5 py-4 border-t border-muted/50 space-y-2">
+                <button onClick={() => { setSplitToolOpen(false); navigate('/timings'); }} className="w-full py-3 rounded-2xl bg-violet-500 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.97] shadow-lg"><Wrench className="w-4 h-4" /> صفحة التسجيل المتقدم</button>
+                <button onClick={() => setSplitToolOpen(false)} className="w-full py-2.5 rounded-2xl bg-foreground/5 text-foreground/70 font-bold text-xs active:scale-[0.97]">إغلاق</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* حماية وضع الأطفال والوالدين (Parental Gate) */}
       {pinAction && (
@@ -1579,6 +2274,14 @@ function UnusedQuranReader() {
                   <option value={999}>مستمر</option>
                 </select>
               </div>
+
+              {/* زر الانتقال لإعدادات التظليل الكاملة (حسب طلب إزالة التحكم بالتظليل من هذه الواجهة) */}
+              <button
+                onClick={() => navigate("/settings")}
+                className="w-full mt-3 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 text-accent bg-accent/10 border border-accent/20 hover:bg-accent/20 transition-all active:scale-95"
+              >
+                <Palette className="w-4 h-4" /> إعدادات المظهر والتظليل
+              </button>
             </div>
 
             {currentPageSurahs.length > 1 && (
@@ -1627,6 +2330,8 @@ function UnusedQuranReader() {
       )}
 
       {showNotifications && <NotificationsModal onClose={() => setShowNotifications(false)} />}
+      
+
       <AppFooter />
     </div>
   );

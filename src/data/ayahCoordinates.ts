@@ -17,6 +17,8 @@ export interface AyahBox {
   speaker?: "teacher" | "kids";
   /** Optional: Custom name/label for the box (e.g. "البسملة") */
   label?: string;
+  /** Optional: إذا كان المربع يظهر في أكثر من صفحة، سرد كل مصادر الصفحات هنا */
+  pages?: string[];
 }
 
 const CALIBRATION_STORAGE_KEY = "mushaf:ayahCoordinates:v1";
@@ -85,9 +87,10 @@ export const AYAH_COORDINATES: Record<string, AyahBox[]> = {
   ],
 };
 
-// صفحات المصحف الإضافية (جزء عمّ: النبأ → العاديات) — تظهر في المعايرة لتعريف مناطق السور.
-// ضع ملفات الصور في public/pages/ بنفس الأسماء (مثل 582.jpg، 586.jpg ...).
-const EXTRA_PAGES = [582, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598, 599];
+// صفحات المصحف الإضافية (جزء عمّ: النبأ → الناس) — تظهر في المعايرة لتعريف مناطق السور.
+// ضع ملفات الصور في public/pages/ بنفس الأسماء (مثل 581.jpg، 585.jpg ...).
+// القائمة تطابق الملفات الموجودة فعلياً في public/pages (581 + 585-598).
+const EXTRA_PAGES = [581, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598];
 for (const p of EXTRA_PAGES) {
   const key = `/pages/${p}.jpg`;
   if (!(key in AYAH_COORDINATES)) AYAH_COORDINATES[key] = [];
@@ -128,18 +131,88 @@ export const getSavedAyahCoordinates = (): Record<string, AyahBox[]> => {
   }
 };
 
+/**
+ * الحصول على مربعات الآية لصفحة معينة.
+ * يشمل:
+ * 1. المربعات المربوطة مباشرة بالصفحة (من الإعدادات المحفوظة أو المدمجة)
+ * 2. المربعات التي تشير إلى هذه الصفحة عبر حقل `pages` (مربعات مشتركة بين صفحات)
+ */
 export const getPageAyahBoxes = (pageSrc: string) => {
   const allSaved = getSavedAyahCoordinates();
-  if (pageSrc in allSaved) {
-    return cloneBoxes(allSaved[pageSrc]);
+  const result: AyahBox[] = [];
+  const seen = new Set<string>();
+
+  // 1. المربعات المباشرة للصفحة
+  const directBoxes = pageSrc in allSaved
+    ? allSaved[pageSrc]
+    : (AYAH_COORDINATES[pageSrc] ?? []);
+  for (const box of directBoxes) {
+    const key = `${box.surah}-${box.ayah}-${box.x}-${box.y}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push({ ...box });
+    }
   }
-  return cloneBoxes(AYAH_COORDINATES[pageSrc] ?? []);
+
+  // 2. المربعات المشتركة (التي تشير إلى هذه الصفحة عبر pages[])
+  for (const [src, boxes] of Object.entries(allSaved)) {
+    if (src === pageSrc) continue;
+    for (const box of boxes) {
+      if (box.pages && box.pages.includes(pageSrc)) {
+        const key = `${box.surah}-${box.ayah}-${box.x}-${box.y}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push({ ...box });
+        }
+      }
+    }
+  }
+
+  // من الإحداثيات المدمجة أيضاً
+  for (const [src, boxes] of Object.entries(AYAH_COORDINATES)) {
+    if (src === pageSrc) continue;
+    if (!allSaved[src]) { // فقط إذا لم يتم تجاوزها بإعدادات محفوظة
+      for (const box of boxes) {
+        if (box.pages && box.pages.includes(pageSrc)) {
+          const key = `${box.surah}-${box.ayah}-${box.x}-${box.y}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            result.push({ ...box });
+          }
+        }
+      }
+    }
+  }
+
+  return result;
 };
 
+/**
+ * حفظ مربعات الآية لصفحة معينة في السيرفر.
+ * إذا كان لأي مربع حقل `pages`، يتم نسخه تلقائياً إلى كل الصفحات المذكورة.
+ */
 export const savePageAyahBoxes = async (pageSrc: string, boxes: AyahBox[]) => {
   if (typeof window === "undefined") return;
   const saved = getSavedAyahCoordinates();
   saved[pageSrc] = cloneBoxes(boxes);
+
+  // إذا كان لأي مربع حقل pages، انسخه إلى تلك الصفحات أيضاً
+  for (const box of boxes) {
+    if (box.pages && box.pages.length > 0) {
+      for (const otherSrc of box.pages) {
+        if (otherSrc === pageSrc) continue;
+        if (!saved[otherSrc]) saved[otherSrc] = [];
+        // أضف المربع إذا لم يكن موجوداً بالفعل
+        const exists = saved[otherSrc].some(
+          b => b.surah === box.surah && b.ayah === box.ayah && b.x === box.x && b.y === box.y
+        );
+        if (!exists) {
+          saved[otherSrc].push({ ...box });
+        }
+      }
+    }
+  }
+
   localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(saved));
   try {
     await supabase.from("store").upsert({ key: CALIBRATION_STORAGE_KEY, value: saved });

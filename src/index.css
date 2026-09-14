@@ -539,62 +539,22 @@
 .ayah-rect { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1)); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 .ayah-rect.animate-pulse { animation: ayah-active-glow-teacher 1.4s ease-in-out infinite !important; }
 .ayah-rect.animate-pulse.glow-kids { animation: ayah-active-glow-kids 1.4s ease-in-out infinite !important; }
+/* التظليل النشط من React state — يعمل مع أي ثيم لوني (ذهبي/نعناعي/وردي) */
+.ayah-rect.ayah-active { animation: ayah-active-glow-any 1.4s ease-in-out infinite; }
+@keyframes ayah-active-glow-any {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.55)); opacity: 0.92; }
+  50% { filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.95)); opacity: 1; }
+}
+/* منزلق قوة التظليل */
+input[type="range"].h-2::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 20px; height: 20px; border-radius: 9999px;
+  background: var(--accent); border: 3px solid white;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.25); cursor: pointer;
+}
 
 /* إخفاء شريط التمرير للكاروسيل ولأشرطة التنقل */
 .scrollbar-hide::-webkit-scrollbar,
 .no-scrollbar::-webkit-scrollbar { display: none !important; }
 .scrollbar-hide,
 .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
-
-/* ===================================================================
-   📺 دعم شاشات التلفاز والشاشات الكبيرة (Android TV / Smart TV / TV Box)
-   =================================================================== */
-
-/* تكبير حجم الخط والعناصر على الشاشات الكبيرة */
-@media (min-width: 1280px) and (min-height: 720px) {
-  html {
-    font-size: 18px;
-  }
-  
-  /* توسيع المحتوى الرئيسي لملء الشاشة الكبيرة */
-  .max-w-2xl {
-    max-width: 56rem;
-  }
-  
-  /* أزرار أكبر وأكثر وضوحاً */
-  button, [role="button"], a[href] {
-    min-height: 48px;
-    min-width: 48px;
-  }
-}
-
-/* أسلوب التركيز (Focus) الواضح لأجهزة التحكم عن بُعد */
-html.tv-nav *:focus {
-  outline: 3px solid hsl(var(--accent)) !important;
-  outline-offset: 3px !important;
-  border-radius: var(--radius);
-  box-shadow: 0 0 0 6px hsl(var(--accent) / 0.25), 0 0 20px hsl(var(--accent) / 0.15) !important;
-  transition: outline 0.15s ease, box-shadow 0.15s ease !important;
-}
-
-html.tv-nav *:focus:not(:focus-visible) {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* أزرار التنقل في شريط AppNav: أكبر حجماً على التلفاز */
-@media (min-width: 1280px) {
-  html.tv-nav nav button,
-  html.tv-nav nav a {
-    padding: 0.75rem 1.25rem;
-    font-size: 1rem;
-    min-height: 56px;
-  }
-}
-
-/* تحسين قراءة النصوص على التلفاز */
-@media (min-width: 1920px) {
-  html {
-    font-size: 20px;
-  }
-}

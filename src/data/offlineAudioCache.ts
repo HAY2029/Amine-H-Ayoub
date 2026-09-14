@@ -160,3 +160,24 @@ export async function resolvePlayableAudioUrl(surahNumber: number, remoteUrl: st
   // 4. Default to Remote URL (Stream)
   return remoteUrl;
 }
+
+/**
+ * Downloads and caches audio in the background silently.
+ * Used for preloading the current or next Surah on weak connections.
+ */
+export async function cacheAudioInBackground(surahNumber: number, url: string): Promise<void> {
+  try {
+    const isCached = await isAudioCachedOffline(surahNumber, url);
+    if (isCached) return;
+
+    // Fetch the audio file with a low priority if supported, or just normally
+    const response = await fetch(url, { cache: "default", keepalive: true });
+    if (response.ok) {
+      const blob = await response.blob();
+      await saveAudioToCache(url, surahNumber, blob);
+      console.log(`[Cache] Background cached Surah ${surahNumber} for offline use`);
+    }
+  } catch (e) {
+    console.debug(`[Cache] Background caching skipped for Surah ${surahNumber}`, e);
+  }
+}

@@ -1,0 +1,78 @@
+
+        /* === بطاقة المعايرة التلقائية === */
+        .calib-card {
+            background: linear-gradient(135deg, rgba(74,158,255,0.06), rgba(52,211,153,0.06));
+            border: 1px solid rgba(74,158,255,0.15);
+            border-radius: 16px;
+            padding: 18px 22px;
+            margin: 14px 0;
+        }
+        .calib-title {
+            font-size: 1.05rem; font-weight: 700; color: var(--blue);
+            display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+        }
+        .calib-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+        }
+        .calib-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+        .calib-item .ci-label {
+            font-size: 0.75rem;
+            color: var(--text3);
+            margin-bottom: 4px;
+        }
+        .calib-item .ci-value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--gold2);
+        }
+        .calib-item .ci-sub {
+            font-size: 0.7rem;
+            color: var(--text3);
+            margin-top: 2px;
+        }
+        .calib-item.good .ci-value { color: var(--green); }
+        .calib-item.warn .ci-value { color: var(--gold); }
+        .calib-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+            margin-top: 10px;
+        }
+        .calib-badge.auto { background: rgba(52,211,153,0.12); color: var(--green); }
+        .calib-badge.manual { background: rgba(212,168,83,0.12); color: var(--gold); }
+
+        @media(max-width:768px) {
+            .hdr h1 { font-size:1.5rem; }
+            .segRow { grid-template-columns:35px 75px 1fr 80px 40px; }
+            .segDur { display:none; }
+            .sGrid { grid-template-columns:1fr; }
+            .calib-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="wrap">
+
+    <!-- هيدر -->
+    <div class="hdr">
+        <div class="bsm">﷽</div>
+        <h1>🎙️ مقسِّم التلاوة التعليمية</h1>
+        <p>تقسيم صوتي ذكي بين المعلم والطفل — التلاوة التعليمية لأمين حاج أيوب</p>
+    </div>
+
+    <!-- تحميل -->
+    <div class="card">
+        <div class="drop" id="drop">
+            <span class="ic">📂</span>
+            <h3>اسحب ملفات MP3 هنا أو انقر للاختيار</h3>
+            <p>يدعم تحميل عدة ملفات دفعة واحدة</p>
+            <input type="file" id="finput" accept=".mp3,audio/*" multiple>
+        </div>
+    </div>

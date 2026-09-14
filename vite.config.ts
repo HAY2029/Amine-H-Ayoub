@@ -193,11 +193,21 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            // صور صفحات المصحف
+            // صور صفحات المصحف المحلية
             urlPattern: /\/pages\/.*\.(?:jpg|jpeg|png)$/,
             handler: "CacheFirst",
             options: {
               cacheName: "pages-cache",
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // صور صفحات المصحف من سيرفر HuggingFace — تُحفظ بعد أول عرض للعمل دون إنترنت
+            urlPattern: ({ url }) => url.hostname.includes("huggingface.co") && /\/pages\/.*\.(?:jpg|jpeg|png)/.test(url.pathname),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "hf-pages-cache",
               expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 365 },
               cacheableResponse: { statuses: [0, 200] },
             },

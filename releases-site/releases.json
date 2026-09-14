@@ -15,8 +15,8 @@
         {
           "version": "v1.0.0",
           "date": "2026-08-28",
-          "url": "https://huggingface.co/datasets/hammoualiyoucef20/quran-app-releases/resolve/main/Quran_1.0.0_x64-setup.exe",
-          "size": "75MB",
+          "url": "https://amine-h-ayoub.vercel.app/downloads/1.0.0/Quran-Amine-H-Ayoub_1.0.0_Microsoft_Store.msi",
+          "size": "65.1MB",
           "changelog": [
             "أحدث إصدار رسمي 1.0.0 لسطح المكتب",
             "اعتماد الأيقونة الرسمية عالية الدقة لسطح المكتب وشريط المهام (ICO / PNG)",

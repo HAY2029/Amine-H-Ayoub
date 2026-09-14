@@ -1,0 +1,45 @@
+
+        /* === شريط التقدم === */
+        .prog { margin:14px 0; }
+        .progBg { height:6px; background:rgba(255,255,255,0.04); border-radius:3px; overflow:hidden; }
+        .progFill { height:100%; background:linear-gradient(90deg,var(--gold),var(--green)); border-radius:3px; transition:width 0.3s; width:0%; }
+        .progTxt { display:flex; justify-content:space-between; margin-top:5px; font-size:0.8rem; color:var(--text3); }
+
+        /* === الإحصائيات === */
+        .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin:14px 0; }
+        .stat {
+            background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);
+            border-radius:14px; padding:16px; text-align:center;
+        }
+        .stat .si { font-size:1.6rem; margin-bottom:4px; }
+        .stat .sv { font-size:1.4rem; font-weight:800; color:var(--gold2); }
+        .stat .sl { font-size:0.78rem; color:var(--text3); margin-top:3px; }
+
+        /* === صفوف المقاطع === */
+        .segList { max-height:550px; overflow-y:auto; }
+        .segList::-webkit-scrollbar { width:5px; }
+        .segList::-webkit-scrollbar-thumb { background:var(--glow); border-radius:3px; }
+
+        .segRow {
+            display:grid;
+            grid-template-columns:45px 90px 1fr 110px 80px 40px 32px;
+            align-items:center; gap:10px; padding:12px 14px;
+            border-bottom:1px solid rgba(255,255,255,0.02); border-radius:10px; margin-bottom:3px;
+            transition: background 0.2s;
+        }
+        .segRow:hover { background:rgba(255,255,255,0.02); }
+        .segRow.t { border-right:3px solid var(--blue); }
+        .segRow.c { border-right:3px solid var(--green); }
+        .segRow.b { border-right:3px solid #f59e0b; }
+        .segRow.s { border-right:3px solid var(--text3); opacity:0.5; }
+
+        .segN { font-weight:700; color:var(--text3); font-size:0.8rem; }
+        .segT {
+            display:inline-flex; align-items:center; gap:5px;
+            padding:4px 10px; border-radius:7px; font-size:0.82rem; font-weight:600; cursor:pointer;
+        }
+        .segT.t { background:rgba(74,158,255,0.12); color:var(--blue); }
+        .segT.c { background:rgba(52,211,153,0.12); color:var(--green); }
+        .segT.b { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .segT.s { background:rgba(90,106,138,0.1); color:var(--text3); }
+        .segT:hover { opacity:0.7; }

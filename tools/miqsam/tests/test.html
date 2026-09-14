@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار مِقسام المرئي</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,sans-serif;background:#FAF6EE;color:#221D16;padding:24px}
+.wrap{max-width:880px;margin:0 auto}
+h1{color:#1C4A41;margin:0 0 4px;font-size:26px}.sub{color:#5B5346;margin:0 0 16px;font-size:14px}
+.row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+button{font-family:inherit;font-weight:700;font-size:14px;padding:10px 20px;border-radius:10px;border:1px solid #1C4A41;background:#1C4A41;color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:#1C4A41}
+button:disabled{opacity:.4;cursor:default}
+canvas{width:100%;height:180px;background:#FFFDF7;border:1px solid #DCD2B8;border-radius:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0}
+.card{background:#FFFDF7;border:1px solid #DCD2B8;border-radius:12px;padding:12px;font-size:13px}
+.card b{display:block;margin-bottom:4px}
+.card.pass{border-color:#2E9E6B}.card.pass b{color:#2E9E6B}
+.card.fail{border-color:#A6432D}.card.fail b{color:#A6432D}
+#log{background:#0E2F2A;color:#E4C989;border-radius:12px;padding:14px;font-size:12px;line-height:1.9;white-space:pre-wrap;min-height:80px}
+.note{font-size:12px;color:#5B5346}code{background:#F1EADA;padding:1px 6px;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>اختبار مِقسام المرئي</h1>
+<p class="sub">يولّد صوتا اصطناعيا (مقطعان + سكتة 0.4 ث) ويفحص كاشف السكتات — يعمل بالنقر المزدوج بدون خادم.</p>
+<div class="row"><button id="runBtn">تشغيل الاختبار</button><button id="playBtn" class="ghost" disabled>تشغيل المقطعين</button></div>
+<canvas id="cv" width="860" height="180"></canvas>
+<div class="cards" id="cards"></div>
+<pre id="log">اضغط زر التشغيل…</pre>
+<p class="note">لاختبار الوحدة الكامل على دوال app.js الحقيقية: <code>npm test</code> او <code>node tests/run-tests.js</code></p>
+</div>
+<script>
+(function(){
+'use strict';
+var SR=8000, FL=80, MIN_SIL=12;
+var logEl=document.getElementById('log'), cardsEl=document.getElementById('cards');
+function log(m){ logEl.textContent+=m+'\n'; }
+function sine(d,fq,am){ var n=Math.floor(SR*d),o=new Float32Array(n),i; for(i=0;i<n;i++)o[i]=am*Math.sin(2*Math.PI*fq*i/SR); return o; }
+function silence(d){ return new Float32Array(Math.floor(SR*d)); }
+function cat(p){ var n=0,i; for(i=0;i<p.length;i++)n+=p[i].length; var o=new Float32Array(n),s=0; for(i=0;i<p.length;i++){o.set(p[i],s);s+=p[i].length;} return o; }
+var audio=cat([sine(0.8,440,0.5),silence(0.4),sine(0.8,330,0.5)]);
+var NF=Math.floor(audio.length/FL), rms=new Float32Array(NF), f, i;
+for(f=0;f<NF;f++){ var s=0; for(i=0;i<FL;i++){var v=audio[f*FL+i]; s+=v*v;} rms[f]=Math.sqrt(s/FL+1e-9); }
+var sorted=Array.from(rms).sort(function(a,b){return a-b;});
+var thr=sorted[Math.floor(sorted.length*0.05)]*Math.pow(10,4/20);
+var segs=[],ss=null,sc=0;
+for(i=0;i<NF;i++){
+  if(rms[i]>thr){ if(ss===null)ss=i; sc=0; }
+  else if(ss!==null){ sc++; if(sc>=MIN_SIL){ segs.push([ss,i-sc]); ss=null; sc=0; } }
+}
+if(ss!==null)segs.push([ss,NF-1]);
+function draw(){
+  var cv=document.getElementById('cv'),x=cv.getContext('2d'),W=cv.width,H=cv.height;
+  x.fillStyle='#FFFDF7'; x.fillRect(0,0,W,H);
+  x.strokeStyle='#2E6E5F'; x.lineWidth=1; x.beginPath();
+  var step=Math.max(1,Math.floor(audio.length/W)),px,k;
+  for(px=0;px<W;px++){ var mx=0; for(k=px*step;k<(px+1)*step&&k<audio.length;k+=7){var ab=Math.abs(audio[k]); if(ab>mx)mx=ab;} var h=mx*(H/2-8); x.moveTo(px+0.5,H/2-h); x.lineTo(px+0.5,H/2+h+1); }
+  x.stroke();
+  segs.forEach(function(sg,idx){
+    var x0=sg[0]*FL/audio.length*W, x1=sg[1]*FL/audio.length*W;
+    x.fillStyle=idx%2?'rgba(180,134,58,.18)':'rgba(46,110,95,.15)'; x.fillRect(x0,0,x1-x0,H);
+    x.strokeStyle='#B4863A'; x.beginPath(); x.moveTo(x0,0); x.lineTo(x0,H); x.moveTo(x1,0); x.lineTo(x1,H); x.stroke();
+    x.fillStyle='#1C4A41'; x.font='bold 13px Tahoma'; x.fillText('ayah '+(idx+1), x0+6, 20);
+  });
+}
+function card(t, okk, d){ var dv=document.createElement('div'); dv.className='card '+(okk?'pass':'fail'); dv.innerHTML='<b>'+(okk?'ناجح ':'راسب ')+t+'</b>'+d; cardsEl.appendChild(dv); }
+function run(){
+  logEl.textContent=''; cardsEl.innerHTML=''; draw();
+  var c1 = segs.length===2;
+  card('مقطعان', c1, 'وجد: '+segs.length+' (متوقع 2)');
+  log((c1?'ناجح':'راسب')+' — المقاطع: '+JSON.stringify(segs));
+  var d0=(segs[0][1]-segs[0][0])*FL/SR, d1=(segs[1][1]-segs[1][0])*FL/SR;
+  var c2 = c1 && d0>0.5 && d1>0.5;
+  card('المدد', c2, d0.toFixed(2)+' ث / '+d1.toFixed(2)+' ث');
+  var gap=(segs[1][0]-segs[0][1])*FL/SR;
+  var c3 = c1 && gap>0.25 && gap<0.6;
+  card('السكتة', c3, 'الفجوة: '+gap.toFixed(2)+' ث (متوقع ~0.4)');
+  log('العتبة: '+thr.toFixed(4)+' — الفجوة: '+gap.toFixed(2)+' ث');
+  document.getElementById('playBtn').disabled = !c1;
+  log('النتيجة: '+(((c1&&c2&&c3))?'أسطورية خضراء':'راجع السجل'));
+}
+document.getElementById('runBtn').onclick=run;
+document.getElementById('playBtn').onclick=function(){
+  try{
+    var Ctx=window.AudioContext||window.webkitAudioContext;
+    var ctx=new Ctx(), k=0, parts=[0,1];
+    function one(idx){
+      if(idx>1) return;
+      var sg=segs[idx], a=audio.slice(sg[0]*FL, (sg[1]+1)*FL);
+      var buf=ctx.createBuffer(1, a.length, SR), ch=buf.getChannelData(0);
+      for(var i=0;i<a.length;i++) ch[i]=a[i];
+      var s=ctx.createBufferSource(); s.buffer=buf; s.connect(ctx.destination);
+      s.onended=function(){ one(idx+1); }; s.start();
+    }
+    one(0);
+  }catch(e){ log('تعذر التشغيل: '+e.message); }
+};
+draw();
+})();
+</script>
+</body>
+</html>

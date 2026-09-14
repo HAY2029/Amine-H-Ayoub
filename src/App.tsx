@@ -10,6 +10,8 @@ import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 const SiteLinksOverlay = lazy(() => import("./components/SiteLinksOverlay"));
 import { syncCoordinatesFromServer } from "./data/ayahCoordinates";
 import { syncTimingsFromServer } from "./data/ayahTimings";
+import { syncCustomPagesFromServer, syncAllShadingFromServer } from "./data/customPages";
+import { syncSurahRegionsFromServer } from "./data/surahRegions";
 import { syncBookmarksFromServer } from "./data/bookmarks";
 import { AudioContextProvider } from "./contexts/audioContext";
 import { preloadCorpusInBackground } from "./data/lazyCorpus";
@@ -32,6 +34,17 @@ const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage.tsx"));
 const ErrorPage = lazy(() => import("./pages/ErrorPage.tsx"));
 const AdminReleasesPanel = lazy(() => import("./pages/AdminReleasesPanel.tsx"));
 const LegendaryDownloadHub = lazy(() => import("./components/LegendaryDownloadHub.tsx"));
+// ===== أدوات المعلّم والمصحف (معايرة التظليل / التوقيت / التقسيم / الربط) =====
+const TeacherTools = lazy(() => import("./pages/TeacherTools.tsx"));
+const AyahCalibration = lazy(() => import("./pages/AyahCalibration.tsx"));
+const TimingsRecorder = lazy(() => import("./pages/TimingsRecorder.tsx"));
+const LinkAudioPage = lazy(() => import("./pages/LinkAudioPage.tsx"));
+const RecitationMethods = lazy(() => import("./pages/RecitationMethods.tsx"));
+const AudioSplitterPage = lazy(() => import("./pages/AudioSplitterPage.tsx"));
+const ImageManager = lazy(() => import("./pages/ImageManager.tsx"));
+const MushafUploadPage = lazy(() => import("./pages/MushafUploadPage.tsx"));
+const SortPagesPage = lazy(() => import("./pages/SortPagesPage.tsx"));
+const RecitationPage = lazy(() => import("./pages/RecitationPage.tsx"));
 import { getProfile, getAppMode, getProfiles, kidsEnabled } from "./data/kidsProfile";
 import { toast } from "./hooks/use-toast";
 import WelcomeOverlay, { isOnboarded } from "./components/WelcomeOverlay.tsx";
@@ -157,9 +170,12 @@ const App = () => {
     const syncTimer = setTimeout(() => {
       syncCoordinatesFromServer();
       syncTimingsFromServer();
+      syncCustomPagesFromServer();   // الصفحات المرفوعة + صورها (تُجلب من السيرفر)
+      syncSurahRegionsFromServer();  // مناطق السور المعرّفة في المعايرة
       syncBookmarksFromServer();
       syncKidsProfileFromServer();
       syncAdminDataFromServer(); // الألقاب + أكواد النقاط + كود HTML الخارجي (مركزي من لوحة admin.html)
+      syncAllShadingFromServer();    // إعدادات التظليل (الثيم، الشفافية، الإخفاء)
     }, 1500);
 
     // Preload Quran corpus in background after initial render
@@ -245,6 +261,17 @@ const App = () => {
                 <Route path="/releases" element={<LegendaryDownloadHub />} />
                 <Route path="/error" element={<ErrorPage />} />
                 <Route path="/admin/releases" element={<AdminReleasesPanel />} />
+                {/* ===== أدوات المعلّم (بدون كلمة مرور — للوالدين والمعلّم) ===== */}
+                <Route path="/teacher-tools" element={<TeacherTools />} />
+                <Route path="/calibrate" element={<AyahCalibration />} />
+                <Route path="/timings" element={<TimingsRecorder />} />
+                <Route path="/link" element={<LinkAudioPage />} />
+                <Route path="/recitation-methods" element={<RecitationMethods />} />
+                <Route path="/audio-splitter" element={<AudioSplitterPage />} />
+                <Route path="/image-manager" element={<ImageManager />} />
+                <Route path="/mushaf-upload" element={<MushafUploadPage />} />
+<Route path="/sort" element={<SortPagesPage />} />
+                <Route path="/recitation" element={<RecitationPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

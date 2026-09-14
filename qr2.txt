@@ -1,0 +1,72 @@
+399 |     const hfSrcs = new Set(hfPageInfos.map(p => p.src));
+400 |     
+401 |     // صور السيرفر (custom:xxx / /pages/xxx من bucket) المخزّنة في customImgs —
+402 |     // ابنِ لها صفحات قارئ تلقائياً حتى تظهر كل الصور القادمة من السيرفر.
+403 |     const coveredSrcs = new Set<string>([
+404 |       ...hfPageInfos.map(p => p.src),
+405 |       ...BASE_PAGES.map(p => p.src),
+406 |       ...customPageList.map(p => p.src),
+407 |     ]);
+408 |     const serverOnlySrcs = Object.keys(customImgs).filter(
+409 |       (src) => !coveredSrcs.has(src) && customImgs[src] && String(customImgs[src]).length > 10
+410 |     );
+411 |     const serverOnlyPages: PageInfo[] = serverOnlySrcs.map((src) => {
+412 |       const regions = getPageSurahRegions(src);
+413 |       const boxes = getPageAyahBoxes(src);
+414 |       const surahs: SurahAudio[] = regions
+415 |         .filter((r) => r.surah)
+416 |         .map((r) => ({
+417 |           name: r.name || `سورة ${r.surah}`,
+418 |           number: r.surah as number,
+419 |           src: audioPath(r.surah as number),
+420 |           ayahCount: boxes.filter((b) => b.surah === r.surah).length || 0,
+421 |         }));
+422 |       const num = parseInt(src.replace(/\D/g, ""), 10);
+423 |       return {
+424 |         name: regions[0]?.name || (num ? `صفحة ${num}` : "صفحة من السيرفر"),
+425 |         src,
+426 |         surahs,
+427 |       };
+428 |     });
+429 | 
+430 |     // 3. Add Custom Pages — فقط الصفحات التي لها صورة حقيقية موجودة فعلاً
+431 |     // (من Supabase أو محلياً) — نستبعد أي صفحة وهمية حُذفت صورتها حتى لا تظهر فارغة
+432 |     const extra: PageInfo[] = customPageList
+433 |       .filter(cp => {
+434 |         if (customImgs[cp.src]) return true;                       // صورة موجودة (سيرفر/محلي)
+435 |         if (BASE_PAGES.some(bp => bp.src === cp.src)) return true; // صفحة أساسية محلية
+436 |         if (hfSrcs.has(cp.src)) return true;                       // صورة من السيرفر
+437 |         return false; // لا صورة → صفحة وهمية → استبعاد
+438 |       })
+439 |       .map(cp => {
+440 |       const regions = getPageSurahRegions(cp.src);
+441 |       const boxes = getPageAyahBoxes(cp.src);
+442 |       const surahs: SurahAudio[] = regions
+443 |         .filter(r => r.surah)
+444 |         .map(r => ({
+445 |           name: r.name || `سورة ${r.surah}`,
+446 |           number: r.surah as number,
+447 |           src: audioPath(r.surah as number),
+448 |           ayahCount: boxes.filter(b => b.surah === r.surah).length || 0,
+449 |         }));
+450 |       return { name: cp.name, src: cp.src, surahs };
+451 |     });
+452 | 
+453 |     // ─── الدمج النهائي: صور السيرفر فقط + إزالة أي تكرار ───
+454 |     // المستخدم طلب: المصدر الوحيد هو السيرفر (Supabase) — لا صفحات محلية مكررة.
+455 |     // نستخدم مفتاحاً موحّداً (normalizeImageKey) بحيث أي نسخة مكرّرة بنفس الرقم
+456 |     // (بصيغ مختلفة: 600.jpg / pages/600.jpg / /pages/600.jpg) تُدمج في صفحة واحدة.
+457 |     const dedupeMap = new Map<string, PageInfo>();
+458 |     const normKey = (p: PageInfo) => {
+459 |       const n = normalizeImageKey(p.src);
+460 |       return n || p.src;
+461 |     };
+462 |     [...hfPageInfos, ...extra, ...serverOnlyPages].forEach(p => {
+463 |       if (p && p.src) dedupeMap.set(normKey(p), p); // آخر نسخة تكسب
+464 |     });
+465 |     let allPages = Array.from(dedupeMap.values());
+466 | 
+467 |     // ─── تنظيف نهائي: لا "0" خاطئة ولا مكررات ───
+468 |     // صفحة اسمها "0" (أرقام = صفر) خاطئة دائماً → تُحذف كلياً.
+469 |     // صفحة بلا أرقام (مثل fatiha) تُبقى بنسخة واحدة فقط.
+470 |     // تكراران بنفس الرقم → يُبقى الأفضل (الأساسية/الاسم الوصفي).

@@ -5,12 +5,13 @@
 
 const GITHUB_REPO = "HAY2023/Amine-H-Ayoub";
 const HF_BASE = "https://huggingface.co/datasets/hammoualiyoucef20/quran-app-releases/resolve/main";
+const WINDOWS_MSI_URL = "https://amine-h-ayoub.vercel.app/downloads/1.0.0/Quran-Amine-H-Ayoub_1.0.0_Microsoft_Store.msi";
 const SUPABASE_URL = "https://qmnvzxjsokibsmgpfeln.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtbnZ6eGpzb2tpYnNtZ3BmZWxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3MTY2NTYsImV4cCI6MjEwMjI5MjY1Nn0.HuEYBLDADNuFkNNDUIJ2v8fYAxDUXenFROgpBEgpj7c";
 
 // Default direct permanent public download links via Hugging Face CDN (Zero authentication required)
 const FALLBACK_ASSETS = {
-    windows: `${HF_BASE}/Quran_1.0.0_x64-setup.exe`,
+    windows: WINDOWS_MSI_URL,
     android: `${HF_BASE}/Quran_1.0.0_Android.apk`,
     android_tv: `${HF_BASE}/Quran_1.0.0_Android_TV.apk`,
     ios: "https://learn-quran-kids.pages.dev"
@@ -46,11 +47,11 @@ const PLATFORM_SPECS = {
     },
     windows: {
         icon: "💻",
-        title: "Windows PC (EXE)",
+        title: "Windows PC (MSI)",
         desc: "حزمة التثبيت المستقلة لأجهزة الكمبيوتر (Win 10/11) • تعمل 100% أوفلاين",
-        btnText: "تحميل Windows EXE",
+        btnText: "تحميل Windows MSI",
         badge: "ويندوز رسمي",
-        fileExt: ".exe"
+        fileExt: ".msi"
     },
     macos: {
         icon: "🍎",
@@ -259,7 +260,7 @@ function renderPrimaryCard(os) {
 
     let icon = "💻";
     let title = "نسخة Windows الرسمية (PC)";
-    let subtitle = "حزمة EXE المستقلة • تعمل 100% بدون إنترنت • v1.0.0";
+    let subtitle = "حزمة MSI المستقلة • تعمل 100% بدون إنترنت • v1.0.0";
     let link = liveAssets.windows;
 
     if (os === 'ios') {

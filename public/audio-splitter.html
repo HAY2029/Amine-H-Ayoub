@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مقسِّم التلاوة التعليمية - أمين حاج أيوب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050a18;
+            --bg2: #0c1328;
+            --bg3: #111d3a;
+            --gold: #d4a853;
+            --gold2: #f0d48a;
+            --gold3: #c49a3c;
+            --blue: #4a9eff;
+            --blue2: #2563eb;
+            --green: #34d399;
+            --green2: #10b981;
+            --red: #f43f5e;
+            --text: #e8edf5;
+            --text2: #8a9bc0;
+            --text3: #5a6a8a;
+            --glass: rgba(12, 19, 40, 0.7);
+            --glass2: rgba(20, 30, 60, 0.5);
+            --border: rgba(212, 168, 83, 0.12);
+            --glow: rgba(212, 168, 83, 0.25);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* === خلفية متحركة بجسيمات === */
+        #particles { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+
+        .wrap { position:relative; z-index:1; max-width:1300px; margin:0 auto; padding:16px; }
+
+        /* === الهيدر === */
+        .hdr {
+            text-align:center;
+            padding: 30px 10px 20px;
+            background: linear-gradient(180deg, rgba(212,168,83,0.06) 0%, transparent 100%);
+            border-radius: 24px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hdr::before {
+            content:'';
+            position:absolute;
+            top:-50%;left:-50%;width:200%;height:200%;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(212,168,83,0.03) 25%, transparent 50%);
+            animation: hdrSpin 20s linear infinite;
+        }
+        @keyframes hdrSpin { to { transform:rotate(360deg); } }
+        .hdr .bsm {
+            font-family:'Amiri',serif;
+            font-size:2rem;
+            color:var(--gold);
+            text-shadow: 0 0 30px rgba(212,168,83,0.3);
+            position:relative;
+            margin-bottom:10px;
+        }
+        .hdr h1 {
+            font-size:2.2rem;
+            font-weight:900;
+            background: linear-gradient(135deg, var(--gold2), var(--gold), var(--gold3));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text;
+            position:relative;
+        }
+        .hdr p { color:var(--text2); font-size:1rem; position:relative; margin-top:6px; }
+
+        /* === البطاقات === */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 18px;
+            transition: all 0.3s;
+        }
+        .card:hover { border-color: var(--glow); }
+        .card-title {
+            font-size:1.2rem; font-weight:700; color:var(--gold2);
+            display:flex; align-items:center; gap:8px; margin-bottom:16px;
+        }
+
+        /* === منطقة التحميل === */
+        .drop {
+            border: 2px dashed var(--glow);
+            border-radius: 18px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+        .drop::after {
+            content:'';position:absolute;inset:0;
+            background:radial-gradient(circle at center, rgba(212,168,83,0.04) 0%, transparent 70%);
+            opacity:0; transition:opacity 0.4s;
+        }
+        .drop:hover, .drop.over { border-color:var(--gold); transform:translateY(-3px); box-shadow:0 8px 40px rgba(212,168,83,0.12); }
+        .drop:hover::after, .drop.over::after { opacity:1; }
+        .drop .ic { font-size:3rem; display:block; margin-bottom:10px; animation: bob 2.5s ease-in-out infinite; }
+        @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        .drop h3 { font-size:1.2rem; color:var(--gold2); margin-bottom:4px; position:relative; z-index:1; }
+        .drop p { color:var(--text3); font-size:0.9rem; position:relative; z-index:1; }
+        .drop input { display:none; }
+
+        /* === الإعدادات === */
+        .sGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+        .sItem {
+            background:rgba(255,255,255,0.02);
+            border:1px solid rgba(255,255,255,0.04);
+            border-radius:14px; padding:16px;
+        }
+        .sItem label { display:block; font-size:0.9rem; color:var(--text2); margin-bottom:8px; font-weight:500; }
+        .sItem input[type=range] {
+            width:100%; -webkit-appearance:none; height:5px; border-radius:3px;
+            background:linear-gradient(to left, var(--gold), rgba(212,168,83,0.15)); outline:none;
+        }
+        .sItem input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+            background:var(--gold); cursor:pointer; box-shadow:0 0 10px rgba(212,168,83,0.5);
+        }
+        .sVal { text-align:center; font-size:1rem; font-weight:700; color:var(--gold); margin-top:6px; }
+        .sDesc { font-size:0.75rem; color:var(--text3); margin-top:4px; }
+        .sel {
+            width:100%; padding:10px; background:var(--bg); border:1px solid var(--border);
+            border-radius:8px; color:var(--text); font-family:'Tajawal',sans-serif; font-size:0.9rem; outline:none;
+        }
+
+        /* === قائمة الملفات === */
+        .fGrid {
+            display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+            gap:10px; max-height:350px; overflow-y:auto;
+        }
+        .fGrid::-webkit-scrollbar { width:5px; }
+        .fGrid::-webkit-scrollbar-thumb { background:var(--glow); border-radius:3px; }
+        .fItem {
+            display:flex; align-items:center; gap:8px; padding:10px 12px;
+            background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);
+            border-radius:10px; cursor:pointer; transition:all 0.25s; font-size:0.88rem;
+        }
+        .fItem:hover { background:rgba(212,168,83,0.06); border-color:var(--glow); }
+        .fItem.act { background:rgba(212,168,83,0.1); border-color:var(--gold); }
+        .fItem.done { border-color:var(--green2); }
+        .fBadge {
+            font-size:0.7rem; padding:2px 8px; border-radius:6px; margin-right:auto;
+        }
+        .fBadge.p { background:rgba(100,116,139,0.2); color:var(--text3); }
+        .fBadge.w { background:rgba(212,168,83,0.2); color:var(--gold); animation:pulse 1.2s infinite; }
+        .fBadge.d { background:rgba(16,185,129,0.2); color:var(--green); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* === أزرار === */
+        .btn {
+            padding:10px 22px; border:1px solid var(--border); border-radius:10px;
+            background:transparent; color:var(--text2); font-family:'Tajawal',sans-serif;
+            font-size:0.9rem; font-weight:500; cursor:pointer; transition:all 0.3s;
+            display:inline-flex; align-items:center; gap:6px;
+        }
+        .btn:hover { border-color:var(--gold); color:var(--gold2); transform:translateY(-1px); }
+        .btn.g {
+            background:linear-gradient(135deg,var(--gold),var(--gold3));
+            border:none; color:var(--bg); font-weight:700;
+        }
+        .btn.g:hover { box-shadow:0 6px 24px rgba(212,168,83,0.4); }
+        .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+        /* === الموجة الصوتية === */
+        .wave-box {
+            background:rgba(0,0,0,0.35); border-radius:14px; padding:16px; margin:14px 0;
+            position:relative; overflow:hidden;
+        }
+        .wave-wrap { position:relative; width:100%; height:180px; cursor:crosshair; }
+        .wave-wrap canvas { width:100%; height:100%; border-radius:8px; display:block; }
+
+        /* === المؤشرات === */
+        .legend { display:flex; justify-content:center; gap:24px; margin:10px 0; flex-wrap:wrap; }
+        .legend span { display:flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--text2); }
+        .dot { width:10px; height:10px; border-radius:50%; }
+        .dot.t { background:var(--blue); }
+        .dot.c { background:var(--green); }
+        .dot.s { background:var(--text3); }
+
+        /* === مشغل الصوت === */
+        .player {
+            display:flex; align-items:center; justify-content:center; gap:12px;
+            padding:16px; background:rgba(0,0,0,0.25); border-radius:14px; margin:12px 0;
+        }
+        .pbtn {
+            width:40px; height:40px; border-radius:50%; border:1px solid var(--border);
+            background:transparent; color:var(--text); cursor:pointer; display:flex;
+            align-items:center; justify-content:center; transition:all 0.3s; font-size:1rem;
+        }
+        .pbtn:hover { background:var(--gold); color:var(--bg); border-color:var(--gold); }
+        .pbtn.main {
+            width:50px; height:50px; background:linear-gradient(135deg,var(--gold),var(--gold3));
+            border:none; color:var(--bg); font-size:1.2rem;
+        }
+        .pbtn.main:hover { box-shadow:0 0 20px rgba(212,168,83,0.5); }
+        .ptime { font-family:monospace; font-size:0.9rem; color:var(--text2); direction:ltr; min-width:70px; text-align:center; }
+        .pseek {
+            flex:1; max-width:400px; -webkit-appearance:none; height:4px;
+            border-radius:2px; background:rgba(255,255,255,0.08); outline:none;
+        }
+        .pseek::-webkit-slider-thumb {
+            -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+            background:var(--gold); cursor:pointer;
+        }
+
+        /* === شريط التقدم === */
+        .prog { margin:14px 0; }
+        .progBg { height:6px; background:rgba(255,255,255,0.04); border-radius:3px; overflow:hidden; }
+        .progFill { height:100%; background:linear-gradient(90deg,var(--gold),var(--green)); border-radius:3px; transition:width 0.3s; width:0%; }
+        .progTxt { display:flex; justify-content:space-between; margin-top:5px; font-size:0.8rem; color:var(--text3); }
+
+        /* === الإحصائيات === */
+        .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin:14px 0; }
+        .stat {
+            background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);
+            border-radius:14px; padding:16px; text-align:center;
+        }
+        .stat .si { font-size:1.6rem; margin-bottom:4px; }
+        .stat .sv { font-size:1.4rem; font-weight:800; color:var(--gold2); }
+        .stat .sl { font-size:0.78rem; color:var(--text3); margin-top:3px; }
+
+        /* === صفوف المقاطع === */
+        .segList { max-height:550px; overflow-y:auto; }
+        .segList::-webkit-scrollbar { width:5px; }
+        .segList::-webkit-scrollbar-thumb { background:var(--glow); border-radius:3px; }
+
+        .segRow {
+            display:grid;            grid-template-columns:45px 90px 1fr 110px 80px 40px 32px 32px 32px;
+            align-items:center; gap:10px; padding:12px 14px;
+            border-bottom:1px solid rgba(255,255,255,0.02); border-radius:10px; margin-bottom:3px;
+            transition: background 0.2s;
+        }
+        .segRow:hover { background:rgba(255,255,255,0.02); }
+        .segRow.t { border-right:3px solid var(--blue); }
+        .segRow.c { border-right:3px solid var(--green); }
+        .segRow.b { border-right:3px solid #f59e0b; }
+        .segRow.s { border-right:3px solid var(--text3); opacity:0.5; }
+
+        .segN { font-weight:700; color:var(--text3); font-size:0.8rem; }
+        .segT {
+            display:inline-flex; align-items:center; gap:5px;
+            padding:4px 10px; border-radius:7px; font-size:0.82rem; font-weight:600; cursor:pointer;
+        }
+        .segT.t { background:rgba(74,158,255,0.12); color:var(--blue); }
+        .segT.c { background:rgba(52,211,153,0.12); color:var(--green); }
+        .segT.b { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .segT.s { background:rgba(90,106,138,0.1); color:var(--text3); }
+        .segT:hover { opacity:0.7; }
+
+        .segDel {
+            width:28px; height:28px; border-radius:50%; border:1px solid rgba(244,63,94,0.2);
+            background:transparent; color:var(--red); cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:all 0.3s;
+            font-size:0.75rem; opacity:0.5;
+        }
+        .segDel:hover { background:rgba(244,63,94,0.15); opacity:1; border-color:var(--red); }
+
+        /* === ملاحظات المقاطع === */
+        .segNote {
+            width:28px; height:28px; border-radius:50%; border:1px solid rgba(245,158,11,0.2);
+            background:transparent; color:#f59e0b; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:all 0.3s;
+            font-size:0.8rem; opacity:0.5; position:relative;
+        }
+        .segNote:hover { background:rgba(245,158,11,0.15); opacity:1; border-color:#f59e0b; }
+        .segNote.has { opacity:1; background:rgba(245,158,11,0.15); border-color:#f59e0b; }
+        .noteBadge {
+            display:inline-flex; align-items:center; gap:4px;
+            padding:3px 10px; border-radius:7px; font-size:0.75rem; font-weight:600;
+            background:rgba(245,158,11,0.1); color:#f59e0b; border:1px solid rgba(245,158,11,0.2);
+            margin-top:3px; max-width:100%;
+        }
+        .noteBadge .nb-del { cursor:pointer; opacity:0.5; margin-right:4px; }
+        .noteBadge .nb-del:hover { opacity:1; }
+        .notePopup {
+            position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+            background:var(--bg2); border:1px solid var(--gold); border-radius:18px;
+            padding:24px; z-index:100; width:90%; max-width:420px;
+            box-shadow:0 20px 60px rgba(0,0,0,0.7);
+        }
+        .noteOverlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99;
+        }
+        .notePopup h3 { font-size:1.1rem; color:var(--gold2); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+        .notePopup textarea {
+            width:100%; height:80px; background:var(--bg); border:1px solid var(--border);
+            border-radius:10px; color:var(--text); font-family:'Tajawal',sans-serif;
+            font-size:0.9rem; padding:10px; outline:none; resize:vertical;
+        }
+        .notePopup textarea:focus { border-color:var(--gold); }
+        .noteQuick { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+        .noteQuick button {
+            padding:6px 12px; border-radius:8px; border:1px solid rgba(245,158,11,0.2);
+            background:rgba(245,158,11,0.06); color:#f59e0b; font-family:'Tajawal',sans-serif;
+            font-size:0.8rem; cursor:pointer; transition:all 0.2s;
+        }
+        .noteQuick button:hover { background:rgba(245,158,11,0.15); border-color:#f59e0b; }
+        .noteActions { display:flex; gap:8px; margin-top:14px; justify-content:flex-end; }
+
+        .segW { height:36px; border-radius:5px; overflow:hidden; }
+        .segW canvas { width:100%; height:100%; display:block; }
+
+        .segTime { font-size:0.8rem; color:var(--text2); font-family:monospace; direction:ltr; }
+        .segDur { font-size:0.8rem; color:var(--text3); font-family:monospace; direction:ltr; }
+        .segPlay {
+            width:32px; height:32px; border-radius:50%; border:1px solid var(--border);
+            background:transparent; color:var(--text2); cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:all 0.3s; font-size:0.8rem;
+        }
+        .segPlay:hover { background:var(--gold); color:var(--bg); border-color:var(--gold); }
+
+        /* === التصدير === */
+        .expGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:14px; }
+        .expCard {
+            background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);
+            border-radius:14px; padding:20px; text-align:center; cursor:pointer; transition:all 0.3s;
+        }
+        .expCard:hover {
+            border-color:var(--gold); background:rgba(212,168,83,0.04);
+            transform:translateY(-3px); box-shadow:0 8px 30px rgba(212,168,83,0.1);
+        }
+        .expCard .ei { font-size:2.2rem; margin-bottom:8px; }
+        .expCard h4 { font-size:1rem; color:var(--gold2); margin-bottom:4px; }
+        .expCard p { font-size:0.8rem; color:var(--text3); }
+
+        /* === الإخفاء === */
+        .hide { display:none !important; }
+        .show { display:block !important; animation: fadeUp 0.4s ease; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+        /* === رسالة الحالة === */
+        .msg {
+            text-align:center; padding:12px; border-radius:10px; font-size:0.9rem; margin:10px 0;
+        }
+        .msg.info { background:rgba(74,158,255,0.08); color:var(--blue); border:1px solid rgba(74,158,255,0.15); }
+        .msg.ok { background:rgba(52,211,153,0.08); color:var(--green); border:1px solid rgba(52,211,153,0.15); }
+        .msg.err { background:rgba(244,63,94,0.08); color:var(--red); border:1px solid rgba(244,63,94,0.15); }
+
+        /* === توست === */
+        .toast {
+            position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+            background:var(--bg3); border:1px solid var(--gold); border-radius:10px;
+            padding:12px 24px; color:var(--text); font-family:'Tajawal',sans-serif; font-size:0.9rem;
+            z-index:999; transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+            box-shadow:0 10px 40px rgba(0,0,0,0.5);
+        }
+        .toast.on { transform:translateX(-50%) translateY(0); }
+
+        .spinner { display:inline-block; width:16px; height:16px; border:2px solid transparent; border-top-color:currentColor; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+
+        .topActions { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+        .segActions { display:flex; gap:8px; flex-wrap:wrap; }
+
+        /* === بطاقة المعايرة التلقائية === */
+        .calib-card {
+            background: linear-gradient(135deg, rgba(74,158,255,0.06), rgba(52,211,153,0.06));
+            border: 1px solid rgba(74,158,255,0.15);
+            border-radius: 16px;
+            padding: 18px 22px;
+            margin: 14px 0;
+        }
+        .calib-title {
+            font-size: 1.05rem; font-weight: 700; color: var(--blue);
+            display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+        }
+        .calib-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+        }
+        .calib-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+        .calib-item .ci-label {
+            font-size: 0.75rem;
+            color: var(--text3);
+            margin-bottom: 4px;
+        }
+        .calib-item .ci-value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--gold2);
+        }
+        .calib-item .ci-sub {
+            font-size: 0.7rem;
+            color: var(--text3);
+            margin-top: 2px;
+        }
+        .calib-item.good .ci-value { color: var(--green); }
+        .calib-item.warn .ci-value { color: var(--gold); }
+        .calib-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+            margin-top: 10px;
+        }
+        .calib-badge.auto { background: rgba(52,211,153,0.12); color: var(--green); }
+        .calib-badge.manual { background: rgba(212,168,83,0.12); color: var(--gold); }
+
+        .segResplit {
+            width:28px; height:28px; border-radius:50%; border:1px solid rgba(52,211,153,0.25);
+            background:transparent; color:var(--green); cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:all 0.3s;
+            font-size:0.75rem; opacity:0.6;
+        }
+        .segResplit:hover { background:rgba(52,211,153,0.15); opacity:1; border-color:var(--green); }
+
+        @media(max-width:768px) {
+            .hdr h1 { font-size:1.5rem; }
+            .segRow { grid-template-columns:35px 75px 1fr 80px 40px 32px 32px; }
+            .segDur { display:none; }
+            .sGrid { grid-template-columns:1fr; }
+            .calib-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="wrap">
+
+    <!-- هيدر -->
+    <div class="hdr">
+        <div class="bsm">﷽</div>
+        <h1>🎙️ مقسِّم التلاوة التعليمية</h1>
+        <p>تقسيم صوتي ذكي بين المعلم والطفل — التلاوة التعليمية لأمين حاج أيوب</p>
+    </div>
+
+    <!-- تحميل -->
+    <div class="card">
+        <div class="drop" id="drop">
+            <span class="ic">📂</span>
+            <h3>اسحب ملفات MP3 هنا أو انقر للاختيار</h3>
+            <p>يدعم تحميل عدة ملفات دفعة واحدة</p>
+            <input type="file" id="finput" accept=".mp3,audio/*" multiple>
+        </div>
+    </div>
+
+    <!-- إعدادات -->
+    <div class="card">
+        <div class="card-title">⚙️ إعدادات التقسيم</div>
+        <div class="sGrid">
+            <div class="sItem">
+                <label>عتبة الصمت (dB)</label>
+                <input type="range" id="rThresh" min="-60" max="-15" value="-35" step="1">
+                <div class="sVal" id="vThresh">-35 dB</div>
+                <div class="sDesc">أقل = أكثر حساسية لاكتشاف الصمت</div>
+            </div>
+            <div class="sItem">
+                <label>أقل مدة صمت (ثانية)</label>
+                <input type="range" id="rMinSil" min="0.2" max="3.0" value="0.6" step="0.1">
+                <div class="sVal" id="vMinSil">0.6 ث</div>
+                <div class="sDesc">فاصل الصمت الأقل بين المتحدثين</div>
+            </div>
+            <div class="sItem">
+                <label>أقل مدة مقطع (ثانية)</label>
+                <input type="range" id="rMinSeg" min="0.3" max="5.0" value="0.8" step="0.1">
+                <div class="sVal" id="vMinSeg">0.8 ث</div>
+                <div class="sDesc">دمج المقاطع الأقصر من هذه المدة</div>
+            </div>
+            <div class="sItem">
+                <label>نمط التلاوة</label>
+                <select id="mode" class="sel">
+                    <option value="alternating">تلقين متبادل (معلم ↔ طفل)</option>
+                    <option value="frequency">تحليل التردد (ذكي)</option>
+                    <option value="energy">تحليل الطاقة الصوتية</option>
+                </select>
+                <div class="sDesc">طريقة التمييز بين المعلم والطفل</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قائمة الملفات -->
+    <div class="card hide" id="secFiles">
+        <div class="topActions">
+            <div class="card-title" style="margin:0">📋 الملفات <span id="fCnt" style="background:var(--gold);color:var(--bg);padding:2px 10px;border-radius:12px;font-size:0.8rem;margin-right:6px;">0</span></div>
+            <button class="btn g" id="btnAll" onclick="processAll()">▶️ معالجة الكل</button>
+        </div>
+        <div class="fGrid" id="fGrid"></div>
+    </div>
+
+    <!-- المعالجة -->
+    <div class="card hide" id="secProc">
+        <div class="topActions">
+            <span id="curName" style="font-size:1.2rem;font-weight:700;color:var(--gold2)">—</span>
+            <span id="curProg" style="font-size:0.85rem;color:var(--text3)">—</span>
+        </div>
+        <div class="wave-box">
+            <div class="wave-wrap"><canvas id="cvs"></canvas></div>
+        </div>
+        <div class="legend">
+            <span><div class="dot t"></div> المعلم</span>
+            <span><div class="dot c"></div> الطفل</span>
+            <span><div class="dot s"></div> صمت</span>
+        </div>
+        <div class="player">
+            <span class="ptime" id="pCur">0:00</span>
+            <button class="pbtn" onclick="skip(-5)">⏪</button>
+            <button class="pbtn main" id="pBtn" onclick="togPlay()">▶</button>
+            <button class="pbtn" onclick="skip(5)">⏩</button>
+            <input type="range" class="pseek" id="pSeek" min="0" max="100" value="0" step="0.1" oninput="seek(this.value)">
+            <span class="ptime" id="pTot">0:00</span>
+        </div>
+        <div class="prog">
+            <div class="progBg"><div class="progFill" id="pBar"></div></div>
+            <div class="progTxt"><span id="pLbl">—</span><span id="pPct">0%</span></div>
+        </div>
+        <div class="msg hide" id="sMsg"></div>
+
+        <!-- بطاقة المعايرة التلقائية -->
+        <div class="calib-card hide" id="calibCard">
+            <div class="calib-title">🔬 المعايرة التلقائية — تحليل طبيعة الملف</div>
+            <div class="calib-grid" id="calibGrid"></div>
+        </div>
+    </div>
+
+    <!-- النتائج -->
+    <div class="card hide" id="secRes">
+        <div class="topActions">
+            <div class="card-title" style="margin:0">📊 نتائج التقسيم</div>
+            <div class="segActions">
+                <button class="btn" onclick="playType('teacher')">🎓 المعلم فقط</button>
+                <button class="btn" onclick="playType('child')">👶 الطفل فقط</button>
+                <button class="btn g" onclick="expJSON()">💾 JSON</button>
+                <button class="btn" onclick="expCSV()">📊 CSV</button>
+                <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text2)">السورة <input id="surahNumInput" type="number" min="1" max="114" placeholder="مثال: 36" style="width:80px;padding:8px;border-radius:8px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:monospace;text-align:center"></label>
+                <button class="btn g" onclick="saveToServer()" style="background: linear-gradient(135deg,var(--blue),var(--blue2));">☁️ حفظ + ربط بالتظليل + رفع</button>
+            </div>
+        </div>
+        <div class="stats" id="stGrid"></div>
+        <div class="segList" id="segList"></div>
+    </div>
+
+    <!-- التصدير -->
+    <div class="card hide" id="secExp">
+        <div class="card-title">💾 تصدير الملفات الصوتية</div>
+        <div class="expGrid">
+            <div class="expCard" onclick="expAudio('teacher')">
+                <div class="ei">🎓</div>
+                <h4>صوت المعلم فقط</h4>
+                <p>ملف WAV لجميع أجزاء المعلم</p>
+            </div>
+            <div class="expCard" onclick="expAudio('child')">
+                <div class="ei">👶</div>
+                <h4>صوت الطفل فقط</h4>
+                <p>ملف WAV لجميع أجزاء الطفل</p>
+            </div>
+            <div class="expCard" onclick="expJSON()">
+                <div class="ei">📋</div>
+                <h4>بيانات JSON</h4>
+                <p>تقسيم كامل مع الأوقات</p>
+            </div>
+            <div class="expCard" onclick="expCSV()">
+                <div class="ei">📊</div>
+                <h4>جدول CSV</h4>
+                <p>جدول بيانات التقسيم</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== أسماء السور =====
+const SURAH={1:'الفاتحة',36:'يس',37:'الصافات',38:'ص',39:'الزمر',40:'غافر',41:'فصلت',42:'الشورى',43:'الزخرف',44:'الدخان',45:'الجاثية',46:'الأحقاف',47:'محمد',48:'الفتح',49:'الحجرات',50:'ق',51:'الذاريات',52:'الطور',53:'النجم',56:'الواقعة',58:'المجادلة',59:'الحشر',60:'الممتحنة',61:'الصف',62:'الجمعة',63:'المنافقون',64:'التغابن',65:'الطلاق',66:'التحريم',67:'الملك',68:'القلم',69:'الحاقة',70:'المعارج',71:'نوح',72:'الجن',73:'المزمل',74:'المدثر',75:'القيامة',76:'الإنسان',77:'المرسلات',78:'النبأ',79:'النازعات',80:'عبس',81:'التكوير',82:'الانفطار',83:'المطففين',84:'الانشقاق',85:'البروج',86:'الطارق',87:'الأعلى',88:'الغاشية',89:'الفجر',90:'البلد',91:'الشمس',92:'الليل',93:'الضحى',94:'الشرح',95:'التين',96:'العلق',97:'القدر',98:'البينة',99:'الزلزلة',100:'العاديات',101:'القارعة',102:'التكاثر',103:'العصر',104:'الهمزة',105:'الفيل',106:'قريش',107:'الماعون',108:'الكوثر',109:'الكافرون',110:'النصر',111:'المسد',112:'الإخلاص',113:'الفلق',114:'الناس'};
+function surahName(fn){ const n=parseInt(fn.replace(/\D/g,'')); return SURAH[n]?`سورة ${SURAH[n]} (${n})`:fn; }
+function fmt(s){ if(!s||isNaN(s))return'0:00'; const m=Math.floor(s/60),ss=Math.floor(s%60); return m+':'+String(ss).padStart(2,'0'); }
+
+// ===== الحالة =====
+let actx=null, abuf=null, asrc=null, playing=false, segs=[], files=[], curIdx=-1;
+let t0=0, tPause=0, af=null;
+
+// ===== العناصر =====
+const $=id=>document.getElementById(id);
+const drop=$('drop'), finput=$('finput'), cvs=$('cvs'), cx=cvs.getContext('2d');
+
+// ===== إعدادات تفاعلية =====
+$('rThresh').oninput=function(){$('vThresh').textContent=this.value+' dB'};
+$('rMinSil').oninput=function(){$('vMinSil').textContent=parseFloat(this.value).toFixed(1)+' ث'};
+$('rMinSeg').oninput=function(){$('vMinSeg').textContent=parseFloat(this.value).toFixed(1)+' ث'};
+
+// ===== تحميل الملفات =====
+drop.onclick=()=>finput.click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');loadFiles([...e.dataTransfer.files].filter(f=>f.name.endsWith('.mp3')||f.type.startsWith('audio/')))};
+finput.onchange=e=>loadFiles([...e.target.files]);
+
+function loadFiles(arr){
+    if(!arr.length)return;
+    files=arr.map(f=>({file:f,name:f.name,status:'p',segs:null}));
+    files.sort((a,b)=>(parseInt(a.name.replace(/\D/g,''))||0)-(parseInt(b.name.replace(/\D/g,''))||0));
+    renderFiles();
+    $('secFiles').classList.remove('hide');$('secFiles').classList.add('show');
+    toast(`✅ تم تحميل ${arr.length} ملف`);
+}
+
+function renderFiles(){
+    $('fCnt').textContent=files.length;
+    $('fGrid').innerHTML=files.map((f,i)=>`<div class="fItem ${f.status==='d'?'done':''} ${i===curIdx?'act':''}" onclick="proc(${i})"><span>${f.status==='d'?'✅':f.status==='w'?'⏳':'🎵'}</span><span>${surahName(f.name)}</span><span class="fBadge ${f.status}">${f.status==='d'?'تم ✓':f.status==='w'?'جاري...':'بانتظار'}</span></div>`).join('');
+}
+
+// ===== المعالجة الرئيسية =====
+async function proc(idx){
+    curIdx=idx;
+    const fo=files[idx];
+    fo.status='w'; renderFiles();
+
+    $('secProc').classList.remove('hide');$('secProc').classList.add('show');
+    $('secRes').classList.add('hide');$('secExp').classList.add('hide');
+    $('curName').textContent=surahName(fo.name);
+    $('curProg').textContent=`ملف ${idx+1} من ${files.length}`;
+
+    showMsg('جاري تحميل وتحليل الصوت...','info');
+    prog(10,'تحميل الصوت...');
+
+    try{
+        if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)();
+        const ab=await fo.file.arrayBuffer();
+        prog(25,'فك ترميز الصوت...');
+        abuf=await actx.decodeAudioData(ab);
+        prog(35,'🔬 معايرة تلقائية — تحليل طبيعة الملف...');
+
+        // === معايرة تلقائية حسب طبيعة الملف ===
+        autoCalibrate(abuf);
+        prog(50,'تحليل الموجة الصوتية...');
+
+        // === تحليل الصوت وتقسيمه ===
+        segs=splitAudio(abuf);
+        prog(75,'تصنيف المتحدثين...');
+        classifySpeakers(segs,abuf);
+        prog(85,'دمج المقاطع القصيرة...');
+        segs=mergeShort(segs);
+        prog(95,'رسم النتائج...');
+
+        drawSegWave();
+        prog(100,'✅ تم التقسيم بنجاح!');
+        showMsg(`تم تقسيم الملف إلى ${segs.length} مقطع بنجاح ✅`,'ok');
+
+        fo.status='d'; fo.segs=[...segs]; renderFiles();
+
+        renderSegs();
+        renderStats();
+        $('secRes').classList.remove('hide');$('secRes').classList.add('show');
+        $('secExp').classList.remove('hide');$('secExp').classList.add('show');
+        $('pTot').textContent=fmt(abuf.duration);
+    }catch(err){
+        showMsg('❌ خطأ: '+err.message,'err');
+        fo.status='p'; renderFiles();
+        console.error(err);
+    }
+}
+
+async function processAll(){
+    const b=$('btnAll'); b.disabled=true; b.innerHTML='<span class="spinner"></span> جاري المعالجة...';
+    for(let i=0;i<files.length;i++){
+        if(files[i].status!=='d'){ await proc(i); await new Promise(r=>setTimeout(r,200)); }
+    }
+    b.disabled=false; b.innerHTML='✅ تمت المعالجة';
+    toast('🎉 تمت معالجة جميع الملفات!');
+}
+
+// ======================================================================
+//  المعايرة التلقائية — تحليل طبيعة الملف وضبط الإعدادات
+// ======================================================================
+function autoCalibrate(buf) {
+    const ch = buf.getChannelData(0);
+    const sr = buf.sampleRate;
+    const dur = buf.duration;
+
+    // 1. حساب إحصائيات الطاقة
+    const winSize = Math.floor(sr * 0.03); // 30ms
+    const hop = Math.floor(sr * 0.015);
+    const rmsVals = [];
+    for (let i = 0; i < ch.length - winSize; i += hop) {
+        let sum = 0;
+        for (let j = 0; j < winSize; j++) sum += ch[i + j] * ch[i + j];
+        rmsVals.push(Math.sqrt(sum / winSize));
+    }
+
+    // ترتيب للحصول على النسب المئوية
+    const sorted = [...rmsVals].sort((a, b) => a - b);
+    const p5 = sorted[Math.floor(sorted.length * 0.05)];   // أرضية الضوضاء
+    const p25 = sorted[Math.floor(sorted.length * 0.25)];
+    const p50 = sorted[Math.floor(sorted.length * 0.50)];  // الوسيط
+    const p75 = sorted[Math.floor(sorted.length * 0.75)];
+    const p95 = sorted[Math.floor(sorted.length * 0.95)];  // ذروة
+    const maxRms = sorted[sorted.length - 1];
+
+    // أرضية الضوضاء بالـ dB
+    const noiseFloorDB = 20 * Math.log10(Math.max(p5, 1e-10));
+    const medianDB = 20 * Math.log10(Math.max(p50, 1e-10));
+    const peakDB = 20 * Math.log10(Math.max(p95, 1e-10));
+    const dynamicRange = peakDB - noiseFloorDB;
+
+    // 2. عتبة الصمت المثلى = بين أرضية الضوضاء والوسيط
+    // نقطة بين الضوضاء والكلام
+    const optimalThreshDB = Math.round(noiseFloorDB + (medianDB - noiseFloorDB) * 0.35);
+    const clampedThresh = Math.max(-60, Math.min(-15, optimalThreshDB));
+
+    // 3. كشف أنماط الصمت لتحديد مدة الصمت المثلى
+    const thresh = Math.pow(10, clampedThresh / 20);
+    const silDurations = [];
+    let silStart = null;
+    for (let i = 0; i < rmsVals.length; i++) {
+        const t = (i * hop) / sr;
+        if (rmsVals[i] < thresh) {
+            if (silStart === null) silStart = t;
+        } else {
+            if (silStart !== null) {
+                silDurations.push(t - silStart);
+                silStart = null;
+            }
+        }
+    }
+
+    // ترتيب فترات الصمت
+    const sortedSil = silDurations.filter(d => d > 0.1).sort((a, b) => a - b);
+    let optMinSil = 0.6; // افتراضي
+    if (sortedSil.length > 3) {
+        // الوسيط بين فترات الصمت المعقولة
+        const medSil = sortedSil[Math.floor(sortedSil.length * 0.3)];
+        optMinSil = Math.round(Math.max(0.2, Math.min(2.5, medSil)) * 10) / 10;
+    }
+
+    // 4. مدة المقطع المثلى — حسب طول الملف
+    let optMinSeg;
+    if (dur < 60) optMinSeg = 0.5;       // سورة قصيرة
+    else if (dur < 300) optMinSeg = 0.8;  // متوسطة
+    else optMinSeg = 1.2;                  // طويلة
+
+    // 5. تطبيق الإعدادات
+    $('rThresh').value = clampedThresh;
+    $('vThresh').textContent = clampedThresh + ' dB';
+    $('rMinSil').value = optMinSil;
+    $('vMinSil').textContent = optMinSil.toFixed(1) + ' ث';
+    $('rMinSeg').value = optMinSeg;
+    $('vMinSeg').textContent = optMinSeg.toFixed(1) + ' ث';
+
+    // 6. تصنيف نوع السورة
+    let surahType, surahTypeIcon;
+    if (dur < 30) { surahType = 'قصيرة جداً'; surahTypeIcon = '⚡'; }
+    else if (dur < 120) { surahType = 'قصيرة'; surahTypeIcon = '📄'; }
+    else if (dur < 600) { surahType = 'متوسطة'; surahTypeIcon = '📑'; }
+    else { surahType = 'طويلة'; surahTypeIcon = '📚'; }
+
+    // 7. تقدير جودة الصوت
+    let quality, qualityClass;
+    if (dynamicRange > 40) { quality = 'ممتازة'; qualityClass = 'good'; }
+    else if (dynamicRange > 25) { quality = 'جيدة'; qualityClass = 'good'; }
+    else { quality = 'متوسطة'; qualityClass = 'warn'; }
+
+    // 8. عرض نتائج المعايرة
+    $('calibCard').classList.remove('hide');
+    $('calibCard').classList.add('show');
+    $('calibGrid').innerHTML = `
+        <div class="calib-item">
+            <div class="ci-label">مدة الملف</div>
+            <div class="ci-value">${fmt(dur)}</div>
+            <div class="ci-sub">${surahTypeIcon} ${surahType}</div>
+        </div>
+        <div class="calib-item ${qualityClass}">
+            <div class="ci-label">جودة الصوت</div>
+            <div class="ci-value">${quality}</div>
+            <div class="ci-sub">مدى ديناميكي: ${dynamicRange.toFixed(0)} dB</div>
+        </div>
+        <div class="calib-item">
+            <div class="ci-label">أرضية الضوضاء</div>
+            <div class="ci-value">${noiseFloorDB.toFixed(0)} dB</div>
+            <div class="ci-sub">مستوى الخلفية</div>
+        </div>
+        <div class="calib-item">
+            <div class="ci-label">عتبة الصمت ⚡</div>
+            <div class="ci-value">${clampedThresh} dB</div>
+            <div class="ci-sub">تم ضبطها تلقائياً</div>
+        </div>
+        <div class="calib-item">
+            <div class="ci-label">فترات الصمت</div>
+            <div class="ci-value">${sortedSil.length}</div>
+            <div class="ci-sub">أقل مدة: ${optMinSil.toFixed(1)} ث</div>
+        </div>
+        <div class="calib-item">
+            <div class="ci-label">ذروة الصوت</div>
+            <div class="ci-value">${peakDB.toFixed(0)} dB</div>
+            <div class="ci-sub">أعلى مستوى</div>
+        </div>
+    `;
+
+    toast(`🔬 معايرة تلقائية: عتبة ${clampedThresh}dB | صمت ${optMinSil}ث | ${surahType}`);
+}
+
+// ======================================================================
+//  خوارزمية التقسيم المتقدمة — 7 مراحل
+//  تحليل عالي الدقة مع كشف ذكي للحدود
+// ======================================================================
+
+// ── مرحلة مساعدة: تنعيم غاوسي (أفضل من المتوسط المتحرك) ──
+function gaussianSmooth(values, radius) {
+    const sigma = radius / 2;
+    const kernel = [];
+    let kernelSum = 0;
+    for (let i = -radius; i <= radius; i++) {
+        const w = Math.exp(-(i * i) / (2 * sigma * sigma));
+        kernel.push(w);
+        kernelSum += w;
+    }
+    kernel.forEach((_, i, a) => a[i] /= kernelSum);
+
+    const out = new Float64Array(values.length);
+    for (let i = 0; i < values.length; i++) {
+        let sum = 0;
+        for (let k = 0; k < kernel.length; k++) {
+            const j = i + k - radius;
+            const v = j < 0 ? values[0] : j >= values.length ? values[values.length - 1] : values[j];
+            sum += v * kernel[k];
+        }
+        out[i] = sum;
+    }
+    return out;
+}
+
+// ── مرحلة مساعدة: حساب الطيف المركزي (Spectral Centroid) ──
+function spectralCentroid(data, start, end, sr) {
+    const len = end - start;
+    if (len < 512) return 0;
+    const fftSize = Math.min(4096, Math.pow(2, Math.floor(Math.log2(len))));
+    // تحليل مبسّط: نقسم إلى نوافذ ونحسب المتوسط
+    const numWindows = Math.min(8, Math.floor(len / fftSize));
+    let totalCentroid = 0;
+    for (let w = 0; w < numWindows; w++) {
+        const offset = start + Math.floor(w * (len - fftSize) / Math.max(1, numWindows - 1));
+        // معدل عبور الصفر كتقدير للتردد السائد
+        let zcr = 0;
+        for (let i = offset + 1; i < offset + fftSize && i < end; i++) {
+            if ((data[i] >= 0 && data[i - 1] < 0) || (data[i] < 0 && data[i - 1] >= 0)) zcr++;
+        }
+        totalCentroid += (zcr / fftSize) * sr / 2;
+    }
+    return totalCentroid / numWindows;
+}
+
+function splitAudio(buf) {
+    const data = buf.getChannelData(0);
+    const sr = buf.sampleRate;
+    const thDB = parseFloat($('rThresh').value);
+    const minSil = parseFloat($('rMinSil').value);
+    const minSeg = parseFloat($('rMinSeg').value);
+    const thresh = Math.pow(10, thDB / 20);
+    const totalDur = data.length / sr;
+
+    // ══════════════════════════════════════════════════════════════
+    // المرحلة 1: تحليل طاقة عالي الدقة (5ms hop, 20ms window)
+    // ══════════════════════════════════════════════════════════════
+    const winSize = Math.floor(sr * 0.020); // 20ms نافذة
+    const hop = Math.floor(sr * 0.005);     // 5ms خطوة (75% تداخل)
+
+    const rawRms = [];
+    const frameTimes = [];
+    for (let i = 0; i < data.length - winSize; i += hop) {
+        let sum = 0;
+        for (let j = 0; j < winSize; j++) sum += data[i + j] * data[i + j];
+        rawRms.push(Math.sqrt(sum / winSize));
+        frameTimes.push(i / sr);
+    }
+    const nFrames = rawRms.length;
+
+    // ══════════════════════════════════════════════════════════════
+    // المرحلة 2: تنعيم غاوسي متعدد المقاييس
+    //   قصير (3) → يكشف المقاطع اللفظية
+    //   متوسط (7) → يكشف الكلمات
+    //   طويل (15) → يكشف العبارات الكاملة
+    // ══════════════════════════════════════════════════════════════
+    const smoothShort = gaussianSmooth(rawRms, 3);
+    const smoothMed   = gaussianSmooth(rawRms, 7);
+    const smoothLong  = gaussianSmooth(rawRms, 15);
+
+    // ══════════════════════════════════════════════════════════════
+    // المرحلة 3: كشف الصمت بالهيستيريا (Hysteresis)
+    //   عتبة عليا = thresh × 1.2  → يجب تجاوزها ليبدأ الكلام
+    //   عتبة سفلى = thresh × 0.75 → يجب النزول تحتها ليبدأ الصمت
+    //   هذا يمنع التذبذب السريع عند حافة العتبة
+    // ══════════════════════════════════════════════════════════════
+    const thHigh = thresh * 1.2;
+    const thLow = thresh * 0.75;
+
+    let inSpeech = smoothMed[0] >= thHigh;
+    const regions = []; // {type, startIdx, endIdx}
+    let regionStartIdx = 0;
+
+    for (let i = 1; i < nFrames; i++) {
+        const rms = smoothMed[i];
+        if (inSpeech) {
+            if (rms < thLow) {
+                // تحقق أن الانخفاض مستمر (ليس مجرد غمسة عابرة)
+                // نفحص 8 إطارات للأمام (40ms)
+                const lookAhead = Math.min(8, nFrames - i);
+                let sustained = true;
+                for (let k = 1; k < lookAhead; k++) {
+                    if (smoothMed[i + k] >= thHigh) { sustained = false; break; }
+                }
+                if (sustained) {
+                    regions.push({ type: 'speech', si: regionStartIdx, ei: i });
+                    regionStartIdx = i;
+                    inSpeech = false;
+                }
+            }
+        } else {
+            if (rms >= thHigh) {
+                regions.push({ type: 'silence', si: regionStartIdx, ei: i });
+                regionStartIdx = i;
+                inSpeech = true;
+            }
+        }
+    }
+    regions.push({ type: inSpeech ? 'speech' : 'silence', si: regionStartIdx, ei: nFrames - 1 });
+
+    // حساب الأوقات لكل منطقة
+    regions.forEach(r => {
+        r.start = frameTimes[r.si];
+        r.end = frameTimes[r.ei];
+        r.duration = r.end - r.start;
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // المرحلة 4: دمج الصمت القصير (< minSil) مع الكلام المحيط
+    // ══════════════════════════════════════════════════════════════
+    const merged1 = [];
+    for (let i = 0; i < regions.length; i++) {
+        const r = regions[i];
+        if (r.type === 'silence' && r.duration < minSil) {
+            // صمت قصير → نعتبره كلاماً ونلحقه بالمنطقة السابقة أو التالية
+            if (merged1.length > 0 && merged1[merged1.length - 1].type === 'speech') {
+                merged1[merged1.length - 1].ei = r.ei;
+                merged1[merged1.length - 1].end = r.end;
+                merged1[merged1.length - 1].duration = merged1[merged1.length - 1].end - merged1[merged1.length - 1].start;
+            } else {
+                merged1.push({ ...r, type: 'speech' });
+            }
+        } else {
+            // دمج مناطق كلام متجاورة
+            if (r.type === 'speech' && merged1.length > 0 && merged1[merged1.length - 1].type === 'speech') {
+                merged1[merged1.length - 1].ei = r.ei;
+                merged1[merged1.length - 1].end = r.end;
+                merged1[merged1.length - 1].duration = merged1[merged1.length - 1].end - merged1[merged1.length - 1].start;
+            } else {
+                merged1.push({ ...r });
+            }
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // المرحلة 5: تنقية الحدود (Boundary Refinement)
+    //   لكل حد بين كلام وصمت، نبحث في نافذة ±50ms
+    //   عن أقل نقطة طاقة (أفضل نقطة قطع)
+    // ══════════════════════════════════════════════════════════════
+    const hopSec = hop / sr;
+    const searchRadiusFrames = Math.ceil(0.05 / hopSec); // ±50ms
+
+    for (let i = 1; i < merged1.length; i++) {
+        const boundary = merged1[i].si;
+        const lo = Math.max(0, boundary - searchRadiusFrames);
+        const hi = Math.min(nFrames - 1, boundary + searchRadiusFrames);
+        let bestIdx = boundary, bestRms = Infinity;
+        for (let k = lo; k <= hi; k++) {
+            if (smoothShort[k] < bestRms) {
+                bestRms = smoothShort[k];
+                bestIdx = k;
+            }
+        }
+        // تحديث الحد بالنقطة المثلى
+        merged1[i - 1].ei = bestIdx;
+        merged1[i - 1].end = frameTimes[bestIdx];
+        merged1[i - 1].duration = merged1[i - 1].end - merged1[i - 1].start;
+        merged1[i].si = bestIdx;
+        merged1[i].start = frameTimes[bestIdx];
+        merged1[i].duration = merged1[i].end - merged1[i].start;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // المرحلة 6: مد ذكي بمتابعة غلاف الطاقة (Envelope Following)
+    //   بدلاً من المد الثابت (150ms)، نتبع انحدار الطاقة
+    //   ونتوقف فقط عندما تنخفض الطاقة إلى ≤30% من العتبة
+    //   حد أقصى 300ms لالتقاط أحرف المد الطويلة
+    // ══════════════════════════════════════════════════════════════
+    for (let i = 0; i < merged1.length; i++) {
+        if (merged1[i].type !== 'speech') continue;
+
+        const nextRegion = merged1[i + 1];
+        if (!nextRegion || nextRegion.type !== 'silence') continue;
+
+        // متابعة الغلاف: نتقدم في الصمت ما دامت الطاقة تنحدر
+        const maxExtFrames = Math.ceil(0.30 / hopSec); // 300ms حد أقصى
+        const silStartIdx = nextRegion.si;
+        const silEndIdx = nextRegion.ei;
+        const stopThresh = thresh * 0.30; // 30% من العتبة = صمت حقيقي
+
+        let extIdx = silStartIdx;
+        let prevEnergy = smoothShort[silStartIdx];
+        let lastSoundIdx = silStartIdx;
+
+        for (let k = silStartIdx; k <= Math.min(silStartIdx + maxExtFrames, silEndIdx); k++) {
+            const e = smoothShort[k];
+            if (e >= stopThresh) {
+                lastSoundIdx = k;
+            }
+            // إذا ارتفعت الطاقة فجأة = بداية كلام جديد → توقف
+            if (e > prevEnergy * 2.5 && e > thresh) break;
+            prevEnergy = e;
+        }
+
+        if (lastSoundIdx > silStartIdx) {
+            // نمد المقطع الكلامي + هامش 25ms بعد آخر صوت
+            const padFrames = Math.ceil(0.025 / hopSec);
+            const newEndIdx = Math.min(lastSoundIdx + padFrames, silEndIdx);
+            merged1[i].ei = newEndIdx;
+            merged1[i].end = frameTimes[newEndIdx] || merged1[i].end;
+            merged1[i].duration = merged1[i].end - merged1[i].start;
+            // تقليص الصمت
+            nextRegion.si = newEndIdx;
+            nextRegion.start = frameTimes[newEndIdx] || nextRegion.start;
+            nextRegion.duration = nextRegion.end - nextRegion.start;
+        }
+    }
+
+    // المقطع الأخير: قص الصمت من النهاية
+    const lastRegion = merged1[merged1.length - 1];
+    if (lastRegion && lastRegion.type === 'speech') {
+        let lastSoundIdx = lastRegion.ei;
+        for (let k = lastRegion.ei; k >= lastRegion.si; k--) {
+            if (smoothShort[k] >= thresh * 0.30) { lastSoundIdx = k; break; }
+        }
+        const padFrames = Math.ceil(0.04 / hopSec);
+        const newEndIdx = Math.min(lastSoundIdx + padFrames, nFrames - 1);
+        lastRegion.ei = newEndIdx;
+        lastRegion.end = frameTimes[newEndIdx] || totalDur;
+        lastRegion.duration = lastRegion.end - lastRegion.start;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // المرحلة 7: بناء المقاطع النهائية مع تنظيف
+    // ══════════════════════════════════════════════════════════════
+    const result = [];
+    for (const r of merged1) {
+        if (r.duration < 0.02) continue; // تجاهل أي شيء < 20ms
+
+        if (r.type === 'speech' && r.duration >= minSeg) {
+            result.push({ start: r.start, end: r.end, duration: r.duration, type: 'speech', speaker: null, note: '' });
+        } else if (r.type === 'silence' && r.duration >= minSil) {
+            // أدخل الصمت فقط إذا كان طويلاً بما يكفي (≥ 2× الحد الأدنى)
+            if (r.duration >= minSil * 1.5) {
+                result.push({ start: r.start, end: r.end, duration: r.duration, type: 'silence', speaker: 'silence', note: '' });
+            }
+        } else if (r.type === 'speech') {
+            // مقطع كلامي قصير → دمجه مع السابق
+            if (result.length > 0 && result[result.length - 1].type === 'speech') {
+                result[result.length - 1].end = r.end;
+                result[result.length - 1].duration = result[result.length - 1].end - result[result.length - 1].start;
+            }
+        }
+    }
+
+    return result;
+}
+
+// ======================================================================
+//  تصنيف المتحدثين المتقدم
+//  يستخدم: التبادل + الطيف المركزي + الطاقة + التردد
+// ======================================================================
+function classifySpeakers(segs, buf) {
+    const mode = $('mode').value;
+    const speech = segs.filter(s => s.type === 'speech');
+    if (!speech.length) return;
+
+    // === الوضع التبادلي (الأفضل للتلقين) ===
+    if (mode === 'alternating') {
+        speech.forEach((s, i) => {
+            if (i === 0) s.speaker = 'bismillah';
+            else s.speaker = (i % 2 === 1) ? 'teacher' : 'child';
+        });
+        return;
+    }
+
+    // === التحليل الذكي: نجمع عدة خصائص لكل مقطع ===
+    const ch = buf.getChannelData(0);
+    const features = speech.map(seg => {
+        const s0 = Math.floor(seg.start * buf.sampleRate);
+        const s1 = Math.min(Math.floor(seg.end * buf.sampleRate), ch.length);
+        const len = s1 - s0;
+        if (len < 256) return { seg, energy: 0, zcr: 0, pitch: 0, centroid: 0, score: 0 };
+
+        // 1. طاقة RMS
+        let eSum = 0;
+        for (let i = s0; i < s1; i++) eSum += ch[i] * ch[i];
+        const energy = Math.sqrt(eSum / len);
+
+        // 2. معدل عبور الصفر
+        let zcr = 0;
+        for (let i = s0 + 1; i < s1; i++) {
+            if ((ch[i] >= 0 && ch[i - 1] < 0) || (ch[i] < 0 && ch[i - 1] >= 0)) zcr++;
+        }
+        zcr /= len;
+
+        // 3. الطيف المركزي (Spectral Centroid)
+        const centroid = spectralCentroid(ch, s0, s1, buf.sampleRate);
+
+        // 4. تقدير التردد الأساسي
+        const fftLen = Math.min(4096, len);
+        const pitch = estimatePitch(ch.slice(s0, s0 + fftLen), buf.sampleRate);
+
+        return { seg, energy, zcr, pitch, centroid, score: 0 };
+    });
+
+    if (mode === 'frequency') {
+        // === تصنيف بالتردد + الطيف المركزي ===
+        const validPitches = features.filter(f => f.pitch > 0);
+        if (validPitches.length < 2) {
+            // لا يوجد بيانات تردد كافية → نستخدم الطيف المركزي
+            const centroids = features.map(f => f.centroid).filter(c => c > 0);
+            if (centroids.length < 2) {
+                speech.forEach((s, i) => s.speaker = i % 2 === 0 ? 'teacher' : 'child');
+                return;
+            }
+            centroids.sort((a, b) => a - b);
+            const medCentroid = centroids[Math.floor(centroids.length / 2)];
+            features.forEach(f => {
+                f.seg.speaker = f.centroid <= medCentroid ? 'teacher' : 'child';
+            });
+        } else {
+            // تصنيف مركّب: 60% تردد + 40% طيف مركزي
+            const pitches = validPitches.map(f => f.pitch).sort((a, b) => a - b);
+            const medPitch = pitches[Math.floor(pitches.length / 2)];
+            const centroids = features.map(f => f.centroid).filter(c => c > 0).sort((a, b) => a - b);
+            const medCentroid = centroids.length > 0 ? centroids[Math.floor(centroids.length / 2)] : 0;
+
+            features.forEach(f => {
+                let score = 0;
+                if (f.pitch > 0) score += (f.pitch > medPitch ? 1 : -1) * 0.6;
+                if (f.centroid > 0 && medCentroid > 0) score += (f.centroid > medCentroid ? 1 : -1) * 0.4;
+                f.seg.speaker = score > 0 ? 'child' : 'teacher';
+            });
+        }
+    } else {
+        // === تحليل الطاقة + الطيف المركزي ===
+        const energies = features.map(f => f.energy).sort((a, b) => a - b);
+        const medE = energies[Math.floor(energies.length / 2)];
+        const centroids = features.map(f => f.centroid).filter(c => c > 0).sort((a, b) => a - b);
+        const medCentroid = centroids.length > 0 ? centroids[Math.floor(centroids.length / 2)] : 0;
+
+        features.forEach(f => {
+            let score = 0;
+            score += (f.energy >= medE ? 1 : -1) * 0.5;
+            if (f.centroid > 0 && medCentroid > 0) score += (f.centroid > medCentroid ? 1 : -1) * 0.3;
+            score += (f.zcr > 0.1 ? 1 : -1) * 0.2;
+            f.seg.speaker = score > 0 ? 'teacher' : 'child';
+        });
+    }
+
+    // === تصحيحات ما بعد التصنيف ===
+    // 1. أول مقطع = بسملة عادة
+    if (speech.length > 0) speech[0].speaker = 'bismillah';
+
+    // 2. تجنب 3 مقاطع متتالية لنفس المتحدث
+    for (let i = 1; i < speech.length - 1; i++) {
+        if (speech[i - 1].speaker === speech[i].speaker && speech[i].speaker === speech[i + 1]?.speaker) {
+            speech[i].speaker = speech[i].speaker === 'teacher' ? 'child' : 'teacher';
+        }
+    }
+
+    // 3. التحقق من أن هناك على الأقل مقطع واحد لكل متحدث
+    const hasTeacher = speech.some(s => s.speaker === 'teacher');
+    const hasChild = speech.some(s => s.speaker === 'child');
+    if (!hasTeacher || !hasChild) {
+        // فشل التحليل → رجوع للتبادل
+        speech.forEach((s, i) => {
+            if (i === 0) s.speaker = 'bismillah';
+            else s.speaker = (i % 2 === 1) ? 'teacher' : 'child';
+        });
+    }
+}
+
+// تقدير التردد الأساسي (Pitch) باستخدام Autocorrelation مُحسّن
+function estimatePitch(block, sr) {
+    const n = block.length;
+    const minLag = Math.floor(sr / 600); // 600 Hz
+    const maxLag = Math.min(Math.floor(sr / 60), n - 1); // 60 Hz
+    if (maxLag <= minLag) return 0;
+
+    // تطبيق نافذة هانينغ لتقليل التسرب الطيفي
+    const windowed = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+        windowed[i] = block[i] * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / (n - 1)));
+    }
+
+    // Autocorrelation مع NSDF (Normalized Square Difference Function)
+    let bestLag = minLag, bestCorr = -1;
+    for (let lag = minLag; lag <= maxLag; lag++) {
+        let corr = 0, norm1 = 0, norm2 = 0;
+        for (let i = 0; i < n - lag; i++) {
+            corr += windowed[i] * windowed[i + lag];
+            norm1 += windowed[i] * windowed[i];
+            norm2 += windowed[i + lag] * windowed[i + lag];
+        }
+        const denom = Math.sqrt(norm1 * norm2);
+        if (denom > 0) corr /= denom;
+        if (corr > bestCorr) { bestCorr = corr; bestLag = lag; }
+    }
+
+    // تحسين دقة التردد بالتقريب القطعي (parabolic interpolation)
+    if (bestLag > minLag && bestLag < maxLag) {
+        const getPeakCorr = (lag) => {
+            let c = 0, n1 = 0, n2 = 0;
+            for (let i = 0; i < n - lag; i++) {
+                c += windowed[i] * windowed[i + lag];
+                n1 += windowed[i] * windowed[i];
+                n2 += windowed[i + lag] * windowed[i + lag];
+            }
+            return Math.sqrt(n1 * n2) > 0 ? c / Math.sqrt(n1 * n2) : 0;
+        };
+        const y0 = getPeakCorr(bestLag - 1);
+        const y1 = bestCorr;
+        const y2 = getPeakCorr(bestLag + 1);
+        const denom = 2 * (2 * y1 - y0 - y2);
+        if (Math.abs(denom) > 1e-10) {
+            const refinedLag = bestLag + (y0 - y2) / denom;
+            return bestCorr > 0.35 ? sr / refinedLag : 0;
+        }
+    }
+
+    return bestCorr > 0.35 ? sr / bestLag : 0;
+}
+
+// دمج ذكي: يدمج المقاطع مع مراعاة السياق
+function mergeShort(segs) {
+    const minDur = parseFloat($('rMinSeg').value);
+    const result = [];
+    for (let i = 0; i < segs.length; i++) {
+        const s = segs[i];
+        if (s.type === 'speech' && s.duration < minDur && result.length > 0) {
+            // مقطع كلامي قصير → دمجه مع المقطع الكلامي الأقرب
+            const prev = result[result.length - 1];
+            if (prev.type === 'speech') {
+                prev.end = s.end;
+                prev.duration = prev.end - prev.start;
+                if (s.note) prev.note = prev.note ? prev.note + ' | ' + s.note : s.note;
+                continue;
+            }
+            // إذا كان السابق صمت، ابحث عن المقطع الكلامي التالي
+            const next = segs[i + 1];
+            if (next && next.type === 'speech') {
+                next.start = s.start;
+                next.duration = next.end - next.start;
+                if (s.note) next.note = next.note ? s.note + ' | ' + next.note : s.note;
+                continue;
+            }
+        }
+        // إزالة صمت قصير جداً بين مقطعين كلاميين من نفس النوع
+        if (s.type === 'silence' && s.duration < minDur * 0.5 && result.length > 0) {
+            const prev = result[result.length - 1];
+            const next = segs[i + 1];
+            if (prev.type === 'speech' && next && next.type === 'speech' && prev.speaker === next.speaker) {
+                prev.end = next.end;
+                prev.duration = prev.end - prev.start;
+                if (next.note) prev.note = prev.note ? prev.note + ' | ' + next.note : next.note;
+                i++; // تخطي المقطع التالي
+                continue;
+            }
+        }
+        result.push({ ...s });
+    }
+    return result;
+}
+
+// ======================================================================
+//  رسم الموجة الصوتية
+// ======================================================================
+function drawSegWave(){
+    const dpr=window.devicePixelRatio||1;
+    const rect=cvs.parentElement.getBoundingClientRect();
+    cvs.width=rect.width*dpr; cvs.height=rect.height*dpr;
+    cvs.style.width=rect.width+'px'; cvs.style.height=rect.height+'px';
+    cx.scale(dpr,dpr);
+
+    const W=rect.width, H=rect.height;
+    const ch=abuf.getChannelData(0), dur=abuf.duration;
+    const step=Math.ceil(ch.length/W);
+
+    cx.clearRect(0,0,W,H);
+    cx.fillStyle='rgba(5,10,24,0.95)'; cx.fillRect(0,0,W,H);
+
+    // خلفيات المقاطع
+    for(const seg of segs){
+        const x1=(seg.start/dur)*W, x2=(seg.end/dur)*W;
+        const bgCol=seg.speaker==='teacher'?'rgba(74,158,255,0.08)':seg.speaker==='child'?'rgba(52,211,153,0.08)':seg.speaker==='bismillah'?'rgba(245,158,11,0.1)':'rgba(90,106,138,0.04)';
+        cx.fillStyle=bgCol;
+        cx.fillRect(x1,0,x2-x1,H);
+        const brCol=seg.speaker==='teacher'?'rgba(74,158,255,0.2)':seg.speaker==='child'?'rgba(52,211,153,0.2)':seg.speaker==='bismillah'?'rgba(245,158,11,0.3)':'rgba(90,106,138,0.08)';
+        cx.strokeStyle=brCol;
+        cx.lineWidth=0.5;
+        cx.beginPath(); cx.moveTo(x1,0); cx.lineTo(x1,H); cx.stroke();
+    }
+
+    // خط الوسط
+    cx.strokeStyle='rgba(255,255,255,0.03)';cx.lineWidth=1;
+    cx.beginPath();cx.moveTo(0,H/2);cx.lineTo(W,H/2);cx.stroke();
+
+    // الموجة
+    for(let i=0;i<W;i++){
+        let mn=1,mx=-1;
+        for(let j=0;j<step;j++){
+            const idx=i*step+j;
+            if(idx<ch.length){if(ch[idx]<mn)mn=ch[idx];if(ch[idx]>mx)mx=ch[idx];}
+        }
+        const t=(i/W)*dur;
+        const seg=segs.find(s=>t>=s.start&&t<s.end);
+        cx.fillStyle=seg?.speaker==='teacher'?'rgba(74,158,255,0.65)':seg?.speaker==='child'?'rgba(52,211,153,0.65)':seg?.speaker==='bismillah'?'rgba(245,158,11,0.6)':'rgba(90,106,138,0.25)';
+        const y=(1+mn)*H/2, h=Math.max(1,(mx-mn)*H/2);
+        cx.fillRect(i,y,1,h);
+    }
+
+    // علامات الوقت
+    cx.fillStyle='rgba(255,255,255,0.25)';cx.font='9px monospace';cx.textAlign='center';
+    const intv=dur>300?60:dur>60?10:5;
+    for(let t=intv;t<dur;t+=intv){
+        const x=(t/dur)*W;
+        cx.fillText(fmt(t),x,H-4);
+    }
+}
+
+// ======================================================================
+//  عرض المقاطع والإحصائيات
+// ======================================================================
+function segClass(s){ return s.speaker==='teacher'?'t':s.speaker==='child'?'c':s.speaker==='bismillah'?'b':'s'; }
+function segLabel(s){ return s.speaker==='teacher'?'🎓 معلم':s.speaker==='child'?'👶 طفل':s.speaker==='bismillah'?'📖 بسملة':'⏸ صمت'; }
+
+function renderSegs(){
+    $('segList').innerHTML=segs.map((s,i)=>`
+        <div class="segRow ${segClass(s)}">
+            <span class="segN">#${i+1}</span>
+            <span class="segT ${segClass(s)}" onclick="togType(${i})" title="انقر لتغيير النوع">
+                ${segLabel(s)}
+            </span>
+            <div class="segW"><canvas id="sc${i}"></canvas></div>
+            <span class="segTime">${fmt(s.start)} → ${fmt(s.end)}</span>
+            <span class="segDur">${s.duration.toFixed(1)}ث</span>
+            <button class="segPlay" onclick="playSeg(${i})">▶</button>
+            <button class="segResplit" onclick="resplitSeg(${i})" title="إعادة تقسيم هذا المقطع">🔄</button>
+            <button class="segNote ${s.note?'has':''}" onclick="openNote(${i})" title="${s.note||'إضافة ملاحظة'}">📝</button>
+            <button class="segDel" onclick="delSeg(${i})" title="حذف المقطع">✕</button>
+        </div>
+        ${s.note?`<div style="grid-column:1/-1;padding:0 14px 8px;"><div class="noteBadge">📌 ${s.note} <span class="nb-del" onclick="clearNote(${i})">✕</span></div></div>`:''}
+    `).join('');
+
+    // رسم الموجات المصغرة
+    requestAnimationFrame(()=>segs.forEach((s,i)=>drawMini(i,s)));
+}
+
+function drawMini(i,seg){
+    const c=document.getElementById('sc'+i);
+    if(!c||!abuf)return;
+    const p=c.parentElement;
+    const dpr=window.devicePixelRatio||1;
+    c.width=p.offsetWidth*dpr; c.height=36*dpr;
+    c.style.width=p.offsetWidth+'px'; c.style.height='36px';
+    const x=c.getContext('2d'); x.scale(dpr,dpr);
+
+    const W=p.offsetWidth, H=36;
+    const ch=abuf.getChannelData(0);
+    const s0=Math.floor(seg.start*abuf.sampleRate), s1=Math.floor(seg.end*abuf.sampleRate);
+    const len=s1-s0, step=Math.max(1,Math.ceil(len/W));
+    const col=seg.speaker==='teacher'?'rgba(74,158,255,0.55)':seg.speaker==='child'?'rgba(52,211,153,0.55)':seg.speaker==='bismillah'?'rgba(245,158,11,0.55)':'rgba(90,106,138,0.25)';
+
+    x.fillStyle=col;
+    for(let i=0;i<W;i++){
+        let mn=1,mx=-1;
+        for(let j=0;j<step;j++){
+            const idx=s0+i*step+j;
+            if(idx<ch.length){if(ch[idx]<mn)mn=ch[idx];if(ch[idx]>mx)mx=ch[idx];}
+        }
+        const y=(1+mn)*H/2, h=Math.max(1,(mx-mn)*H/2);
+        x.fillRect(i,y,1,h);
+    }
+}
+
+function renderStats(){
+    const bs=segs.filter(s=>s.speaker==='bismillah'), ts=segs.filter(s=>s.speaker==='teacher'), cs=segs.filter(s=>s.speaker==='child'), ss=segs.filter(s=>s.type==='silence');
+    const bsd=bs.reduce((a,s)=>a+s.duration,0), td=ts.reduce((a,s)=>a+s.duration,0), cd=cs.reduce((a,s)=>a+s.duration,0), sd=ss.reduce((a,s)=>a+s.duration,0);
+    $('stGrid').innerHTML=`
+        <div class="stat"><div class="si">📊</div><div class="sv">${segs.length}</div><div class="sl">إجمالي المقاطع</div></div>
+        <div class="stat"><div class="si">📖</div><div class="sv">${bs.length}</div><div class="sl">بسملة (${fmt(bsd)})</div></div>
+        <div class="stat"><div class="si">🎓</div><div class="sv">${ts.length}</div><div class="sl">المعلم (${fmt(td)})</div></div>
+        <div class="stat"><div class="si">👶</div><div class="sv">${cs.length}</div><div class="sl">الطفل (${fmt(cd)})</div></div>
+        <div class="stat"><div class="si">⏸</div><div class="sv">${ss.length}</div><div class="sl">صمت (${fmt(sd)})</div></div>
+        <div class="stat"><div class="si">⏱</div><div class="sv">${fmt(abuf?.duration||0)}</div><div class="sl">المدة الإجمالية</div></div>
+    `;
+}
+
+function togType(i){
+    if(segs[i].type==='silence')return;
+    const cycle=['bismillah','teacher','child'];
+    const cur=cycle.indexOf(segs[i].speaker);
+    segs[i].speaker=cycle[(cur+1)%cycle.length];
+    renderSegs(); drawSegWave(); renderStats();
+}
+
+function delSeg(i){
+    segs.splice(i,1);
+    renderSegs(); drawSegWave(); renderStats();
+    toast('🗑️ تم حذف المقطع');
+}
+
+// ======================================================================
+//  إعادة تقسيم مقطع واحد بإعدادات أدق
+// ======================================================================
+function resplitSeg(idx) {
+    if (!abuf || idx < 0 || idx >= segs.length) return;
+    const seg = segs[idx];
+    if (seg.type === 'silence') { toast('⏸ لا يمكن تقسيم مقطع صمت'); return; }
+    if (seg.duration < 0.5) { toast('⚠️ المقطع قصير جداً للتقسيم'); return; }
+
+    const data = abuf.getChannelData(0);
+    const sr = abuf.sampleRate;
+    const s0 = Math.floor(seg.start * sr);
+    const s1 = Math.min(Math.floor(seg.end * sr), data.length);
+
+    // إعدادات أدق: عتبة أقل بـ50%، صمت أقصر بـ40%، مقطع أقصر بـ50%
+    const origThDB = parseFloat($('rThresh').value);
+    const origMinSil = parseFloat($('rMinSil').value);
+    const origMinSeg = parseFloat($('rMinSeg').value);
+
+    const tighterThDB = origThDB - 5; // أكثر حساسية
+    const tighterMinSil = Math.max(0.15, origMinSil * 0.6);
+    const tighterMinSeg = Math.max(0.2, origMinSeg * 0.5);
+    const thresh = Math.pow(10, tighterThDB / 20);
+
+    // تحليل طاقة عالي الدقة للمقطع فقط
+    const winSize = Math.floor(sr * 0.015); // 15ms
+    const hop = Math.floor(sr * 0.004);     // 4ms
+    const rawRms = [];
+    const frameTimes = [];
+    for (let i = s0; i < s1 - winSize; i += hop) {
+        let sum = 0;
+        for (let j = 0; j < winSize; j++) sum += data[i + j] * data[i + j];
+        rawRms.push(Math.sqrt(sum / winSize));
+        frameTimes.push(i / sr);
+    }
+    if (rawRms.length < 10) { toast('⚠️ المقطع قصير جداً'); return; }
+
+    // تنعيم غاوسي
+    const smooth = gaussianSmooth(rawRms, 5);
+
+    // كشف الصمت بهيستيريا
+    const thHigh = thresh * 1.15;
+    const thLow = thresh * 0.7;
+    let inSpeech = smooth[0] >= thHigh;
+    const regions = [];
+    let rStart = 0;
+
+    for (let i = 1; i < smooth.length; i++) {
+        if (inSpeech) {
+            if (smooth[i] < thLow) {
+                let sustained = true;
+                for (let k = 1; k < Math.min(6, smooth.length - i); k++) {
+                    if (smooth[i + k] >= thHigh) { sustained = false; break; }
+                }
+                if (sustained) {
+                    regions.push({ type: 'speech', si: rStart, ei: i });
+                    rStart = i;
+                    inSpeech = false;
+                }
+            }
+        } else {
+            if (smooth[i] >= thHigh) {
+                regions.push({ type: 'silence', si: rStart, ei: i });
+                rStart = i;
+                inSpeech = true;
+            }
+        }
+    }
+    regions.push({ type: inSpeech ? 'speech' : 'silence', si: rStart, ei: smooth.length - 1 });
+
+    // حساب الأوقات
+    regions.forEach(r => {
+        r.start = frameTimes[r.si];
+        r.end = frameTimes[r.ei];
+        r.duration = r.end - r.start;
+    });
+
+    // دمج صمت قصير
+    const merged = [];
+    for (const r of regions) {
+        if (r.type === 'silence' && r.duration < tighterMinSil) {
+            if (merged.length > 0 && merged[merged.length - 1].type === 'speech') {
+                merged[merged.length - 1].end = r.end;
+                merged[merged.length - 1].duration = merged[merged.length - 1].end - merged[merged.length - 1].start;
+            } else {
+                merged.push({ ...r, type: 'speech' });
+            }
+        } else {
+            if (r.type === 'speech' && merged.length > 0 && merged[merged.length - 1].type === 'speech') {
+                merged[merged.length - 1].end = r.end;
+                merged[merged.length - 1].duration = merged[merged.length - 1].end - merged[merged.length - 1].start;
+            } else {
+                merged.push({ ...r });
+            }
+        }
+    }
+
+    // بناء المقاطع الجديدة
+    const newSegs = [];
+    for (const r of merged) {
+        if (r.duration < 0.05) continue;
+        if (r.type === 'speech' && r.duration >= tighterMinSeg) {
+            newSegs.push({ start: r.start, end: r.end, duration: r.duration, type: 'speech', speaker: seg.speaker, note: '' });
+        } else if (r.type === 'silence' && r.duration >= tighterMinSil * 1.2) {
+            newSegs.push({ start: r.start, end: r.end, duration: r.duration, type: 'silence', speaker: 'silence', note: '' });
+        } else if (r.type === 'speech') {
+            // قصير → دمجه مع السابق
+            if (newSegs.length > 0 && newSegs[newSegs.length - 1].type === 'speech') {
+                newSegs[newSegs.length - 1].end = r.end;
+                newSegs[newSegs.length - 1].duration = newSegs[newSegs.length - 1].end - newSegs[newSegs.length - 1].start;
+            }
+        }
+    }
+
+    if (newSegs.length <= 1) {
+        toast('🔍 لم يُعثر على تقسيمات إضافية في هذا المقطع');
+        return;
+    }
+
+    // تصنيف المتحدثين للمقاطع الجديدة بالتبادل مع الحفاظ على السياق
+    const speechSegs = newSegs.filter(s => s.type === 'speech');
+    const prevSpeaker = idx > 0 ? segs[idx - 1].speaker : null;
+    let startAs = seg.speaker;
+    if (prevSpeaker === 'teacher') startAs = 'child';
+    else if (prevSpeaker === 'child') startAs = 'teacher';
+    else if (prevSpeaker === 'bismillah') startAs = 'teacher';
+
+    speechSegs.forEach((s, i) => {
+        if (i === 0) s.speaker = startAs;
+        else s.speaker = speechSegs[i - 1].speaker === 'teacher' ? 'child' : 'teacher';
+    });
+
+    // استبدال المقطع الأصلي بالمقاطع الجديدة
+    segs.splice(idx, 1, ...newSegs);
+    renderSegs(); drawSegWave(); renderStats();
+    toast(`✅ تم تقسيم المقطع #${idx + 1} إلى ${newSegs.length} أجزاء`);
+}
+
+// ======================================================================
+//  نظام الملاحظات
+// ======================================================================
+let notePopupIdx = -1;
+
+function openNote(i) {
+    notePopupIdx = i;
+    const existing = segs[i].note || '';
+    const overlay = document.createElement('div');
+    overlay.className = 'noteOverlay';
+    overlay.id = 'noteOverlay';
+    overlay.onclick = () => closeNote();
+    document.body.appendChild(overlay);
+
+    const popup = document.createElement('div');
+    popup.className = 'notePopup';
+    popup.id = 'notePopup';
+    popup.innerHTML = `
+        <h3>📝 ملاحظة على المقطع #${i + 1}</h3>
+        <div class="noteQuick">
+            <button onclick="quickNote('⏳ هذا المقطع يأخذ وقت تركيز كبير')">⏳ يأخذ وقت تركيز كبير</button>
+            <button onclick="quickNote('⚠️ يحتاج مراجعة')">⚠️ يحتاج مراجعة</button>
+            <button onclick="quickNote('🔁 تكرار مطلوب')">🔁 تكرار مطلوب</button>
+            <button onclick="quickNote('✂️ يحتاج قص')">✂️ يحتاج قص</button>
+            <button onclick="quickNote('🎯 مقطع مهم')">🎯 مقطع مهم</button>
+            <button onclick="quickNote('🐌 بطيء — يحتاج صبر')">🐌 بطيء — يحتاج صبر</button>
+        </div>
+        <textarea id="noteText" placeholder="اكتب ملاحظتك هنا..." dir="rtl">${existing}</textarea>
+        <div class="noteActions">
+            <button class="btn" onclick="closeNote()">إلغاء</button>
+            <button class="btn g" onclick="saveNote()">💾 حفظ</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+    document.getElementById('noteText').focus();
+}
+
+function quickNote(text) {
+    const ta = document.getElementById('noteText');
+    if (ta) {
+        ta.value = ta.value ? ta.value + ' | ' + text : text;
+    }
+}
+
+function saveNote() {
+    if (notePopupIdx < 0 || notePopupIdx >= segs.length) return;
+    const ta = document.getElementById('noteText');
+    segs[notePopupIdx].note = ta ? ta.value.trim() : '';
+    closeNote();
+    renderSegs();
+    toast(segs[notePopupIdx].note ? '📝 تم حفظ الملاحظة' : '🗑️ تم مسح الملاحظة');
+}
+
+function clearNote(i) {
+    segs[i].note = '';
+    renderSegs();
+    toast('🗑️ تم مسح الملاحظة');
+}
+
+function closeNote() {
+    notePopupIdx = -1;
+    const overlay = document.getElementById('noteOverlay');
+    const popup = document.getElementById('notePopup');
+    if (overlay) overlay.remove();
+    if (popup) popup.remove();
+}
+
+// ======================================================================
+//  تشغيل الصوت
+// ======================================================================
+function togPlay(){
+    if(!abuf)return;
+    playing?stopP():startP(tPause);
+}
+function startP(off=0){
+    stopP();
+    asrc=actx.createBufferSource();
+    asrc.buffer=abuf; asrc.connect(actx.destination); asrc.start(0,off);
+    t0=actx.currentTime-off; playing=true; $('pBtn').textContent='⏸';
+    asrc.onended=()=>{if(playing){playing=false;$('pBtn').textContent='▶';tPause=0;}};
+    updProg();
+}
+function stopP(){
+    if(asrc){try{asrc.stop();}catch(e){}} asrc=null;
+    if(af){cancelAnimationFrame(af);af=null;}
+    if(playing)tPause=actx.currentTime-t0;
+    playing=false; $('pBtn').textContent='▶';
+}
+function updProg(){
+    if(!playing||!abuf)return;
+    const ct=actx.currentTime-t0;
+    $('pCur').textContent=fmt(ct);
+    $('pSeek').value=(ct/abuf.duration)*100;
+    af=requestAnimationFrame(updProg);
+}
+function seek(v){
+    if(!abuf)return;
+    const t=(v/100)*abuf.duration; tPause=t;
+    if(playing)startP(t);
+    $('pCur').textContent=fmt(t);
+}
+function skip(s){
+    if(!abuf)return;
+    let ct=playing?actx.currentTime-t0:tPause;
+    ct=Math.max(0,Math.min(abuf.duration,ct+s));
+    tPause=ct; if(playing)startP(ct);
+    $('pCur').textContent=fmt(ct);
+    $('pSeek').value=(ct/abuf.duration)*100;
+}
+function playSeg(i){
+    const s=segs[i]; if(!abuf)return;
+    stopP();
+    asrc=actx.createBufferSource();
+    asrc.buffer=abuf; asrc.connect(actx.destination); asrc.start(0,s.start,s.duration);
+    t0=actx.currentTime-s.start; playing=true; $('pBtn').textContent='⏸';
+    asrc.onended=()=>{playing=false;$('pBtn').textContent='▶';tPause=s.end;};
+    updProg();
+}
+async function playType(type){
+    const arr=segs.filter(s=>s.speaker===type);
+    if(!arr.length){toast('لا توجد مقاطع');return;}
+    toast(`▶ تشغيل ${arr.length} مقطع ${type==='teacher'?'للمعلم':'للطفل'}...`);
+    for(const s of arr){
+        await new Promise(r=>{
+            stopP();
+            asrc=actx.createBufferSource();
+            asrc.buffer=abuf;asrc.connect(actx.destination);asrc.start(0,s.start,s.duration);
+            playing=true;$('pBtn').textContent='⏸';
+            asrc.onended=()=>{playing=false;r();};
+        });
+        await new Promise(r=>setTimeout(r,150));
+    }
+    $('pBtn').textContent='▶'; toast('✅ انتهى التشغيل');
+}
+
+// نقر على الموجة للتنقل
+cvs.onclick=e=>{
+    if(!abuf)return;
+    const r=cvs.getBoundingClientRect(), x=e.clientX-r.left, ratio=x/r.width;
+    const t=ratio*abuf.duration; tPause=t;
+    if(playing)startP(t);
+    $('pCur').textContent=fmt(t); $('pSeek').value=ratio*100;
+};
+
+// ======================================================================
+//  التصدير
+// ======================================================================
+function expFileName(){
+    const fn=files[curIdx]?.name||'';
+    const num=parseInt(fn.replace(/\D/g,''));
+    const ar=SURAH[num];
+    return ar ? `سورة_${ar}_${num}` : fn.replace('.mp3','');
+}
+function speakerAr(sp){ return sp==='teacher'?'معلم':sp==='child'?'طفل':sp==='bismillah'?'بسملة':'صمت'; }
+
+function expJSON(){
+    if(!segs.length)return;
+    const name=expFileName();
+    const d={file:files[curIdx]?.name||'',surah:surahName(files[curIdx]?.name||''),totalDuration:abuf?.duration||0,
+        segments:segs.map((s,i)=>({index:i+1,speaker:s.speaker,speakerAr:speakerAr(s.speaker),type:s.type,start:+s.start.toFixed(3),end:+s.end.toFixed(3),duration:+s.duration.toFixed(3),note:s.note||''}))};
+    dl(JSON.stringify(d,null,2),`${name}_تقسيم.json`,'application/json');
+    toast('✅ تم تصدير JSON');
+}
+function expCSV(){
+    if(!segs.length)return;
+    const name=expFileName();
+    let csv='\uFEFFالرقم,النوع,المتحدث,البداية,النهاية,المدة,ملاحظة\n';
+    segs.forEach((s,i)=>csv+=`${i+1},${s.type},${speakerAr(s.speaker)},${s.start.toFixed(3)},${s.end.toFixed(3)},${s.duration.toFixed(3)},"${(s.note||'').replace(/"/g,'""')}"\n`);
+    dl(csv,`${name}_تقسيم.csv`,'text/csv;charset=utf-8');
+    toast('✅ تم تصدير CSV');
+}
+async function expAudio(type){
+    if(!abuf||!segs.length)return;
+    const typeAr=type==='teacher'?'المعلم':type==='child'?'الطفل':'البسملة';
+    toast(`⏳ جاري إنشاء ملف ${typeAr}...`);
+    const arr=segs.filter(s=>s.speaker===type);
+    if(!arr.length){toast('لا توجد مقاطع');return;}
+    const gap=0.25;
+    const totDur=arr.reduce((a,s)=>a+s.duration,0)+(arr.length-1)*gap;
+    const offCtx=new OfflineAudioContext(abuf.numberOfChannels,Math.ceil(totDur*abuf.sampleRate),abuf.sampleRate);
+    let off=0;
+    for(const s of arr){
+        const src=offCtx.createBufferSource();src.buffer=abuf;src.connect(offCtx.destination);
+        src.start(off,s.start,s.duration);off+=s.duration+gap;
+    }
+    const rendered=await offCtx.startRendering();
+    const wav=toWav(rendered);
+    const blob=new Blob([wav],{type:'audio/wav'});
+    const url=URL.createObjectURL(blob);
+    const name=expFileName();
+    const a=document.createElement('a');a.href=url;
+    a.download=`${name}_${speakerAr(type)}.wav`;
+    a.click();URL.revokeObjectURL(url);
+    toast(`✅ تم تصدير صوت ${typeAr}`);
+}
+
+// WAV encoder
+function toWav(buf){
+    const nc=buf.numberOfChannels,sr=buf.sampleRate,bd=16,bs=nc*(bd/8);
+    const ds=buf.length*bs, ab=new ArrayBuffer(44+ds), v=new DataView(ab);
+    const ws=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+    ws(0,'RIFF');v.setUint32(4,36+ds,true);ws(8,'WAVE');ws(12,'fmt ');
+    v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,nc,true);
+    v.setUint32(24,sr,true);v.setUint32(28,sr*bs,true);v.setUint16(32,bs,true);
+    v.setUint16(34,bd,true);ws(36,'data');v.setUint32(40,ds,true);
+    let o=44;
+    for(let i=0;i<buf.length;i++)for(let c=0;c<nc;c++){
+        const s=Math.max(-1,Math.min(1,buf.getChannelData(c)[i]));
+        v.setInt16(o,s<0?s*0x8000:s*0x7FFF,true);o+=2;
+    }
+    return ab;
+}
+
+function dl(content,name,type){
+    const b=new Blob([content],{type});const u=URL.createObjectURL(b);
+    const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);
+}
+
+// ======================================================================
+//  أدوات مساعدة
+// ======================================================================
+function prog(p,l){$('pBar').style.width=p+'%';$('pLbl').textContent=l;$('pPct').textContent=Math.round(p)+'%';}
+function showMsg(m,t){const e=$('sMsg');e.textContent=m;e.className='msg show '+t;}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),3000);}
+
+// اختصارات لوحة المفاتيح
+document.onkeydown=e=>{
+    if(e.target.matches('input,select,textarea'))return;
+    if(e.code==='Space'){e.preventDefault();togPlay();}
+    if(e.code==='ArrowRight')skip(-5);
+    if(e.code==='ArrowLeft')skip(5);
+};
+
+// تغيير حجم النافذة
+window.onresize=()=>{if(abuf&&segs.length)drawSegWave();};
+
+// ======================================================================
+//  جسيمات ذهبية متحركة
+// ======================================================================
+(function initParticles(){
+    const c=document.getElementById('particles');
+    const x=c.getContext('2d');
+    let W,H;
+    function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+    resize(); window.addEventListener('resize',resize);
+
+    const pts=[];
+    for(let i=0;i<60;i++){
+        pts.push({
+            x:Math.random()*W, y:Math.random()*H,
+            r:Math.random()*1.5+0.3,
+            dx:(Math.random()-0.5)*0.3,
+            dy:(Math.random()-0.5)*0.3,
+            a:Math.random()*0.3+0.05
+        });
+    }
+
+    function draw(){
+        x.clearRect(0,0,W,H);
+        for(const p of pts){
+            p.x+=p.dx; p.y+=p.dy;
+            if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+            if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+            x.beginPath();
+            x.arc(p.x,p.y,p.r,0,Math.PI*2);
+            x.fillStyle=`rgba(212,168,83,${p.a})`;
+            x.fill();
+        }
+        // خطوط بين الجسيمات القريبة
+        for(let i=0;i<pts.length;i++){
+            for(let j=i+1;j<pts.length;j++){
+                const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+                const d=Math.sqrt(dx*dx+dy*dy);
+                if(d<120){
+                    x.beginPath();
+                    x.moveTo(pts[i].x,pts[i].y);
+                    x.lineTo(pts[j].x,pts[j].y);
+                    x.strokeStyle=`rgba(212,168,83,${0.03*(1-d/120)})`;
+                    x.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// ===== حفظ في السيرفر (عبر React iframe) =====
+// يُرسل: 1) توقيتات الآيات 2) الملف الصوتي نفسه (base64) لرفعه مباشرة
+// ملاحظة: خصائص المقطع الحقيقية هي start/end/speaker (وليس b/e/s)
+function pickSurahNum() {
+    // 1) حقل يدوي إن وُجد
+    const manual = document.getElementById('surahNumInput');
+    if (manual && parseInt(manual.value, 10) > 0) return parseInt(manual.value, 10);
+    // 2) من اسم الملف (مثل 36.mp3 أو سورة-يس-36)
+    const currentFile = files[curIdx];
+    if (currentFile) {
+        // جرّب الأرقام 1-114 في الاسم، وخذ آخر رقم منطقي
+        const all = (currentFile.name.match(/\d+/g) || []).map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 114);
+        if (all.length) return all[all.length - 1];
+    }
+    return 0;
+}
+async function saveToServer() {
+    if(!segs || !segs.length) {
+        toast('❌ لا توجد مقاطع للحفظ');
+        return;
+    }
+    const surahNum = pickSurahNum();
+    if (!surahNum) {
+        toast('⚠️ حدّد رقم السورة أولاً (الحقل فوق زر الحفظ)');
+        const inp = document.getElementById('surahNumInput');
+        if (inp) inp.focus();
+        return;
+    }
+
+    // ترقيم الآيات تلقائياً: أول كلام = آية 1 ثم 2... لكل متحدث على حدة
+    // (البسملة تُحسب آية 1 للمعلم إن وُجدت)
+    const teacherSegs = segs.filter(s => s.type !== 'silence' && (s.speaker === 'teacher' || s.speaker === 'bismillah'))
+                            .sort((a, b) => a.start - b.start);
+    const kidsSegs = segs.filter(s => s.type !== 'silence' && (s.speaker === 'child' || s.speaker === 'kids'))
+                         .sort((a, b) => a.start - b.start);
+
+    const teacherTimings = teacherSegs.map(s => +s.start.toFixed(3));
+    const kidsTimings = kidsSegs.map(s => +s.start.toFixed(3));
+    const kidsStart = kidsTimings.length ? kidsTimings[0] : null;
+
+    const normSpeaker = (sp) => sp === 'child' || sp === 'kids' ? 'kids' : 'teacher';
+
+    const data = {
+        surahNumber: surahNum,
+        fileName: files[curIdx] ? files[curIdx].name : `${surahNum}.mp3`,
+        timings: {
+            teacher: teacherTimings,
+            ...(kidsStart !== null && { kidsStart, kids: kidsTimings }),
+            segments: [
+                ...teacherSegs.map((s, i) => ({
+                    id: `seg-t${i}`,
+                    start: +s.start.toFixed(3),
+                    end: +s.end.toFixed(3),
+                    speaker: 'teacher',
+                    ayah: i + 1,
+                    label: i === 0 && s.speaker === 'bismillah' ? 'البسملة' : `آية ${i + 1}`
+                })),
+                ...kidsSegs.map((s, i) => ({
+                    id: `seg-k${i}`,
+                    start: +s.start.toFixed(3),
+                    end: +s.end.toFixed(3),
+                    speaker: 'kids',
+                    ayah: i + 1,
+                    label: `آية ${i + 1}`
+                })),
+            ].sort((a, b) => a.start - b.start)
+        }
+    };
+
+    // إرسال رسالة للتطبيق الأب (الحفظ + الربط بالتظليل + رفع الصوت)
+    try {
+        // أرفق الصوت نفسه (base64) إذا كان الحجم معقولاً (< ~18MB) لرفعه مباشرة للسيرفر
+        const f = files[curIdx] ? files[curIdx].file : null;
+        if (f && f.size < 18 * 1024 * 1024) {
+            const buf = await f.arrayBuffer();
+            let bin = '';
+            const bytes = new Uint8Array(buf);
+            const chunk = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunk) {
+                bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+            }
+            data.audioBase64 = btoa(bin);
+            data.audioMime = f.type || 'audio/mpeg';
+        }
+    } catch (e) {
+        console.debug('[splitter] audio attach skipped:', e);
+    }
+    window.parent.postMessage({ type: 'SAVE_AUDIO_SPLIT', payload: data }, '*');
+    toast('⏳ جاري الحفظ والربط بالتظليل...');
+}
+// استقبال تأكيد الحفظ من التطبيق الأب
+window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'SAVE_AUDIO_SPLIT_ACK') {
+        if (e.data.ok) toast('✅ ' + (e.data.message || 'تم الحفظ والربط بالتظليل'));
+        else toast('❌ ' + (e.data.message || 'فشل الحفظ'));
+    }
+});
+</script>
+</body>
+</html>

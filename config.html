@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>لوحة تحكم مطور المصحف - Mushaf Dev Config</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 24px; }
+    h1 { color: #f59e0b; }
+    h2 { color: #d1d5db; margin-top: 28px; border-bottom: 1px solid #334159; padding-bottom: 8px; }
+    label { display: block; margin: 10px 0 6px; font-size: 14px; color: #cbd5e1; }
+    input[type="number"], input[type="text"], textarea, select {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #f1f5f9; font-size: 14px;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    button {
+      padding: 12px 24px; border-radius: 8px; border: none; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 16px;
+    }
+    #unlockBtn     { background: #f59e0b; color: #1e293b; }
+    #saveBtn       { background: #10b981; color: #0f172a; }
+    #resetBtn      { background: #ef4444; color: #fff; margin-right: 10px; }
+    .locked { opacity: 0.5; pointer-events: none; }
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; background: #16a34a; color: white; padding: 14px 24px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+      transform: translateY(20px); opacity: 0; transition: all 0.3s ease; z-index: 9999;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <h1>🔧 لوحة تحكم مطور &quot;مصاحف الحماس&quot;</h1>
+  <p style="color: #94a3b8;">أدخل كلمة المرور للوصول إلى الإعدادات المتقدمة.</p>
+
+  <input type="password" id="pass" placeholder="كلمة مرور المطور" style="margin: 12px 0; padding: 10px; width: auto;" />
+  <button id="unlockBtn">فتح الإعدادات</button>
+
+  <div id="panel" class="locked">
+
+    <h2>🎮 أسعار ومكاملات الألعاب</h2>
+    <div id="gamePrices"></div>
+
+    <h2>✨ نقاط مجانية</h2>
+    <label>عدد النجوم لإضافتها:</label>
+    <input type="number" id="freeCoins" value="500" min="0" />
+    <button id="giveCoins" style="background:#6366f1; color:white;">إعطاء نقاط مجانية</button>
+
+    <h2>🖼️ رفع صورة / نص بديل</h2>
+    <label>اسم الملف (مثلاً: badge-icon.png):</label>
+    <input type="text" id="mediaName" placeholder="أسم الملف" />
+    <label>المحتوى (رابط صورة أو نص):</label>
+    <textarea id="mediaContent" placeholder="https://example.com/image.png أو نص بديل"></textarea>
+    <button id="saveMedia" style="background:#8b5cf6; color:white;">حفظ الوسائط</button>
+
+    <h2>🏆 إعدادات الشهادة واللقب</h2>
+    <label>عدد الأحزاب المطلوبة للحصول على اللقب (افتراضيًا: 5):</label>
+    <input type="number" id="badgeThreshold" value="5" min="1" />
+
+    <h2>🔄 استعادة الإعدادات الافتراضية</h2>
+    <button id="resetBtn">إعادة تعيين كل الإعدادات</button>
+
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const STORAGE_KEY = "mushaf:devConfig:v1";
+    const defaults = {
+      gamePrices: {},
+      badgeThreshold: 5,
+      media: {},
+      freeCoins: 500
+    };
+
+    function loadConfig() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { ...defaults };
+        return { ...defaults, ...JSON.parse(raw) };
+      } catch {
+        return { ...defaults };
+      }
+    }
+
+    function saveConfig(cfg) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2500);
+    }
+
+    const GAME_IDS = [
+      "memory", "whichsurah", "order", "surahorder", "count",
+      "missingword", "quiz", "server_quiz", "which", "ayahlonger",
+      "nextayah", "prevayah", "ayahsurah", "surahnum", "detective",
+      "wordbuilder", "catchstar", "ayahmath"
+    ];
+
+    const priceList = document.getElementById("gamePrices");
+    const cfg = loadConfig();
+
+    GAME_IDS.forEach(id => {
+      const row = document.createElement("div");
+      row.style.marginBottom = "10px";
+      row.innerHTML = `
+        <label for="${id}">${id}</label>
+        <input type="number" id="${id}" value="${cfg.gamePrices[id] ?? ''}" min="0" step="10" />
+      `;
+      priceList.appendChild(row);
+      document.getElementById(id).addEventListener('change', (e) => {
+        const val = parseInt(e.target.value) || 0;
+        const c = loadConfig();
+        c.gamePrices[id] = val;
+        saveConfig(c);
+        showToast(`تم تحديث سعر ${id} إلى ${val} نجمة`);
+          GAME_IDS.forEach(id => {
+      const row = document.createElement("div");
+      row.style.marginBottom = "10px";
+      row.innerHTML = `
+        <label for="${id}">${id}</label>
+        <input type="number" id="${id}" value="${cfg.gamePrices[id] ?? ''}" min="0" step="10" />
+      `;
+      priceList.appendChild(row);
+            GAME_IDS.forEach(id => {
+        const row = document.createElement("div");
+        row.style.marginBottom = "10px";
+        row.innerHTML = `
+          <label for="${id}">${id}</label>
+          <input type="number" id="${id}" value="${cfg.gamePrices[id] ?? ''}" min="0" step="10" />
+        `;
+        priceList.appendChild(row);
+        document.getElementById(id).addEventListener('change', (e) => {
+          const val = parseInt(e.target.value) || 0;
+          const c = loadConfig();
+          c.gamePrices[id] = val;
+          saveConfig(c);
+          showToast(`تم تحديث سعر ${id} إلى ${val} نجمة`);
+        });
+      });
+
+      document.getElementById("unlockBtn").addEventListener("click", () => {
+        const p = (document.getElementById("pass") as HTMLInputElement).value;
+        if (p === "مشرك") {
+          document.getElementById("panel").classList.remove("locked");
+          showToast("تم فتح الإعدادات ✅");
+        } else {
+          showToast("❌ كلمة المرور خاطئة");
+        }
+      });
+
+      document.getElementById("giveCoins").addEventListener("click", () => {
+        const amt = parseInt((document.getElementById("freeCoins") as HTMLInputElement).value) || 0;
+        if (amt > 0) {
+          window.dispatchEvent(new CustomEvent("mushaf:giveCoins", { detail: { amount: amt } }));
+          showToast(`+${amt} نجمة إضافية 🎉`);
+        }
+      });
+
+      document.getElementById("saveMedia").addEventListener("click", () => {
+        const name = (document.getElementById("mediaName") as HTMLInputElement).value.trim();
+        const content = (document.getElementById("mediaContent") as HTMLTextAreaElement).value.trim();
+        if (!name || !content) return showToast("❌ اسم الملف والمحتوى مطلوبان");
+        const c = loadConfig();
+        c.media[name] = content;
+        saveConfig(c);
+        showToast(`تم حفظ الوسائط: ${name}`);
+      });
+
+      document.getElementById("badgeThreshold").addEventListener("change", (e) => {
+        const c = loadConfig();
+        c.badgeThreshold = parseInt((e.target as HTMLInputElement).value) || 5;
+        saveConfig(c);
+        showToast(`تم تحديث عتبة اللقب إلى ${c.badgeThreshold} أحزاب`);
+      });
+
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        if (confirm("هل أنت متأكد من مسح كل الإعدادات؟")) {
+          localStorage.removeItem(STORAGE_KEY);
+          location.reload();
+        }
+      });
+
+      // للكشافة: استقبال الإعدادات من التطبيق الأصلي
+      window.addEventListener("message", (e) => {
+        if (e.data?.type === "GET_CONFIG") {
+          const c = loadConfig();
+          e.source?.postMessage({ type: "CONFIG_RESPONSE", data: c }, "*");
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -175,32 +175,6 @@ function toggleMediaPlayback(): void {
  * تهيئة مستمعات الريموت كنترول ولوحة المفاتيح
  */
 export function setupRemoteControlListeners(): () => void {
-  // 📺 كشف تلقائي لأجهزة التلفاز — يُفعّل نمط tv-nav مباشرة دون انتظار ضغطة سهم
-  const ua = navigator.userAgent.toLowerCase();
-  const isTVDevice =
-    ua.includes("android tv") ||
-    ua.includes("smart-tv") ||
-    ua.includes("smarttv") ||
-    ua.includes("googletv") ||
-    ua.includes("crkey") ||  // Chromecast
-    ua.includes("aftt") ||   // Amazon Fire TV
-    ua.includes("aftm") ||   // Amazon Fire TV Stick
-    ua.includes("tizen") ||  // Samsung Smart TV
-    ua.includes("webos") ||  // LG Smart TV
-    ua.includes("hbbtv") ||  // HbbTV (Hybrid broadcast broadband TV)
-    ua.includes("viera") ||  // Panasonic
-    ua.includes("nettv") ||  // Philips
-    (ua.includes("android") && !("ontouchstart" in window) && window.innerWidth >= 1280);
-
-  if (isTVDevice) {
-    document.documentElement.classList.add("tv-nav");
-    // في أجهزة التلفاز: نعطي التركيز (focus) للعنصر الأول القابل للتحديد تلقائياً
-    requestAnimationFrame(() => {
-      const first = getFocusableElements()[0];
-      if (first) first.focus();
-    });
-  }
-
   // إبراز واضح للعنصر المحدد بالريموت/لوحة المفاتيح (يُفعَّل عند أول استخدام للأسهم)
   const style = document.createElement("style");
   style.textContent = `

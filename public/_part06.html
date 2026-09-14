@@ -1,0 +1,43 @@
+
+    <!-- إعدادات -->
+    <div class="card">
+        <div class="card-title">⚙️ إعدادات التقسيم</div>
+        <div class="sGrid">
+            <div class="sItem">
+                <label>عتبة الصمت (dB)</label>
+                <input type="range" id="rThresh" min="-60" max="-15" value="-35" step="1">
+                <div class="sVal" id="vThresh">-35 dB</div>
+                <div class="sDesc">أقل = أكثر حساسية لاكتشاف الصمت</div>
+            </div>
+            <div class="sItem">
+                <label>أقل مدة صمت (ثانية)</label>
+                <input type="range" id="rMinSil" min="0.2" max="3.0" value="0.6" step="0.1">
+                <div class="sVal" id="vMinSil">0.6 ث</div>
+                <div class="sDesc">فاصل الصمت الأقل بين المتحدثين</div>
+            </div>
+            <div class="sItem">
+                <label>أقل مدة مقطع (ثانية)</label>
+                <input type="range" id="rMinSeg" min="0.3" max="5.0" value="0.8" step="0.1">
+                <div class="sVal" id="vMinSeg">0.8 ث</div>
+                <div class="sDesc">دمج المقاطع الأقصر من هذه المدة</div>
+            </div>
+            <div class="sItem">
+                <label>نمط التلاوة</label>
+                <select id="mode" class="sel">
+                    <option value="alternating">تلقين متبادل (معلم ↔ طفل)</option>
+                    <option value="frequency">تحليل التردد (ذكي)</option>
+                    <option value="energy">تحليل الطاقة الصوتية</option>
+                </select>
+                <div class="sDesc">طريقة التمييز بين المعلم والطفل</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قائمة الملفات -->
+    <div class="card hide" id="secFiles">
+        <div class="topActions">
+            <div class="card-title" style="margin:0">📋 الملفات <span id="fCnt" style="background:var(--gold);color:var(--bg);padding:2px 10px;border-radius:12px;font-size:0.8rem;margin-right:6px;">0</span></div>
+            <button class="btn g" id="btnAll" onclick="processAll()">▶️ معالجة الكل</button>
+        </div>
+        <div class="fGrid" id="fGrid"></div>
+    </div>

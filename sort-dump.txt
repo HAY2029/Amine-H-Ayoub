@@ -1,0 +1,235 @@
+106:   try {
+107:     const { data: root } = await supabase.storage.from("mushaf-images").list();
+108:     const dirs: string[] = [];
+109:     (root || []).forEach((f) => {
+110:       if (f.metadata && f.metadata.size) {
+111:         if (IMG_EXT_RE.test(f.name)) {
+112:           const k = normalizeImageKey(f.name);
+113:           if (k && !out.some(o => o.src === k)) {
+114:             const { data: { publicUrl } } = supabase.storage.from("mushaf-images").getPublicUrl(f.name);
+115:             out.push({ src: k, url: publicUrl });
+116:           }
+117:         }
+118:       } else dirs.push(f.name);
+119:     });
+120:     for (const d of dirs) {
+121:       try {
+122:         const { data: files } = await supabase.storage.from("mushaf-images").list(d);
+123:         (files || []).forEach((f) => {
+124:           if (IMG_EXT_RE.test(f.name)) {
+125:             const k = normalizeImageKey(`${d}/${f.name}`);
+126:             if (k && !out.some(o => o.src === k)) {
+127:               const { data: { publicUrl } } = supabase.storage.from("mushaf-images").getPublicUrl(`${d}/${f.name}`);
+128:               out.push({ src: k, url: publicUrl });
+129:             }
+130:           }
+131:         });
+132:       } catch {
+133:         /* ignore */
+134:       }
+135:     }
+136:   } catch (e) {
+137:     console.debug("[sort] bucket list failed:", e);
+138:   }
+139:   return out;
+140: }
+141: 
+142: /** جلب قائمة الصفحات المخصصة (الأسماء) من السيرفر مباشرة */
+143: async function fetchServerCustomPages(): Promise<CustomPage[]> {
+144:   if (!hasValidSupabaseKey()) return [];
+145:   try {
+146:     const { data } = await supabase.from("store").select("value").eq("key", META_KEY).maybeSingle();
+147:     if (data?.value && Array.isArray(data.value)) return data.value as CustomPage[];
+148:   } catch (e) {
+149:     console.debug("[sort] server meta failed:", e);
+150:   }
+151:   return [];
+152: }
+153: 
+154: /** جلب ترتيب الصفحات المحفوظ على السيرفر مباشرة (src[]) */
+155: async function fetchServerOrderSrcs(): Promise<string[]> {
+156:   if (!hasValidSupabaseKey()) return [];
+157:   try {
+158:     const { data, error } = await supabase
+159:       .from("store")
+160:       .select("value")
+161:       .eq("key", ORDER_KEY)
+162:       .maybeSingle();
+163:     if (!error && data?.value && Array.isArray(data.value)) {
+164:       return (data.value as unknown[]).filter((v): v is string => typeof v === "string");
+165:     }
+166:   } catch (e) {
+167:     console.debug("[sort] server order fetch failed:", e);
+168:   }
+169:   return [];
+170: }
+171: 
+172: /** التحقق أن الترتيب وصل للسيرفر فعلاً (مع إعادة محاولات) */
+173: async function verifyOrderOnServer(order: string[], retries = 3): Promise<boolean> {
+174:   if (!hasValidSupabaseKey()) return false;
+175:   for (let i = 0; i < retries; i++) {
+176:     try {
+177:       const { data, error } = await supabase.from("store").select("value").eq("key", ORDER_KEY).maybeSingle();
+178:       if (!error && data?.value && Array.isArray(data.value) && JSON.stringify(data.value) === JSON.stringify(order)) {
+179:         return true;
+180:       }
+181:     } catch (e) {
+182:       console.debug("[sort] verify failed:", e);
+183:     }
+184:     await new Promise((r) => setTimeout(r, 1500));
+185:   }
+186:   return false;
+187: }
+188: 
+189: export default function SortPagesPage() {
+190:   const [serverImgSrcs, setServerImgSrcs] = useState<Set<string>>(new Set());
+191:   const [imgUrlMap, setImgUrlMap] = useState<Record<string, string>>({});
+192:   const [metaList, setMetaList] = useState<CustomPage[]>([]);
+193:   const [rows, setRows] = useState<string[]>([]);
+194:   const [filter, setFilter] = useState("");
+195:   const [loading, setLoading] = useState(true);
+196:   const [isSaving, setIsSaving] = useState(false);
+197:   const [serverStatus, setServerStatus] = useState<ServerStatus>("idle");
+198:   const dragSrc = useRef<number | null>(null);
+199: 
+200:   // ─────────── تحميل صور السيرفر فقط (بلا أي ملفات محلية/IndexedDB) ───────────
+201:   const reload = useCallback(async () => {
+202:     if (!hasValidSupabaseKey()) {
+203:       setServerStatus("offline");
+204:       toast({
+205:         title: "⚠️ السيرفر غير متصل",
+206:         description: "أضف VITE_SUPABASE_URL و VITE_SUPABASE_PUBLISHABLE_KEY في ملف .env ثم أعد المحاولة",
+207:         variant: "destructive",
+208:       });
+209:       return;
+210:     }
+211:     setServerStatus("connecting");
+212:     setLoading(true);
+213:     try {
+214:       // 1) صور السيرفر فقط — لا نلمس IndexedDB أو localStorage للصور
+215:       const serverImgs = await fetchServerImages();
+216:       const srcSet = new Set<string>();
+217:       const urlMap: Record<string, string> = {};
+218:       serverImgs.forEach(({ src, url }) => {
+219:         srcSet.add(src);
+220:         urlMap[src] = url;
+221:       });
+222:       setServerImgSrcs(srcSet);
+223:       setImgUrlMap(urlMap);
+224: 
+225:       // 2) أسماء الصفحات المخصصة من السيرفر مباشرة (مع بديل محلي إن لم يُعثر)
+226:       const serverMeta = await fetchServerCustomPages();
+227:       setMetaList(serverMeta.length ? serverMeta : getCustomPages());
+228: 
+229:       // 3) الترتيب المحفوظ: جلبه من السيرفر أولاً، ثم خليط باقي صور السيرفر بالأرقام
+230:       const saved = await fetchServerOrderSrcs();
+231:       const savedNorm = saved.map(normKey).filter(s => srcSet.has(s));
+232:       const seen = new Set(savedNorm);
+233:       const rest = Array.from(srcSet)
+234:         .filter(s => !seen.has(s))
+235:         .sort((a, b) => pageNumOf(a) - pageNumOf(b));
+236: 
+237:       // احفظ النسخة المحلية كاحتياطي سريع (يستخدمه القارئ فورًا قبل المزامنة)
+238:       try { localStorage.setItem("mushaf:pageOrder:v1", JSON.stringify(savedNorm.length ? savedNorm : rest)); } catch { /* ignore */ }
+239: 
+240:       setRows([...savedNorm, ...rest]);
+241:       setServerStatus("online");
+242:     } catch (e) {
+243:       console.error("[sort] reload failed:", e);
+244:       setServerStatus("offline");
+245:       toast({ title: "❌ فشل تحميل صور السيرفر", description: String(e), variant: "destructive" });
+246:     } finally {
+247:       setLoading(false);
+248:     }
+249:     }, []);
+250:     useEffect(() => { reload(); }, [reload]);
+251: 
+252:   // ─────────── بيانات كل صفحة (الاسم + سورها + رقمها) ───────────
+253:   const infoMap = useMemo(() => {
+254:     const regionsAll = getSavedSurahRegions();
+255:     const boxesAll = getSavedAyahCoordinates();
+256:     const altKey = (k: string) => k.replace(/^\//, "");
+257:     const pageNames: Record<string, string> = (() => {
+258:       try { return JSON.parse(localStorage.getItem(PAGE_NAMES_KEY) || "{}"); } catch { return {}; }
+259:     })();
+260:     const map: Record<string, PageMeta> = {};
+261:     rows.forEach(src => {
+262:       // الاسم: اسم مخصّص من القارئ ← اسم الصفحة المرفوعة (من السيرفر) ← الرقم من المسار
+263:       let label = pageNames[src] || "";
+264:       if (!label) {
+265:         const cp = metaList.find(p => normKey(p.src) === src);
+266:         if (cp?.name) label = cp.name;
+267:       }
+268:       if (!label) label = src.replace("/pages/", "").replace(/\.[a-z0-9]+$/i, "") || src;
+269: 
+270:       // السور: مناطق السور من المعايرة (مرتبة من أعلى الصفحة لأسفلها) ← وإلا من مربعات الآيات
+271:       const surahs: string[] = [];
+272:       const seen = new Set<string>();
+273:       let firstSurah = Number.MAX_SAFE_INTEGER;
+274:       (regionsAll[src] || regionsAll[altKey(src)] || [])
+275:         .slice()
+276:         .sort((a, b) => a.y - b.y)
+277:         .forEach(r => {
+278:           const key = r.surah ? `s${r.surah}` : `n${r.name || r.y}`;
+279:           if (seen.has(key)) return;
+280:           seen.add(key);
+281:           if (r.surah && firstSurah === Number.MAX_SAFE_INTEGER) firstSurah = r.surah;
+282:           const name = r.name || (r.surah ? getSurahName(r.surah) : "");
+283:           if (name) surahs.push(name);
+284:         });
+285:       if (surahs.length === 0) {
+286:         const boxes = boxesAll[src] || boxesAll[altKey(src)] || AYAH_COORDINATES[src] || AYAH_COORDINATES[altKey(src)] || [];
+287:         Array.from(new Set(boxes.map(b => b.surah))).sort((a, b) => a - b).forEach(n => {
+288:           if (firstSurah === Number.MAX_SAFE_INTEGER) firstSurah = n;
+289:           surahs.push(getSurahName(n));
+290:         });
+291:       }
+292: 
+293:       const nameDigits = label.match(/(\d+)/);
+294:       map[src] = {
+295:         label,
+296:         surahs,
+297:         firstSurah,
+298:         pageNum: nameDigits ? parseInt(nameDigits[1], 10) : pageNumOf(src),
+299:       };
+300:     });
+301:     return map;
+302:   }, [rows, metaList]);
+303: 
+304:     const thumbOf = (src: string): string | null => imgUrlMap[src] || null;
+305: 
+306:   const withSurahCount = useMemo(
+307:     () => rows.reduce((acc, r) => acc + ((infoMap[r]?.surahs.length || 0) > 0 ? 1 : 0), 0),
+308:     [rows, infoMap]
+309:   );
+310: 
+311:   // ─────────── إعادة الترتيب (سحب/إفلات + أسهم) ───────────
+312:   const move = (from: number, to: number) => {
+313:     setRows(prev => {
+314:       if (from < 0 || to < 0 || from >= prev.length || to >= prev.length || from === to) return prev;
+315:       const next = [...prev];
+316:       const [moved] = next.splice(from, 1);
+317:       next.splice(to, 0, moved);
+318:       return next;
+319:     });
+320:   };
+321:   const moveBy = (pos: number, dir: -1 | 1) => move(pos, pos + dir);
+322: 
+323:   const filterActive = filter.trim().length > 0;
+324: 
+325:   /** ترتيب تلقائي حسب رقم الصفحة (من الاسم أو المسار) */
+326:   const autoSortByPageNum = () => {
+327:     if (filterActive) return;
+328:     setRows(prev => [...prev].sort((a, b) =>
+329:       (infoMap[a]?.pageNum ?? Number.MAX_SAFE_INTEGER) - (infoMap[b]?.pageNum ?? Number.MAX_SAFE_INTEGER) ||
+330:       a.localeCompare(b)
+331:     ));
+332:   };
+333: 
+334:   /** ترتيب تلقائي حسب ترتيب السور في المصحف (أول سورة في كل صفحة) */
+335:   const autoSortBySurah = () => {
+336:     if (filterActive) return;
+337:     setRows(prev => [...prev].sort((a, b) =>
+338:       (infoMap[a]?.firstSurah ?? Number.MAX_SAFE_INTEGER) - (infoMap[b]?.firstSurah ?? Number.MAX_SAFE_INTEGER) ||
+339:       (infoMap[a]?.pageNum ?? Number.MAX_SAFE_INTEGER) - (infoMap[b]?.pageNum ?? Number.MAX_SAFE_INTEGER) ||
+340:       a.localeCompare(b)

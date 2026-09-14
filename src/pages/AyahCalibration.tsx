@@ -3,7 +3,8 @@ import { ArrowRight, Plus, RotateCcw, Save, Trash2, ZoomIn, ZoomOut, Copy, Link2
 import { AyahBox, getAllPageSources, getPageAyahBoxes, PAGE_IMAGE_SIZE, resetPageAyahBoxes, savePageAyahBoxes } from "@/data/ayahCoordinates";
 import { getPageSurahRegions, savePageSurahRegions, SurahRegion } from "@/data/surahRegions";
 import { clearSavedSurahTimings } from "@/data/ayahTimings";
-import { CustomPage, getCustomPages, addCustomPage, removeCustomPage, savePageImage, getAllPageImages, deletePageImage, getPageOrder, savePageOrder, clearPageOrder } from "@/data/customPages";
+import { CustomPage, getCustomPages, addCustomPage, removeCustomPage, savePageImage, getAllPageImages, syncAllPageImagesFromServer, deletePageImage, getPageOrderSrcs, savePageOrder, clearPageOrder, compressImageFile } from "@/data/customPages";
+import { fetchHuggingFaceImages, HFImage } from "@/services/huggingFaceService";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
@@ -13,13 +14,54 @@ const step = 10;
 const AyahCalibration = () => {
   const [customPages, setCustomPages] = useState<CustomPage[]>(() => getCustomPages());
   const [customImages, setCustomImages] = useState<Record<string, string>>({});
-  const pageSources = useMemo(() => [...getAllPageSources(), ...customPages.map(p => p.src)], [customPages]);
+  const [hfImagesMap, setHfImagesMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all([
+      fetchHuggingFaceImages().catch(() => [] as HFImage[]),
+      syncAllPageImagesFromServer().catch(() => ({} as Record<string, string>)),
+    ]).then(([images, localImgs]) => {
+      if (!alive) return;
+      const map: Record<string, string> = {};
+      const srcList: string[] = [];
+      images.forEach(img => {
+        // img.name قد يكون "pages/600.jpg" — نوحّد المفتاح إلى "/pages/600.jpg"
+        const clean = img.name.replace(/^pages\//, "").replace(/^\/pages\//, "");
+        const src = `/pages/${clean}`;
+        map[src] = img.url;
+        srcList.push(src);
+      });
+      setHfImagesMap(map);
+      try { localStorage.setItem("mushaf:hfImageSrcs:v1", JSON.stringify(srcList)); } catch { /* ignore */ }
+      // دمج صور السيرفر (Supabase base64 + bucket) + الصور المحلية — حتى تظهر كل الصور معاً
+      const mergedImgs: Record<string, string> = { ...localImgs, ...map };
+      setCustomImages(mergedImgs);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
+  const pageSources = useMemo(() => {
+    // كل المصادر: المدمجة + المخصصة + صور HuggingFace + صور السيرفر (بدون تكرار)
+    const sources = new Set([
+      ...getAllPageSources(),
+      ...customPages.map(p => p.src),
+      ...Object.keys(hfImagesMap),
+      ...Object.keys(customImages),
+    ]);
+    return Array.from(sources);
+  }, [customPages, hfImagesMap, customImages]);
 
   const [pageSrc, setPageSrc] = useState(pageSources[0]);
   const [boxes, setBoxes] = useState<AyahBox[]>(() => getPageAyahBoxes(pageSources[0]));
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(() => typeof window === "undefined" ? 1 : clamp((window.innerWidth - 24) / PAGE_IMAGE_SIZE.width, 0.25, 1));
   const [isSaving, setIsSaving] = useState(false);
+  // حالة المزامنة مع السيرفر (Supabase store) — لعرضها بصرياً في الرأس
+  const [serverState, setServerState] = useState<"idle" | "syncing" | "done" | "error">("idle");
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => {
+    try { return parseInt(localStorage.getItem("mushaf:calibrationLastSync") || "0", 10) || 0; } catch { return 0; }
+  });
 
   // مناطق السور (تعريف فقط، اسم + رقم لكل سورة)
   const [regions, setRegions] = useState<SurahRegion[]>(() => getPageSurahRegions(pageSources[0]));
@@ -50,10 +92,9 @@ const AyahCalibration = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const selected = boxes[selectedIndex];
 
-  // ─────────── تحميل ومساعدات ───────────
-  useEffect(() => { getAllPageImages().then(setCustomImages).catch(() => {}); }, []);
+  // ─────────── تحميل ومساعدات (مدمجة: لا تُحمّل الصور مرتين) ───────────
 
-  const imgSrcFor = (src: string) => customImages[src] || src;
+  const imgSrcFor = (src: string) => customImages[src] || hfImagesMap[src] || src;
   const pageLabel = (src: string) => {
     const cp = customPages.find(p => p.src === src);
     return cp ? `🟢 ${cp.name}` : src.replace("/pages/", "");
@@ -303,7 +344,7 @@ const AyahCalibration = () => {
     if (!newName.trim()) { toast({ title: "⚠️ اكتب اسم/رقم الصفحة", variant: "destructive" }); return; }
     setCreating(true);
     try {
-      const dataUrl = await readFileAsDataUrl(newFile);
+      const dataUrl = await compressImageFile(newFile);
       const uniqueSrc = `custom:${Date.now()}`;
       await savePageImage(uniqueSrc, dataUrl);
       setCustomPages(addCustomPage({ src: uniqueSrc, name: newName.trim() }));
@@ -351,7 +392,7 @@ const AyahCalibration = () => {
 
   // ─────────── ترتيب الصفحات ───────────
   const openArrange = useCallback(() => {
-    const saved = getPageOrder();
+    const saved = getPageOrderSrcs();
     const valid = saved.filter(s => pageSources.includes(s));
     pageSources.forEach(s => { if (!valid.includes(s)) valid.push(s); });
     setDraftSrcOrder(valid);
@@ -368,15 +409,33 @@ const AyahCalibration = () => {
   };
 
   // ─────────── الحفظ ───────────
-  const saveAll = useCallback((silent = false) => {
-    savePageAyahBoxes(pageSrc, boxes);
-    savePageSurahRegions(pageSrc, regions);
+  const saveAll = useCallback(async (silent = false) => {
+    if (serverState === "syncing") return;
+    setServerState("syncing");
+    const results = await Promise.all([
+      savePageAyahBoxes(pageSrc, boxes).then(() => true).catch((e) => { console.warn("save boxes:", e); return false; }),
+      savePageSurahRegions(pageSrc, regions).then(() => true).catch((e) => { console.warn("save regions:", e); return false; }),
+    ]);
+    const ok = results.every(Boolean);
+    if (ok) {
+      setServerState("done");
+      const t = Date.now();
+      setLastSyncedAt(t);
+      try { localStorage.setItem("mushaf:calibrationLastSync", String(t)); } catch { /* ignore */ }
+    } else {
+      setServerState("error");
+    }
     if (!silent) {
       setIsSaving(true);
-      toast({ title: "✅ تم الحفظ", description: `${boxes.length} مربع · ${regions.length} منطقة سورة` });
-      setTimeout(() => setIsSaving(false), 1200);
+      toast({
+        title: ok ? "✅ حُفظت الصفحة ومزامَنت مع السيرفر" : "⚠️ حُفظت محلياً — تعذّر الوصول للسيرفر",
+        description: `${boxes.length} مربع · ${regions.length} منطقة سورة`,
+        variant: ok ? "default" : "destructive",
+      });
+      setTimeout(() => setIsSaving(false), 1500);
     }
-  }, [boxes, regions, pageSrc]);
+    return ok;
+  }, [pageSrc, boxes, regions, serverState]);
 
   // حفظ تلقائي عند الخروج
   const stateRef = useRef({ pageSrc, boxes, regions });
@@ -389,7 +448,7 @@ const AyahCalibration = () => {
 
   const isCustom = customPages.some(p => p.src === pageSrc);
   // رابط صورة صالح فقط: صفحة مرفوعة بلا صورة → فارغ (نعرض بديلاً موجّهاً بدل صورة مكسورة)
-  const pageImgUrl = customImages[pageSrc] || (pageSrc.startsWith("custom:") ? "" : pageSrc);
+  const pageImgUrl = customImages[pageSrc] || hfImagesMap[pageSrc] || (pageSrc.startsWith("custom:") ? "" : pageSrc);
 
   // ─────────── الواجهة ───────────
   return (
@@ -402,6 +461,15 @@ const AyahCalibration = () => {
           </Link>
           <h1 className="font-extrabold text-base sm:text-lg text-gradient-gold">📐 معايرة المصحف</h1>
           <div className="flex items-center gap-2">
+            {/* شارة مزامنة السيرفر */}
+            <span
+              title={serverState === "syncing" ? "جارٍ الرفع إلى السيرفر..." : serverState === "error" ? "تعذّر الوصول للسيرفر — ستعيد المحاولة عند الحفظ" : lastSyncedAt > 0 ? `آخر مزامنة: ${new Date(lastSyncedAt).toLocaleTimeString("ar", { hour: "2-digit", minute: "2-digit" })}` : "لم تُحفظ بعد"}
+              className="flex h-8 min-w-[92px] items-center justify-center gap-1 rounded-full px-2 text-[10px] font-bold transition-all"
+              style={{ background: serverState === "syncing" ? "rgba(250,204,21,0.18)" : serverState === "error" ? "rgba(239,68,68,0.16)" : "rgba(16,185,129,0.14)", border: `1px solid ${serverState === "syncing" ? "rgba(250,204,21,0.45)" : serverState === "error" ? "rgba(239,68,68,0.45)" : "rgba(16,185,129,0.4)"}`, color: serverState === "syncing" ? "#b45309" : serverState === "error" ? "#b91c1c" : "#047857" }}
+            >
+              {serverState === "syncing" ? <span className="w-2.5 h-2.5 rounded-full border border-current border-t-transparent animate-spin" /> : <Check className="h-3 w-3" />}
+              {serverState === "syncing" ? "يرفع..." : serverState === "error" ? "السيرفر؟" : "السيرفر ✓"}
+            </span>
             <button onClick={undo} disabled={history.length === 0}
               className={`flex h-10 items-center gap-1 rounded-full px-3 text-sm font-bold active:scale-95 transition-all ${history.length === 0 ? "bg-secondary/50 text-muted-foreground" : "bg-secondary text-secondary-foreground hover:brightness-95"}`}>
               <RotateCcw className="h-4 w-4" />

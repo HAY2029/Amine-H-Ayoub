@@ -1,0 +1,67 @@
+
+// ======================================================================
+//  ربط الأحداث والختام
+// ======================================================================
+document.addEventListener('DOMContentLoaded',()=>{
+    // اختيار ملف
+    $('fileInput').addEventListener('change',e=>{
+        const f=e.target.files[0];
+        if(f){
+            $('fileName').textContent=f.name;
+            $('fileCard').classList.add('has');
+            loadFile(f);
+        }
+    });
+
+    // معايرة تلقائية
+    $('calibBtn').addEventListener('click',()=>{
+        if(!audioBuf)return;
+        runCalibrate(audioBuf);
+        $('calibCard').style.display='block';
+    });
+
+    // أزرار الوضع
+    $('mode').addEventListener('change',()=>{
+        if(audioBuf&&segsArr.length){
+            classifySpeakers(segsArr,audioBuf);
+            drawTimeline(segsArr);
+            drawSegs(segsArr);
+        }
+    });
+
+    // أزرار التصدير
+    $('exportBtn').addEventListener('click',()=>{
+        const menu=$('exportMenu');
+        menu.style.display=menu.style.display==='block'?'none':'block';
+    });
+    $('csvExport').addEventListener('click',exportCSV);
+    $('jsonExport').addEventListener('click',exportJSON);
+
+    // إدخالات الواجهة
+    $('rThresh').addEventListener('input',e=>{
+        $('vThresh').textContent=e.target.value+' dB';
+    });
+    $('rMinSil').addEventListener('input',e=>{
+        $('vMinSil').textContent=e.target.value+' ث';
+    });
+    $('rMinSeg').addEventListener('input',e=>{
+        $('vMinSeg').textContent=e.target.value+' ث';
+    });
+
+    // إعادة الحساب
+    $('recalcBtn').addEventListener('click',()=>{
+        if(audioBuf)runPipeline();
+    });
+
+    // زر القائمة
+    $('menuBtn').addEventListener('click',()=>{
+        const m=$('navMenu');
+        m.style.display=m.style.display==='block'?'none':'block';
+    });
+
+    // شريط الرجوع
+    $('backBtn').addEventListener('click',()=>window.history.back());
+
+    // مسح اختيار الملف عند إعادة الاختيار
+    $('fileInput').addEventListener('click',()=>{$('fileInput').value='';});
+});

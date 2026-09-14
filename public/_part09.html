@@ -1,0 +1,58 @@
+
+// ===== المعالجة الرئيسية =====
+async function proc(idx){
+    curIdx=idx;
+    const fo=files[idx];
+    fo.status='w'; renderFiles();
+
+    $('secProc').classList.remove('hide');$('secProc').classList.add('show');
+    $('secRes').classList.add('hide');$('secExp').classList.add('hide');
+    $('curName').textContent=surahName(fo.name);
+    $('curProg').textContent=`ملف ${idx+1} من ${files.length}`;
+
+    showMsg('جاري تحميل وتحليل الصوت...','info');
+    prog(10,'تحميل الصوت...');
+
+    try{
+        if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)();
+        const ab=await fo.file.arrayBuffer();
+        prog(25,'فك ترميز الصوت...');
+        abuf=await actx.decodeAudioData(ab);
+        prog(35,'🔬 معايرة تلقائية — تحليل طبيعة الملف...');
+
+        autoCalibrate(abuf);
+        prog(50,'تحليل الموجة الصوتية...');
+
+        segs=splitAudio(abuf);
+        prog(75,'تصنيف المتحدثين...');
+        classifySpeakers(segs,abuf);
+        prog(85,'دمج المقاطع القصيرة...');
+        segs=mergeShort(segs);
+        prog(95,'رسم النتائج...');
+
+        drawSegWave();
+        prog(100,'✅ تم التقسيم بنجاح!');
+        showMsg(`تم تقسيم الملف إلى ${segs.length} مقطع بنجاح ✅`,'ok');
+
+        fo.status='d'; fo.segs=[...segs]; renderFiles();
+
+        renderSegs();
+        renderStats();
+        $('secRes').classList.remove('hide');$('secRes').classList.add('show');
+        $('secExp').classList.remove('hide');$('secExp').classList.add('show');
+        $('pTot').textContent=fmt(abuf.duration);
+    }catch(err){
+        showMsg('❌ خطأ: '+err.message,'err');
+        fo.status='p'; renderFiles();
+        console.error(err);
+    }
+}
+
+async function processAll(){
+    const b=$('btnAll'); b.disabled=true; b.innerHTML='<span class="spinner"></span> جاري المعالجة...';
+    for(let i=0;i<files.length;i++){
+        if(files[i].status!=='d'){ await proc(i); await new Promise(r=>setTimeout(r,200)); }
+    }
+    b.disabled=false; b.innerHTML='✅ تمت المعالجة';
+    toast('🎉 تمت معالجة جميع الملفات!');
+}

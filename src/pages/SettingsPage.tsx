@@ -1,10 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Moon, Sun, Baby, ChevronLeft, X, BarChart3, Wrench, User, GraduationCap, BookOpen, Lock, Settings as SettingsIcon, MessageSquare, Delete, Headphones, Power, Check, Bell, Clock, Star, Gift } from "lucide-react";
+import { ArrowRight, Moon, Sun, Baby, ChevronLeft, X, BarChart3, Wrench, Pencil, User, GraduationCap, BookOpen, Lock, Settings as SettingsIcon, MessageSquare, Delete, Headphones, Power, Check, Bell, Clock, Star, Gift, Palette, Eye, EyeOff, RotateCcw, Sparkles, Mic } from "lucide-react";
 import { isMushafDevEnabled, setMushafDev, closeTauriApp } from "../utils/tauriUtils";
 import { getAppMode, setAppMode, getProfiles, addProfile, kidsHidden, setKidsHidden, setPureMode, isPureMode, getCoins, addCoins, type AppMode } from "../data/kidsProfile";
 import { redeemOneTimeCode, syncAdminDataFromServer } from "../data/titles";
 import { getReminderSettings, saveReminderSettings, showLocalNotification, requestNotificationPermission, type ReminderSettings } from "../utils/notifications";
+import {
+  getLocalShadingSettings,
+  saveShadingToServer,
+  applyAndSaveShading,
+  syncShadingFromServer,
+  PRESET_SHADING_COLORS,
+  getAyahShadingStyle,
+  DEFAULT_SETTINGS,
+  type ShadingSettings
+} from "../services/shadingSyncService";
 
 
 import PinModal from "../components/PinModal";
@@ -95,6 +105,28 @@ export default function SettingsPage() {
     setRewardCode("");
     setRewardCodeMessage(`تمت إضافة ${amount} نجمة إلى الملف النشط`);
     toast({ title: `تمت إضافة ${amount} ⭐` });
+  };
+
+  // إعدادات تظليل الآيات (المعلّم وحده والطفل وحده وتعيين يدوي)
+  const [shadingSettings, setShadingSettings] = useState<ShadingSettings>(getLocalShadingSettings);
+  const [previewSpeaker, setPreviewSpeaker] = useState<"teacher" | "kids">("teacher");
+  const [showShadingSettings, setShowShadingSettings] = useState(false);
+
+  useEffect(() => {
+    syncShadingFromServer().then(setShadingSettings).catch(() => {});
+    const handleShadingChanged = (e: Event) => {
+      const detail = (e as CustomEvent<ShadingSettings>).detail;
+      if (detail) setShadingSettings(detail);
+    };
+    window.addEventListener("mushaf:shading_changed", handleShadingChanged);
+    return () => window.removeEventListener("mushaf:shading_changed", handleShadingChanged);
+  }, []);
+
+  const updateShading = (patch: Partial<ShadingSettings>) => {
+    const updated = applyAndSaveShading(patch);
+    if (updated) {
+      setShadingSettings(updated);
+    }
   };
 
   const changeMode = (m: AppMode, style?: "pure" | "flexible") => {
@@ -312,6 +344,12 @@ export default function SettingsPage() {
             desc="اطّلع على تقدّم الأطفال وإعداداتهم." 
             onClick={() => navigate("/parent")}
           />
+          <Item
+            icon={<Mic className="w-5 h-5 text-fuchsia-500" />}
+            title="مصحح التلاوة الذكي (آخر إصدار - V3)"
+            desc="اختبار تقنية الذكاء الاصطناعي (Hugging Face) لتصحيح التلاوة."
+            onClick={() => window.open("/ai-test-3.html", "_blank")}
+          />
         </Section>
 
         <Section label="النجوم والمكافآت">
@@ -350,6 +388,382 @@ export default function SettingsPage() {
               <button onClick={() => setTheme("dark")} className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${theme === "dark" ? "bg-card text-accent shadow-soft" : "text-muted-foreground"}`}><Moon className="w-3.5 h-3.5" /> ليل</button>
             </div>
           </div>
+        </Section>
+
+        {/* ===== مظهر تظليل الآيات (المعلّم والطفل) ===== */}
+        <Section label="مظهر تظليل الآيات (المعلّم والطفل)">
+          <Item
+            icon={<Palette className="w-5 h-5 text-accent" />}
+            title="إعدادات المظهر والتظليل"
+            desc="تخصيص ألوان التظليل، الشفافية، إظهار وإخفاء"
+            onClick={() => setShowShadingSettings(prev => !prev)}
+            right={<ChevronLeft className={`w-5 h-5 text-muted-foreground transition-transform ${showShadingSettings ? "-rotate-90" : ""}`} />}
+          />
+          {showShadingSettings && (
+            <div className="bg-background/50 border-t border-border animate-fade-in pb-3">
+              {/* حالة التظليل العامة: مفعّل / مخفي */}
+          <div className="flex items-center justify-between p-3.5">
+            <div className="flex items-center gap-3">
+              <span className="w-10 h-10 rounded-xl bg-secondary text-accent flex items-center justify-center">
+                <Palette className="w-5 h-5" />
+              </span>
+              <div>
+                <span className="block font-bold text-foreground">تظليل الآيات أثناء التلاوة</span>
+                <span className="block text-[11px] text-muted-foreground">
+                  تظليل متحرك يتبع صوت المعلم وترديد الطفل على الآيات
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                const next = !shadingSettings.hidden;
+                updateShading({ hidden: next });
+              }}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all active:scale-95 ${
+                !shadingSettings.hidden
+                  ? "bg-accent text-accent-foreground shadow-soft"
+                  : "bg-secondary text-muted-foreground"
+              }`}
+            >
+              {!shadingSettings.hidden ? <><Eye className="w-3.5 h-3.5" /> مفعّل ✓</> : <><EyeOff className="w-3.5 h-3.5" /> مخفي ✗</>}
+            </button>
+          </div>
+
+          {/* المعاينة الحية للآية الكريمة */}
+          <div className="p-3.5 space-y-3 bg-muted/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                <Sparkles className="w-4 h-4 text-accent animate-pulse" />
+                <span>معاينة حية لشكل التظليل على المصحف:</span>
+              </div>
+              {/* مفتاح التبديل للمعاينة: المعلم أو الطفل */}
+              <div className="flex rounded-xl bg-secondary p-1">
+                <button
+                  type="button"
+                  onClick={() => setPreviewSpeaker("teacher")}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                    previewSpeaker === "teacher"
+                      ? "bg-amber-500 text-amber-950 shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Mic className="w-3.5 h-3.5" /> صوت المعلّم
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewSpeaker("kids")}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                    previewSpeaker === "kids"
+                      ? "bg-sky-500 text-sky-950 shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Baby className="w-3.5 h-3.5" /> صوت الطفل
+                </button>
+              </div>
+            </div>
+
+            {/* صندوق عرض الآية المحاكي لصفحة المصحف */}
+            {(() => {
+              const activeColor = previewSpeaker === "teacher"
+                ? (shadingSettings.teacherColor || "#f59e0b")
+                : (shadingSettings.kidsColor || "#0ea5e9");
+              const style = getAyahShadingStyle(activeColor, shadingSettings.opacity);
+              return (
+                <div
+                  className="rounded-2xl p-4 text-center transition-all duration-300 relative overflow-hidden"
+                  style={{
+                    backgroundColor: shadingSettings.hidden ? "transparent" : style.fill,
+                    borderWidth: "2px",
+                    borderStyle: "solid",
+                    borderColor: shadingSettings.hidden ? "var(--border)" : style.stroke,
+                    boxShadow: shadingSettings.hidden ? "none" : `0 4px 20px ${style.glow}`,
+                  }}
+                >
+                  <p className="font-quran text-lg md:text-xl text-foreground select-none leading-loose">
+                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ﴿١﴾
+                  </p>
+                  <div className="mt-1 flex items-center justify-center gap-2 text-[11px] font-bold text-muted-foreground">
+                    <span>التظليل الحالي:</span>
+                    <span
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-white text-[10px]"
+                      style={{ backgroundColor: activeColor }}
+                    >
+                      {previewSpeaker === "teacher" ? "🎓 المعلّم" : "👶 الطفل"}: {activeColor}
+                    </span>
+                    <span>قوة الشفافية: {Math.round(shadingSettings.opacity * 100)}%</span>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* 🎓 لون تظليل المعلّم وحده */}
+          <div className="p-3.5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold">
+                  <Mic className="w-4 h-4" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-sm text-foreground">لون تظليل المعلّم</h3>
+                  <p className="text-[11px] text-muted-foreground">يظهر على الآية عند قراءة أو شرح المعلّم</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-4 h-4 rounded-full border border-black/20 shadow-sm"
+                  style={{ backgroundColor: shadingSettings.teacherColor || "#f59e0b" }}
+                />
+                <span className="text-xs font-mono font-bold px-2 py-1 rounded-lg bg-secondary text-foreground">
+                  {shadingSettings.teacherColor || "#f59e0b"}
+                </span>
+              </div>
+            </div>
+
+            {/* باليت الألوان الجاهزة للمعلّم */}
+            <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+              {PRESET_SHADING_COLORS.map(c => {
+                const isSelected = (shadingSettings.teacherColor || "#f59e0b").toLowerCase() === c.hex.toLowerCase();
+                return (
+                  <button
+                    key={`teacher-${c.key}`}
+                    type="button"
+                    onClick={() => {
+                      updateShading({ teacherColor: c.hex });
+                      setPreviewSpeaker("teacher");
+                    }}
+                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all active:scale-95 ${
+                      isSelected
+                        ? "border-amber-500 bg-amber-500/10 shadow-sm scale-105"
+                        : "border-border/40 bg-secondary/30 hover:border-border"
+                    }`}
+                  >
+                    <span
+                      className="w-7 h-7 rounded-full flex items-center justify-center shadow-inner"
+                      style={{ backgroundColor: c.hex }}
+                    >
+                      {isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[3] drop-shadow" />}
+                    </span>
+                    <span className="text-[10px] font-bold text-foreground/80">{c.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* التعيين اليدوي للون المعلّم */}
+            <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-secondary/50 border border-border/60">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <label
+                  htmlFor="settings-teacher-color-picker"
+                  className="relative cursor-pointer group shrink-0"
+                  title="انقر لفتح منتقي الألوان اليدوي"
+                >
+                  <input
+                    id="settings-teacher-color-picker"
+                    type="color"
+                    value={shadingSettings.teacherColor || "#f59e0b"}
+                    onChange={(e) => {
+                      updateShading({ teacherColor: e.target.value });
+                      setPreviewSpeaker("teacher");
+                    }}
+                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                  />
+                  <div
+                    className="w-9 h-9 rounded-xl border-2 border-white shadow-md flex items-center justify-center transition-transform group-hover:scale-105"
+                    style={{ backgroundColor: shadingSettings.teacherColor || "#f59e0b" }}
+                  >
+                    <Palette className="w-4 h-4 text-white drop-shadow" />
+                  </div>
+                </label>
+                <div className="min-w-0">
+                  <span className="block font-bold text-xs text-foreground">تعيين يدوي للون المعلّم</span>
+                  <span className="block text-[10px] text-muted-foreground">اختر أي درجة لون مخصصة بدقة</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground font-mono">#</span>
+                <input
+                  type="text"
+                  maxLength={7}
+                  value={shadingSettings.teacherColor || "#f59e0b"}
+                  onChange={(e) => {
+                    const val = e.target.value.startsWith("#") ? e.target.value : `#${e.target.value}`;
+                    if (val.length <= 7) {
+                      updateShading({ teacherColor: val });
+                      setPreviewSpeaker("teacher");
+                    }
+                  }}
+                  className="w-24 px-2.5 py-1.5 text-center text-xs font-mono font-bold rounded-lg border border-border bg-background text-foreground uppercase tracking-wider"
+                  placeholder="#f59e0b"
+                  dir="ltr"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 👶 لون تظليل الطفل وحده */}
+          <div className="p-3.5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-xl bg-sky-500/15 text-sky-600 flex items-center justify-center font-bold">
+                  <Baby className="w-4 h-4" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-sm text-foreground">لون تظليل الطفل</h3>
+                  <p className="text-[11px] text-muted-foreground">يظهر على الآية عند ترديد الطفل أو دوره في القراءة</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-4 h-4 rounded-full border border-black/20 shadow-sm"
+                  style={{ backgroundColor: shadingSettings.kidsColor || "#0ea5e9" }}
+                />
+                <span className="text-xs font-mono font-bold px-2 py-1 rounded-lg bg-secondary text-foreground">
+                  {shadingSettings.kidsColor || "#0ea5e9"}
+                </span>
+              </div>
+            </div>
+
+            {/* باليت الألوان الجاهزة للطفل */}
+            <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+              {PRESET_SHADING_COLORS.map(c => {
+                const isSelected = (shadingSettings.kidsColor || "#0ea5e9").toLowerCase() === c.hex.toLowerCase();
+                return (
+                  <button
+                    key={`kids-${c.key}`}
+                    type="button"
+                    onClick={() => {
+                      updateShading({ kidsColor: c.hex });
+                      setPreviewSpeaker("kids");
+                    }}
+                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all active:scale-95 ${
+                      isSelected
+                        ? "border-sky-500 bg-sky-500/10 shadow-sm scale-105"
+                        : "border-border/40 bg-secondary/30 hover:border-border"
+                    }`}
+                  >
+                    <span
+                      className="w-7 h-7 rounded-full flex items-center justify-center shadow-inner"
+                      style={{ backgroundColor: c.hex }}
+                    >
+                      {isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[3] drop-shadow" />}
+                    </span>
+                    <span className="text-[10px] font-bold text-foreground/80">{c.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* التعيين اليدوي للون الطفل */}
+            <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-secondary/50 border border-border/60">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <label
+                  htmlFor="settings-kids-color-picker"
+                  className="relative cursor-pointer group shrink-0"
+                  title="انقر لفتح منتقي الألوان اليدوي"
+                >
+                  <input
+                    id="settings-kids-color-picker"
+                    type="color"
+                    value={shadingSettings.kidsColor || "#0ea5e9"}
+                    onChange={(e) => {
+                      updateShading({ kidsColor: e.target.value });
+                      setPreviewSpeaker("kids");
+                    }}
+                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                  />
+                  <div
+                    className="w-9 h-9 rounded-xl border-2 border-white shadow-md flex items-center justify-center transition-transform group-hover:scale-105"
+                    style={{ backgroundColor: shadingSettings.kidsColor || "#0ea5e9" }}
+                  >
+                    <Palette className="w-4 h-4 text-white drop-shadow" />
+                  </div>
+                </label>
+                <div className="min-w-0">
+                  <span className="block font-bold text-xs text-foreground">تعيين يدوي للون الطفل</span>
+                  <span className="block text-[10px] text-muted-foreground">اختر أي درجة لون مخصصة بدقة</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground font-mono">#</span>
+                <input
+                  type="text"
+                  maxLength={7}
+                  value={shadingSettings.kidsColor || "#0ea5e9"}
+                  onChange={(e) => {
+                    const val = e.target.value.startsWith("#") ? e.target.value : `#${e.target.value}`;
+                    if (val.length <= 7) {
+                      updateShading({ kidsColor: val });
+                      setPreviewSpeaker("kids");
+                    }
+                  }}
+                  className="w-24 px-2.5 py-1.5 text-center text-xs font-mono font-bold rounded-lg border border-border bg-background text-foreground uppercase tracking-wider"
+                  placeholder="#0ea5e9"
+                  dir="ltr"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* قوة وشفافية التظليل */}
+          <div className="p-3.5 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="block font-bold text-sm text-foreground">قوة وشفافية التظليل</span>
+                <span className="block text-[11px] text-muted-foreground">التحكم في وضوح وبروز التظليل فوق الكلمات القرآنية</span>
+              </div>
+              <span className="text-sm font-extrabold text-accent bg-accent/10 px-2.5 py-1 rounded-full tabular-nums">
+                {Math.round(shadingSettings.opacity * 100)}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min={30}
+              max={100}
+              step={5}
+              value={Math.round(shadingSettings.opacity * 100)}
+              onChange={(e) => updateShading({ opacity: Number(e.target.value) / 100 })}
+              className="w-full h-3 rounded-full appearance-none cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, var(--accent) ${((shadingSettings.opacity - 0.3) / 0.7) * 100}%, rgba(0,0,0,0.08) ${((shadingSettings.opacity - 0.3) / 0.7) * 100}%)`,
+              }}
+              aria-label="قوة التظليل"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground font-bold px-0.5">
+              <span>أهدأ وأخف (30%)</span>
+              <span>أبرز وأوضح (100%)</span>
+            </div>
+          </div>
+
+          {/* أزرار الإجراءات: استعادة الافتراضي + الانتقال للمصحف */}
+          <div className="p-3.5 flex flex-wrap items-center justify-between gap-2 bg-muted/20">
+            <button
+              type="button"
+              onClick={() => {
+                updateShading({
+                  teacherColor: DEFAULT_SETTINGS.teacherColor,
+                  kidsColor: DEFAULT_SETTINGS.kidsColor,
+                  opacity: DEFAULT_SETTINGS.opacity,
+                  hidden: false,
+                });
+                toast({ title: "تمت استعادة إعدادات التظليل الافتراضية 🔄" });
+              }}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground bg-secondary hover:bg-secondary/80 flex items-center gap-1.5 transition-all active:scale-95"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> استعادة الألوان الافتراضية
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/mushaf")}
+              className="px-4 py-2 rounded-xl text-xs font-extrabold text-accent bg-accent/15 hover:bg-accent/25 flex items-center gap-1.5 transition-all active:scale-95"
+            >
+              <BookOpen className="w-3.5 h-3.5" /> تجربة التظليل في المصحف الآن
+            </button>
+          </div>
+          </div>
+          )}
         </Section>
 
         {/* ===== الصوت والتلاوة ===== */}
@@ -516,6 +930,13 @@ export default function SettingsPage() {
             }}
           />
           <Item icon={<Power className="w-5 h-5 text-destructive" />} title="إغلاق التطبيق والخروج" desc="إغلاق نافذة التطبيق بالكامل وحفظ الجلسة" onClick={() => closeTauriApp()} />
+        </Section>
+
+        {/* ===== أدوات المعلّم والمصحف (ظاهرة دائماً — بلا رمز) ===== */}
+        <Section label="أدوات المعلّم (إعداد المحتوى)">
+          <Item icon={<Wrench className="w-5 h-5" />} title="أدوات المعلّم" desc="المعايرة والتظليل وتقسيم الصوت وربطه بالآيات" onClick={() => navigate("/teacher-tools")} />
+          <Item icon={<Pencil className="w-5 h-5" />} title="معايرة التظليل مباشرة" desc="ضبط مواضع الآيات والسور — ورفع صفحات المصحف إلى السيرفر" onClick={() => navigate("/calibrate")} />
+          <Item icon={<Clock className="w-5 h-5" />} title="توقيت الآيات" desc="تسجيل بداية كل آية في الصوت (معايرة التوقيت)" onClick={() => navigate("/timings")} />
         </Section>
 
         {/* ===== أدوات المالك (تظهر فقط في وضع المالك) ===== */}

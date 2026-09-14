@@ -1,0 +1,112 @@
+
+// ======================================================================
+//  تصنيف المتحدثين: تحليل التردد + الطاقة + التبادل
+// ======================================================================
+function classifySpeakers(segs,buf){
+    const mode=$('mode').value;
+    const speech=segs.filter(s=>s.type==='speech');
+    if(!speech.length)return;
+
+    if(mode==='alternating'){
+        speech.forEach((s,i)=>{
+            if(i===0) s.speaker='bismillah';
+            else s.speaker=(i%2===1)?'teacher':'child';
+        });
+        return;
+    }
+
+    const features=speech.map(seg=>{
+        const ch=buf.getChannelData(0);
+        const s0=Math.floor(seg.start*buf.sampleRate);
+        const s1=Math.min(Math.floor(seg.end*buf.sampleRate),ch.length);
+        const len=s1-s0;
+        if(len<256) return {seg,energy:0,zcr:0,pitch:0};
+
+        let eSum=0;
+        for(let i=s0;i<s1;i++) eSum+=ch[i]*ch[i];
+        const energy=Math.sqrt(eSum/len);
+
+        let zcr=0;
+        for(let i=s0+1;i<s1;i++){
+            if((ch[i]>=0&&ch[i-1]<0)||(ch[i]<0&&ch[i-1]>=0)) zcr++;
+        }
+        zcr/=len;
+
+        const fftLen=Math.min(4096,len);
+        const block=ch.slice(s0,s0+fftLen);
+        let pitch=estimatePitch(block,buf.sampleRate);
+
+        return {seg,energy,zcr,pitch};
+    });
+
+    if(mode==='frequency'){
+        const pitches=features.filter(f=>f.pitch>0).map(f=>f.pitch);
+        if(pitches.length<2){
+            speech.forEach((s,i)=>s.speaker=i%2===0?'teacher':'child');
+            return;
+        }
+        const medPitch=pitches.sort((a,b)=>a-b)[Math.floor(pitches.length/2)];
+
+        features.forEach(f=>{
+            if(f.pitch>0){
+                f.seg.speaker=f.pitch<=medPitch?'teacher':'child';
+            }else{
+                f.seg.speaker='teacher';
+            }
+        });
+    }else{
+        const energies=features.map(f=>f.energy);
+        const medE=energies.sort((a,b)=>a-b)[Math.floor(energies.length/2)];
+
+        features.forEach(f=>{
+            f.seg.speaker=f.energy>=medE?'teacher':'child';
+        });
+    }
+
+    for(let i=1;i<speech.length-1;i++){
+        if(speech[i-1].speaker===speech[i].speaker&&speech[i].speaker===speech[i+1]?.speaker){
+            speech[i].speaker=speech[i].speaker==='teacher'?'child':'teacher';
+        }
+    }
+}
+
+// تقدير التردد الأساسي (Pitch) باستخدام Autocorrelation
+function estimatePitch(block,sr){
+    const n=block.length;
+    const minLag=Math.floor(sr/600);
+    const maxLag=Math.min(Math.floor(sr/60),n-1);
+    if(maxLag<=minLag)return 0;
+
+    let bestLag=minLag, bestCorr=-1;
+    for(let lag=minLag;lag<=maxLag;lag++){
+        let corr=0,norm1=0,norm2=0;
+        for(let i=0;i<n-lag;i++){
+            corr+=block[i]*block[i+lag];
+            norm1+=block[i]*block[i];
+            norm2+=block[i+lag]*block[i+lag];
+        }
+        const denom=Math.sqrt(norm1*norm2);
+        if(denom>0) corr/=denom;
+        if(corr>bestCorr){bestCorr=corr;bestLag=lag;}
+    }
+    return bestCorr>0.3?sr/bestLag:0;
+}
+
+// دمج المقاطع القصيرة جداً
+function mergeShort(segs){
+    const minDur=parseFloat($('rMinSeg').value);
+    const result=[];
+    for(let i=0;i<segs.length;i++){
+        const s=segs[i];
+        if(s.type==='speech'&&s.duration<minDur&&result.length>0){
+            const prev=result[result.length-1];
+            if(prev.type==='speech'){
+                prev.end=s.end;
+                prev.duration=prev.end-prev.start;
+                continue;
+            }
+        }
+        result.push({...s});
+    }
+    return result;
+}

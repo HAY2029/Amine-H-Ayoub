@@ -1,0 +1,216 @@
+
+> quran-amine-h-ayoub@1.0.0 tauri
+> tauri build
+
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `npm run build`
+
+> quran-amine-h-ayoub@1.0.0 build
+> vite build
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 1813 modules transformed.
+rendering chunks...
+[1m[33m[plugin:vite:reporter][39m[22m [33m[plugin vite:reporter] 
+(!) H:/learn-quran-kids-1/src/data/kidsLock.ts is dynamically imported by H:/learn-quran-kids-1/src/utils/tauriUtils.ts but also statically imported by H:/learn-quran-kids-1/src/App.tsx, H:/learn-quran-kids-1/src/components/AppNav.tsx, H:/learn-quran-kids-1/src/components/ParentalGateModal.tsx, H:/learn-quran-kids-1/src/components/PinModal.tsx, H:/learn-quran-kids-1/src/components/ProfilePicker.tsx, H:/learn-quran-kids-1/src/components/WelcomeOverlay.tsx, H:/learn-quran-kids-1/src/pages/Index.tsx, H:/learn-quran-kids-1/src/pages/KidsGames.tsx, H:/learn-quran-kids-1/src/pages/ParentDashboard.tsx, H:/learn-quran-kids-1/src/pages/QuranReader.tsx, H:/learn-quran-kids-1/src/pages/SettingsPage.tsx, dynamic import will not move module into another chunk.
+[39m
+computing gzip size...
+[2mdist/[22m[32mmanifest.webmanifest                        [39m[1m[2m  0.46 kB[22m[1m[22m
+[2mdist/[22m[32mindex.html                                  [39m[1m[2m  2.53 kB[22m[1m[22m[2m │ gzip:  0.95 kB[22m
+[2mdist/[22m[35massets/index-DXN5j9jB.css                   [39m[1m[2m179.49 kB[22m[1m[22m[2m │ gzip: 27.38 kB[22m
+[2mdist/[22m[36massets/quranData-BgBu-Ar6.js                [39m[1m[2m  0.22 kB[22m[1m[22m[2m │ gzip:  0.18 kB[22m
+[2mdist/[22m[36massets/NotFound-N9BSqHEc.js                 [39m[1m[2m  1.44 kB[22m[1m[22m[2m │ gzip:  0.78 kB[22m
+[2mdist/[22m[36massets/playlistStore-CWZy6cts.js            [39m[1m[2m  1.62 kB[22m[1m[22m[2m │ gzip:  0.78 kB[22m
+[2mdist/[22m[36massets/customAudioStore-rmAfgVRA.js         [39m[1m[2m  1.69 kB[22m[1m[22m[2m │ gzip:  0.66 kB[22m
+[2mdist/[22m[36massets/QuranReader-CSeAUzKt.js              [39m[1m[2m  1.70 kB[22m[1m[22m[2m │ gzip:  0.97 kB[22m
+[2mdist/[22m[36massets/remoteGames-BQAx1GpB.js              [39m[1m[2m  1.74 kB[22m[1m[22m[2m │ gzip:  0.87 kB[22m
+[2mdist/[22m[36massets/useSurahData-BpnS6swn.js             [39m[1m[2m  2.89 kB[22m[1m[22m[2m │ gzip:  1.46 kB[22m
+[2mdist/[22m[36massets/SiteLinksOverlay-Dr5K1XCk.js         [39m[1m[2m  3.07 kB[22m[1m[22m[2m │ gzip:  1.40 kB[22m
+[2mdist/[22m[36massets/AnnouncementsPage-BDsfADup.js        [39m[1m[2m  3.14 kB[22m[1m[22m[2m │ gzip:  1.42 kB[22m
+[2mdist/[22m[36massets/ErrorPage-_DX6gr5R.js                [39m[1m[2m  3.18 kB[22m[1m[22m[2m │ gzip:  1.54 kB[22m
+[2mdist/[22m[36massets/NotificationsModal-Bpf3wIRr.js       [39m[1m[2m  4.54 kB[22m[1m[22m[2m │ gzip:  1.95 kB[22m
+[2mdist/[22m[36massets/kidsBadges-eqCKjpQH.js               [39m[1m[2m  4.98 kB[22m[1m[22m[2m │ gzip:  2.27 kB[22m
+[2mdist/[22m[36massets/LegendaryDownloadHub-CdG30CDq.js     [39m[1m[2m  5.03 kB[22m[1m[22m[2m │ gzip:  2.11 kB[22m
+[2mdist/[22m[36massets/gameCatalog-Cl7qq86t.js              [39m[1m[2m  5.08 kB[22m[1m[22m[2m │ gzip:  2.01 kB[22m
+[2mdist/[22m[36massets/workbox-window.prod.es5-BqEJf4Xk.js  [39m[1m[2m  5.71 kB[22m[1m[22m[2m │ gzip:  2.34 kB[22m
+[2mdist/[22m[36massets/QuranLockGateModal-DYQEfYjB.js       [39m[1m[2m  5.94 kB[22m[1m[22m[2m │ gzip:  2.12 kB[22m
+[2mdist/[22m[36massets/AdminReleasesPanel-Cf6A6v3P.js       [39m[1m[2m  7.00 kB[22m[1m[22m[2m │ gzip:  2.71 kB[22m
+[2mdist/[22m[36massets/SupportModal-1aQrQYLk.js             [39m[1m[2m  7.42 kB[22m[1m[22m[2m │ gzip:  2.86 kB[22m
+[2mdist/[22m[36massets/AppNav-Cjoq2QV7.js                   [39m[1m[2m  9.85 kB[22m[1m[22m[2m │ gzip:  2.78 kB[22m
+[2mdist/[22m[36massets/CustomAudioManager-DS1SUIdQ.js       [39m[1m[2m 10.48 kB[22m[1m[22m[2m │ gzip:  4.08 kB[22m
+[2mdist/[22m[36massets/SupportPage-C68mfx48.js              [39m[1m[2m 13.49 kB[22m[1m[22m[2m │ gzip:  4.87 kB[22m
+[2mdist/[22m[36massets/AudioUploadPage-m2Tfkg9l.js          [39m[1m[2m 14.11 kB[22m[1m[22m[2m │ gzip:  4.39 kB[22m
+[2mdist/[22m[36massets/window-BvB8bN-0.js                   [39m[1m[2m 14.17 kB[22m[1m[22m[2m │ gzip:  3.53 kB[22m
+[2mdist/[22m[36massets/BadgesModal-CUA2OMp0.js              [39m[1m[2m 16.04 kB[22m[1m[22m[2m │ gzip:  6.04 kB[22m
+[2mdist/[22m[36massets/KidsShop-CrNi3P85.js                 [39m[1m[2m 18.98 kB[22m[1m[22m[2m │ gzip:  5.86 kB[22m
+[2mdist/[22m[36massets/SettingsPage-tj7iNp-8.js             [39m[1m[2m 22.14 kB[22m[1m[22m[2m │ gzip:  6.98 kB[22m
+[2mdist/[22m[36massets/Index-DnIpHK9_.js                    [39m[1m[2m 24.90 kB[22m[1m[22m[2m │ gzip:  8.62 kB[22m
+[2mdist/[22m[36massets/vendor-tanstack-BEM4an97.js          [39m[1m[2m 28.27 kB[22m[1m[22m[2m │ gzip:  8.63 kB[22m
+[2mdist/[22m[36massets/ParentDashboard-C5Fzfygq.js          [39m[1m[2m 31.51 kB[22m[1m[22m[2m │ gzip:  8.31 kB[22m
+[2mdist/[22m[36massets/vendor-icons-DYpVFQKE.js             [39m[1m[2m 40.68 kB[22m[1m[22m[2m │ gzip:  8.62 kB[22m
+[2mdist/[22m[36massets/vendor-radix-BwC-hkdS.js             [39m[1m[2m 59.93 kB[22m[1m[22m[2m │ gzip: 20.69 kB[22m
+[2mdist/[22m[36massets/vendor-react-CHnOxZgr.js             [39m[1m[2m160.68 kB[22m[1m[22m[2m │ gzip: 52.38 kB[22m
+[2mdist/[22m[36massets/index-DXio7tP7.js                    [39m[1m[2m171.52 kB[22m[1m[22m[2m │ gzip: 53.82 kB[22m
+[2mdist/[22m[36massets/KidsGames-BGwCOjEj.js                [39m[1m[2m173.51 kB[22m[1m[22m[2m │ gzip: 48.27 kB[22m
+[2mdist/[22m[36massets/vendor-supabase-C8W5_S3P.js          [39m[1m[2m210.53 kB[22m[1m[22m[2m │ gzip: 54.57 kB[22m
+[2mdist/[22m[36massets/quran-data-DX9VtRRJ.js               [39m[1m[2m236.38 kB[22m[1m[22m[2m │ gzip: 85.32 kB[22m
+[32m✓ built in 7.75s[39m
+
+PWA v1.3.0
+Building src/service-worker.js service worker ("es" format)...
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 1 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[36mservice-worker.mjs  [39m[1m[2m0.58 kB[22m[1m[22m[2m │ gzip: 0.36 kB[22m
+[32m✓ built in 22ms[39m
+
+PWA v1.3.0
+mode      injectManifest
+format:   es
+precache  49 entries (1809.89 KiB)
+files generated
+  dist/service-worker.js
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling serde_core v1.0.229
+   Compiling icu_properties_data v2.3.0
+   Compiling siphasher v1.0.3
+   Compiling icu_normalizer_data v2.3.0
+   Compiling phf_shared v0.13.1
+   Compiling fastrand v2.5.0
+   Compiling phf_generator v0.13.1
+   Compiling stable_deref_trait v1.2.1
+   Compiling syn v2.0.119
+   Compiling syn v3.0.4
+   Compiling cfg-if v1.0.4
+   Compiling thiserror v2.0.20
+   Compiling zmij v1.0.23
+   Compiling windows-link v0.2.1
+   Compiling smallvec v1.16.0
+   Compiling memchr v2.8.3
+   Compiling parking_lot_core v0.9.12
+   Compiling serde v1.0.229
+   Compiling typeid v1.0.3
+   Compiling num-conv v0.2.2
+   Compiling time-core v0.1.9
+   Compiling phf_codegen v0.13.1
+   Compiling writeable v0.6.4
+   Compiling ident_case v1.0.1
+   Compiling synstructure v0.13.2
+   Compiling strsim v0.11.1
+   Compiling thiserror v1.0.69
+   Compiling litemap v0.8.3
+   Compiling itoa v1.0.18
+   Compiling erased-serde v0.4.10
+   Compiling darling_core v0.23.0
+   Compiling utf8_iter v1.0.4
+   Compiling new_debug_unreachable v1.0.6
+   Compiling scopeguard v1.2.0
+   Compiling anyhow v1.0.104
+   Compiling lock_api v0.4.14
+   Compiling zerovec-derive v0.11.6
+   Compiling serde_derive v1.0.229
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+error: linking with `x86_64-w64-mingw32-gcc` failed: exit code: 1
+  |
+  = note: "x86_64-w64-mingw32-gcc" "-Wl,h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\rustcAKM6GZ\\list.def" "-fno-use-linker-plugin" "-Wl,--dynamicbase" "-Wl,--disable-auto-image-base" "-m64" "-Wl,--high-entropy-va" "<sysroot>\\lib\\rustlib\\x86_64-pc-windows-gnu\\lib\\self-contained\\dllcrt2.o" "h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\rustcAKM6GZ\\symbols.o" "<12 object files omitted>" "h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\rustcAKM6GZ\\rmeta.o" "<1 object files omitted>" "-Wl,-Bstatic" "H:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps/{libsynstructure-10fae7f064a41224,libsyn-db26d48844cbe0cf,libquote-e18ea1d56dc2c835,libproc_macro2-8381bd23f18a79ef,libunicode_ident-400bff41d677df34}.rlib" "<sysroot>\\lib\\rustlib\\x86_64-pc-windows-gnu\\lib/{libproc_macro-*,librustc_literal_escaper-*,libstd-*,libpanic_unwind-*,libobject-*,libmemchr-*,libaddr2line-*,libgimli-*,libcfg_if-*,libwindows_link-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libminiz_oxide-*,libadler2-*,libunwind-*,liblibc-*,librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "-Wl,-Bdynamic" "-lkernel32" "-lkernel32" "-lkernel32" "-lntdll" "-luserenv" "-lws2_32" "-ldbghelp" "-lgcc_eh" "-l:libpthread.a" "-lmsvcrt" "-lmingwex" "-lmingw32" "-lgcc" "-lmsvcrt" "-lmingwex" "-luser32" "-lkernel32" "-Wl,--nxcompat" "-nostartfiles" "-L" "<sysroot>\\lib\\rustlib\\x86_64-pc-windows-gnu\\lib\\self-contained" "-o" "h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\zerofrom_derive-c04b5af9d7982833.dll" "-Wl,--gc-sections" "-shared" "-Wl,--out-implib=h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\libzerofrom_derive-c04b5af9d7982833.dll.a" "-Wl,--strip-debug" "-nodefaultlibs"
+  = note: some arguments are omitted. use `--verbose` to show all linker arguments
+  = note: ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\self-contained\dllcrt2.o: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libproc_macro-7866acf2d4e70a6c.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\librustc_literal_escaper-fe4a6f1ea03d9f99.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libstd-3a7e791385001413.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libpanic_unwind-54e79d5c77ada59a.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libobject-53b6e27dcc27f25a.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libmemchr-de67d652ca823602.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libaddr2line-53dcd17ef25f655d.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libgimli-93c8a86e85ff71eb.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libcfg_if-6b49870ee0a8f395.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libwindows_link-5bd67c1c0ce07823.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\librustc_demangle-8e4f9a7189f2000b.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libstd_detect-d5d50c9308f50429.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libhashbrown-f1452f3085368a88.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\librustc_std_workspace_alloc-66050fd9faec7502.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libminiz_oxide-c9cabbb4a9a13c82.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libadler2-083c27e6985d2ade.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libunwind-7bcf207e2e5529ae.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\liblibc-5293bf4f83a76517.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\librustc_std_workspace_core-259655e2c009f057.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\liballoc-28312b8350e088b2.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libcore-dc40e9d287882a7e.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libcompiler_builtins-384e83f60adf8210.rlib: No such file or directory
+          ld: cannot find -lkernel32: No such file or directory
+          ld: cannot find -lkernel32: No such file or directory
+          ld: cannot find -lkernel32: No such file or directory
+          ld: cannot find -lntdll: No such file or directory
+          ld: cannot find -luserenv: No such file or directory
+          ld: cannot find -lws2_32: No such file or directory
+          ld: cannot find -ldbghelp: No such file or directory
+          ld: cannot find -lgcc_eh: No such file or directory
+          ld: cannot find -l:libpthread.a: No such file or directory
+          ld: cannot find -lmsvcrt: No such file or directory
+          ld: cannot find -lmingwex: No such file or directory
+          ld: cannot find -lmingw32: No such file or directory
+          ld: cannot find -lgcc: No such file or directory
+          ld: cannot find -lmsvcrt: No such file or directory
+          ld: cannot find -lmingwex: No such file or directory
+          ld: cannot find -luser32: No such file or directory
+          ld: cannot find -lkernel32: No such file or directory
+          
+
+error: could not compile `zerofrom-derive` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: linking with `x86_64-w64-mingw32-gcc` failed: exit code: 1
+  |
+  = note: "x86_64-w64-mingw32-gcc" "-Wl,h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\rustcw6yv86\\list.def" "-fno-use-linker-plugin" "-Wl,--dynamicbase" "-Wl,--disable-auto-image-base" "-m64" "-Wl,--high-entropy-va" "<sysroot>\\lib\\rustlib\\x86_64-pc-windows-gnu\\lib\\self-contained\\dllcrt2.o" "h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\rustcw6yv86\\symbols.o" "<16 object files omitted>" "h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\rustcw6yv86\\rmeta.o" "<1 object files omitted>" "-Wl,-Bstatic" "H:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps/{libsyn-02c4aac3963d3ee0,libquote-e18ea1d56dc2c835,libproc_macro2-8381bd23f18a79ef,libunicode_ident-400bff41d677df34}.rlib" "<sysroot>\\lib\\rustlib\\x86_64-pc-windows-gnu\\lib/{libproc_macro-*,librustc_literal_escaper-*,libstd-*,libpanic_unwind-*,libobject-*,libmemchr-*,libaddr2line-*,libgimli-*,libcfg_if-*,libwindows_link-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libminiz_oxide-*,libadler2-*,libunwind-*,liblibc-*,librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "-Wl,-Bdynamic" "-lkernel32" "-lkernel32" "-lkernel32" "-lntdll" "-luserenv" "-lws2_32" "-ldbghelp" "-lgcc_eh" "-l:libpthread.a" "-lmsvcrt" "-lmingwex" "-lmingw32" "-lgcc" "-lmsvcrt" "-lmingwex" "-luser32" "-lkernel32" "-Wl,--nxcompat" "-nostartfiles" "-L" "<sysroot>\\lib\\rustlib\\x86_64-pc-windows-gnu\\lib\\self-contained" "-o" "h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\serde_derive-ad0b39b877a71f75.dll" "-Wl,--gc-sections" "-shared" "-Wl,--out-implib=h:\\learn-quran-kids-1\\src-tauri\\target\\release\\deps\\libserde_derive-ad0b39b877a71f75.dll.a" "-Wl,--strip-debug" "-nodefaultlibs"
+  = note: some arguments are omitted. use `--verbose` to show all linker arguments
+  = note: ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\self-contained\dllcrt2.o: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libproc_macro-7866acf2d4e70a6c.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\librustc_literal_escaper-fe4a6f1ea03d9f99.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libstd-3a7e791385001413.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libpanic_unwind-54e79d5c77ada59a.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libobject-53b6e27dcc27f25a.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libmemchr-de67d652ca823602.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libaddr2line-53dcd17ef25f655d.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libgimli-93c8a86e85ff71eb.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libcfg_if-6b49870ee0a8f395.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libwindows_link-5bd67c1c0ce07823.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\librustc_demangle-8e4f9a7189f2000b.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libstd_detect-d5d50c9308f50429.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libhashbrown-f1452f3085368a88.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\librustc_std_workspace_alloc-66050fd9faec7502.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libminiz_oxide-c9cabbb4a9a13c82.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libadler2-083c27e6985d2ade.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libunwind-7bcf207e2e5529ae.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\liblibc-5293bf4f83a76517.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\librustc_std_workspace_core-259655e2c009f057.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\liballoc-28312b8350e088b2.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libcore-dc40e9d287882a7e.rlib: No such file or directory
+          ld: cannot find C:\Users\ايمان\.rustup\toolchains\stable-x86_64-pc-windows-gnu\lib\rustlib\x86_64-pc-windows-gnu\lib\libcompiler_builtins-384e83f60adf8210.rlib: No such file or directory
+          ld: cannot find -lkernel32: No such file or directory
+          ld: cannot find -lkernel32: No such file or directory
+          ld: cannot find -lkernel32: No such file or directory
+          ld: cannot find -lntdll: No such file or directory
+          ld: cannot find -luserenv: No such file or directory
+          ld: cannot find -lws2_32: No such file or directory
+          ld: cannot find -ldbghelp: No such file or directory
+          ld: cannot find -lgcc_eh: No such file or directory
+          ld: cannot find -l:libpthread.a: No such file or directory
+          ld: cannot find -lmsvcrt: No such file or directory
+          ld: cannot find -lmingwex: No such file or directory
+          ld: cannot find -lmingw32: No such file or directory
+          ld: cannot find -lgcc: No such file or directory
+          ld: cannot find -lmsvcrt: No such file or directory
+          ld: cannot find -lmingwex: No such file or directory
+          ld: cannot find -luser32: No such file or directory
+          ld: cannot find -lkernel32: No such file or directory
+          
+
+error: could not compile `serde_derive` (lib) due to 1 previous error
+failed to build app: failed to build app
+       Error failed to build app: failed to build app
+BUILD_FINISHED 

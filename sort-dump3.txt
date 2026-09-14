@@ -1,0 +1,42 @@
+471:               onChange={(e) => setFilter(e.target.value)}
+472:               placeholder="ابحث باسم الصفحة أو اسم السورة…"
+473:               className="w-full pr-9 p-2.5 rounded-xl bg-card border border-border text-sm"
+474:             />
+475:           </div>
+476:           <div className="grid grid-cols-2 gap-2 sm:w-64">
+477:             <button
+478:               onClick={autoSortByPageNum}
+479:               disabled={filterActive}
+480:               title="ترتيب تلقائي حسب رقم الصفحة"
+481:               className="p-2 rounded-xl bg-card border border-border text-xs font-bold flex items-center justify-center gap-1 disabled:opacity-40 active:scale-95"
+482:             >
+483:               <ArrowUp className="w-3.5 h-3.5" /> حسب الرقم
+484:             </button>
+485:             <button
+486:               onClick={autoSortBySurah}
+487:               disabled={filterActive}
+488:               title="ترتيب تلقائي حسب ترتيب السور في المصحف"
+489:               className="p-2 rounded-xl bg-card border border-border text-xs font-bold flex items-center justify-center gap-1 disabled:opacity-40 active:scale-95"
+490:             >
+491:               <ArrowDown className="w-3.5 h-3.5" /> حسب السور
+492:             </button>
+493:           </div>
+494:         </div>
+495: 
+496:         {filterActive && (
+497:           <p className="text-[11px] text-amber-600 dark:text-amber-400">
+498:             🔍 أثناء البحث يكون السحب والأسهم معطّلين — امسح البحث لإعادة الترتيب.
+499:           </p>
+500:         )}
+501: 
+502:         {/* القائمة */}
+503:         <div className="space-y-2">
+504:           {visible.length === 0 && (
+505:             <p className="py-8 text-center text-sm text-muted-foreground">لا نتائج مطابقة للبحث</p>
+506:           )}
+507:           {visible.map(({ src, i }) => {
+508:             const meta = infoMap[src];
+509:             return (
+510:               <div
+511:                 key={src}
+512:                 draggable={!filterActive}

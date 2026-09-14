@@ -1,0 +1,67 @@
+
+// ======================================================================
+//  رسم النتائج
+// ======================================================================
+function drawTimeline(segs){
+    const tot=segs.length?segs[segs.length-1].end:1;
+    const colors={bismillah:'#c9a227',teacher:'#4a90d9',child:'#e8863c',silence:'#888'};
+    $('timeline').innerHTML=segs.map(s=>{
+        const w=(s.duration/tot*100).toFixed(2);
+        const c=colors[s.type==='silence'?'silence':s.speaker]||'#4a90d9';
+        const label=s.type==='silence'?'صمت':s.speaker==='teacher'?'معلم':s.speaker==='child'?'طفل':'مبدأ';
+        const dur=s.duration.toFixed(1);
+        return `
+            <div class="tl-seg" style="width:${w}%;background:${c}" title="${label} — ${dur}ث (${s.start.toFixed(1)}-${s.end.toFixed(1)})">
+                ${w>4?`<span class="tl-label">${label}</span>`:''}
+            </div>
+        `;
+    }).join('');
+    $('tlTot').textContent=segs.length?`إجمالي: ${segs.length} مقطع — ${tot.toFixed(1)}ث`:'';
+}
+
+function drawSegs(segs){
+    $('segsList').innerHTML=segs.map((s,i)=>{
+        const isSil=s.type==='silence';
+        const c=isSil?'sil':s.speaker==='teacher'?'t':s.speaker==='child'?'c':'b';
+        const label=isSil?'صمت':s.speaker==='teacher'?'معلم':s.speaker==='child'?'طفل':'مبدأ';
+        return `
+            <div class="seg-row ${c}" data-i="${i}">
+                <span class="seg-i">${i+1}</span>
+                <span class="seg-type">${label}</span>
+                <span class="seg-time">${s.start.toFixed(1)} — ${s.end.toFixed(1)}</span>
+                <span class="seg-dur">${s.duration.toFixed(1)}ث</span>
+                <button class="seg-play" onclick="playSeg(${i})">▶</button>
+            </div>
+        `;
+    }).join('');
+}
+
+// رسم الطيف
+function drawSpectrum(buf){
+    const canvas=$('spectrum');
+    const ctx=canvas.getContext('2d');
+    const ch=buf.getChannelData(0);
+    const W=canvas.width,H=canvas.height;
+    ctx.fillStyle='#1a1a2e';
+    ctx.fillRect(0,0,W,H);
+    const step=Math.max(1,Math.floor(ch.length/W));
+    ctx.strokeStyle='#4a90d9';
+    ctx.beginPath();
+    for(let x=0;x<W;x++){
+        const s0=x*step;
+        let peak=0;
+        for(let i=s0;i<Math.min(s0+step,ch.length);i+=4){
+            const a=Math.abs(ch[i]);
+            if(a>peak)peak=a;
+        }
+        const y=H/2-(peak*H/2*0.85);
+        if(x===0)ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.strokeStyle='rgba(136,136,136,0.3)';
+    ctx.beginPath();
+    ctx.moveTo(0,H/2);
+    ctx.lineTo(W,H/2);
+    ctx.stroke();
+}

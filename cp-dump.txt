@@ -1,0 +1,35 @@
+76: export const getPageOrder = (): number[] => {
+77:   if (typeof window === "undefined") return [];
+78:   try {
+79:     const raw = localStorage.getItem(ORDER_KEY);
+80:     const v = raw ? JSON.parse(raw) : [];
+81:     if (!Array.isArray(v)) return [];
+82:     // تحويل إلى أرقام (للتوافق مع النسخ القديمة التي كانت تحفظ string[])
+83:     const nums = v.map(x => typeof x === "number" ? x : parseInt(x, 10)).filter(n => !isNaN(n));
+84:     // إذا كانت القيم نصوص src خالصة (فشل التحويل كله) — أعد ترجمتها عبر قائمة الصفحات المعروفة
+85:     if (nums.length === 0 && v.length > 0 && typeof v[0] === "string") {
+86:       const knownSrcs = getKnownPageSrcs();
+87:       return (v as string[])
+88:         .map(s => knownSrcs.indexOf(s))
+89:         .filter(i => i >= 0);
+90:     }
+91:     return nums;
+92:   } catch { return []; }
+93: };
+94: 
+95: /** قائمة src الافتراضية للصفحات (لترجمة ترتيب src القديم → فهارس) */
+96: function getKnownPageSrcs(): string[] {
+97:   return ["/pages/fatiha.jpg", "/pages/600.jpg", "/pages/601.jpg", "/pages/602.jpg", "/pages/603.jpg", "/pages/604.jpg"];
+98: }
+99: 
+100: /** يُرجع الترتيب الخام كما هو محفوظ (نصوص src) — للمعايرة وواجهة الترتيب */
+101: export const getPageOrderSrcs = (): string[] => {
+102:   if (typeof window === "undefined") return [];
+103:   try {
+104:     const raw = localStorage.getItem(ORDER_KEY);
+105:     const v = raw ? JSON.parse(raw) : [];
+106:     if (!Array.isArray(v)) return [];
+107:     if (v.length > 0 && typeof v[0] === "string") return v as string[];
+108:     // مخزّن كفهارس → حوّله إلى srcs عبر القائمة المدموجة (أساسية + مخصصة + سيرفر)
+109:     const known = getKnownPageSrcs();
+110:     const extraSrcs: string[] = [];

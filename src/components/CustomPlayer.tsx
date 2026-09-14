@@ -1,6 +1,6 @@
 import { useEffect, useImperativeHandle, useRef, useState, forwardRef } from "react";
 import { X, Play, Pause, Music, Repeat, SkipForward, SkipBack, RotateCcw } from "lucide-react";
-import { resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
+import { resolvePlayableAudioUrl, cacheAudioInBackground } from "@/data/offlineAudioCache";
 import { useAudioContext } from "@/contexts/audioContext";
 import { updateMediaSession, setMediaPlaybackState, isBackgroundAudioEnabled } from "@/utils/backgroundAudio";
 
@@ -86,6 +86,13 @@ const formatTime = (s: number) => {
                 audioRef.current.play().catch(() => {});
               }
             }, 500);
+
+            // Legendary feature: Aggressively cache the audio in the background!
+            // If the internet is weak, the <audio> stream might stutter, but fetch() is robust.
+            // By caching it, subsequent plays or repeats will be instant and completely offline.
+            if (!fallbackToCloud && finalSrc === audioSrc && !audioSrc.startsWith("blob:")) {
+              cacheAudioInBackground(surahNumber, audioSrc);
+            }
           }
         };
 
@@ -379,7 +386,7 @@ const formatTime = (s: number) => {
 
             <audio
               ref={audioRef}
-              preload="metadata"
+              preload="auto"
               onLoadedMetadata={(e) => {
                 const a = e.target as HTMLAudioElement;
                 setDuration(a.duration);
