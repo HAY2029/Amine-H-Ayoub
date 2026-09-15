@@ -14,7 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:order": "node ./tools/test-order-logic.cjs",
-    "deploy": "npm run build && npx gh-pages -d dist -m \"deploy: update site [skip ci]\"",
+    "deploy": "npm run build && node ./tools/prepare-gh-pages.cjs && npx gh-pages -d dist -m \"deploy: update site [skip ci]\"",
     "tauri": "tauri",
     "send-push": "node ./scripts/send-push.mjs",
     "upload:hf": "node ./scripts/upload-hf-assets.mjs",
