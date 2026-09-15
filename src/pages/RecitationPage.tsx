@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   BookOpen,
   CheckCircle2,
-  ChevronLeft,
   Ear,
+  FileAudio,
+  Link2,
   Loader2,
   Mic,
   RotateCcw,
+  Trash2,
+  Upload,
   XCircle,
 } from "lucide-react";
 import { ensureCorpus, type SurahText } from "../data/quranText";
@@ -16,11 +19,14 @@ import {
   feedbackFor,
   type AyahAnalysis,
 } from "../services/tajweedAnalyzer";
-import { transcribeRecitation } from "../services/hfAsrService";
+import {
+  getHfToken,
+  getGroqToken,
+  transcribeRecitation,
+  audioMimeForFile,
+  isAudioFile,
+} from "../services/hfAsrService";
 import { toast } from "../hooks/use-toast";
-
-/** كل مقطع تدريب = 5 آيات (بدل السورة كاملة) */
-const SEGMENT_SIZE = 5;
 
 /** أنواع التعرف الصوتي في المتصفح */
 interface SpeechRecognitionLike {
@@ -53,7 +59,8 @@ interface SurahOption {
 export default function RecitationPage() {
   const [corpus, setCorpus] = useState<SurahText[] | null>(null);
   const [surah, setSurah] = useState<SurahOption | null>(null);
-  const [segIdx, setSegIdx] = useState(0);
+  const [startAyah, setStartAyah] = useState(1);
+  const [ayahCount, setAyahCount] = useState(5);
   const [listening, setListening] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [spoken, setSpoken] = useState("");
@@ -67,29 +74,32 @@ export default function RecitationPage() {
   const spokenRef = useRef("");
   const listeningRef = useRef(false);
   const silenceTimerRef = useRef<number | null>(null);
+  /** زر إدخال الملف الصوتي (رفع تسجيل مسجَّل مسبقاً) */
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  /** الملف الصوتي المرفوع — يُحلَّل بنفس محرّك التسجيل المباشر */
+  const [uploaded, setUploaded] = useState<{ file: File; url: string; duration: number } | null>(null);
 
   const surahOptions = useMemo<SurahOption[]>(() => {
     if (!corpus) return [];
     return corpus.map(s => ({ app: s.app, name: s.name, ayahs: s.ayahs }));
   }, [corpus]);
 
-  /** تقسيم السورة إلى مقاطع من 5 آيات */
-  const segments = useMemo(() => {
-    if (!surah) return [];
-    const out: { from: number; to: number; text: string }[] = [];
-    for (let i = 0; i < surah.ayahs.length; i += SEGMENT_SIZE) {
-      const slice = surah.ayahs.slice(i, i + SEGMENT_SIZE);
-      out.push({
-        from: i + 1,
-        to: i + slice.length,
-        text: slice.map(a => a.text).join(" "),
-      });
-    }
-    return out;
-  }, [surah]);
+  const targetText = useMemo(() => {
+    if (!surah) return "";
+    return surah.ayahs.slice(startAyah - 1, startAyah - 1 + ayahCount).map(a => a.text).join(" ");
+  }, [surah, startAyah, ayahCount]);
 
-  const seg = segments[segIdx] ?? null;
-  const targetText = seg?.text ?? "";
+  // هل يوجد مفتاح Hugging Face أو Groq؟
+  const hasHfToken = !!getHfToken();
+  const hasGroqToken = !!getGroqToken();
+  const hasAnyToken = hasHfToken || hasGroqToken;
+  const [groqKeyInput, setGroqKeyInput] = useState("");
+
+  const saveGroqKey = () => {
+    if (!groqKeyInput.trim()) return;
+    localStorage.setItem("groq_token", groqKeyInput.trim());
+    window.location.reload();
+  };
 
   // تحميل نص السور (محلي 100%)
   useEffect(() => {
@@ -97,6 +107,106 @@ export default function RecitationPage() {
     ensureCorpus().then(c => { if (alive) setCorpus(c); });
     return () => { alive = false; };
   }, []);
+
+  // ==== رابط قابل للمشاركة: /recitation?surah=114&start=1&count=5 ====
+  // الهدف: الوالد (أو المعلّم) ينسخ الرابط ويرسله للطفل، فيفتحه على السورة والمقطع مباشرة.
+  const [searchParams, setSearchParams] = useSearchParams();
+  // يُطبَّق فتح السورة من الرابط مرة واحدة فقط بعد تحميل النص (كي لا يمنع الطفل تغيير السورة)
+  const deepLinkApplied = useRef(false);
+  useEffect(() => {
+    if (deepLinkApplied.current) return;
+    if (!corpus || surahOptions.length === 0) return;
+    const wanted = Number(searchParams.get("surah"));
+    if (!Number.isFinite(wanted) || wanted <= 0) return;
+    const found = surahOptions.find(s => s.app === wanted);
+    if (!found) return;
+    deepLinkApplied.current = true;
+    setSurah(found);
+    const startWanted = Number(searchParams.get("start"));
+    if (Number.isFinite(startWanted) && startWanted > 0) setStartAyah(startWanted);
+    const countWanted = Number(searchParams.get("count"));
+    if (Number.isFinite(countWanted) && countWanted > 0) setAyahCount(countWanted);
+  }, [corpus, surahOptions, searchParams]);
+
+  /**
+   *  الاكتشاف الذكي: إن لم يحدّد الرابط سورةً، نختار واحدة تلقائياً
+   * فيبدأ الطفل التدريب فوراً بلا أي إعداد يدوي.
+   */
+  const autoPickApplied = useRef(false);
+  /** مرجع حيّ لـ syncUrl — يسمح للـ effect بالوصول إليه قبل تعريفه */
+  const syncUrlRef = useRef<((app: number | null, start: number, count: number) => void) | null>(null);
+  useEffect(() => {
+    if (autoPickApplied.current) return;
+    if (!corpus || surahOptions.length === 0) return;
+    const wanted = Number(searchParams.get("surah"));
+    if (Number.isFinite(wanted) && wanted > 0) return; // الرابط كفى
+    autoPickApplied.current = true;
+    const chosen = surahOptions[Math.floor(Math.random() * surahOptions.length)];
+    const count = Math.min(5, chosen.ayahs.length);
+    const maxStart = Math.max(1, chosen.ayahs.length - count + 1);
+    const start = Math.floor(Math.random() * maxStart) + 1;
+    setSurah(chosen);
+    setStartAyah(start);
+    setAyahCount(count);
+    syncUrlRef.current?.(chosen.app, start, count);
+  }, [corpus, surahOptions, searchParams]);
+
+  /** يحدّث الرابط في شريط العنوان ليعكس السورة/المقطع الحاليين (بلا إعادة تحميل) */
+  const syncUrl = useCallback((surahApp: number | null, start: number, count: number) => {
+    if (!surahApp) {
+      setSearchParams({}, { replace: true });
+      return;
+    }
+    setSearchParams({ surah: String(surahApp), start: String(start), count: String(count) }, { replace: true });
+  }, [setSearchParams]);
+
+  // نُبقي المرجع محدّثاً كي يستطيع effect الاكتشاف التلقائي نداءه
+  useEffect(() => { syncUrlRef.current = syncUrl; }, [syncUrl]);
+
+  /** نسخ رابط هذا التدريب — لإرساله للطفل */
+  const copyShareLink = useCallback(async () => {
+    if (!surah) return;
+    const base = `${window.location.origin}${window.location.pathname}`;
+    const qs = `?surah=${surah.app}&start=${startAyah}&count=${ayahCount}`;
+    const url = `${base}${qs}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "تم نسخ رابط التدريب", description: "أرسله للطفل ليفتح نفس السورة والمقطع" });
+    } catch {
+      // المتصفح منع النسخ التلقائي — نعرض الرابط ليُنسخ يدوياً
+      toast({ title: "رابط التدريب", description: url });
+    }
+  }, [surah, startAyah, ayahCount, toast]);
+
+  /**
+   * 🎲 اختيار عشوائي: ينتقي سورة ومقطعاً عشوائياً ليتدرّب الطفل بلا تكرار معتاد.
+   */
+  const pickRandom = useCallback(() => {
+    if (surahOptions.length === 0) return;
+    const chosen = surahOptions[Math.floor(Math.random() * surahOptions.length)];
+    const maxStart = chosen.ayahs.length;
+    const newCount = 5;
+    const validMax = Math.max(1, maxStart - newCount + 1);
+    const newStart = Math.floor(Math.random() * validMax) + 1;
+    setSurah(chosen);
+    setStartAyah(newStart);
+    setAyahCount(newCount);
+    syncUrl(chosen.app, newStart, newCount);
+    // تصفير الحالة كي لا تظهر نتيجة قديمة مع النص الجديد
+    spokenRef.current = "";
+    setSpoken("");
+    setAnalysis(null);
+    setEngine(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setUploaded(prev => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+    toast({
+      title: `🎲 ${chosen.app}. ${chosen.name}`,
+      description: `الآيات ${newStart}–${Math.min(newStart + newCount - 1, chosen.ayahs.length)}`,
+    });
+  }, [surahOptions, syncUrl, toast]);
 
   /** إيقاف المؤقتات والتسجيل (بلا وضع علامة) */
   const stopListening = useCallback(() => {
@@ -119,7 +229,17 @@ export default function RecitationPage() {
     return () => { stopListening(); };
   }, [stopListening]);
 
-  /** ⭐ وضع العلامة: HuggingFace أولاً (تسجيل حقيقي = دقة أعلى) ثم سقوط لنص المتصفح */
+  // تحرير رابط المعاينة الصوتية عند مغادرة الصفحة (تفادي تسرّب الذاكرة)
+  useEffect(() => {
+    return () => {
+      setUploaded(prev => {
+        if (prev) URL.revokeObjectURL(prev.url);
+        return null;
+      });
+    };
+  }, []);
+
+  /** ⭐ وضع العلامة: HuggingFace أو Groq أولاً (تسجيل حقيقي = دقة أعلى) ثم سقوط لنص المتصفح */
   const gradeNow = useCallback(async () => {
     if (silenceTimerRef.current) {
       window.clearTimeout(silenceTimerRef.current);
@@ -131,7 +251,7 @@ export default function RecitationPage() {
     setListening(false);
     setProcessing(true);
     try {
-      // 1) قناة HuggingFace — الصوت المسجَّل يُحلَّل بنموذج أقوى
+      // 1) قناة HuggingFace/Groq — الصوت المسجَّل يُحلَّل بنموذج أقوى
       const chunks = chunksRef.current;
       if (chunks.length > 0) {
         const blob = new Blob(chunks, { type: chunks[0]?.type || "audio/webm" });
@@ -159,6 +279,108 @@ export default function RecitationPage() {
       streamRef.current = null;
     }
   }, [targetText, toast]);
+
+  /**
+   * 💡 رفع تسجيل صوتي مسجَّل مسبقاً (صوت الطفل من الهاتف أو مسجّل خارجي).
+   * يُغذّي نفس محرّك التحليل المستخدم في التسجيل المباشر (`transcribeRecitation` +
+   * `analyzeAyah`) — فلا يتكرر منطق التقييم بين المسارين.
+   */
+  const gradeFromFile = useCallback(async (file: File) => {
+    if (!surah) {
+      toast({ title: "اختر السورة أولاً", variant: "destructive" });
+      return;
+    }
+    // 1) فحص النوع
+    if (!isAudioFile(file)) {
+      toast({ title: "الملف ليس صوتياً", description: "اختر ملف mp3 أو wav أو m4a أو ogg", variant: "destructive" });
+      return;
+    }
+    // 2) فحص الحجم للرفع الفائق (Groq يدعم حتى 25 ميجابايت)
+    if (file.size > 25 * 1024 * 1024) {
+      toast({ title: "الملف كبير جداً (الحد 25 ميجابايت)", variant: "destructive" });
+      return;
+    }
+    setProcessing(true);
+    // 4) معاينة + تحليل بنفس المحرّك
+    const url = URL.createObjectURL(file);
+    setUploaded(prev => {
+      if (prev) URL.revokeObjectURL(prev.url); // حرّر الرابط السابق (تفادي تسرّب الذاكرة)
+      return { file, url, duration: 0 };
+    });
+    setAnalysis(null);
+    setSpoken("");
+    spokenRef.current = "";
+    setEngine(null);
+    try {
+      // الملف هو المصدر الوحيد للنص هنا (لا يوجد نص حيّ من الميكروفون)
+      const mime = audioMimeForFile(file);
+      const hf = await transcribeRecitation(file, mime);
+      if (hf.viaHf && hf.text) {
+        setEngine("hf");
+        setSpoken(hf.text);
+        setAnalysis(analyzeAyah(targetText, hf.text));
+        return;
+      }
+      // ===== لا نتوقف: نعرض تقريراً تشخيصياً بدل إغلاق الصفحة على فشل =====
+      const err = hf.error || "";
+      let reason: string;
+      if (err === "auth") {
+        reason = "مفتاح HuggingFace غير صالح أو منتهي — أنشئ مفتاحاً جديداً من huggingface.co/settings/tokens";
+      } else if (err === "loading") {
+        reason = "النموذج قيد التحميل على سيرفر HuggingFace — أعد المحاولة بعد نصف دقيقة";
+      } else if (err === "empty") {
+        reason = "لم يتعرّف النموذج على كلام في الملف — تأكد أن التسجيل فيه قراءة واضحة (لا صمت)";
+      } else if (err === "timeout") {
+        reason = "انتهت مدة التحليل (30 ثانية) — جرّب مقطعاً أقصر أو ارفع ملفاً أصغر";
+      } else if (err.startsWith("http-400")) {
+        reason = `النموذج غير مدعوم على هذا المزوّد — ${err.replace(/^http-400:\s*/, "")}`;
+      } else if (err.startsWith("http-")) {
+        reason = `خطأ من السيرفر: ${err}`;
+      } else {
+        reason = `تعذّر الاتصال بمحرّك التحليل — ${err || "تحقّق من الاتصال بالإنترنت"}`;
+      }
+      // نُظهر "لم يستطع التحليل" كحالة في التحليل نفسه (لا كخطأ مانع)
+      setEngine("hf");
+      const expectedWords = targetText.split(/\s+/).filter(Boolean);
+      setAnalysis({
+        score: 0,
+        correct: 0,
+        soft: 0,
+        total: expectedWords.length,
+        issues: [{
+          wordIndex: 0,
+          word: expectedWords[0] ?? "",
+          type: "missing",
+          message: `تعذّر تحليل التسجيل: ${reason}`,
+          tip: err === "empty"
+            ? "اقرأ بصوت أعلى وأوضح، وتجنّب الضجيج حولك، ثم أعد المحاولة"
+            : "تحقّق من الاتصال بالإنترنت ومن صحة مفتاح HuggingFace ثم أعد المحاولة",
+        }],
+      });
+      toast({ title: "لم نتمكّن من التحليل — لكن يمكنك المتابعة", description: reason, variant: "destructive" });
+    } catch (e) {
+      toast({
+        title: "خطأ أثناء التحليل",
+        description: e instanceof Error ? e.message : "خطأ غير متوقع",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessing(false);
+    }
+  }, [surah, targetText, toast]);
+
+  /** إزالة الملف المرفوع والعودة لحالة البداية */
+  const clearUploaded = useCallback(() => {
+    setUploaded(prev => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+    setSpoken("");
+    spokenRef.current = "";
+    setAnalysis(null);
+    setEngine(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, []);
 
   /** جدولة العلامة التلقائية عند الصمت (2.2 ثانية بلا كلام = انتهى المقطع) */
   const scheduleAutoGrade = useCallback(() => {
@@ -255,69 +477,114 @@ export default function RecitationPage() {
               مدرّب التلاوة
             </h1>
             <p className="text-sm text-muted-foreground">
-              اختر سورة → اقرأ بصوتك → نضع علامتك فوراً
+              اقرأ الآيات بصوتك — يُكتشف المقطع تلقائياً وتُوضع علامتك فوراً
             </p>
           </div>
-          <Link to="/mushaf" className="rounded-lg border bg-card px-3 py-2 text-sm hover:bg-accent flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-emerald-600" /> المصحف
-          </Link>
+          <div className="flex items-center gap-2">
+            {surah && (
+              <button
+                onClick={() => void copyShareLink()}
+                title="نسخ رابط هذا التدريب لإرساله للطفل"
+                className="rounded-lg border bg-card px-3 py-2 text-sm hover:bg-accent flex items-center gap-1.5"
+              >
+                <Link2 className="w-4 h-4 text-emerald-600" /> رابط الطفل
+              </button>
+            )}
+            <Link to="/mushaf" className="rounded-lg border bg-card px-3 py-2 text-sm hover:bg-accent flex items-center gap-1.5">
+              <BookOpen className="w-4 h-4 text-emerald-600" /> المصحف
+            </Link>
+          </div>
         </header>
 
-        {/* اختيار السورة */}
-        <section className="rounded-2xl border bg-card p-4 space-y-3">
-          <label className="text-sm font-bold">اختر السورة</label>
-          {!corpus && <div className="text-sm text-muted-foreground">جارٍ تحميل نصّ السور…</div>}
-          {corpus && (
-            <select
-              value={surah?.app ?? ""}
-              onChange={(e) => {
-                const s = surahOptions.find(x => x.app === Number(e.target.value)) || null;
-                setSurah(s);
-                setSegIdx(0);
-                spokenRef.current = "";
-                setSpoken("");
-                setAnalysis(null);
-              }}
-              className="w-full rounded-xl border bg-background p-3 text-base"
-            >
-              <option value="">— اختر —</option>
-              {surahOptions.map(s => (
-                <option key={s.app} value={s.app}>
-                  {s.app}. {s.name}
-                </option>
-              ))}
-            </select>
-          )}
-          {surah && segments.length > 0 && (
-            <div className="space-y-2">
-              {/* منتقي المقطع: 5 آيات لكل تدريب */}
-              <div className="flex gap-1.5 flex-wrap">
-                {segments.map((s, i) => (
-                  <button
-                    key={i}
-                    onClick={() => { setSegIdx(i); spokenRef.current = ""; setSpoken(""); setAnalysis(null); }}
-                    className={`px-3 py-1.5 rounded-xl text-sm font-bold border transition ${
-                      i === segIdx
-                        ? "bg-emerald-600 text-white border-emerald-600"
-                        : "bg-card hover:bg-accent"
-                    }`}
-                  >
-                    {s.from}-{s.to}
+        {/* تنبيه المفاتيح وواجهة إدخال Groq */}
+        {!hasGroqToken && (
+          <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-900 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-bold text-lg mb-1">🚀 فعّل الرفع غير المحدود مجاناً!</p>
+                <p className="leading-relaxed">
+                  لرفع سور كاملة بلا حدود للوقت وبسرعة خيالية، نستخدم خدمة <strong>Groq</strong> المجانية.
+                  احصل على مفتاح API مجاني من <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="underline text-emerald-600 font-bold hover:text-emerald-800">console.groq.com</a> والصقه هنا:
+                </p>
+                <div className="mt-3 flex gap-2 max-w-sm">
+                  <input
+                    type="password"
+                    placeholder="gsk_..."
+                    value={groqKeyInput}
+                    onChange={e => setGroqKeyInput(e.target.value)}
+                    className="flex-1 rounded-lg border border-emerald-300 px-3 py-1.5 text-left font-mono"
+                    dir="ltr"
+                  />
+                  <button onClick={saveGroqKey} className="rounded-lg bg-emerald-600 px-4 py-1.5 text-white font-bold hover:bg-emerald-700 transition">
+                    حفظ
                   </button>
-                ))}
+                </div>
               </div>
-              <p className="rounded-xl bg-muted p-3 text-lg leading-loose" dir="rtl">
-                {seg?.text}
-              </p>
             </div>
-          )}
-        </section>
+            {!hasHfToken && (
+              <p className="mt-4 pt-3 border-t border-emerald-200/50 text-xs opacity-80">
+                ملاحظة: حالياً لا يوجد مفتاح Groq ولا HuggingFace، سيعتمد التطبيق على التعرّف الصوتي المدمج في المتصفح فقط (قد يكون غير دقيق).
+              </p>
+            )}
+          </div>
+        )}
+
+{/* النص القرآني — يُكتشف تلقائياً (من الرابط أو عشوائياً) بلا اختيار يدوي */}
+  <section className="rounded-2xl border-2 border-emerald-200 bg-card p-4 space-y-3 shadow-sm">
+    {!corpus && (
+      <div className="flex items-center justify-center gap-2 p-6 text-sm text-muted-foreground">
+        <Loader2 className="w-4 h-4 animate-spin" /> جارٍ تجهيز النص القرآني…
+      </div>
+    )}
+
+    {corpus && surah && (
+      <>
+        {/* شريط معلومات السورة — للعرض فقط */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="rounded-full bg-emerald-600 text-white px-3 py-1 text-sm font-bold">
+              سورة {surah.name}
+            </span>
+            <span className="rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1 text-xs font-bold">
+              الآيات {startAyah}–{Math.min(startAyah + ayahCount - 1, surah.ayahs.length)}
+            </span>
+          </div>
+          <button
+            onClick={pickRandom}
+            title="تدريب آخر عشوائي"
+            className="shrink-0 rounded-xl border-2 border-amber-400 bg-amber-50 px-3 py-1.5 text-xl hover:bg-amber-100 active:scale-95 transition"
+          >
+            🎲
+          </button>
+        </div>
+
+        {/* الآيات مفصولة ومرقّمة — أوضح للطفل من كتلة نصية واحدة */}
+        <div
+          className="rounded-2xl border-2 border-emerald-100 bg-gradient-to-b from-emerald-50/60 to-white p-4 space-y-3"
+          dir="rtl"
+        >
+          {surah.ayahs
+            .slice(startAyah - 1, startAyah - 1 + ayahCount)
+            .map(a => (
+              <p key={a.n} className="flex gap-3 items-start">
+                <span className="shrink-0 mt-1 grid place-items-center w-7 h-7 rounded-full bg-emerald-600 text-white text-xs font-bold">
+                  {a.n}
+                </span>
+                <span className="text-2xl leading-[2.4] font-semibold text-emerald-950 font-quran">
+                  {a.text}
+                </span>
+              </p>
+            ))}
+        </div>
+      </>
+    )}
+  </section>
 
         {/* التسجيل */}
         <section className="rounded-2xl border bg-card p-4 space-y-3">
           {listening && (
             <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-center text-emerald-700 font-bold animate-pulse">
-              🎧 نسمعك الآن… اقرأ الآيات {seg?.from}-{seg?.to} ثم توقف قليلاً
+              🎧 نسمعك الآن… اقرأ الآيات {startAyah}–{Math.min(startAyah + ayahCount - 1, surah?.ayahs.length || 0)} ثم توقف قليلاً
             </div>
           )}
           {processing && (
@@ -336,6 +603,63 @@ export default function RecitationPage() {
             <Mic className={`w-5 h-5 ${listening ? "animate-pulse" : ""}`} />
             {listening ? "⏹ أنهيتُ — ضع علامتي" : "🎧 اسمع لي وأعطني علامتي"}
           </button>
+
+          {/* ===== رفع تسجيل صوتي مسجَّل مسبقاً ===== */}
+          <div className="relative flex items-center gap-3 pt-1">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground font-bold">أو</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="audio/*,.mp3,.wav,.m4a,.ogg,.opus,.aac,.flac,.webm"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void gradeFromFile(f);
+            }}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!surah || processing}
+            className="w-full p-4 rounded-xl font-bold flex items-center justify-center gap-2 border-2 border-dashed border-emerald-400 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 active:scale-[0.98] transition disabled:opacity-50"
+          >
+            <Upload className="w-5 h-5" />
+             ارفع تسجيلاً جاهزاً من جهازك
+          </button>
+          <p className="text-xs text-muted-foreground text-center leading-relaxed">
+            سجّل قراءة الطفل بالهاتف ثم ارفع الملف هنا — يُقيَّم بنفس نموذج التحليل.
+            <br />
+            الصيغ المدعومة: mp3، wav، m4a، ogg (حتى 25 ميجابايت للرفع الفائق عبر Groq)
+          </p>
+
+          {/* معاينة الملف المرفوع */}
+          {uploaded && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FileAudio className="w-5 h-5 text-emerald-700 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-sm font-bold truncate">{uploaded.file.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {(uploaded.file.size / 1024 / 1024).toFixed(2)} ميجابايت
+                      {uploaded.duration > 0 && ` • ${Math.round(uploaded.duration)} ثانية`}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={clearUploaded}
+                  title="إزالة الملف"
+                  className="rounded-lg border bg-card p-2 hover:bg-accent shrink-0"
+                >
+                  <Trash2 className="w-4 h-4 text-red-600" />
+                </button>
+              </div>
+              <audio src={uploaded.url} controls className="w-full" />
+            </div>
+          )}
         </section>
 
         {/* ما سمعه النظام */}
@@ -397,6 +721,18 @@ export default function RecitationPage() {
                     <div className="text-xs text-emerald-700 pr-6">💡 {is.tip}</div>
                   </div>
                 ))}
+                {/* زر إعادة المحاولة — مرئي فقط عند فشل التحليل */}
+                {analysis.issues.some(is => is.type === "missing" && is.message.startsWith("تعذّر")) &&
+                  uploaded && (
+                    <button
+                      onClick={() => void gradeFromFile(uploaded.file)}
+                      disabled={processing}
+                      className="w-full p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 font-bold flex items-center justify-center gap-2 hover:bg-amber-100 disabled:opacity-50"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      {processing ? "جارٍ إعادة التحليل…" : "إعادة محاولة التحليل"}
+                    </button>
+                  )}
               </div>
             )}
 

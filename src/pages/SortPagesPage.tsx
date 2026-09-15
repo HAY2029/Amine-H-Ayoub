@@ -24,6 +24,9 @@ import {
   savePageOrder,
   clearPageOrder,
   normalizeImageKey,
+  sanitizePageOrder,
+  auditPageOrder,
+  pageNumForKey,
 } from "../data/customPages";
 import { supabase, hasValidSupabaseKey } from "../lib/supabase";
 import { getSavedSurahRegions } from "../data/surahRegions";
@@ -69,12 +72,17 @@ const PAGE_NAMES_KEY = "mushaf:pageNames:v1";
 const BACKUP_KEY = "mushaf:pageOrderBackup:v1";
 const IMG_EXT_RE = /\.(jpe?g|png|webp|gif|bmp)$/i;
 
-/** رقم الصفحة من المسار — الفاتحة = 1 (أولاً)، ثم الرقم الحقيقي؛ بلا رقم → النهاية */
-const pageNumOf = (src: string) => {
-  const m = src.match(/(\d+)/);
-  if (m) return parseInt(m[1], 10);
-  if (/fatiha/i.test(src)) return 1;
-  return Number.MAX_SAFE_INTEGER;
+/** رقم الصفحة من المسار — الفاتحة = 1 (أولاً)، ثم الرقم الحقيقي؛ بلا رقم → النهاية.
+ *  مأخوذ من customPages.pageNumForKey حتى يكون المنطق واحداً في كل الصفحات:
+ *  الفاتحة = 1، "0" خاطئة = 0 (تُستبعد)، بلا رقم = النهاية. */
+const pageNumOf = (src: string) => pageNumForKey(src);
+
+/** هل هذا المصدر خاطئ (صفحة "0")؟ — منطق موحّد مع القارئ و customPages */
+const isBogusSrc = (src: string): boolean => {
+  const noExt = String(src || "").replace(IMG_EXT_RE, "");
+  const digits = noExt.replace(/\D/g, "");
+  if (digits === "") return false;
+  return parseInt(digits, 10) === 0;
 };
 
 /** حالة الاتصال بالسيرفر */
@@ -230,17 +238,33 @@ export default function SortPagesPage() {
 
       // 3) الترتيب المحفوظ: جلبه من السيرفر أولاً، ثم خليط باقي صور السيرفر بالأرقام
       const saved = await fetchServerOrderSrcs();
-      const savedNorm = saved.map(normKey).filter(s => srcSet.has(s));
+      // تنظيف موحّد: احذف الخاطئ (0.jpg) والمكرّر + الفاتحة أولاً — سبب ظهور صفحة "0" أو مكرّرات
+      const savedClean = sanitizePageOrder(saved.map(normKey));
+      const savedNorm = savedClean.filter(s => srcSet.has(s));
       const seen = new Set(savedNorm);
       const rest = Array.from(srcSet)
-        .filter(s => !seen.has(s))
+        .filter(s => !seen.has(s) && !isBogusSrc(s))
         .sort((a, b) => pageNumOf(a) - pageNumOf(b));
 
+      // ترتيب نهائي موحّد (بلا مكرّرات، بلا "0"، الفاتحة أولاً) — نفس ما سيُحفظ ويُرسل للسيرفر
+      const finalRows = sanitizePageOrder([...savedNorm, ...rest]);
+      const audit = auditPageOrder([...savedNorm, ...rest]);
       // احفظ النسخة المحلية كاحتياطي سريع (يستخدمه القارئ فورًا قبل المزامنة)
-      try { localStorage.setItem("mushaf:pageOrder:v1", JSON.stringify(savedNorm.length ? savedNorm : rest)); } catch { /* ignore */ }
+      try { localStorage.setItem("mushaf:pageOrder:v1", JSON.stringify(finalRows)); } catch { /* ignore */ }
 
-      setRows([...savedNorm, ...rest]);
+      setRows(finalRows);
       setServerStatus("online");
+
+      // إبلاغ المستخدم بما نُظّف فعلاً (مكرّر/خاطئ) — شفافية بدل حذف صامت
+      if (audit.duplicates.length || audit.bogus.length) {
+        const parts: string[] = [];
+        if (audit.duplicates.length) parts.push(`${audit.duplicates.length} صفحة مكرّرة`);
+        if (audit.bogus.length) parts.push(`${audit.bogus.length} صفحة خاطئة (رقم 0)`);
+        toast({
+          title: `🧹 نُظّف الترتيب: ${parts.join(" و ")}`,
+          description: `العدد النهائي ${finalRows.length} صفحة — الفاتحة أولاً. اضغط «حفظ الترتيب» لتثبيت الإصلاح على السيرفر.`,
+        });
+      }
     } catch (e) {
       console.error("[sort] reload failed:", e);
       setServerStatus("offline");
@@ -347,11 +371,15 @@ export default function SortPagesPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // تنظيف نهائي قبل الحفظ: بلا "0" وبلا مكرّرات والفاتحة أولاً
+      const cleanRows = sanitizePageOrder(rows);
+      setRows(cleanRows);
+
       // نسخة احتياطية محلية قبل الحفظ (يستخدمها سكربت tools/check-page-order.cjs للاستعادة)
-      try { localStorage.setItem(BACKUP_KEY, JSON.stringify(rows)); } catch { /* ignore */ }
+      try { localStorage.setItem(BACKUP_KEY, JSON.stringify(cleanRows)); } catch { /* ignore */ }
 
       // حفظ محلي + رفع للسيرفر (نفس مفتاح القارئ)
-      savePageOrder(rows);
+      savePageOrder(cleanRows);
 
       if (!hasValidSupabaseKey()) {
         toast({
@@ -362,8 +390,8 @@ export default function SortPagesPage() {
         return;
       }
 
-      // التحقق الفعلي أن الترتيب وصل للسيرفر (مع إعادة محاولات)
-      const ok = await verifyOrderOnServer(rows);
+      // التحقق الفعلي أن الترتيب وصل للسيرفر (مع إعادة محاولات) — نتحقق من النسخة النظيفة
+      const ok = await verifyOrderOnServer(cleanRows);
       if (ok) {
         toast({ title: "✅ تم حفظ الترتيب على السيرفر (تم التحقق)", description: "افتح المصحف لرؤية الترتيب الجديد" });
       } else {
@@ -385,8 +413,8 @@ export default function SortPagesPage() {
     setIsSaving(true);
     try {
       clearPageOrder(); // يمسح الترتيب محلياً + على السيرفر
-            // إعادة بناء القائمة الافتراضية من صور السيرفر مرتبة بالأرقام
-      const rest = Array.from(serverImgSrcs).sort((a, b) => pageNumOf(a) - pageNumOf(b));
+            // إعادة بناء القائمة الافتراضية من صور السيرفر: تنظيف موحّد + الفاتحة أولاً
+      const rest = sanitizePageOrder(Array.from(serverImgSrcs));
       setRows(rest);
       toast({ title: "↩️ أُعيد الترتيب الأصلي" });
     } finally {

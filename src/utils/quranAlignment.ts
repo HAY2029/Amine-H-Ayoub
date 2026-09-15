@@ -14,7 +14,10 @@ export async function alignAyahsViterbi(
   onProgress?: (msg: string) => void
 ): Promise<{ teacherRegions: SpeechRegion[]; kidsRegions: SpeechRegion[] }> {
   // 1. Get text locally to estimate durations
-  const localMatch = (localCorpus as Array<{ std: number; ayahs: Array<{ n: number; text: string }> }>).find(s => s.std === surahId);
+  const localMatch = (localCorpus as Array<{
+    std: number;
+    ayahs: Array<{ n?: number; number?: number; text: string }>;
+  }>).find(s => s.std === surahId);
   let ayahs = localMatch ? localMatch.ayahs : [];
   
   if (!ayahs.length) {

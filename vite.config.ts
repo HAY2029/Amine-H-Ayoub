@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => ({
     },
     warmup: {
       clientFiles: ['./src/main.tsx', './src/App.tsx']
-    }
+    },
   },
   build: {
     rollupOptions: {

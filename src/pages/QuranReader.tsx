@@ -5,7 +5,7 @@ import { getSurahAudioUrl, hasCloudAudio, getFallbackAudioUrl } from "@/data/aud
 import { getPageAyahBoxes, PAGE_IMAGE_SIZE } from "@/data/ayahCoordinates";
 import AppFooter from "@/components/AppFooter";
 import { getSavedTimings, getSurahTimings } from "@/data/ayahTimings";
-import { getCustomPages, getAllPageImages, syncAllPageImagesFromServer, syncCustomPagesFromServer, getPageOrder, getPageOrderSrcs, savePageOrder, syncPageOrderFromServer, normalizeImageKey } from "@/data/customPages";
+import { getCustomPages, getAllPageImages, syncAllPageImagesFromServer, syncCustomPagesFromServer, getPageOrder, getPageOrderSrcs, savePageOrder, syncPageOrderFromServer, normalizeImageKey, isBogusSrc, sanitizePageOrder } from "@/data/customPages";
 import { getPageSurahRegions } from "@/data/surahRegions";
 import { addReadingMinutes, addCoins, kidsEnabled as getKidsEnabled, getProgress, isPureMode, setAppMode } from "@/data/kidsProfile";
 import { recordTodayActivity } from "@/data/kidsBadges";
@@ -130,39 +130,6 @@ const BASE_PAGES: PageInfo[] = [
   {
     name: "الفاتحة", src: "/pages/fatiha.jpg", surahs: [
       { name: "الفاتحة", number: 1, src: audioPath(1), ayahCount: 7 },
-    ]
-  },
-  {
-    name: "القارعة - التكاثر", src: "/pages/600.jpg", surahs: [
-      { name: "التكاثر", number: 14, src: audioPath(14), ayahCount: 8 },
-    ]
-  },
-  {
-    name: "العصر - الهمزة - الفيل", src: "/pages/601.jpg", surahs: [
-      { name: "العصر", number: 13, src: audioPath(13), ayahCount: 3 },
-      { name: "الهمزة", number: 12, src: audioPath(12), ayahCount: 9 },
-      { name: "الفيل", number: 11, src: audioPath(11), ayahCount: 5 },
-    ]
-  },
-  {
-    name: "قريش - الماعون - الكوثر", src: "/pages/602.jpg", surahs: [
-      { name: "قريش", number: 10, src: audioPath(10), ayahCount: 4 },
-      { name: "الماعون", number: 9, src: audioPath(9), ayahCount: 7 },
-      { name: "الكوثر", number: 8, src: audioPath(8), ayahCount: 3 },
-    ]
-  },
-  {
-    name: "الكافرون - النصر - المسد", src: "/pages/603.jpg", surahs: [
-      { name: "الكافرون", number: 7, src: audioPath(7), ayahCount: 6 },
-      { name: "النصر", number: 6, src: audioPath(6), ayahCount: 3 },
-      { name: "المسد", number: 5, src: audioPath(5), ayahCount: 5 },
-    ]
-  },
-  {
-    name: "الإخلاص - الفلق - الناس", src: "/pages/604.jpg", surahs: [
-      { name: "الإخلاص", number: 4, src: audioPath(4), ayahCount: 4 },
-      { name: "الفلق", number: 3, src: audioPath(3), ayahCount: 5 },
-      { name: "الناس", number: 2, src: audioPath(2), ayahCount: 6 },
     ]
   },
 ];
@@ -305,26 +272,68 @@ export default function QuranReader() {
   // === تطبيق ترتيب الصفحات المحفوظ من الإعدادات (دالة عادية قبل pages) ===
   const applyPageOrder = (allPages: PageInfo[]): PageInfo[] => {
     try {
-      const savedOrder = localStorage.getItem("mushaf:customPageOrder:v1");
-      if (!savedOrder) return allPages;
-      const order = JSON.parse(savedOrder) as string[];
+      // المفتاح الموحّد الذي تكتبه صفحة الترتيب/الرفع/القارئ هو "mushaf:pageOrder:v1".
+      // (كان القارئ يقرأ مفتاحاً قديماً "mushaf:customPageOrder:v1" — سبب بقاء الترتيب
+      //  القديم بصفحة "0" والمكرّرات رغم إصلاح صفحة الترتيب.)
+      const ORDER_KEYS = ["mushaf:pageOrder:v1", "mushaf:customPageOrder:v1"];
+      let rawOrder: string | null = null;
+      let usedKey = ORDER_KEYS[0];
+      for (const k of ORDER_KEYS) {
+        const v = localStorage.getItem(k);
+        if (v) { rawOrder = v; usedKey = k; break; }
+      }
+      // إن وُجد المفتاح القديم فقط، نُرحّل قيمته إلى المفتاح الموحّد ونحذف القديم نهائياً
+      // حتى لا يعود الترتيب القديم (بصفحة "0" والمكرّرات) بعد إصلاح المفتاح.
+      if (rawOrder && usedKey === ORDER_KEYS[1]) {
+        try {
+          localStorage.setItem(ORDER_KEYS[0], rawOrder);
+          localStorage.removeItem(ORDER_KEYS[1]);
+          usedKey = ORDER_KEYS[0];
+        } catch { /* ignore */ }
+      }
+      if (!rawOrder) return allPages;
+      let order = JSON.parse(rawOrder) as unknown[];
       if (!Array.isArray(order) || order.length === 0) return allPages;
-      // ترتيب تالف: إذا كان يحتوي صفحة "0.jpg" خاطئة أو مرجعاً غير موجود نهائياً
-      // نتجاهله كلياً — هذا سبب بقاء "0" أولاً بعد الإصلاح.
+      // دعم النسخ التي حفظت فهارس (number[]) بدل srcs
+      if (typeof order[0] === "number") {
+        order = (order as number[]).map(k => allPages[k]?.src).filter(Boolean);
+      }
       const validSrcs = new Set(allPages.map(p => p.src));
-      const polluted = order.some(o => /(^|\/|pages\/)0\.jpe?g$/i.test(o) || !validSrcs.has(o));
-      if (polluted) {
-        try { localStorage.removeItem("mushaf:customPageOrder:v1"); } catch { /* ignore */ }
+      const seenOrder = new Set<string>();
+      const cleanOrder: string[] = [];
+      for (const raw of order as string[]) {
+        const norm = normalizeImageKey(String(raw));
+        if (!norm || isBogusSrc(norm)) continue;    // "0.jpg" خاطئة دائماً
+        if (!validSrcs.has(norm)) continue;          // غير موجودة
+        if (seenOrder.has(norm)) continue;           // مكرّر
+        seenOrder.add(norm);
+        cleanOrder.push(norm);
+      }
+      // إن كان الترتيب كله خاطئاً/فارغاً → تجاهله واحذفه
+      if (cleanOrder.length === 0) {
+        try { localStorage.removeItem(usedKey); } catch { /* ignore */ }
         return allPages;
       }
-      
+      if (cleanOrder.length !== order.length) {
+        try { localStorage.setItem(usedKey, JSON.stringify(cleanOrder)); } catch { /* ignore */ }
+      }
+      // الفاتحة أولاً دائماً (لو جاء ترتيب قديم بصفحة غريبة في الصدارة)
+      const isFatihaPage = (src: string) => /fatiha/i.test(src);
+      const firstNonFatiha = cleanOrder.findIndex(src => !isFatihaPage(src));
+      if (firstNonFatiha > 0) {
+        const fIdx = cleanOrder.findIndex(src => isFatihaPage(src));
+        if (fIdx > 0) {
+          const [f] = cleanOrder.splice(fIdx, 1);
+          cleanOrder.unshift(f);
+        }
+      }
       const pageMap = new Map<string, PageInfo>();
       allPages.forEach(p => pageMap.set(p.src, p));
       
       const ordered: PageInfo[] = [];
       const added = new Set<string>();
       
-      for (const src of order) {
+      for (const src of cleanOrder) {
         if (pageMap.has(src) && !added.has(src)) {
           ordered.push(pageMap.get(src)!);
           added.add(src);
@@ -434,7 +443,7 @@ export default function QuranReader() {
         if (customImgs[cp.src]) return true;                       // صورة موجودة (سيرفر/محلي)
         if (BASE_PAGES.some(bp => bp.src === cp.src)) return true; // صفحة أساسية محلية
         if (hfSrcs.has(cp.src)) return true;                       // صورة من السيرفر
-        return false; // لا صورة → صفحة وهمية → استبعاد
+        return false; // لا صورة → استبعاد النسخ المحلية الافتراضية
       })
       .map(cp => {
       const regions = getPageSurahRegions(cp.src);
@@ -459,46 +468,64 @@ export default function QuranReader() {
       const n = normalizeImageKey(p.src);
       return n || p.src;
     };
-    [...hfPageInfos, ...extra, ...serverOnlyPages].forEach(p => {
+    [...BASE_PAGES, ...hfPageInfos, ...extra, ...serverOnlyPages].forEach(p => {
       if (p && p.src) dedupeMap.set(normKey(p), p); // آخر نسخة تكسب
     });
     let allPages = Array.from(dedupeMap.values());
 
     // ─── تنظيف نهائي: لا "0" خاطئة ولا مكررات ───
-    // صفحة اسمها "0" (أرقام = صفر) خاطئة دائماً → تُحذف كلياً.
-    // صفحة بلا أرقام (مثل fatiha) تُبقى بنسخة واحدة فقط.
-    // تكراران بنفس الرقم → يُبقى الأفضل (الأساسية/الاسم الوصفي).
     const byNum = new Map<number, PageInfo>();
-    const cleaned: PageInfo[] = [];
+    const noNumPages: PageInfo[] = [];
+    const seenNoNum = new Set<string>();
+    
+    const getPageNum = (p: PageInfo) => {
+      if (/fatiha/i.test(p.src) || p.name.includes("الفاتحة")) return 1;
+      const mName = p.name.match(/(\d+)/);
+      if (mName) return parseInt(mName[1], 10);
+      if (p.src.startsWith("custom:")) return -1;
+      const mSrc = p.src.match(/(\d+)/);
+      return mSrc ? parseInt(mSrc[1], 10) : -1;
+    };
+
     for (const p of allPages) {
-      const m = p.src.match(/(\d+)/);
-      const num = m ? parseInt(m[1], 10) : -1;
+      const num = getPageNum(p);
       if (num === 0) continue; // "0.jpg" صفحة خاطئة — احذفها دائماً
+      
       if (num === -1) {
-        // بلا أرقام (فاتحة/مخصّصة) — نسخة واحدة فقط
-        if (!cleaned.some(q => normKey(q) === normKey(p))) cleaned.push(p);
+        const k = p.name && !p.name.includes("صفحة") ? p.name : normKey(p);
+        if (!seenNoNum.has(k)) { seenNoNum.add(k); noNumPages.push(p); }
         continue;
       }
+      
       const existing = byNum.get(num);
       if (existing) {
-        // مكرر بنفس الرقم: نُبقي الأفضل (الأساسية أو صاحبة الاسم الوصفي)
-        const better = basePagesMap.has(p.src) ? p : (!existing.name.startsWith("صفحة") && existing.name !== p.name ? existing : p);
+        // نُفضل دائماً نسخة السيرفر (التي ليست في basePagesMap) على النسخة المحلية الافتراضية
+        const pIsServer = !basePagesMap.has(p.src);
+        const existingIsServer = !basePagesMap.has(existing.src);
+        
+        let better = p;
+        if (existingIsServer && !pIsServer) {
+          better = existing;
+        } else if (pIsServer && !existingIsServer) {
+          better = p;
+        } else {
+          // كلاهما سيرفر أو كلاهما محلي -> نُبقي صاحبة الاسم الوصفي
+          better = (!existing.name.startsWith("صفحة") && existing.name !== p.name) ? existing : p;
+        }
         byNum.set(num, better);
-        continue;
+      } else {
+        byNum.set(num, p);
       }
-      byNum.set(num, p);
-      cleaned.push(p);
     }
-    allPages = cleaned;
+    allPages = [...noNumPages, ...Array.from(byNum.values())].filter(p => p.name !== "صفحة مستعادة");
 
     // ─── الترتيب: الفاتحة (فاتحة/1) أولاً ثم 581→604 تصاعدياً ───
-    const pageNum = (p: PageInfo) => {
-      const n = parseInt(p.src.replace(/\D/g, ""), 10);
-      if (n > 0) return n;
-      if (/fatiha/i.test(p.src) || p.name.includes("الفاتحة")) return 1;
-      return 99999; // صفحات مخصصة بلا رقم → النهاية
-    };
-    allPages.sort((a, b) => pageNum(a) - pageNum(b));
+    allPages.sort((a, b) => {
+      const numA = getPageNum(a) === -1 ? Number.MAX_SAFE_INTEGER : getPageNum(a);
+      const numB = getPageNum(b) === -1 ? Number.MAX_SAFE_INTEGER : getPageNum(b);
+      const d = numA - numB;
+      return d !== 0 ? d : a.src.localeCompare(b.src);
+    });
 
     // احتياط تام: إذا لم تصل أي صورة سيرفر إطلاقاً (شبكة مقطوعة + سيرفر فارغ)
     // نعرض الصفحات الأساسية المحلية فقط حتى لا تبقى الشاشة فارغة.
@@ -542,6 +569,7 @@ export default function QuranReader() {
 
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : false);
   const [controlsOpen, setControlsOpen] = useState(false);
+  const [isGridOpen, setIsGridOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [skipBismillah, setSkipBismillah] = useState(() => {
     // افتراضياً: تخطي البسملة والبدء من الصفحة 2
@@ -718,6 +746,8 @@ export default function QuranReader() {
   // مزامنة ترتيب الصفحات من السيرفر
   useEffect(() => {
     if (!pageOrderOpen) return;
+    // مفتاح قديم مهجور — حذفه حتى لا يظل يفرض ترتيباً قديمًا (سبب تكرار/صفحة "0")
+    try { localStorage.removeItem("mushaf:customPageOrder:v1"); } catch { /* ignore */ }
     syncPageOrderFromServer().then(order => {
       if (order.length > 0) setPageOrderSrcs(getPageOrderSrcs());
     });
@@ -733,7 +763,8 @@ export default function QuranReader() {
 
   const saveReorder = useCallback(async () => {
     if (reorderedPages.length === 0) return;
-    const newOrder = reorderedPages.map(p => p.src);
+    // ترتيب نظيف: بلا مكرّر/خاطئ + الفاتحة أولاً
+    const newOrder = sanitizePageOrder(reorderedPages.map(p => p.src));
     if (isShuffled) {
       // تحويل srcs إلى فهارس لقائمة الخلط
       setShuffledPageOrder(
@@ -766,7 +797,7 @@ export default function QuranReader() {
     for (let i = 0; i < pages.length; i++) {
       if (!idxOrder.includes(i)) idxOrder.push(i);
     }
-    savePageOrder(idxOrder.map(i => pages[i].src));
+    savePageOrder(sanitizePageOrder(idxOrder.map(i => pages[i].src)));
     setOrderVersion(v => v + 1);
     setPageOrderOpen(false);
     toast({ title: "✅ تم حفظ ترتيب الصفحات", description: "سيظهر الترتيب الجديد عند إعادة فتح المصحف" });
@@ -972,6 +1003,8 @@ export default function QuranReader() {
     return () => { unregisterAudio("mushaf"); };
   }, [registerAudio, unregisterAudio]);
 
+
+
   // Listen for external pause only (from AudioContext mutual exclusion)
   useEffect(() => {
     const a = audioRef.current;
@@ -1069,18 +1102,34 @@ export default function QuranReader() {
     }
   }, [currentPage, pages]);
 
-  // عند تحميل الصفحات أول مرة (مثلاً بعد وصول صور HF) استعادة الموضع من src المحفوظة
+  // عند تحميل الصفحات أول مرة (مثلاً بعد وصول صور HF) استعادة الموضع من مسار URL أو المحفوظة
   const pageSrcRestoredRef = useRef(false);
   useEffect(() => {
     if (pageSrcRestoredRef.current) return;
     if (pages.length === 0) return;
-    const savedSrc = localStorage.getItem(STORAGE_KEY + ":src");
-    if (savedSrc) {
-      const idx = pages.findIndex(p => p.src === savedSrc);
-      if (idx >= 0 && idx !== currentPage) {
-        setCurrentPage(idx);
+    
+    let targetIdx = -1;
+    
+    // 1. الأولوية لمسار URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const surahParam = urlParams.get("surah");
+    if (surahParam) {
+      const targetSurah = parseInt(surahParam, 10);
+      targetIdx = pages.findIndex(p => p.surahs?.some(s => s.number === targetSurah));
+    }
+    
+    // 2. إذا لم يكن هناك رابط، أو لم نجد السورة، نقرأ من التخزين المحلي
+    if (targetIdx === -1) {
+      const savedSrc = localStorage.getItem(STORAGE_KEY + ":src");
+      if (savedSrc) {
+        targetIdx = pages.findIndex(p => p.src === savedSrc);
       }
     }
+    
+    if (targetIdx >= 0 && targetIdx !== currentPage) {
+      setCurrentPage(targetIdx);
+    }
+    
     pageSrcRestoredRef.current = true;
   }, [pages, currentPage]);
 
@@ -1555,21 +1604,21 @@ export default function QuranReader() {
     touchStartXRef.current = null;
   };
 
-  const step = 1; // صفحة واحدة دائماً (حاسوب وجوال)
+  const step = isDesktop ? 2 : 1;
   const totalDisplayPages = isShuffled ? shuffledPageOrder.length : pages.length;
   const goToPage = useCallback((i: number) => { if (i >= 0 && i < totalDisplayPages) setCurrentPage(i); }, [totalDisplayPages]);
   
   // === التنقّل مع مراعاة تخطي البسملة ===
   const goPrev = useCallback(() => {
     let prevPage = currentPage - step;
-    if (skipBismillah && currentPage === 1) { prevPage = 0; }
+    if (skipBismillah && prevPage === 1 && currentPage > 1) { prevPage = 0; }
     else if (skipBismillah && currentPage === 0) { return; }
     goToPage(Math.max(0, prevPage));
   }, [currentPage, goToPage, step, skipBismillah]);
   
   const goNext = useCallback(() => {
     let nextPage = currentPage + step;
-    // إذا كان تخطي البسملة مفعّلاً ونحن في الصفحة 0 (البسملة)، الانتقال مباشرة للصفحة 2
+    // إذا كان تخطي البسملة مفعّلاً ونحن في الصفحة 0 (البسملة)، الانتقال مباشرة للصفحة 2 (للحاسوب والجوال)
     if (skipBismillah && currentPage === 0 && totalDisplayPages > 1) { nextPage = 1; }
     goToPage(Math.min(totalDisplayPages - 1, nextPage));
   }, [currentPage, totalDisplayPages, goToPage, step, skipBismillah]);
@@ -1585,7 +1634,7 @@ export default function QuranReader() {
 
   // تحميل مسبق لصور الصفحة الحالية وجيرانها (تظهر فوراً عند التنقّل) — بأولوية عالية للحالية
   useEffect(() => {
-    [currentPage, currentPage + 1, currentPage - 1]
+    [currentPage, currentPage + 1, currentPage - 1, currentPage + 2, currentPage - 2]
       .filter(d => d >= 0 && d < totalDisplayPages)
       .forEach((d, order) => {
         const p = pages[getActualPageIndex(d)];
@@ -1596,14 +1645,22 @@ export default function QuranReader() {
         img.src = imgSrcFor(p.src);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, totalDisplayPages, getActualPageIndex, customImgs, pages]);
+  }, [currentPage, totalDisplayPages, getActualPageIndex, customImgs, pages, isDesktop]);
 
   const visiblePages = useMemo(() => {
-    // صفحة واحدة فقط دائماً (حتى على الحاسوب)
-    return [pages[getActualPageIndex(currentPage)]].filter(Boolean) as PageInfo[];
-  }, [currentPage, getActualPageIndex]);
+    const p1 = pages[getActualPageIndex(currentPage)];
+    if (!isDesktop) return [p1].filter(Boolean) as PageInfo[];
+    
+    // في الحاسوب، نعرض صفحتين متجاورتين
+    const nextIdx = currentPage + 1;
+    const p2 = nextIdx < totalDisplayPages ? pages[getActualPageIndex(nextIdx)] : null;
+    return [p1, p2].filter(Boolean) as PageInfo[];
+  }, [currentPage, getActualPageIndex, isDesktop, pages, totalDisplayPages]);
 
-  const currentPageSurahs = pages[actualPage]?.surahs || [];
+  const currentPageSurahs = useMemo(() => {
+    return visiblePages.flatMap(p => p.surahs);
+  }, [visiblePages]);
+  
   const selectedSurah = currentPageSurahs[selectedSurahIdx] || currentPageSurahs[0];
   const ayahCount = selectedSurah ? getActualAyahCount(selectedSurah.number, selectedSurah.ayahCount) : 0;
 
@@ -1854,6 +1911,7 @@ export default function QuranReader() {
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 flex-wrap justify-center max-w-[90vw]" dir="rtl">
           {([
             { key: "back", icon: <ArrowRight className="w-5 h-5 text-foreground" />, label: "رجوع", onClick: () => navigate("/audio"), active: false },
+            { key: "grid", icon: <LayoutGrid className="w-5 h-5 text-foreground" />, label: "وصول مباشر", onClick: () => setIsGridOpen(true), active: isGridOpen },
             kidsMode && !isPureMode() && { key: "games", icon: <Baby className="w-5 h-5 text-foreground" />, label: "الألعاب", onClick: () => navigate("/games"), active: false },
             kidsMode
               ? { key: "lock", icon: <Lock className="w-5 h-5 text-foreground" />, label: "خروج من ركن الأطفال", onClick: requestExitKids, active: true }
@@ -2288,7 +2346,8 @@ export default function QuranReader() {
               <div className="mb-3">
                 <div className="flex flex-wrap gap-1.5">
                   {currentPageSurahs.map((s, i) => {
-                    const firstA = getPageAyahBoxes(pages[actualPage]?.src || "").filter(b => b.surah === s.number).sort((a,b)=>a.ayah-b.ayah)[0]?.ayah ?? 1;
+                    const allVisibleBoxes = visiblePages.flatMap(p => getPageAyahBoxes(p.src));
+                    const firstA = allVisibleBoxes.filter(b => b.surah === s.number).sort((a,b)=>a.ayah-b.ayah)[0]?.ayah ?? 1;
                     return (
                     <button key={s.number} onClick={() => { setSelectedSurahIdx(i); setSelectedAyah(firstA); }} className={`px-3 py-1.5 rounded-full text-sm font-amiri border transition-all ${selectedSurahIdx === i ? "bg-accent text-accent-foreground shadow" : "bg-white/70 border-border/60"}`}>
                       {s.name}
@@ -2303,7 +2362,8 @@ export default function QuranReader() {
               <p className="text-xs font-bold mb-1.5 text-muted-foreground">اختر الآية</p>
               <div className="grid grid-cols-7 gap-1.5">
                 {(() => {
-                  const surahBoxes = getPageAyahBoxes(pages[actualPage]?.src || "").filter(b => b.surah === selectedSurah?.number);
+                  const allVisibleBoxes = visiblePages.flatMap(p => getPageAyahBoxes(p.src));
+                  const surahBoxes = allVisibleBoxes.filter(b => b.surah === selectedSurah?.number);
                   const numbers = surahBoxes.length > 0
                     ? Array.from(new Set(surahBoxes.map(b => b.ayah))).sort((a, b) => a - b)
                     : Array.from({ length: ayahCount }, (_, i) => i + 1);
@@ -2331,6 +2391,51 @@ export default function QuranReader() {
 
       {showNotifications && <NotificationsModal onClose={() => setShowNotifications(false)} />}
       
+      {isGridOpen && (
+        <div className="absolute inset-0 z-[100] flex flex-col bg-background/95 backdrop-blur-md animate-fade-in p-4" dir="rtl">
+          <div className="flex items-center justify-between mb-4 mt-8 max-w-7xl mx-auto w-full px-4">
+            <h2 className="text-2xl font-bold font-amiri text-foreground flex items-center gap-2">
+              <LayoutGrid className="w-6 h-6 text-accent" />
+              الوصول المباشر للصفحات
+            </h2>
+            <button onClick={() => setIsGridOpen(false)} className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-all shadow-sm">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto pb-24 max-w-7xl mx-auto w-full px-4">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-3 place-content-start">
+              {pages.map((p, idx) => {
+                let displayName = p.name;
+                if (p.name.includes("صفحة")) {
+                  displayName = p.name.replace("صفحة", "").trim();
+                } else if (p.name.includes("الفاتحة")) {
+                  displayName = "1";
+                }
+                const isActive = currentPage === idx || (isDesktop && currentPage + 1 === idx);
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setIsGridOpen(false);
+                      // If it's a left page and we're on desktop, jumping to it directly might make it a right page.
+                      // That's fine, we just update currentPage.
+                      goToPage(idx);
+                    }}
+                    className={`aspect-square rounded-2xl font-bold text-xl flex items-center justify-center transition-all ${
+                      isActive 
+                        ? "bg-accent text-accent-foreground shadow-lg scale-105 border-2 border-accent/20 ring-4 ring-accent/30" 
+                        : "bg-white/90 text-foreground/80 hover:bg-white hover:text-accent border border-border shadow-sm hover:scale-105 hover:shadow-md"
+                    }`}
+                    title={p.name}
+                  >
+                    {displayName}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       <AppFooter />
     </div>

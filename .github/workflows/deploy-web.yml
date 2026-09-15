@@ -1,0 +1,76 @@
+name: Deploy Web App (GH Pages)
+
+# نشر تلقائي: كل دفعة إلى main تُنشر تلقائياً إلى gh-pages
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'releases-site/**'
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit -p tsconfig.app.json
+
+      - name: Lint
+        run: npx eslint src --max-warnings=200
+        continue-on-error: true
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Security scan — أوقف النشر إن وُجد سرّ في الحزمة
+        run: |
+          echo "Scanning dist for leaked secrets..."
+          FOUND=0
+          for PAT in 'hf_[A-Za-z0-9]\{30,\}' 'sb_secret_[A-Za-z0-9_-]\{20,\}' 'sk-[A-Za-z0-9]\{20,\}'; do
+            if grep -rEl "$PAT" dist/ 2>/dev/null; then
+              echo "::error::تسرّب سرّ محتمل في الحزمة بالنمط: $PAT"
+              FOUND=1
+            fi
+          done
+          if [ "$FOUND" = "1" ]; then
+            echo "أوقفنا النشر حمايةً للمفاتيح."
+            exit 1
+          fi
+          echo "نظيف — لا أسرار في dist"
+
+      - name: Add SPA fallback + nojekyll
+        run: |
+          cp dist/index.html dist/404.html
+          touch dist/.nojekyll
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: false
+          commit_message: "deploy: ${{ github.event.head_commit.message }} [skip ci]"

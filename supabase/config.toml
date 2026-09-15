@@ -2,3 +2,6 @@ project_id = "gimdekpxutvnopovofmc"
 
 [functions.ai-split-audio]
 verify_jwt = false
+
+[functions.transcribe-audio]
+verify_jwt = false

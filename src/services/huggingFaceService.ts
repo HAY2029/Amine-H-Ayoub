@@ -12,16 +12,17 @@ export interface HFImage {
   source?: "huggingface" | "supabase" | "local";
 }
 
+/**
+ * ⚠️ أمن: لا نقرأ أي متغير VITE_ هنا. كل متغير VITE_ يُدمج حرفياً في ملفات
+ * JS التي يحمّلها الزائر، فأي مفتاح فيه يصبح مكشوفاً لأي شخص (أدوات المتصفح
+ * → Network → JS). الرمز يُقرأ فقط من localStorage (يُضبط يدوياً على الجهاز).
+ */
 export function getHFToken(): string | null {
   if (HARDCODED_TOKEN) return HARDCODED_TOKEN;
   try {
-    return (
-      localStorage.getItem("hf_token") ||
-      (import.meta as any)?.env?.VITE_HF_TOKEN ||
-      null
-    );
+    return localStorage.getItem("hf_token") || null;
   } catch {
-    return (import.meta as any)?.env?.VITE_HF_TOKEN || null;
+    return null;
   }
 }
 
@@ -89,6 +90,11 @@ function markRepoUnavailable() {
   try { localStorage.setItem(HF_BAD_KEY, String(_repoBadUntil)); } catch { /* ignore */ }
 }
 
+/**
+ * مفاتيح localStorage التي قد يحفظ فيها المستخدم رمزه.
+ * ملاحظة: "VITE_HF_TOKEN" هنا مجرّد اسم مفتاح تخزين محلي محتمل للتوافق مع
+ * نسخ سابقة — وليس قراءة من متغيّر بيئة (وإلا لتسرّب في الحزمة).
+ */
 const HF_TOKEN_KEYS = ["hf_token", "VITE_HF_TOKEN", "hf:token"] as const;
 
 function readStoredHfToken(): string {

@@ -26,7 +26,6 @@ const A_HAMZA = 0x0621, Y_NORM = 0x064A; // ء … ي (نطاق الحروف ا�
 const isDiacritic = (cp: number): boolean =>
   (cp >= 0x0610 && cp <= 0x061A) ||  // علامات أعلى/أسفل
   (cp >= 0x064B && cp <= 0x065F) ||  // تنوين + حركات + علامات
-  cp === 0x0670 ||                   // ألف خنجرية
   (cp >= 0x06D6 && cp <= 0x06DC) ||  // علامات قرآنية
   (cp >= 0x06DF && cp <= 0x06E8) ||
   (cp >= 0x06EA && cp <= 0x06ED) ||
@@ -34,8 +33,9 @@ const isDiacritic = (cp: number): boolean =>
 
 /** يوحّد صور الألف/الياء/الواو/التاء المربوطة لمطابقة بحثية متساهلة. */
 const unifyCp = (cp: number): number => {
-  if (cp === 0x0622 || cp === 0x0623 || cp === 0x0625 || cp === 0x0671) return 0x0627; // آ أ إ ٱ → ا
-  if (cp === 0x0649 || cp === 0x0626) return 0x064A; // ى ئ → ي
+  if (cp === 0x0622 || cp === 0x0623 || cp === 0x0625 || cp === 0x0671 || cp === 0x0670) return 0x0627; // آ أ إ ٱ وألف خنجرية → ا
+  if (cp === 0x0649 || cp === 0x0626 || cp === 0x06CC) return 0x064A; // ى ئ ياء فارسية → ي
+  if (cp === 0x06A9) return 0x0643;                  // كاف فارسية → ك
   if (cp === 0x0624) return 0x0648;                  // ؤ → و
   if (cp === 0x0629) return 0x0647;                  // ة → ه
   return cp;
@@ -70,7 +70,23 @@ function stripLeadingBasmala(text: string): string {
 
 import localCorpus from "./localQuranCorpus.json";
 
-const LOCAL_BUNDLED_CORPUS: SurahText[] = localCorpus as SurahText[];
+/**
+ * ملف النصّ المحلي يستخدم الحقل `number` للآية، بينما واجهة `Ayah` تتوقّع `n`.
+ * نُطبّع عند التحميل حتى يقرأ باقي التطبيق حقلاً واحداً — بلا تعديل الملف الضخم.
+ * (ملاحظة: نصّ هذا الملف مكتوب برواية ورش عن نافع.)
+ */
+type RawAyah = { number?: number; n?: number; text: string };
+type RawSurah = { app: number; std?: number; name: string; ayahs: RawAyah[] };
+
+const LOCAL_BUNDLED_CORPUS: SurahText[] = (localCorpus as unknown as RawSurah[]).map((s) => ({
+  app: s.app,
+  std: s.std ?? s.app,
+  name: s.name,
+  ayahs: (s.ayahs || []).map((a, i) => ({
+    n: typeof a.n === "number" ? a.n : typeof a.number === "number" ? a.number : i + 1,
+    text: a.text,
+  })),
+}));
 
 /** يضمن توفّر نصّ كل سور التطبيق (محلياً 100% بدون أي طلبات خارجية). */
 export async function ensureCorpus(): Promise<SurahText[]> {

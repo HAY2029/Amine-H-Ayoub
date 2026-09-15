@@ -48,7 +48,22 @@ const upsert = (key: string, value: unknown) => {
 
 export const getCustomPages = (): CustomPage[] => {
   if (typeof window === "undefined") return [];
-  try { const raw = localStorage.getItem(META_KEY); return raw ? JSON.parse(raw) : []; } catch { return []; }
+  try {
+    const raw = localStorage.getItem(META_KEY);
+    const v = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(v)) return [];
+    // تصفية الصفحات الخاطئة (برقم 0) والمكرّرة — سبب الصفحات الوهمية في القارئ
+    const seen = new Set<string>();
+    const out: CustomPage[] = [];
+    (v as CustomPage[]).forEach(p => {
+      if (!p || typeof p.src !== "string") return;
+      const key = normalizeImageKey(p.src);
+      if (!key || isBogusSrc(key) || seen.has(key)) return;
+      seen.add(key);
+      out.push({ ...p, src: key });
+    });
+    return out;
+  } catch { return []; }
 };
 
 export const saveCustomPages = (pages: CustomPage[]) => {
@@ -81,14 +96,23 @@ export const getPageOrder = (): number[] => {
     if (!Array.isArray(v)) return [];
     // تحويل إلى أرقام (للتوافق مع النسخ القديمة التي كانت تحفظ string[])
     const nums = v.map(x => typeof x === "number" ? x : parseInt(x, 10)).filter(n => !isNaN(n));
-    // إذا كانت القيم نصوص src خالصة (فشل التحويل كله) — أعد ترجمتها عبر قائمة الصفحات المعروفة
-    if (nums.length === 0 && v.length > 0 && typeof v[0] === "string") {
+    // حماية: كان الصفر يُعتبر خاطئاً، الآن تم السماح به ويكون أولاً
+    const cleanNums = nums.filter(n => n >= 0);
+    // إذا كانت القيم نصوص src خالصة (فشل التحويل كله) — أعد ترجمتها
+    // عبر قائمة الصفحات الديناميكية مع تصفية الخاطئ والمكرّر
+    if (cleanNums.length === 0 && v.length > 0 && typeof v[0] === "string") {
       const knownSrcs = getKnownPageSrcs();
-      return (v as string[])
-        .map(s => knownSrcs.indexOf(s))
-        .filter(i => i >= 0);
+      const seen = new Set<number>();
+      const out: number[] = [];
+      (v as string[]).forEach(s => {
+        const key = normalizeImageKey(String(s));
+        if (!key || isBogusSrc(key)) return;
+        const idx = knownSrcs.indexOf(key);
+        if (idx >= 0 && !seen.has(idx)) { seen.add(idx); out.push(idx); }
+      });
+      return out;
     }
-    return nums;
+    return cleanNums;
   } catch { return []; }
 };
 
@@ -116,34 +140,99 @@ function getKnownPageSrcs(): string[] {
 }
 
 /**
- * ترتيب src الصفحات ترتيباً رقمياً طبيعياً:
- * الفاتحة أولاً (1)، ثم 581 → 604 تصاعدياً، ثم المخصّصة بلا رقم في النهاية.
+ * ترتيب src الصفحات ترتيباً رقمياً طبيعياً.
+ * ملاحظة: الترتيب المُعتمد في المشروع يضع صفحة 0 أولاً ثم الفاتحة ثم الباقي تصاعدياً
+ * (قرار المستخدم) — و`sanitizePageOrder` بلا numericSort هي المصدر الموثوق لهذا الترتيب.
  */
 export function sortPageSrcs(srcs: string[]): string[] {
-  const numOf = (src: string): number => {
-    if (/fatiha/i.test(src)) return 1;
-    const m = String(src || "").match(/(\d+)/);
-    if (m) {
-      const n = parseInt(m[1], 10);
-      if (n > 0) return n;
-    }
-    return Number.MAX_SAFE_INTEGER; // مخصّص بلا رقم → النهاية
-  };
-  return [...srcs].sort((a, b) => {
-    const d = numOf(a) - numOf(b);
-    return d !== 0 ? d : String(a).localeCompare(String(b));
-  });
+  return sanitizePageOrder(srcs);
+}
+
+export function isBogusSrc(src: string): boolean {
+  // تم إزالة شرط اعتبار صفحة 0 خاطئة بناءً على طلب المستخدم
+  return false;
 }
 
 /**
- * هل هذا المصدر خاطئ/وهمي؟ (صفحة برقم 0، أو اسم فارغ)
- * صفحة "0.jpg" خاطئة دائماً — تُحذف كلياً من كل القوائم.
+ * ترتيب احترافي موحّد (يُستخدم في كل مكان: واجهة الترتيب، الحفظ، السيرفر، القارئ):
+ *  1) توحيد المفتاح عبر normalizeImageKey (يمنع المكرّر: 600.jpg / pages/600.jpg / /pages/600.jpg)
+ *  2) إسقاط الصفحات الخاطئة (رقم 0) والفارغة
+ *  3) إسقاط المكرّرات — أول ظهور يفوز (يحافظ على ترتيب المستخدم)
+ *  4) الفاتحة أولاً (صفحة 1)، ثم الأرقام تصاعدياً…
+ *     وأي صفحة بلا رقم (fatiha/custom) تُترك كما هي في مكانها النسبي
+ *
+ * ملاحظة مهمة: لا نفرض ترتيباً رقمياً على قائمة مرتبة يدوياً — بل نُصلح فقط
+ * الفاتحة/الرقم 0/المكرّرات، حتى لا يتغيّر ترتيب المستخدم بلا سبب.
  */
-export function isBogusSrc(src: string): boolean {
-  const noExt = String(src || "").replace(/\.(jpe?g|png|webp|gif|bmp)$/i, "");
-  const digits = noExt.replace(/\D/g, "");
-  if (digits === "") return false;          // بلا رقم (fatiha/custom) → مقبول
-  return parseInt(digits, 10) === 0;        // "0" أو "000" → خاطئ
+export function sanitizePageOrder(srcs: string[], opts?: { numericSort?: boolean }): string[] {
+  const seen = new Set<string>();
+  const seenNums = new Set<number>();
+  const out: string[] = [];
+  (srcs || []).forEach(raw => {
+    const key = normalizeImageKey(String(raw || ""));
+    if (!key || isBogusSrc(key) || seen.has(key)) return;
+    
+    // Aggressive deduplication by actual page number
+    const num = pageNumForKey(key);
+    // Don't deduplicate unnumbered pages
+    if (num !== Number.MAX_SAFE_INTEGER) {
+      if (seenNums.has(num)) return; // skip this duplicate!
+      seenNums.add(num);
+    }
+    
+    seen.add(key);
+    out.push(key);
+  });
+  if (opts?.numericSort) {
+    return out.slice().sort((a, b) => {
+      const d = pageNumForKey(a) - pageNumForKey(b);
+      return d !== 0 ? d : a.localeCompare(b);
+    });
+  }
+  // ترتيب الصفحات: 0 أولاً، ثم الفاتحة، ثم الباقي
+  const zeroes = out.filter(k => pageNumForKey(k) === 0);
+  const fatiha = out.filter(k => pageNumForKey(k) === 1 || /fatiha/i.test(k));
+  const rest = out.filter(k => pageNumForKey(k) !== 0 && pageNumForKey(k) !== 1 && !/fatiha/i.test(k));
+  return [...zeroes, ...fatiha, ...rest];
+}
+
+/** رقم الصفحة من مفتاح موحّد — الفاتحة = 1، بلا رقم/مخصّص = النهاية، "0" = 0 (خاطئة) */
+export function pageNumForKey(src: string): number {
+  if (/fatiha/i.test(src)) return 1;
+  // الصفحات المخصّصة معرّفها طابع زمني (custom:1700000000000)
+  if (/^custom:/i.test(String(src || ""))) {
+    const allCustom = getCustomPages();
+    const cp = allCustom.find(p => p.src === src);
+    if (cp && cp.name) {
+      if (/fatiha|فاتحة/i.test(cp.name)) return 1;
+      const m = cp.name.match(/(\d+)/);
+      if (m) return parseInt(m[1], 10);
+    }
+    return Number.MAX_SAFE_INTEGER;
+  }
+  const m = String(src || "").match(/(\d+)/);
+  if (!m) return Number.MAX_SAFE_INTEGER;
+  const n = parseInt(m[1], 10);
+  return n;
+}
+
+/** تنظيف قائمة صور/صفحات: توحيد + حذف الخاطئ والمكرّر + ترتيب رقمي (للقوائم غير المرتّبة يدوياً) */
+export const sanitizeImageList = (srcs: string[]): string[] => sanitizePageOrder(srcs, { numericSort: true });
+
+/** ملف المراجعة: كم مكرّراً/خاطئاً حُذف؟ (لعرضه للمستخدم أو تسجيله) */
+export function auditPageOrder(srcs: string[]): { kept: string[]; duplicates: string[]; bogus: string[] } {
+  const seen = new Set<string>();
+  const kept: string[] = [];
+  const duplicates: string[] = [];
+  const bogus: string[] = [];
+  (srcs || []).forEach(raw => {
+    const key = normalizeImageKey(String(raw || ""));
+    if (!key || isBogusSrc(key)) { bogus.push(String(raw)); return; }
+    if (seen.has(key)) { duplicates.push(key); return; }
+    seen.add(key);
+    kept.push(key);
+  });
+  return { kept, duplicates, bogus };
 }
 
 /** يُرجع الترتيب الخام كما هو محفوظ (نصوص src) — للمعايرة وواجهة الترتيب */
@@ -154,23 +243,12 @@ export const getPageOrderSrcs = (): string[] => {
     const v = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(v)) return [];
     // حماية: ترتيب يحتوي صفحات خاطئة/غير موجودة → نتجاهله كلياً
-    // (سبب ظهور صفحة "0" أولاً ومكرّرات في القارئ)
-    const clean = (arr: string[]): string[] => {
-      const seen = new Set<string>();
-      const out: string[] = [];
-      arr.forEach(src => {
-        const key = normalizeImageKey(String(src));
-        if (!key || isBogusSrc(key) || seen.has(key)) return;
-        seen.add(key);
-        out.push(key);
-      });
-      return out;
-    };
-    // مخزّن كـ srcs (النوع الحالي) → نظّفه وأعده كما هو مع تصفية الخاطئ
-    if (v.length > 0 && typeof v[0] === "string") return clean(v as string[]);
+    // (سبب ظهور صفحة "0" أولاً ومكرّرات في القارئ) — يُنظّف في sanitizePageOrder
+    // مخزّن كـ srcs (النوع الحالي) → نظّفه وأعده كما هو مع تصفية الخاطئ/المكرّر/الفاتحة أولاً
+    if (v.length > 0 && typeof v[0] === "string") return sanitizePageOrder(v as string[]);
     // مخزّن كفهارس (نسخ قديمة) → حوّله إلى srcs عبر القائمة الديناميكية
     const known = getKnownPageSrcs();
-    return clean((v as number[]).map(i => known[i]).filter(Boolean) as string[]);
+    return sanitizePageOrder((v as number[]).map(i => known[i]).filter(Boolean) as string[]);
   } catch { return []; }
 };
 
@@ -180,18 +258,16 @@ export const savePageOrder = (order: number[] | string[]) => {
   let srcs: string[];
   if (order.length > 0 && typeof order[0] === "number") {
     const known = getKnownPageSrcs();
-    srcs = (order as number[]).map(i => known[i]).filter(Boolean);
-    // إن كانت الفهارس خارج النطاق المعروف (صفحات مخصصة/HF) — احفظها كما هي
-    if (srcs.length === 0) {
-      localStorage.setItem(ORDER_KEY, JSON.stringify(order));
-      upsert(ORDER_KEY, order);
-      return;
-    }
+    srcs = (order as number[]).map(i => known[i]).filter(Boolean) as string[];
+    // حماية: فهرس صفر/غير صالح → لا نحفظ ترتيباً خاطئاً أبداً
+    if (srcs.length === 0) return;
   } else {
     srcs = order as string[];
   }
-  localStorage.setItem(ORDER_KEY, JSON.stringify(srcs));
-  upsert(ORDER_KEY, srcs);
+  // تصفية موحّدة: حذف الخاطئ (0.jpg) والمكرّر مع الحفاظ على الترتيب + الفاتحة أولاً
+  const clean = sanitizePageOrder(srcs);
+  localStorage.setItem(ORDER_KEY, JSON.stringify(clean));
+  upsert(ORDER_KEY, clean);
 };
 
 /** إزالة ترتيب الصفحات المحفوظ (محلي + سيرفر) — للعودة للترتيب الأصلي */
@@ -212,14 +288,23 @@ export const syncPageOrderFromServer = async (): Promise<number[]> => {
     if (data && data.value && Array.isArray(data.value) && data.value.length > 0) {
       const v = data.value as (string | number)[];
       if (typeof v[0] === "string") {
-        localStorage.setItem(ORDER_KEY, JSON.stringify(v));
+        // تصفية موحّدة: حذف الخاطئ (0.jpg) والمكرّر + الفاتحة أولاً، مع الحفاظ على الترتيب
+        const clean = sanitizePageOrder(v as string[]);
+        localStorage.setItem(ORDER_KEY, JSON.stringify(clean));
         window.dispatchEvent(new Event("mushaf:sync_complete"));
         const known = getKnownPageSrcs();
-        return (v as string[]).map(s => known.indexOf(s)).filter(i => i >= 0);
+        const seenIdx = new Set<number>();
+        const idxs: number[] = [];
+        clean.forEach(s => {
+          const i = known.indexOf(s);
+          if (i >= 0 && !seenIdx.has(i)) { seenIdx.add(i); idxs.push(i); }
+        });
+        return idxs;
       }
-      localStorage.setItem(ORDER_KEY, JSON.stringify(v));
+      const nums = (v as number[]).filter(n => typeof n === "number" && !isNaN(n) && n >= 0);
+      localStorage.setItem(ORDER_KEY, JSON.stringify(nums));
       window.dispatchEvent(new Event("mushaf:sync_complete"));
-      return (v as number[]).filter(n => typeof n === "number" && !isNaN(n));
+      return nums;
     }
     return getPageOrder();
   } catch {

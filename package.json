@@ -13,11 +13,14 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:order": "node ./tools/test-order-logic.cjs",
     "deploy": "npm run build && npx gh-pages -d dist -m \"deploy: update site [skip ci]\"",
     "tauri": "tauri",
     "send-push": "node ./scripts/send-push.mjs",
     "upload:hf": "node ./scripts/upload-hf-assets.mjs",
-    "sync:hf": "node ./scripts/sync-releases-to-hf.mjs"
+    "sync:hf": "node ./scripts/sync-releases-to-hf.mjs",
+    "deploy:safe": "powershell -ExecutionPolicy Bypass -File ./tools/deploy-safe.ps1",
+    "deploy:edge": "powershell -ExecutionPolicy Bypass -File ./tools/deploy-edge-function.ps1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
