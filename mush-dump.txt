@@ -1,0 +1,31 @@
+﻿const pages: PageInfo[] = [
+  { name: "╪د┘┘╪د╪ز╪ص╪ر", src: "/pages/fatiha.jpg", surahs: [
+    { name: "╪د┘┘╪د╪ز╪ص╪ر", number: 1, src: audioPath(1), ayahCount: 7 },
+  ]},
+  { name: "╪د┘┘é╪د╪▒╪╣╪ر - ╪د┘╪ز┘â╪د╪س╪▒", src: "/pages/600.jpg", surahs: [
+    { name: "╪د┘╪ز┘â╪د╪س╪▒", number: 14, src: audioPath(14), ayahCount: 8 },
+  ]},
+  { name: "╪د┘╪╣╪╡╪▒ - ╪د┘┘ç┘à╪▓╪ر - ╪د┘┘┘è┘", src: "/pages/601.jpg", surahs: [
+    { name: "╪د┘╪╣╪╡╪▒", number: 13, src: audioPath(13), ayahCount: 3 },
+    { name: "╪د┘┘ç┘à╪▓╪ر", number: 12, src: audioPath(12), ayahCount: 9 },
+    { name: "╪د┘┘┘è┘", number: 11, src: audioPath(11), ayahCount: 5 },
+  ]},
+  { name: "┘é╪▒┘è╪┤ - ╪د┘┘à╪د╪╣┘ê┘ - ╪د┘┘â┘ê╪س╪▒", src: "/pages/602.jpg", surahs: [
+    { name: "┘é╪▒┘è╪┤", number: 10, src: audioPath(10), ayahCount: 4 },
+    { name: "╪د┘┘à╪د╪╣┘ê┘", number: 9, src: audioPath(9), ayahCount: 7 },
+    { name: "╪د┘┘â┘ê╪س╪▒", number: 8, src: audioPath(8), ayahCount: 3 },
+  ]},
+  { name: "╪د┘┘â╪د┘╪▒┘ê┘ - ╪د┘┘╪╡╪▒ - ╪د┘┘à╪│╪»", src: "/pages/603.jpg", surahs: [
+    { name: "╪د┘┘â╪د┘╪▒┘ê┘", number: 7, src: audioPath(7), ayahCount: 6 },
+    { name: "╪د┘┘╪╡╪▒", number: 6, src: audioPath(6), ayahCount: 3 },
+    { name: "╪د┘┘à╪│╪»", number: 5, src: audioPath(5), ayahCount: 5 },
+  ]},
+  { name: "╪د┘╪ح╪«┘╪د╪╡ - ╪د┘┘┘┘é - ╪د┘┘╪د╪│", src: "/pages/604.jpg", surahs: [
+    { name: "╪د┘╪ح╪«┘╪د╪╡", number: 4, src: audioPath(4), ayahCount: 4 },
+    { name: "╪د┘┘┘┘é", number: 3, src: audioPath(3), ayahCount: 5 },
+    { name: "╪د┘┘╪د╪│", number: 2, src: audioPath(2), ayahCount: 6 },
+  ]},
+];
+
+const speakerColors: Record<Speaker, { bg: string; glow: string; text: string }> = {
+  teacher: { bg: "rgba(250,204,21,0.30)", glow: "rgba(25

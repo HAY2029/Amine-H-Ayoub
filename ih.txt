@@ -1,0 +1,2 @@
+﻿"0983.png\">\r\n    <meta property=\"og:title\" content=\"╪ص╪د╪ش ╪ث┘è┘ê╪ذ ╪ث┘à┘è┘\">\r\n  <meta name=\"twitter:title\" content=\"╪ص╪د╪ش ╪ث┘è┘ê╪ذ ╪ث┘à┘è┘\">\r\n  <meta property=\"og:description\" content=\"╪ز╪╖╪ذ┘è┘é ╪ز╪╣┘┘è┘à┘è ┘╪ص┘╪╕ ╪د┘┘é╪▒╪ت┘ ╪د┘┘â╪▒┘è┘à ╪ذ╪د┘╪ز┘â╪▒╪د╪▒\">\r\n  <meta name=\"twitter:description\" content=\"╪ز╪╖╪ذ┘è┘é ╪ز╪╣┘┘è┘à┘è ┘╪ص┘╪╕ ╪د┘┘é╪▒╪ت┘ ╪د┘┘â╪▒┘è┘à ╪ذ╪د┘╪ز┘â╪▒╪د╪▒\">\r\n</head>\r\n\r\n  <body>\r\n    <div id=\"root\"></div>\r\n    <script type=\"module\" src=\"/src/main.tsx\"></script>\r\n  </body>\r\n</html>\r\n"
+TOTAL_LINES=37

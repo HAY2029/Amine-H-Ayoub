@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, startTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Headphones, Timer, Target, Zap, X, Map, GraduationCap } from "lucide-react";
 
@@ -8,8 +8,10 @@ interface Props {
 }
 
 const links = [
+  { path: "/surah-shading", label: "مربع التظليل الجديد", description: "تظليل السورة مع مربع تظليل تفاعلي بالسحب والتكبير", icon: Zap, color: "from-amber-400 to-yellow-500", glow: "shadow-amber-500/20" },
   { path: "/", label: "المصحف المعلم", description: "قراءة القرآن مع التقسيم والتشغيل", icon: BookOpen, color: "from-amber-400 to-orange-500", glow: "shadow-amber-500/20" },
   { path: "/audio", label: "التلاوات", description: "قائمة السور الصوتية", icon: Headphones, color: "from-sky-400 to-blue-500", glow: "shadow-sky-500/20" },
+  { path: "/shading", label: "التظليل المزدوج", description: "معلم وطفل بلونين مع صوتك", icon: Timer, color: "from-emerald-400 to-teal-500", glow: "shadow-emerald-500/20" },
   { path: "/timings", label: "إعداد التوقيت", description: "معايرة توقيت الآيات الصوتية", icon: Timer, color: "from-emerald-400 to-teal-500", glow: "shadow-emerald-500/20" },
   { path: "/calibrate", label: "ضبط المواضع", description: "ضبط مواضع الآيات على الصفحات", icon: Target, color: "from-violet-400 to-purple-500", glow: "shadow-violet-500/20" },
 ];
@@ -72,8 +74,10 @@ export default function SiteLinksOverlay({ open, onClose }: Props) {
               <button
                 key={link.path}
                 onClick={() => {
-                  navigate(link.path);
-                  onClose();
+                  startTransition(() => {
+                    navigate(link.path);
+                    onClose();
+                  });
                 }}
                 className="w-full flex items-center gap-4 p-3.5 rounded-2xl bg-card hover:bg-muted border border-border hover:border-accent/50 shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98] group text-right"
               >

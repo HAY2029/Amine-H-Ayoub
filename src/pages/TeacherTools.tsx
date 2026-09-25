@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Pencil, Scissors, Link2, ChevronLeft, GraduationCap, Mic, Timer, Image as ImageIcon } from "lucide-react";
+import { ArrowRight, Pencil, Scissors, Link2, ChevronLeft, GraduationCap, Mic, Timer, Image as ImageIcon, Sparkles } from "lucide-react";
 
 const TOOLS = [
+  { to: "/surah-shading", Icon: Sparkles, name: "تظليل السور (مربع التظليل الجديد)", desc: "عرض السورة ومربع تظليل تفاعلي قابل للسحب والتكبير والتصغير وحفظ الموضع", tint: "bg-amber-500/20 text-amber-300" },
   { to: "/calibrate", Icon: Pencil, name: "المعايرة (التظليل)", desc: "ضبط مواضع الآيات والسور ورفع صفحات المصحف", tint: "bg-violet-500/20 text-violet-300" },
   { to: "/timings", Icon: Timer, name: "توقيت الآيات", desc: "تسجيل بداية كل آية في الصوت بدقة", tint: "bg-emerald-500/20 text-emerald-300" },
   { to: "/recitation-methods", Icon: Scissors, name: "تقسيم الصوت", desc: "تقسيم صوت السورة (معلم/طفل) بسرعة ودقّة", tint: "bg-sky-500/20 text-sky-300" },

@@ -7,6 +7,10 @@ export interface AyahBox {
   y: number;
   width: number;
   height: number;
+  /** Custom highlight color (e.g. hex, rgba) specified by user */
+  color?: string;
+  /** Custom opacity (0.1 to 1.0) */
+  opacity?: number;
   /** Optional: precise audio segment bound to this highlight (in seconds) for the teacher. */
   audioStart?: number;
   audioEnd?: number;
@@ -101,13 +105,33 @@ const cloneBoxes = (boxes: AyahBox[]) => boxes.map((box) => ({ ...box }));
 
 export const syncCoordinatesFromServer = async () => {
   if (typeof window === "undefined") return;
+
+  // 1. محاولة الجلب من سيرفر المشروع المحلي (/api/save-boxes / boxes-dump.json)
+  try {
+    const res = await fetch("/api/save-boxes", { cache: "no-store" });
+    if (res.ok) {
+      const serverDump = await res.json();
+      if (serverDump && typeof serverDump === "object" && Object.keys(serverDump).length > 0) {
+        const local = getSavedAyahCoordinates();
+        const merged = { ...local, ...serverDump };
+        localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(merged));
+        window.dispatchEvent(new Event("mushaf:sync_complete"));
+      }
+    }
+  } catch (err) {
+    console.debug("Local server boxes sync info:", err);
+  }
+
+  // 2. محاولة الجلب من قاعدة بيانات Supabase السحابية
   if (typeof navigator !== "undefined" && !navigator.onLine) return; // offline
   if (!hasValidSupabaseKey()) return; // skip sync when no valid API key
   try {
     const { data } = await supabase.from("store").select("value").eq("key", CALIBRATION_STORAGE_KEY).maybeSingle();
     if (data && data.value && Object.keys(data.value as Record<string, unknown>).length > 0) {
-      // Server has data → mirror to local
-      localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(data.value));
+      // Server has data → merge with local
+      const local = getSavedAyahCoordinates();
+      const merged = { ...local, ...(data.value as Record<string, unknown>) };
+      localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(merged));
       window.dispatchEvent(new Event("mushaf:sync_complete"));
     } else {
       // Server empty → upload local copy so it persists across devices/refreshes
@@ -214,6 +238,19 @@ export const savePageAyahBoxes = async (pageSrc: string, boxes: AyahBox[]) => {
   }
 
   localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(saved));
+
+  // 1. الحفظ في السيرفر المحلي فوراً (/api/save-boxes -> boxes-dump.json)
+  try {
+    await fetch("/api/save-boxes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(saved),
+    });
+  } catch (err) {
+    console.debug("Local server save error:", err);
+  }
+
+  // 2. الحفظ في Supabase السحابي
   try {
     await supabase.from("store").upsert({ key: CALIBRATION_STORAGE_KEY, value: saved });
   } catch (e) {
@@ -226,6 +263,17 @@ export const resetPageAyahBoxes = async (pageSrc: string) => {
   const saved = getSavedAyahCoordinates();
   delete saved[pageSrc];
   localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(saved));
+
+  try {
+    await fetch("/api/save-boxes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(saved),
+    });
+  } catch (err) {
+    console.debug("Local server save error on reset:", err);
+  }
+
   try {
     await supabase.from("store").upsert({ key: CALIBRATION_STORAGE_KEY, value: saved });
   } catch (e) {

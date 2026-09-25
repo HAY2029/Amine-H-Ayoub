@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, ChevronLeft, ChevronRight, Play, Pause, Maximize2, Minimize2, X, Shuffle, Pencil, Check, Settings, Bell, SplitSquareHorizontal, SplitSquareVertical, Volume2, VolumeX, Menu, Eye, EyeOff, List, Lock, Baby, Bookmark as BookmarkIcon, Trash2, Plus, Wrench, Headphones, Download, Mic, Repeat, Palette, LayoutGrid, GripVertical, SkipForward, SkipBack } from "lucide-react";
-import { getSurahAudioUrl, hasCloudAudio, getFallbackAudioUrl } from "@/data/audioUrls";
+import { getAudioPath as audioPath } from "@/data/audioUrls";
 import { getPageAyahBoxes, PAGE_IMAGE_SIZE } from "@/data/ayahCoordinates";
 import AppFooter from "@/components/AppFooter";
 import { getSavedTimings, getSurahTimings } from "@/data/ayahTimings";
@@ -32,8 +32,6 @@ import { useAudioContext } from "@/contexts/audioContext";
 import SplitViewPanel from "@/components/SplitViewPanel";
 import NotificationsModal from "@/components/NotificationsModal";
 import { updateMediaSession, setMediaPlaybackState, isBackgroundAudioEnabled } from "@/utils/backgroundAudio";
-
-const audioPath = (n: number) => (hasCloudAudio(n) ? getSurahAudioUrl(n) : getFallbackAudioUrl(n));
 
 // ألوان التظليل — الثيمات الجاهزة أدناه تحمل القيم (ذهبي/نعناعي/وردي)
 const SHADING_HIDE_KEY = "mushaf:hideShading";
@@ -966,9 +964,12 @@ export default function QuranReader() {
     return () => unsub();
   }, []);
 
-  const resolveAudioSrc = useCallback(async (surah: SurahAudio) => {
+  const resolveAudioSrc = useCallback(async (surah: SurahAudio, speaker: Speaker = "teacher") => {
     try {
-      const resolved = await resolvePlayableAudioUrl(surah.number, surah.src);
+      const timings = getSurahTimings(surah.number);
+      const speakerUrl = speaker === "kids" ? timings?.kidsAudioUrl : timings?.teacherAudioUrl;
+      const preferredUrl = speakerUrl || audioPath(surah.number, speaker) || surah.src;
+      const resolved = await resolvePlayableAudioUrl(surah.number, preferredUrl);
       if (resolved) return resolved;
     } catch (e) {
       console.warn("Offline audio resolution fallback:", e);
@@ -1180,7 +1181,7 @@ export default function QuranReader() {
 
   const playAyah = useCallback(async (surah: SurahAudio, ayahNum: number, forceSpeaker?: Speaker, boxIndex?: number) => {
     const a = audioRef.current; if (!a) return;
-    const targetSrc = await resolveAudioSrc(surah);
+    const targetSrc = await resolveAudioSrc(surah, forceSpeaker ?? "teacher");
     const sameSrc = a.src === targetSrc || (a.src && a.src.endsWith(surah.src.split("/").pop() || surah.src));
 
     setActiveSurah(surah);

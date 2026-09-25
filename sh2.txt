@@ -1,0 +1,65 @@
+﻿node : [eval]:1
+At line:1 char:39
++ ... an-kids-1'; 
+node -e "fetch('htt
+ps://hay2023.github
+.io/Amine-H-Ayoub/s
+ ...
++                 ~
+~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo 
+             : No  
+  tSpecified: ([   
+ eval]:1:String    
+) [], RemoteEx    
+ception
+    + FullyQualifi 
+   edErrorId : Na  
+  tiveCommandErr   
+ or
+ 
+fetch('https://hay2
+023.github.io/Amine
+-H-Ayoub/shading').
+then(async 
+r=>{const t=await 
+r.text(); console.l
+og('MAIN_STATUS='+r
+.status); console.l
+og('HAS_FILE_INPUT=
+'+(t.includes('type
+=\
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+     ^^^^^^^
+Invalid string 
+escape
+
+SyntaxError: 
+Invalid or 
+unexpected token
+    at makeContexti
+fyScript (node:inte
+rnal/vm:194:14)
+    at 
+compileScript (node
+:internal/process/e
+xecution:388:10)
+    at 
+evalTypeScript (nod
+e:internal/process/
+execution:260:22)
+    at node:interna
+l/main/eval_string:
+71:3
+
+Node.js v24.15.0

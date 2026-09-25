@@ -41,6 +41,8 @@ export interface SurahTimings {
   kidsStart?: number;         // start of kids section in the SAME file (if combined)
   kids?: number[];            // start time of each ayah during kids recitation
   segments?: AudioSegment[];  // (optional) custom audio segments with start/end bounds
+  teacherAudioUrl?: string;   // uploaded teacher recording
+  kidsAudioUrl?: string;      // uploaded kids recording
 }
 
 export const AYAH_TIMINGS: Record<number, SurahTimings | number[]> = {

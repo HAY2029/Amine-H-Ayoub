@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { HashRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { setupTauriCloseHandler, closeTauriApp } from "./utils/tauriUtils";
 import { isKidsMode, setKidsLocked } from "./data/kidsLock";
 import ParentalGateModal from "./components/ParentalGateModal";
@@ -38,6 +38,7 @@ const LegendaryDownloadHub = lazy(() => import("./components/LegendaryDownloadHu
 const TeacherTools = lazy(() => import("./pages/TeacherTools.tsx"));
 const AyahCalibration = lazy(() => import("./pages/AyahCalibration.tsx"));
 const TimingsRecorder = lazy(() => import("./pages/TimingsRecorder.tsx"));
+const ShadingPage = lazy(() => import("./pages/ShadingPage.tsx"));
 const LinkAudioPage = lazy(() => import("./pages/LinkAudioPage.tsx"));
 const RecitationMethods = lazy(() => import("./pages/RecitationMethods.tsx"));
 const AudioSplitterPage = lazy(() => import("./pages/AudioSplitterPage.tsx"));
@@ -45,6 +46,7 @@ const ImageManager = lazy(() => import("./pages/ImageManager.tsx"));
 const MushafUploadPage = lazy(() => import("./pages/MushafUploadPage.tsx"));
 const SortPagesPage = lazy(() => import("./pages/SortPagesPage.tsx"));
 const RecitationPage = lazy(() => import("./pages/RecitationPage.tsx"));
+const SurahShadingPage = lazy(() => import("./pages/SurahShadingPage.tsx"));
 import { getProfile, getAppMode, getProfiles, kidsEnabled } from "./data/kidsProfile";
 import { toast } from "./hooks/use-toast";
 import WelcomeOverlay, { isOnboarded } from "./components/WelcomeOverlay.tsx";
@@ -239,7 +241,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <HashRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <KidsModeGuard />
             <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>}>
               <Routes>
@@ -263,8 +265,9 @@ const App = () => {
                 <Route path="/admin/releases" element={<AdminReleasesPanel />} />
                 {/* ===== أدوات المعلّم (بدون كلمة مرور — للوالدين والمعلّم) ===== */}
                 <Route path="/teacher-tools" element={<TeacherTools />} />
-                <Route path="/calibrate" element={<AyahCalibration />} />
+                <Route path="/calibrate" element={<LinkAudioPage />} />
                 <Route path="/timings" element={<TimingsRecorder />} />
+                <Route path="/shading" element={<ShadingPage />} />
                 <Route path="/link" element={<LinkAudioPage />} />
                 <Route path="/recitation-methods" element={<RecitationMethods />} />
                 <Route path="/audio-splitter" element={<AudioSplitterPage />} />
@@ -272,6 +275,9 @@ const App = () => {
                 <Route path="/mushaf-upload" element={<MushafUploadPage />} />
 <Route path="/sort" element={<SortPagesPage />} />
                 <Route path="/recitation" element={<RecitationPage />} />
+                <Route path="/surah-shading" element={<SurahShadingPage />} />
+                <Route path="/new-shading" element={<SurahShadingPage />} />
+                <Route path="/shading-box" element={<SurahShadingPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -293,7 +299,7 @@ const App = () => {
                 }}
               />
             )}
-          </BrowserRouter>
+          </HashRouter>
         </TooltipProvider>
       </QueryClientProvider>
       </AudioContextProvider>

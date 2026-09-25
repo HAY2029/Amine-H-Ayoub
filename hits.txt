@@ -1,0 +1,43 @@
+﻿MushafPage.tsx:52: { name: "الفاتحة", src: "/pages/fatiha.jpg", surahs: [
+MushafPage.tsx:55: { name: "القارعة - التكاثر", src: "/pages/600.jpg", surahs: [
+MushafPage.tsx:58: { name: "العصر - الهمزة - الفيل", src: "/pages/601.jpg", surahs: [
+MushafPage.tsx:63: { name: "قريش - الماعون - الكوثر", src: "/pages/602.jpg", surahs: [
+MushafPage.tsx:68: { name: "الكافرون - النصر - المسد", src: "/pages/603.jpg", surahs: [
+MushafPage.tsx:73: { name: "الإخلاص - الفلق - الناس", src: "/pages/604.jpg", surahs: [
+ayahCoordinates.ts:56: "/pages/fatiha.jpg": [
+ayahCoordinates.ts:65: "/pages/600.jpg": [
+ayahCoordinates.ts:68: "/pages/601.jpg": [
+ayahCoordinates.ts:73: "/pages/602.jpg": [
+ayahCoordinates.ts:78: "/pages/603.jpg": [
+ayahCoordinates.ts:83: "/pages/604.jpg": [
+customPages.ts:24: *  - صفحات أساسية: "600.jpg" | "pages/600.jpg" | "/pages/600.jpg" → "/pages/600.jpg"
+customPages.ts:138: push("/pages/fatiha.jpg");
+customPages.ts:532: //   "600.jpg" | "pages/600.jpg" | "/pages/600.jpg"  →  "/pages/600.jpg"
+surahPages.ts:6: "الفاتحة": ["/pages/fatiha.jpg"],
+surahPages.ts:7: "التكاثر": ["/pages/600.jpg"],
+surahPages.ts:8: "العصر": ["/pages/601.jpg"],
+surahPages.ts:9: "الهمزة": ["/pages/601.jpg"],
+surahPages.ts:10: "الفيل": ["/pages/601.jpg"],
+surahPages.ts:11: "قريش": ["/pages/602.jpg"],
+surahPages.ts:12: "الماعون": ["/pages/602.jpg"],
+surahPages.ts:13: "الكوثر": ["/pages/602.jpg"],
+surahPages.ts:14: "الكافرون": ["/pages/603.jpg"],
+surahPages.ts:15: "النصر": ["/pages/603.jpg"],
+surahPages.ts:16: "المسد": ["/pages/603.jpg"],
+surahPages.ts:17: "الإخلاص": ["/pages/604.jpg"],
+surahPages.ts:18: "الفلق": ["/pages/604.jpg"],
+surahPages.ts:19: "الناس": ["/pages/604.jpg"],
+AyahCalibration.tsx:29: // img.name قد يكون "pages/600.jpg" — نوحّد المفتاح إلى "/pages/600.jpg"
+AyahCalibration.tsx:100: return cp ? `🟢 ${cp.name}` : src.replace("/pages/", "");
+QuranReader.tsx:131: name: "الفاتحة", src: "/pages/fatiha.jpg", surahs: [
+QuranReader.tsx:191: // img.name قد يكون "pages/600.jpg" — نوحّد المفتاح إلى "/pages/600.jpg"
+QuranReader.tsx:380: // img.name قد يكون "pages/600.jpg" أو "600.jpg" — نوحّد إلى "/pages/XXX.jpg" بدون تكرار
+RecitationMethods.tsx:29: 1: "/pages/fatiha.jpg",
+RecitationMethods.tsx:30: 14: "/pages/600.jpg",
+RecitationMethods.tsx:31: 13: "/pages/601.jpg", 12: "/pages/601.jpg", 11: "/pages/601.jpg",
+RecitationMethods.tsx:32: 10: "/pages/602.jpg", 9: "/pages/602.jpg", 8: "/pages/602.jpg",
+RecitationMethods.tsx:33: 7: "/pages/603.jpg", 6: "/pages/603.jpg", 5: "/pages/603.jpg",
+RecitationMethods.tsx:34: 4: "/pages/604.jpg", 3: "/pages/604.jpg", 2: "/pages/604.jpg",
+SortPagesPage.tsx:294: if (!label) label = src.replace("/pages/", "").replace(/\.[a-z0-9]+$/i, "") || src;
+huggingFaceService.ts:296: const rawName = src.startsWith("/pages/") ? src.slice("/pages/".length)
+huggingFaceService.ts:377: const rawName = src.startsWith("/pages/") ? src.slice("/pages/".length)

@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => ({
   base: mode === "development" ? "/" : process.env.VITE_BASE_URL || "/",
   server: {
     host: "::",
+    // Explicit port: on some environments (Node 24) vite 5.4.21 does not apply the
+    // default 5173 port to config.server.port before injecting HMR values into
+    // /@vite/client, which produced "localhost:undefined" and broke the HMR socket.
+    port: 5173,
     hmr: {
       overlay: false,
     },
@@ -56,13 +60,43 @@ export default defineConfig(({ mode }) => ({
       configureServer(server: any) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         server.middlewares.use('/api/save-boxes', (req: any, res: any) => {
-          let body = '';
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          req.on('data', (chunk: any) => body += chunk);
-          req.on('end', () => {
-            fs.writeFileSync('boxes-dump.json', body);
-            res.end('saved');
-          });
+          if (req.method === 'GET') {
+            res.setHeader('Content-Type', 'application/json');
+            try {
+              if (fs.existsSync('boxes-dump.json')) {
+                const content = fs.readFileSync('boxes-dump.json', 'utf-8');
+                res.statusCode = 200;
+                res.end(content || '{}');
+              } else {
+                res.statusCode = 200;
+                res.end('{}');
+              }
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+            return;
+          }
+
+          if (req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk: any) => body += chunk);
+            req.on('end', () => {
+              try {
+                fs.writeFileSync('boxes-dump.json', body);
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 200;
+                res.end(JSON.stringify({ success: true, message: 'saved' }));
+              } catch (err: any) {
+                res.statusCode = 500;
+                res.end(JSON.stringify({ error: err.message }));
+              }
+            });
+            return;
+          }
+
+          res.statusCode = 405;
+          res.end('Method Not Allowed');
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         server.middlewares.use('/api/send-email', async (req: any, res: any) => {

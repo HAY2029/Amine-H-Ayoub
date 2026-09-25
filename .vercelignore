@@ -1,0 +1,26 @@
+# ملفات لا تُنشر على Vercel — تُوزَّع عبر GitHub Releases / HuggingFace
+# (انظر scripts/upload-hf-assets.mjs و sync-releases-to-hf.mjs)
+
+# ملفات تثبيت ضخمة (عشرات الميجابايت) — لا حاجة لها في الموقع
+public/downloads/**
+
+# حِزم جوجل بلاي والمايكروسوفت (للإصدارات فقط)
+public/google-play-assets/**
+public/google-play-assets.zip
+public/google-play-assets-framed.zip
+
+# صور صفحات المصحف — تُجلب من السحابة (HuggingFace/Supabase)
+public/pages/**
+
+# صور رمزية عالية الدقة — تُضغط على الخادم أو تُجلب من السحابة
+public/avatars/*.png
+public/avatars/*.jpg
+
+# ملفات أدوات التطوير غير المستخدمة في الويب
+public/*.ai-test.html
+public/split-tool.html
+public/split-pro.html
+public/audio-splitter.html
+public/frame-generator.html
+public/_part*.html
+public/_merge*.html

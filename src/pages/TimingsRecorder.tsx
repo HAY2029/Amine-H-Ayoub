@@ -2,9 +2,8 @@ import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { Play, Pause, RotateCcw, Save, Check, Trash2, Wand2, Volume2, StopCircle, ArrowLeft, Link2, Mic, Loader2, Bot, Ruler } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AYAH_COUNTS, getSavedTimings, saveSurahTimings, clearSavedSurahTimings, SurahTimings, AudioSegment } from "@/data/ayahTimings";
-import { getSurahAudioUrl, hasCloudAudio, getFallbackAudioUrl } from "@/data/audioUrls";
+import { getAudioPath as audioPath } from "@/data/audioUrls";
 
-const audioPath = (n: number) => (hasCloudAudio(n) ? getSurahAudioUrl(n) : getFallbackAudioUrl(n));
 
 const SURAH_NAMES: Record<number, string> = {
   1: "الفاتحة", 2: "الناس", 3: "الفلق", 4: "الإخلاص", 5: "المسد",

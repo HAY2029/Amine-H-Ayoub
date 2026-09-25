@@ -548,6 +548,31 @@ export const syncAllPageImagesFromServer = async (): Promise<Record<string, stri
 const SHADING_THEME_KEY = "mushaf:shadingTheme:v1";
 const SHADING_OPACITY_KEY = "mushaf:shadingOpacity:v1";
 const SHADING_HIDE_KEY = "mushaf:hideShading";
+const SHADING_CUSTOM_COLOR_KEY = "mushaf:shadingCustomColor:v1";
+
+/** حفظ لون التظليل الذي يحدده المستخدم على السيرفر (مفتاح مخصص منفصل عن ثيم القارئ) */
+export const saveShadingCustomColorToServer = (color: string) => {
+  if (typeof window === "undefined") return;
+  try { localStorage.setItem(SHADING_CUSTOM_COLOR_KEY, color); } catch { /* ignore */ }
+  upsert(SHADING_CUSTOM_COLOR_KEY, { color });
+};
+
+/** جلب لون التظليل الذي يحدده المستخدم من السيرفر */
+export const syncShadingCustomColorFromServer = async (): Promise<string | null> => {
+  if (typeof window === "undefined") return null;
+  if (!hasValidSupabaseKey()) return null;
+  try {
+    const { data } = await supabase.from("store").select("value").eq("key", SHADING_CUSTOM_COLOR_KEY).maybeSingle();
+    if (data?.value && typeof (data.value as { color?: string }).color === "string") {
+      const color = (data.value as { color: string }).color;
+      localStorage.setItem(SHADING_CUSTOM_COLOR_KEY, color);
+      return color;
+    }
+  } catch (e) {
+    console.debug("Supabase sync shading custom color info:", e);
+  }
+  return null;
+};
 
 /** حفظ ثيم التظليل على السيرفر */
 export const saveShadingThemeToServer = (theme: unknown) => {
