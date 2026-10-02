@@ -52,7 +52,7 @@ const Index = () => {
 
   // ركن الأطفال
   const [kidsMode, setKidsMode] = useState(isKidsMode);
-  const [pinAction, setPinAction] = useState<null | "enter" | "settings" | "exit_kids" | "exit_kids">(null);
+  const [pinAction, setPinAction] = useState<null | "enter" | "settings" | "exit_kids">(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
 
