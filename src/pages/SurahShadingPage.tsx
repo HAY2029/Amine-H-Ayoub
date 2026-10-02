@@ -842,7 +842,8 @@ export default function SurahShadingPage() {
       (s) =>
         s.name.includes(q) ||
         s.number.toString().includes(q) ||
-        (s.englishName && s.englishName.toLowerCase().includes(q))
+        // ملاحظة: نوع السورة SurahInfo لا يملك حقل englishName (كان يسبب خطأ TS2339)
+        s.type.includes(q)
     );
   }, [surahsList, surahSearchQuery]);
 

@@ -1,41 +1,62 @@
 /**
  * بوابة السؤال اليومي في منطقة الألعاب:
- * - يُطرح سؤال صعب عن السورة الحالية مرة كل يوم.
- * - الإجابة الصحيحة → الانتقال إلى السورة التالية + نقاط مكافأة مجانية.
+ * - تُعرض سورة الطفل الحالية بآياتها، ويستمع لها بصوته من السيرفر.
+ * - يُسجّل الطفل السورة بصوته، فيتحقّق النظام من حفظه (تطابق ≥ 60%).
+ * - عند النجاح فقط → الانتقال إلى السورة التالية + نقاط مكافأة مجانية.
  * - عند بلوغ كل درجة (عدد السور المحدد من الإعدادات — افتراضي 5) يحصل الطفل على لقب جديد
  *   + يمكنه تحميل شهادة (الاسم والرقم قابلان للتعديل قبل التحميل).
  * - إدخال كود نقاط مجانية لمرة واحدة (يُنشأ من admin.html).
- * - زر يفتح لوحة التحكم الخارجية admin.html.
  */
-import { useEffect, useMemo, useState } from "react";
-import { Award, Download, Gift, X, Trophy } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Award, BookOpen, Check, Download, Gift, Headphones, Mic, RotateCcw, Trophy, X } from "lucide-react";
 import { getProfile, setCurrentSurah, addCoins, formatCoins, getActiveId, getCoins } from "../data/kidsProfile";
 import { getAllSurahs } from "../data/quranData";
+import { getSurahAudioUrl } from "../data/audioUrls";
+import { ensureCorpus, normalizeArabic, type SurahText } from "../data/quranText";
 import { getTitlesConfig, levelForCompleted, titleForLevel, redeemOneTimeCode } from "../data/titles";
 import { toast } from "../hooks/use-toast";
 
 // مرتبة بترتيب المصحف — التقدّم دائماً إلى السورة التالية للأمام
 const SURAHS = [...getAllSurahs()].sort((a, b) => a.number - b.number);
-const CORRECT_REWARD = 10; // نقاط مجانية عند كل إجابة صحيحة
+const CORRECT_REWARD = 10; // نقاط مجانية عند إتمام الحفظ بنجاح
+const PASS_RATIO = 0.6; // نسبة القبول: 60% من الكلمات صحيحة
 
-interface Q { text: string; options: string[]; correct: number }
+// واجهة التعرف على الكلام (غير موحّدة في TS)
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onerror: ((e: { error?: string }) => void) | null;
+  onend: (() => void) | null;
+};
 
-/** سؤال الانتقال الصعب: عدد آيات السورة مع خيارات قريبة جداً (فارق 1-7 فقط) — لا يمكن التخمين بسهولة. */
-function buildQuestion(currentSurah: number): Q {
-  const idx = Math.max(0, SURAHS.findIndex(s => s.number === currentSurah));
-  const cur = SURAHS[idx] || SURAHS[0];
-  // مشتتات قريبة جداً من العدد الحقيقي: نفس العدد ± 1 إلى 7
-  const candidates = new Set<number>();
-  while (candidates.size < 3) {
-    const delta = Math.floor(Math.random() * 7) + 1; // 1..7
-    const v = Math.random() < 0.5 ? cur.ayahCount - delta : cur.ayahCount + delta;
-    if (v > 0 && v !== cur.ayahCount) candidates.add(v);
+const getSpeechRecognition = (): (new () => SpeechRecognitionLike) | null => {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as {
+    SpeechRecognition?: new () => SpeechRecognitionLike;
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+  };
+  return w.SpeechRecognition || w.webkitSpeechRecognition || null;
+};
+
+/** نسبة التشابه بين النص المسموع والنص الأصلي (0 → 1) على مستوى الكلمات. */
+const similarity = (expected: string, heard: string): number => {
+  const a = normalizeArabic(expected).split(" ").filter(Boolean);
+  const b = normalizeArabic(heard).split(" ").filter(Boolean);
+  if (a.length === 0 || b.length === 0) return 0;
+  const pool = [...b];
+  let hit = 0;
+  for (const w of a) {
+    const i = pool.indexOf(w);
+    if (i >= 0) { hit += 1; pool.splice(i, 1); }
   }
-  const options = [String(cur.ayahCount), ...Array.from(candidates).map(String)];
-  const correctIdx = Math.floor(Math.random() * options.length);
-  [options[0], options[correctIdx]] = [options[correctIdx], options[0]];
-  return { text: `سؤال الانتقال (صعب 🧠): كم عدد آيات سورة ${cur.name}؟`, options, correct: correctIdx };
-}
+  return hit / a.length;
+};
 
 const gateKey = (pid: string) => `mushaf:dailyGate:${new Date().toISOString().slice(0, 10)}:${pid}`;
 
@@ -52,47 +73,125 @@ function isGamesUnlocked(): boolean {
 
 export default function DailyGateModal() {
   const [open, setOpen] = useState(false);
-  const [question, setQuestion] = useState<Q | null>(null);
-  const [picked, setPicked] = useState<number | null>(null);
   const [celebrate, setCelebrate] = useState<string | null>(null);
   const [certLevel, setCertLevel] = useState(0);
   const [certName, setCertName] = useState("");
   const [code, setCode] = useState("");
   const [codeMsg, setCodeMsg] = useState("");
 
+  // ── مراحل الحفظ: استمع ← سجِّل ← تحقّق ──
+  const [surah, setSurah] = useState<SurahText | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [matchPct, setMatchPct] = useState<number | null>(null);
+  const [passed, setPassed] = useState(false);
+  const [nextName, setNextName] = useState<string>("");
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const recRef = useRef<SpeechRecognitionLike | null>(null);
+  const speechSupported = useMemo(() => getSpeechRecognition() !== null, []);
+
   const profile = getProfile();
   const cfg = getTitlesConfig();
+  const curNum = profile.currentSurah || 1;
   const completedIdx = useMemo(() => {
-    const i = SURAHS.findIndex(s => s.number === (profile.currentSurah || 1));
+    const i = SURAHS.findIndex(s => s.number === curNum);
     return i >= 0 ? i : 0;
-  }, [profile.currentSurah]);
+  }, [curNum]);
   const currentLevel = levelForCompleted(completedIdx, cfg);
 
+  // ── تحميل نصّ السورة الحالية من المخزون المحلي ──
   useEffect(() => {
-    const pid = getActiveId() || "default";
-    if (localStorage.getItem(gateKey(pid))) return;
-    const tryOpen = () => {
-      if (!localStorage.getItem(gateKey(getActiveId() || "default")) && isGamesUnlocked()) {
-        setQuestion(buildQuestion(getProfile().currentSurah || 1));
-        setOpen(true);
-      }
-    };
-    tryOpen();
-    window.addEventListener("mushaf:games_unlocked", tryOpen);
-    return () => window.removeEventListener("mushaf:games_unlocked", tryOpen);
+    if (!open) return;
+    let alive = true;
+    ensureCorpus().then(list => {
+      if (!alive) return;
+      setSurah(list.find(s => s.app === curNum) || list[0] || null);
+    }).catch(() => { /* ignore */ });
+    return () => { alive = false; };
+  }, [open, curNum]);
+
+  const audioUrl = useMemo(() => getSurahAudioUrl(curNum), [curNum]);
+
+  const playSurah = useCallback(() => {
+    if (!audioRef.current) return;
+    setPlaying(true);
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {
+      setPlaying(false);
+      toast({ title: "تعذّر تشغيل الصوت", description: "تحقّق من الاتصال بالإنترنت", variant: "destructive" });
+    });
   }, []);
 
-  const pick = (i: number) => {
-    if (picked !== null || !question) return;
-    setPicked(i);
-    localStorage.setItem(gateKey(getActiveId() || "default"), "1");
-    if (i === question.correct) {
-      // التقدّم للأمام بترتيب المصحف: السورة التالية دائماً (الفاتحة ← التالية ← ... وهكذا)
-      const next = SURAHS.find(s => s.number > (profile.currentSurah || 1)) || SURAHS[SURAHS.length - 1];
-      if (next) setCurrentSurah(next.number);
+  const stopAudio = useCallback(() => {
+    const el = audioRef.current;
+    if (el) { try { el.pause(); el.currentTime = 0; } catch { /* ignore */ } }
+    setPlaying(false);
+  }, []);
+
+  // إيقاف الصوت والتسجيل عند الإغلاق أو الخروج
+  useEffect(() => {
+    if (open) return;
+    stopAudio();
+    try { recRef.current?.abort(); } catch { /* ignore */ }
+  }, [open, stopAudio]);
+
+  useEffect(() => () => {
+    stopAudio();
+    try { recRef.current?.abort(); } catch { /* ignore */ }
+  }, [stopAudio]);
+
+  const startRecording = useCallback(() => {
+    const SR = getSpeechRecognition();
+    if (!SR) {
+      toast({ title: "التعرّف الصوتي غير مدعوم", description: "استخدم Chrome/Edge، أو اضغط «تأكيد يدوي»", variant: "destructive" });
+      return;
+    }
+    if (!surah) return;
+    setTranscript("");
+    setMatchPct(null);
+    const rec = new SR();
+    recRef.current = rec;
+    rec.lang = "ar-SA";
+    rec.continuous = true;
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.onresult = (e) => {
+      let text = "";
+      for (let i = 0; i < e.results.length; i++) {
+        const alt = e.results[i]?.[0];
+        if (alt?.transcript) text += " " + alt.transcript;
+      }
+      setTranscript(text.trim());
+    };
+    rec.onerror = () => { setRecording(false); };
+    rec.onend = () => { setRecording(false); };
+    setRecording(true);
+    try { rec.start(); } catch { setRecording(false); }
+  }, [surah]);
+
+  const stopRecording = useCallback(() => {
+    try { recRef.current?.stop(); } catch { /* ignore */ }
+    setRecording(false);
+  }, []);
+
+  /** التحقّق من الحفظ وترقية الطفل للسورة التالية عند النجاح. */
+  const finish = useCallback((heard: string, forced = false) => {
+    if (!surah) return;
+    const expected = surah.ayahs.map(a => a.text).join(" ");
+    const pct = forced ? 1 : similarity(expected, heard);
+    const ok = pct >= PASS_RATIO;
+    setMatchPct(Math.round(pct * 100));
+    setPassed(ok);
+    try { localStorage.setItem(gateKey(getActiveId() || "default"), "1"); } catch { /* ignore */ }
+
+    if (ok) {
+      const next = SURAHS.find(s => s.number > curNum) || SURAHS[SURAHS.length - 1];
+      if (next) { setCurrentSurah(next.number); setNextName(next.name); }
       addCoins(CORRECT_REWARD);
-      toast({ title: `🎉 إجابة صحيحة! انتقلت إلى سورة ${next?.name}`, description: `+${CORRECT_REWARD} ⭐ نقاط مجانية` });
-      const nextIdx = Math.max(0, SURAHS.findIndex(s => s.number === (next?.number ?? profile.currentSurah)));
+      toast({ title: `🎉 ما شاء الله! حفظ ممتاز — انتقلت إلى سورة ${next?.name}`, description: `+${CORRECT_REWARD} ⭐ نقاط مجانية` });
+      const nextIdx = Math.max(0, SURAHS.findIndex(s => s.number === (next?.number ?? curNum)));
       const newLevel = levelForCompleted(nextIdx, cfg);
       if (newLevel > currentLevel) {
         setCelebrate(titleForLevel(newLevel, cfg));
@@ -101,9 +200,43 @@ export default function DailyGateModal() {
         window.dispatchEvent(new Event("mushaf:activeprofile"));
       }
     } else {
-      toast({ title: "إجابة غير صحيحة — حاول غداً 💪" });
+      toast({ title: "لم يكتمل الحفظ بعد 🌱", description: "اسمع السورة مرة أخرى ثم سجِّل صوتك" });
     }
+  }, [surah, curNum, cfg, currentLevel, profile.name]);
+
+  // تحقّق بعد إيقاف التسجيل
+  useEffect(() => {
+    if (!open || recording || !transcript || matchPct !== null) return;
+    const t = window.setTimeout(() => finish(transcript), 400);
+    return () => window.clearTimeout(t);
+  }, [open, recording, transcript, matchPct, finish]);
+
+  const retry = () => {
+    stopAudio();
+    setTranscript("");
+    setMatchPct(null);
+    setPassed(false);
   };
+
+  const closeGate = () => {
+    stopAudio();
+    try { recRef.current?.abort(); } catch { /* ignore */ }
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    const pid = getActiveId() || "default";
+    if (localStorage.getItem(gateKey(pid))) return;
+    const tryOpen = () => {
+      if (!localStorage.getItem(gateKey(getActiveId() || "default")) && isGamesUnlocked()) {
+        setOpen(true);
+      }
+    };
+
+    tryOpen();
+    window.addEventListener("mushaf:games_unlocked", tryOpen);
+    return () => window.removeEventListener("mushaf:games_unlocked", tryOpen);
+  }, []);
 
   const redeem = () => {
     // تحقق كل مستخدم: استبدال أكواد النقاط متاح للمستخدمين الموثّقين فقط (يُوثّقهم المشرف من admin.html)
@@ -172,35 +305,92 @@ h1{color:#8b6914;font-size:32px}h2{font-size:44px;color:#c0392b;margin:30px 0}p{
 
   return (
     <div className="fixed inset-0 z-[240] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="w-full max-w-sm bg-card rounded-3xl shadow-2xl border border-border p-6 space-y-4 animate-fade-up">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-extrabold text-foreground flex items-center gap-2"><Trophy className="w-5 h-5 text-accent" /> سؤال اليوم</h3>
+      <div className="w-full max-w-lg bg-card rounded-3xl shadow-2xl border border-border p-5 sm:p-6 space-y-4 animate-fade-up max-h-[92vh] overflow-y-auto">
+        <audio ref={audioRef} src={audioUrl} preload="auto" onEnded={() => setPlaying(false)} className="hidden" />
+
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-lg font-extrabold text-foreground flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-accent" /> حفظ سورة {surah?.name || SURAHS.find(s => s.number === curNum)?.name}
+          </h3>
           <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-accent/10 border border-accent/30 text-accent">🏅 لقبك: {titleForLevel(currentLevel, cfg)}</span>
         </div>
 
-        {question && (
-          <>
-            <p className="text-sm font-bold text-foreground text-center">{question.text}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {question.options.map((op, i) => (
-                <button key={i} onClick={() => pick(i)} disabled={picked !== null}
-                  className={`p-3 rounded-xl text-sm font-bold border transition-all active:scale-95 ${
-                    picked === null ? "bg-secondary hover:bg-accent/20 border-border"
-                    : i === question.correct ? "bg-emerald-500/20 border-emerald-500 text-emerald-600"
-                    : i === picked ? "bg-rose-500/20 border-rose-500 text-rose-500"
-                    : "bg-secondary/50 border-border opacity-50"}`}>
-                  {op}
-                </button>
+        {/* المرحلة ١: الاستماع + عرض الآيات */}
+        <div className="rounded-2xl border-2 border-accent/25 bg-secondary/30 p-3 space-y-3">
+          <button
+            onClick={playing ? stopAudio : playSurah}
+            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-lg shadow-amber-500/30 active:scale-95"
+          >
+            <Headphones className="h-7 w-7" />
+          </button>
+          <p className="text-center text-xs font-bold text-muted-foreground">{playing ? "جارٍ التشغيل... اضغط للإيقاف" : "اضغط للاستماع للسورة"}</p>
+
+          {surah ? (
+            <div className="max-h-52 overflow-y-auto custom-scrollbar rounded-xl bg-background/70 border border-border p-3 text-right leading-loose" dir="rtl">
+              {surah.ayahs.map((a) => (
+                <span key={a.n} className="text-sm sm:text-base font-bold text-foreground">
+                  {a.text}
+                  <span className="mx-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent/15 text-[10px] text-accent align-middle">{a.n}</span>{" "}
+                </span>
               ))}
             </div>
-          </>
-        )}
+          ) : (
+            <p className="text-center text-xs font-bold text-muted-foreground py-4">جارٍ تحميل نصّ السورة...</p>
+          )}
+        </div>
 
-        {picked !== null && question && (
-          <p className={`text-center text-sm font-bold ${picked === question.correct ? "text-emerald-500" : "text-rose-500"}`}>
-            {picked === question.correct ? "أحسنت! انتقلت للسورة التالية 🎉" : "لا بأس، أعد المحاولة غداً 💪"}
+        {/* المرحلة ٢: التسجيل والتحقق */}
+        <div className="rounded-2xl border-2 border-border bg-secondary/20 p-3 space-y-3">
+          <p className="text-center text-sm font-extrabold text-foreground">
+            الآن اسمعني سورة <span className="text-accent">{surah?.name}</span> بصوتك 🎤
           </p>
-        )}
+          <button
+            onClick={recording ? stopRecording : startRecording}
+            className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-white shadow-lg active:scale-95 ${recording ? "bg-gradient-to-br from-rose-500 to-red-600 shadow-red-500/30 animate-pulse" : "bg-gradient-to-br from-teal-400 to-emerald-500 shadow-emerald-500/30"}`}
+          >
+            <Mic className="h-7 w-7" />
+          </button>
+          <p className="text-center text-xs font-bold text-muted-foreground">{recording ? "جارٍ التسجيل... اضغط للإيقاف" : "اضغط للبدء بالتسجيل"}</p>
+
+          {transcript && (
+            <p className="rounded-xl bg-background/70 border border-border p-2 text-xs font-bold text-foreground" dir="rtl">
+              سمعتُ: {transcript}
+            </p>
+          )}
+
+          {matchPct === null ? (
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button
+                onClick={() => finish("", true)}
+                className="rounded-full bg-secondary border border-border px-4 py-2 text-xs font-extrabold active:scale-95"
+              >
+                {speechSupported ? "تأكيد يدوي (أكملت الحفظ) ✔" : "التعرّف الصوتي غير مدعوم — أكمل يدوياً ✔"}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2 text-center">
+              {passed ? (
+                <>
+                  <p className="text-lg font-extrabold text-emerald-500">🎉 ما شاء الله! حفظ ممتاز</p>
+                  <p className="text-sm font-bold text-foreground">
+                    تطابق النطق: <span className="text-accent">{matchPct}%</span> — انتقلت إلى سورة <span className="text-accent">{nextName}</span>
+                  </p>
+                  <p className="text-xs font-bold text-muted-foreground">ربحت {CORRECT_REWARD} ⭐ نقاط مجانية</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-base font-extrabold text-rose-500">لم يكتمل الحفظ بعد 🌱</p>
+                  <p className="text-sm font-bold text-foreground">
+                    تطابق النطق: <span className="text-accent">{matchPct}%</span> — نحتاج {Math.round(PASS_RATIO * 100)}%
+                  </p>
+                  <button onClick={retry} className="mx-auto flex items-center gap-1.5 rounded-full bg-accent text-accent-foreground px-5 py-2 text-sm font-extrabold active:scale-95">
+                    <RotateCcw className="h-4 w-4" /> أعد المحاولة
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* كود النقاط المجانية (مرة واحدة) */}
         <div className="bg-secondary/40 rounded-2xl p-3 space-y-2">
@@ -215,7 +405,7 @@ h1{color:#8b6914;font-size:32px}h2{font-size:44px;color:#c0392b;margin:30px 0}p{
 
         <div className="flex items-center justify-between gap-2 pt-1">
           <span className="text-xs text-muted-foreground font-bold flex items-center gap-1">رصيدك: {formatCoins(getCoins())} ⭐</span>
-          <button onClick={() => setOpen(false)} className="p-2 rounded-xl bg-secondary text-secondary-foreground hover:bg-destructive/20" title="إغلاق"><X className="w-4 h-4" /></button>
+          <button onClick={closeGate} className="p-2 rounded-xl bg-secondary text-secondary-foreground hover:bg-destructive/20" title="إغلاق"><X className="w-4 h-4" /></button>
         </div>
       </div>
     </div>

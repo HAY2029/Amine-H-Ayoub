@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 
 const NotFound = () => {
@@ -39,9 +39,9 @@ const NotFound = () => {
           عذراً، لم نتمكّن من العثور على ما تبحث عنه.
         </p>
 
-        <a href="/" className="btn-gold px-6 py-3 shadow-soft">
+        <Link to="/" className="btn-gold px-6 py-3 shadow-soft">
           العودة إلى الصفحة الرئيسية
-        </a>
+        </Link>
       </div>
     </div>
   );

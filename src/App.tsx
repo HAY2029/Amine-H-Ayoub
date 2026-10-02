@@ -6,7 +6,7 @@ import ParentalGateModal from "./components/ParentalGateModal";
 import { Toaster as Sonner } from "./components/ui/sonner";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
-import { useEffect, useState, useCallback, lazy, Suspense } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense, type ReactNode } from "react";
 const SiteLinksOverlay = lazy(() => import("./components/SiteLinksOverlay"));
 import { syncCoordinatesFromServer } from "./data/ayahCoordinates";
 import { syncTimingsFromServer } from "./data/ayahTimings";
@@ -46,6 +46,7 @@ const ImageManager = lazy(() => import("./pages/ImageManager.tsx"));
 const MushafUploadPage = lazy(() => import("./pages/MushafUploadPage.tsx"));
 const SortPagesPage = lazy(() => import("./pages/SortPagesPage.tsx"));
 const RecitationPage = lazy(() => import("./pages/RecitationPage.tsx"));
+const ShadingSettingsPage = lazy(() => import("./pages/ShadingSettingsPage.tsx"));
 const SurahShadingPage = lazy(() => import("./pages/SurahShadingPage.tsx"));
 import { getProfile, getAppMode, getProfiles, kidsEnabled } from "./data/kidsProfile";
 import { toast } from "./hooks/use-toast";
@@ -54,12 +55,38 @@ import ProfilePicker, { isPicked, markPicked } from "./components/ProfilePicker.
 import { logAppOpen } from "./utils/analytics.ts";
 import { useBackgroundNotifications, showLocalNotification } from "./utils/notifications.ts";
 import { claimDailyRewards, incrementStreak } from "./data/dailyRewards";
-import { setupRemoteControlListeners, setupGamepadListener } from "./utils/controllerNavigation";
+import { setupRemoteControlListeners } from "./utils/controllerNavigation";
 
 const queryClient = new QueryClient();
 
+// 🎞️ غلاف انتقال موحّد: كل صفحة تدخل بحركة ظهور واحدة (fade + صعود خفيف)
+// يستعمل key=location.pathname ليعاد تشغيل الحركة عند كل تغيير مسار،
+// ويعمل مع lazy/Suspense لأن الغلاف يبقى خارج منطقة التحميل الكسول.
+const PageTransition = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="page-transition">
+      {children}
+    </div>
+  );
+};
+
 // المسار الرئيسي يفتح صفحة الصوت (التلاوات) — المصحف قيد التطوير
-const HomeRoute = () => <Index />;
+// ملاحظة: نعرض الصفحة مباشرة بدل إعادة التوجيه إلى /audio حتى لا يظهر المسار "/" كأنه فارغ،
+// مع إبقاء المسار /audio يعمل كما هو عند الدخول عليه من شريط التنقل.
+const HomeRoute = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // إن كان مسار الجذر يحمل معاملات (query/hash) فحوّل إلى /audio مع الحفاظ عليها
+    if (location.search || location.hash) {
+      navigate(`/audio${location.search}${location.hash}`, { replace: true });
+    }
+  }, [location.search, location.hash, navigate]);
+
+  return <Index />;
+};
 
 function KidsModeGuard() {
   const location = useLocation();
@@ -210,14 +237,12 @@ const App = () => {
 
     // تم إزالة فحص التحديثات التلقائي
 
-    // 🎮 ربط لوحة المفاتيح وريموت التلفاز وأذرع التحكم بالتطبيق بالكامل
+    // 🎮 ربط لوحة المفاتيح وأذرع التحكم بالتطبيق بالكامل (بدون وضع التلفاز)
     const cleanupRemote = setupRemoteControlListeners();
-    const cleanupGamepad = setupGamepadListener();
 
     return () => {
       clearTimeout(syncTimer);
       cleanupRemote();
-      cleanupGamepad();
     };
   }, []);
 
@@ -245,41 +270,45 @@ const App = () => {
             <KidsModeGuard />
             <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>}>
               <Routes>
-                <Route path="/" element={<HomeRoute />} />
-                <Route path="/audio" element={<Index />} />
-                <Route path="/mushaf" element={<QuranReader />} />
-                <Route path="/games" element={<KidsGames />} />
-                <Route path="/shop" element={<KidsShop />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/parent" element={<ParentDashboard />} />
-                <Route path="/profiles" element={<ProfilePicker />} />
-                <Route path="/manage-audio" element={<CustomAudioManager />} />
-                <Route path="/upload" element={<AudioUploadPage />} />
-                <Route path="/upload-desk" element={<UploadDeskPage />} />
+                {/* صفحة الصفحة/الانتقال: كل تغيير مسار يشغّل حركة دخول موحدة */}
+                <Route path="/" element={<PageTransition><HomeRoute /></PageTransition>} />
+                <Route path="/audio" element={<PageTransition><Index /></PageTransition>} />
+                <Route path="/mushaf" element={<PageTransition><QuranReader /></PageTransition>} />
+                <Route path="/games" element={<PageTransition><KidsGames /></PageTransition>} />
+                <Route path="/shop" element={<PageTransition><KidsShop /></PageTransition>} />
+                <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
+                <Route path="/parent" element={<PageTransition><ParentDashboard /></PageTransition>} />
+                <Route path="/profiles" element={<PageTransition><ProfilePicker /></PageTransition>} />
+                <Route path="/manage-audio" element={<PageTransition><CustomAudioManager /></PageTransition>} />
+                <Route path="/custom-audio" element={<PageTransition><CustomAudioManager /></PageTransition>} />
+                <Route path="/upload" element={<PageTransition><AudioUploadPage /></PageTransition>} />
+                <Route path="/upload-desk" element={<PageTransition><UploadDeskPage /></PageTransition>} />
 
-                <Route path="/announcements" element={<AnnouncementsPage />} />
-                <Route path="/support" element={<SupportPage />} />
-                <Route path="/download" element={<LegendaryDownloadHub />} />
-                <Route path="/releases" element={<LegendaryDownloadHub />} />
-                <Route path="/error" element={<ErrorPage />} />
-                <Route path="/admin/releases" element={<AdminReleasesPanel />} />
+                <Route path="/announcements" element={<PageTransition><AnnouncementsPage /></PageTransition>} />
+                <Route path="/support" element={<PageTransition><SupportPage /></PageTransition>} />
+                <Route path="/download" element={<PageTransition><LegendaryDownloadHub /></PageTransition>} />
+                <Route path="/releases" element={<PageTransition><LegendaryDownloadHub /></PageTransition>} />
+                <Route path="/error" element={<PageTransition><ErrorPage /></PageTransition>} />
+                <Route path="/admin/releases" element={<PageTransition><AdminReleasesPanel /></PageTransition>} />
                 {/* ===== أدوات المعلّم (بدون كلمة مرور — للوالدين والمعلّم) ===== */}
-                <Route path="/teacher-tools" element={<TeacherTools />} />
-                <Route path="/calibrate" element={<LinkAudioPage />} />
-                <Route path="/timings" element={<TimingsRecorder />} />
-                <Route path="/shading" element={<ShadingPage />} />
-                <Route path="/link" element={<LinkAudioPage />} />
-                <Route path="/recitation-methods" element={<RecitationMethods />} />
-                <Route path="/audio-splitter" element={<AudioSplitterPage />} />
-                <Route path="/image-manager" element={<ImageManager />} />
-                <Route path="/mushaf-upload" element={<MushafUploadPage />} />
-<Route path="/sort" element={<SortPagesPage />} />
-                <Route path="/recitation" element={<RecitationPage />} />
-                <Route path="/surah-shading" element={<SurahShadingPage />} />
-                <Route path="/new-shading" element={<SurahShadingPage />} />
-                <Route path="/shading-box" element={<SurahShadingPage />} />
+                <Route path="/teacher-tools" element={<PageTransition><TeacherTools /></PageTransition>} />
+                <Route path="/ayah-calibrate" element={<PageTransition><AyahCalibration /></PageTransition>} />
+                <Route path="/calibrate" element={<PageTransition><LinkAudioPage /></PageTransition>} />
+                <Route path="/timings" element={<PageTransition><TimingsRecorder /></PageTransition>} />
+                <Route path="/shading" element={<PageTransition><ShadingPage /></PageTransition>} />
+                <Route path="/link" element={<PageTransition><LinkAudioPage /></PageTransition>} />
+                <Route path="/recitation-methods" element={<PageTransition><RecitationMethods /></PageTransition>} />
+                <Route path="/audio-splitter" element={<PageTransition><AudioSplitterPage /></PageTransition>} />
+                <Route path="/image-manager" element={<PageTransition><ImageManager /></PageTransition>} />
+                <Route path="/mushaf-upload" element={<PageTransition><MushafUploadPage /></PageTransition>} />
+                <Route path="/sort" element={<PageTransition><SortPagesPage /></PageTransition>} />
+                <Route path="/recitation" element={<PageTransition><RecitationPage /></PageTransition>} />
+                <Route path="/surah-shading" element={<PageTransition><SurahShadingPage /></PageTransition>} />
+                <Route path="/shading-settings" element={<PageTransition><ShadingSettingsPage /></PageTransition>} />
+                <Route path="/new-shading" element={<PageTransition><SurahShadingPage /></PageTransition>} />
+                <Route path="/shading-box" element={<PageTransition><SurahShadingPage /></PageTransition>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
+                <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
               </Routes>
             </Suspense>
             <SiteLinksOverlay open={showSiteLinks} onClose={() => setShowSiteLinks(false)} />

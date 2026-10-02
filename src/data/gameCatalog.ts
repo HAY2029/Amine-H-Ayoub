@@ -3,7 +3,7 @@
  */
 import { supabase, hasValidSupabaseKey } from "../lib/supabase";
 
-export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "catchstar" | "ayahmath";
+export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "catchstar" | "ayahmath" | "listenkids";
 
 export interface GameDef {
   id: string;
@@ -117,7 +117,7 @@ const isValid = (g: unknown): g is GameDef => {
   const d = g as GameDef;
   if (!d || typeof d.id !== "string" || typeof d.title !== "string" || typeof d.cost !== "number") return false;
   if (BANNED_NON_QURAN_IDS.has(d.id)) return false;
-  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "catchstar", "ayahmath"];
+  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "catchstar", "ayahmath", "listenkids"];
   if (!engines.includes(d.engine)) return false;
   return true;
 };
@@ -220,6 +220,7 @@ const G = (id: string, title: string, engine: GameEngine, ageMin: number, ageMax
 export const BUILTIN_GAMES: GameDef[] = [
   // ── ألعاب الاستماع ──
   G("surahaudio", "اسمع السورة", "surahaudio", 4, 16, 0, "Headphones", null, 0),
+  G("listenkids", "استمع ← أكمِل ← سجِّل", "listenkids", 4, 16, 0, "Mic", FULL, 4),
 
   // ── ألعاب الذاكرة ──
   G("memory", "بطاقات السور الذكية", "memory", 4, 16, 500, "LayoutGrid", { pairs: 6 }, 1),

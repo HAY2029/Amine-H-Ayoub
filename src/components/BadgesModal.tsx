@@ -19,6 +19,7 @@ import {
 import { getBadgesList, calculateStreak, checkAndUnlockBadges, Badge } from "@/data/kidsBadges";
 import { getProfile, getProgress, getCoins } from "@/data/kidsProfile";
 import { downloadStreakCertificate } from "@/utils/certificateGenerator";
+import { getAvatarSrc } from "@/components/Avatar";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
@@ -74,7 +75,7 @@ export default function BadgesModal({ onClose }: Props) {
       const c = getCoins();
       await downloadStreakCertificate({
         studentName: profile.name || "بطل القرآن الصغير",
-        avatarName: profile.avatar || "boy1",
+        avatarName: getAvatarSrc(profile.avatar || "img-boy-1").split("/").pop()?.replace(/\.jpg$/i, "") || "img-boy-1",
         currentStreak: streakInfo.currentStreak,
         longestStreak: streakInfo.longestStreak,
         minutes: prog.minutes || 0,

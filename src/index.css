@@ -187,7 +187,46 @@
   .page-nour {
     position: relative;
     background: var(--grad-page);
+    /* لا فراغ أسود أسفل الصفحات الطويلة: نُلغي الالتصاق الثابت ونثبّت التدرّج
+       على ارتفاع العنصر نفسه بدل مستند الصفحة كاملة (سبب الشريط الأسود سابقاً) */
+    background-attachment: scroll;
+    background-repeat: no-repeat;
+    /* التدرّج ثابت في أعلى الصفحة ويمتد مع المحتوى بلا قصّ */
+    background-size: 100% 100%;
+    background-color: hsl(var(--background));
+    width: 100%;
     min-height: 100vh;
+    min-height: 100dvh;
+    background-position: top center;
+    /* منع أي فراغ من لون آخر (أسود/أزرق) حول المحتوى */
+    overflow-x: hidden;
+    /* ضمان امتداد الخلفية لكامل الشاشة حتى لو كان المحتوى أطول من النافذة */
+    background-origin: border-box;
+    background-clip: border-box;
+  }
+
+  /* إزالة أي شريط أسود/أزرق أسفل الصفحات الطويلة: خلفية ثابتة تغطي كامل النافذة */
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    background-color: hsl(var(--background));
+  }
+
+  /* حاوية المحتوى: تمتد لكامل العرض على الشاشات الكبيرة (تلفاز/سطح مكتب)
+     بدل حصرها في max-w-md الذي كان يُظهر فراغاً داكناً على الجانبين */
+  .container-mobile {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* ركن الألعاب: الخلفية تمتد لحافة الشاشة كاملة — لا منطقة سوداء حول المحتوى */
+  .kids-games-wrap {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
   }
   /* نقش هندسي خفيف يضيف فخامة دون ضجيج */
   .page-nour::before {
@@ -298,6 +337,117 @@
   animation: shimmer 2.4s linear infinite;
 }
 
+/* ===== Player Disc Spin ===== */
+@keyframes disc-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.player-disc-spin {
+  animation: disc-spin 4s linear infinite;
+}
+.player-disc-spin:hover {
+  animation-duration: 2s;
+}
+
+/* ===== Nav Pill Hover ===== */
+.nav-pill {
+  position: relative;
+  overflow: hidden;
+}
+.nav-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), hsl(var(--gold) / 0.12), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.nav-pill:hover::before {
+  opacity: 1;
+}
+
+/* ===== Nav Container Hover Glow ===== */
+.nav-container {
+  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+}
+.nav-container:hover {
+  border-color: hsl(var(--gold) / 0.35);
+  box-shadow: 0 8px 40px rgba(217, 165, 32, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ===== Player Main Button Pulse ===== */
+@keyframes player-pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(217, 165, 32, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(217, 165, 32, 0.6), 0 0 60px rgba(217, 165, 32, 0.2); }
+}
+.player-main-btn:not(:disabled) {
+  animation: player-pulse-glow 2.5s ease-in-out infinite;
+}
+.player-main-btn:hover {
+  animation: none;
+  box-shadow: 0 0 40px rgba(217, 165, 32, 0.6) !important;
+}
+
+/* ===== Surah Card Hover Lift ===== */
+.surah-card {
+  will-change: transform, opacity;
+}
+.surah-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, transparent, hsl(var(--gold) / 0.04));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.surah-card:hover::after {
+  opacity: 1;
+}
+
+/* ===== Player Shell Glass Effect ===== */
+.player-shell {
+  position: relative;
+}
+.player-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* ===== Scale-In Animation for Menus ===== */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.9) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-scale-in { animation: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ===== Center Player Card ===== */
+.player-center-card {
+  border: 2px solid rgba(180, 120, 20, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(180, 120, 20, 0.1),
+    0 25px 80px rgba(0, 0, 0, 0.7),
+    0 0 60px rgba(180, 120, 20, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.player-center-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(217, 165, 32, 0.5), transparent);
+  pointer-events: none;
+}
+
+
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 0 hsl(var(--gold) / 0); }
   50% { box-shadow: 0 0 26px hsl(var(--gold) / 0.5); }
@@ -339,10 +489,63 @@
 }
 .animate-treasure-pop { animation: treasure-pop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* ═══════════════════════════════════════════════════════════════════════════════
+   حركة قلب الصفحة (Mushaf Page Turn)
+   تُطبَّق على المجموعة كاملة (صفحة واحدة أو صفحتين على الحاسوب) فيتحرّكان معاً
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* الاتجاه: للتالي (+1) — الصفحة تنساب من جهة اليسار (RTL) */
+/* 🎞️ انتقال موحّد لجميع الصفحات عند تغيير المسار */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-transition {
+  animation: page-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-transition { animation: none; }
+}
+
+@keyframes mushaf-turn-next {
+  from { opacity: 0; transform: translate3d(-32px, 0, 0) scale(0.985); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* الاتجاه: للسابق (−1) — الصفحة تنساب من جهة اليمين (RTL) */
+@keyframes mushaf-turn-prev {
+  from { opacity: 0; transform: translate3d(32px, 0, 0) scale(0.985); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* ظرف المجموعة: يحتوي الصفحتين المعروضتين معاً */
+.mushaf-page-turn {
+  animation-duration: 0.42s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform-origin: center center;
+}
+.mushaf-page-turn--next { animation-name: mushaf-turn-next; }
+.mushaf-page-turn--prev { animation-name: mushaf-turn-prev; }
+
+/* توهّج ذهبي خفيف أثناء قلب الصفحة (يُعطي إحساس الورق) */
+@keyframes mushaf-turn-glow {
+  from { opacity: 0.45; }
+  to   { opacity: 0; }
+}
+.mushaf-turn-glow {
+  animation: mushaf-turn-glow 0.42s ease-out both;
+  pointer-events: none;
+}
+
 /* احترام تفضيل تقليل الحركة */
 @media (prefers-reduced-motion: reduce) {
   .animate-shake, .animate-treasure-pop { animation: none !important; }
   .confetti-piece { animation: none !important; display: none !important; }
+  .mushaf-page-turn, .mushaf-turn-glow { animation: none !important; }
+  .mushaf-page-turn { opacity: 1 !important; transform: none !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -374,6 +577,13 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* إصلاح الارتفاع على iOS — يضمن ألا يظهر شريط أسود أسفل الصفحة */
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
   }
 }
 
@@ -408,14 +618,20 @@
     gap: clamp(0.5rem, 2vw, 1rem);
   }
 
-  /* حاوية متجاوبة */
+  /* حاوية متجاوبة — تملأ الشاشة كاملة بلا فراغ أسود على الأطراف */
   .container-mobile {
     width: 100%;
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: clamp(0.5rem, 3vw, 1rem);
-    padding-right: clamp(0.5rem, 3vw, 1rem);
+    padding-left: clamp(0.5rem, 3vw, 1.5rem);
+    padding-right: clamp(0.5rem, 3vw, 1.5rem);
+  }
+
+  /* داخل ركن الألعاب: نتجاوز أي قيد عرض حتى لا يظهر شريط أسود حول المحتوى */
+  .kids-games-wrap {
+    width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -521,8 +737,6 @@
   overflow-x: hidden;
 }
 
-/* ===== تظليل الآيات
-
 /* ===== تظليل الآيات (يعتمده القارئ) — يبقى كما هو ===== */
 @keyframes ayah-glow {
   0%, 100% { filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.35)); opacity: 0.85; }
@@ -558,3 +772,369 @@ input[type="range"].h-2::-webkit-slider-thumb {
 .no-scrollbar::-webkit-scrollbar { display: none !important; }
 .scrollbar-hide,
 .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+
+/* ============================================================
+   إطار تعليم القرآن للأطفال (قائمة السور داخل الإطار)
+   ============================================================ */
+.quran-kids-page {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  width: 100dvw;
+  /* ملء الشاشة بالكامل — بلا فراغ أزرق حول الإطار */
+  height: 100vh;
+  height: 100dvh;
+  display: block;
+  overflow: hidden;
+  /* امتداد كامل: المربع يغطي النافذة كاملة في كل الاتجاهات */
+  margin: 0;
+  padding: 0;
+  /* لون الخلفية مطابق تماماً لحافة الصورة الذهبية — فلا يظهر أي فراغ
+     أزرق/كحلي/أسود حول الإطار على أي نسبة شاشة */
+  background: #d9bd82;
+  /* نفس تدرّج حافة الصورة: لا شريط مزعج يظهر خلف الإطار */
+  background-image: radial-gradient(145% 125% at 50% 0%, #f3e4c6 0%, #e2caa0 55%, #d9bd82 100%);
+}
+html[data-theme="dark"] .quran-kids-page,
+.dark .quran-kids-page {
+  /* في الوضع الداكن: ذهبي دافئ داكن يطابق حافة الصورة — لا أزرق كحلي */
+  background: #2a2011;
+  background-image: radial-gradient(145% 125% at 50% 0%, #57422238 0%, #332615 55%, #2a2011 100%);
+}
+/* احتواء كامل: لا فراغ أزرق على أي نسبة شاشة (عريضة/مربعة/طولية) */
+.quran-kids-page {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.quran-kids-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.quran-kids-frame-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* تغطية كاملة للشاشة بلا أشرطة فراغ (يملأ أي نسبة شاشة) */
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+/* المنطقة البيضاء (قائمة السور) — تُطبَّق قياساتها نسبةً إلى الإطار الأثري داخل
+   الصورة لا إلى الشاشة، فلا تخرج عن «الدفّة» ولا يظهر أي فراغ أزرق حولها.
+   على الشاشات العريضة تُزاد الإزاحة الجانبية تلقائياً بمقدار ما يقتصّه
+   object-fit: cover من جانبي الصورة المربّعة. */
+.quran-kids-white-area {
+  position: absolute;
+  --frame-pad-x: 17.2%;
+  --frame-pad-t: 16.5%;
+  --frame-pad-b: 22%;
+  top: var(--frame-pad-t);
+  bottom: var(--frame-pad-b);
+  left: clamp(14%, var(--frame-pad-x), 33%);
+  right: clamp(14%, var(--frame-pad-x), 33%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 36px 36px 20px 20px;
+}
+
+/* القياس التلقائي: كلّما زاد عرض الشاشة عن نسبة الصورة زاد القصّ الجانبي،
+   فتتّسع الإزاحة الجانبية بنفس النسبة لتبقى المنطقة داخل الإطار تماماً. */
+@media (min-aspect-ratio: 1.18/1) {
+  .quran-kids-white-area {
+    --frame-pad-x: calc(17.2% + (min(100vw / 1.18, 100vh) * (100vw / min(100vw, 100vh * 1.18) - 1)) / 2);
+  }
+}
+@media (min-aspect-ratio: 1.5/1) {
+  .quran-kids-white-area {
+    --frame-pad-x: 28%;
+  }
+}
+@media (min-aspect-ratio: 2/1) {
+  .quran-kids-white-area {
+    --frame-pad-x: 34%;
+  }
+}
+
+/* شريط تمرير ذهبي ناعم لقائمة السور */
+.quran-kids-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.45) transparent;
+}
+.quran-kids-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.quran-kids-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.quran-kids-scroll::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.45);
+  border-radius: 9999px;
+}
+.quran-kids-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.75);
+}
+
+/* التكيف مع الشاشات الطولية (الهواتف المحمولة / Portrait) */
+@media (max-aspect-ratio: 1.15/1) {
+  .quran-kids-page {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    align-items: flex-start;
+  }
+  .quran-kids-frame {
+    max-width: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+  .quran-kids-frame-bg {
+    position: fixed;
+    inset: 0;
+    object-fit: cover;
+  }
+  .quran-kids-white-area {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    margin: 5rem 0.75rem 1.5rem 0.75rem;
+    height: calc(100vh - 6.5rem);
+    background: rgba(254, 250, 240, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid rgba(212, 175, 55, 0.4);
+    border-radius: 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* ============================================================
+   مشغل القرآن المحسّن — Bottom Bar + Full Player
+   ============================================================ */
+
+/* ── Desktop Bottom Bar Player ── */
+.player-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  background: rgba(26, 20, 16, 0.97);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid rgba(180, 120, 20, 0.25);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.3);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Full Player Slide-up ── */
+@keyframes slide-up-full {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slide-down-full {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(100%); opacity: 0; }
+}
+.player-full-enter {
+  animation: slide-up-full 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Progress bar custom styling ── */
+.player-progress-track {
+  position: relative;
+  height: 4px;
+  background: rgba(120, 100, 70, 0.2);
+  border-radius: 9999px;
+  overflow: visible;
+  cursor: pointer;
+  transition: height 0.2s ease;
+}
+.player-progress-track:hover {
+  height: 6px;
+}
+.player-progress-fill {
+  position: absolute;
+  inset: 0;
+  right: 0;
+  border-radius: 9999px;
+  background: linear-gradient(to left, #f59e0b, #d97706, #b45309);
+  transition: width 0.15s linear;
+}
+.player-progress-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.player-progress-track:hover .player-progress-thumb {
+  opacity: 1;
+}
+
+/* ── Play Button Glow Ring ── */
+@keyframes play-ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(251, 191, 36, 0); }
+}
+.player-play-btn {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.player-play-btn:hover {
+  transform: scale(1.08);
+}
+.player-play-btn:active {
+  transform: scale(0.92);
+}
+.player-play-btn.is-playing {
+  animation: play-ring-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   شريط التنقل السفلي للهاتف — Bottom Navigation
+   ============================================================ */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-top: 1px solid rgba(180, 160, 100, 0.2);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+html[data-theme="dark"] .mobile-bottom-nav,
+.dark .mobile-bottom-nav {
+  background: rgba(16, 24, 20, 0.95);
+  border-top-color: rgba(180, 120, 20, 0.15);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 0;
+  flex: 1;
+  min-height: 52px;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(120, 100, 70, 0.6);
+  transition: all 0.25s ease;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-bottom-nav-item.active {
+  color: hsl(var(--accent));
+}
+.mobile-bottom-nav-item.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 3px;
+  border-radius: 0 0 9999px 9999px;
+  background: linear-gradient(90deg, hsl(var(--gold)), hsl(var(--gold-light)));
+}
+html[data-theme="dark"] .mobile-bottom-nav-item,
+.dark .mobile-bottom-nav-item {
+  color: rgba(200, 180, 140, 0.5);
+}
+html[data-theme="dark"] .mobile-bottom-nav-item.active,
+.dark .mobile-bottom-nav-item.active {
+  color: hsl(var(--gold-light));
+}
+
+/* Hide mobile nav when player is open on mobile */
+.mobile-bottom-nav.player-open {
+  transform: translateY(100%);
+}
+
+/* ============================================================
+   تحسين تظليل الآيات — أنعم وأجمل
+   ============================================================ */
+.ayah-highlight-smooth {
+  transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: fill, stroke, filter, opacity;
+}
+.ayah-highlight-smooth.ayah-current {
+  animation: ayah-breathe 2.5s ease-in-out infinite;
+}
+@keyframes ayah-breathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px var(--ayah-glow, rgba(251, 191, 36, 0.3)));
+    opacity: 0.88;
+  }
+  50% {
+    filter: drop-shadow(0 0 12px var(--ayah-glow, rgba(251, 191, 36, 0.55)));
+    opacity: 1;
+  }
+}
+
+/* User-selected ayah (click) vs currently-playing ayah */
+.ayah-selected {
+  stroke-dasharray: 6 3;
+  stroke-dashoffset: 0;
+  animation: ayah-dash 1.5s linear infinite;
+}
+@keyframes ayah-dash {
+  to { stroke-dashoffset: -18; }
+}
+
+/* ── Slide-up animation (panels) ── */
+@keyframes slide-up-short {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up-short {
+  animation: slide-up-short 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Responsive: Mushaf page padding when player is visible ── */
+@media (min-width: 768px) {
+  .mushaf-with-player {
+    padding-bottom: 88px;
+  }
+}
+@media (max-width: 767px) {
+  .mushaf-with-player {
+    padding-bottom: 72px;
+  }
+}
+
+/* ── Bottom nav spacing for page content ── */
+@media (max-width: 767px) {
+  .page-with-bottom-nav {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+}
+

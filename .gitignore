@@ -59,5 +59,10 @@ test-*.mjs
 test.mjs
 tmp-sw.js
 
+# صور الأفاتار الأصلية (قبل الضغط) — تُنشأ بـ scripts/compress-avatars.mjs --in-place
+# لا تُرفع للمستودع ولا تُضمَّن في الحزمة (توفير ~50MB)
+public/avatars/_originals/
+public/avatars/*.opt.jpg
+
 tools/���-��������-����.cmd
 .env*

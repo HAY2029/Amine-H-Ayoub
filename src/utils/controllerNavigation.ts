@@ -1,11 +1,14 @@
-/**
- * نظام الملاحة الذكي لأجهزة التحكم (الريموت كنترول + أذرع التحكم بالألعاب Gamepads)
- * Smart Spatial & Controller Navigation for Android TV Remotes, Gamepads & Keyboards
+﻿/**
+ * ط§ظ„طھظ†ظ‚ظ„ ط¨ظ„ظˆط­ط© ط§ظ„ظ…ظپط§طھظٹط­ ظ„ظ„ظ…ظˆظ‚ط¹ (Keyboard Navigation)
+ *
+ * ظ…ظ„ط§ط­ط¸ط©: طھظ…طھ ط¥ط²ط§ظ„ط© ط¯ط¹ظ… Android TV / ط±ظٹظ…ظˆطھ ط§ظ„طھظ„ظپط§ط² / ط£ط°ط±ط¹ ط§ظ„ط£ظ„ط¹ط§ط¨ (Gamepads)
+ * ط¨ط´ظƒظ„ ظƒط§ظ…ظ„ â€” ط§ظ„طھط·ط¨ظٹظ‚ ظ…ظˆط¬ظژظ‘ظ‡ ظ„ظ„ظ‡ط§طھظپ ظˆط§ظ„ط£ط¬ظ‡ط²ط© ط§ظ„ظ„ظˆط­ظٹط© ظˆط§ظ„ظƒظ…ط¨ظٹظˆطھط±.
+ * ظ…ط§ ط¨ظ‚ظٹ ظ‡ظˆ ط§ظ„طھظ†ظ‚ظ„ ط§ظ„ظ…ظƒط§ظ†ظٹ ط¨ط§ظ„ط£ط³ظ‡ظ… ظˆط¯ط¹ظ… ط²ط± ط§ظ„ط±ط¬ظˆط¹ (Backspace) ظˆEscape.
  */
 
 type Direction = "up" | "down" | "left" | "right";
 
-// قائمة العناصر القابلة للتركيز
+// ظ‚ط§ط¦ظ…ط© ط§ظ„ط¹ظ†ط§طµط± ط§ظ„ظ‚ط§ط¨ظ„ط© ظ„ظ„طھط±ظƒظٹط²
 const FOCUSABLE_SELECTOR = [
   "button:not([disabled]):not([aria-hidden='true'])",
   "a[href]:not([aria-hidden='true'])",
@@ -25,9 +28,11 @@ function isVisible(el: HTMLElement): boolean {
 }
 
 function getFocusableElements(container: HTMLElement = document.body): HTMLElement[] {
-  // إذا كان هناك نافذة منبثقة مفتوحة، نحصر التنقل داخلها فقط
+  // ط¥ط°ط§ ظƒط§ظ† ظ‡ظ†ط§ظƒ ظ†ط§ظپط°ط© ظ…ظ†ط¨ط«ظ‚ط© ظ…ظپطھظˆط­ط© ط­ظ‚ظٹظ‚ظٹط©طŒ ظ†ط­طµط± ط§ظ„طھظ†ظ‚ظ„ ط¯ط§ط®ظ„ظ‡ط§ ظپظ‚ط·.
+  // ظ…ظ‡ظ…: ظ„ط§ ظ†ط³طھط®ط¯ظ… [data-state='open'] ظˆط­ط¯ظ‡ ظ„ط£ظ†ظ‡ ظٹط·ط§ط¨ظ‚ ط¹ظ†ط§طµط± ط¯ط§ط®ظ„ظٹط© ظƒط«ظٹط±ط©
+  // ظپظٹط­طµط± ط§ظ„طھظ†ظ‚ظ„ ط®ط·ط£ظ‹ ظˆظٹظ…ظ†ط¹ ط§ظ„ط£ط³ظ‡ظ… ظ…ظ† ط§ظ„ط¹ظ…ظ„ ط¯ط§ط®ظ„ ط±ظƒظ† ط§ظ„ط£ط·ظپط§ظ„.
   const activeDialog = document.querySelector<HTMLElement>(
-    "[role='dialog'], [aria-modal='true'], .dialog-content, [data-state='open']"
+    "[role='dialog'][aria-modal='true'], [aria-modal='true'], .dialog-content"
   );
   const root = activeDialog && isVisible(activeDialog) ? activeDialog : container;
 
@@ -36,8 +41,8 @@ function getFocusableElements(container: HTMLElement = document.body): HTMLEleme
 }
 
 /**
- * خوارزمية التنقل المكاني ثنائي الأبعاد (2D Spatial Navigation)
- * تحسب أقرب عنصر بصرياً في الاتجاه المطلوب مع مراعاة موقعه وزاويته على الشاشة
+ * ط®ظˆط§ط±ط²ظ…ظٹط© ط§ظ„طھظ†ظ‚ظ„ ط§ظ„ظ…ظƒط§ظ†ظٹ ط«ظ†ط§ط¦ظٹ ط§ظ„ط£ط¨ط¹ط§ط¯ (2D Spatial Navigation)
+ * طھط­ط³ط¨ ط£ظ‚ط±ط¨ ط¹ظ†طµط± ط¨طµط±ظٹط§ظ‹ ظپظٹ ط§ظ„ط§طھط¬ط§ظ‡ ط§ظ„ظ…ط·ظ„ظˆط¨ ظ…ط¹ ظ…ط±ط§ط¹ط§ط© ظ…ظˆظ‚ط¹ظ‡ ظˆط²ط§ظˆظٹطھظ‡ ط¹ظ„ظ‰ ط§ظ„ط´ط§ط´ط©
  */
 function findBestCandidate(current: HTMLElement, direction: Direction, candidates: HTMLElement[]): HTMLElement | null {
   const cRect = current.getBoundingClientRect();
@@ -61,7 +66,7 @@ function findBestCandidate(current: HTMLElement, direction: Direction, candidate
     const dx = eCenter.x - cCenter.x;
     const dy = eCenter.y - cCenter.y;
 
-    // التحقق من أن العنصر يقع في الاتجاه المطلوب
+    // ط§ظ„طھط­ظ‚ظ‚ ظ…ظ† ط£ظ† ط§ظ„ط¹ظ†طµط± ظٹظ‚ط¹ ظپظٹ ط§ظ„ط§طھط¬ط§ظ‡ ط§ظ„ظ…ط·ظ„ظˆط¨
     let inDirection = false;
     let mainDist = 0;
     let crossDist = 0;
@@ -91,7 +96,7 @@ function findBestCandidate(current: HTMLElement, direction: Direction, candidate
 
     if (!inDirection) continue;
 
-    // إعطاء أولوية للمحاذاة المباشرة، ومعاقبة الانحراف الجانبي
+    // ط¥ط¹ط·ط§ط، ط£ظˆظ„ظˆظٹط© ظ„ظ„ظ…ط­ط§ط°ط§ط© ط§ظ„ظ…ط¨ط§ط´ط±ط©طŒ ظˆظ…ط¹ط§ظ‚ط¨ط© ط§ظ„ط§ظ†ط­ط±ط§ظپ ط§ظ„ط¬ط§ظ†ط¨ظٹ
     const totalScore = mainDist + crossDist * 2.2;
 
     if (totalScore < minDistance) {
@@ -103,13 +108,54 @@ function findBestCandidate(current: HTMLElement, direction: Direction, candidate
   return bestElement;
 }
 
+export function getFocusableElementsForNav(container?: HTMLElement): HTMLElement[] {
+  return getFocusableElements(container);
+}
+
+/**
+ * ظٹط±ظƒظ‘ط² ط£ظˆظ„ ط¹ظ†طµط± ظ‚ط§ط¨ظ„ ظ„ظ„طھط±ظƒظٹط² ط¯ط§ط®ظ„ ط­ط§ظˆظٹط© ظ…ط¹ظٹظ‘ظ†ط© (ط£ظˆ ط§ظ„طµظپط­ط© ظƒط§ظ…ظ„ط©).
+ * طھظڈط³طھط¯ط¹ظ‰ ط¹ظ†ط¯ ظپطھط­ ط±ظƒظ† ط§ظ„ط£ط·ظپط§ظ„ ط£ظˆ ط§ظ„ط¯ط®ظˆظ„ ظ„ط£ظٹ ظ„ط¹ط¨ط©طŒ ط­طھظ‰ طھط¹ظ…ظ„ ط§ظ„ط£ط³ظ‡ظ…/ط§ظ„ط±ظٹظ…ظˆطھ
+ * ظپظˆط±ط§ظ‹ ط¨ظ„ط§ ط­ط§ط¬ط© ظ„ط£ظٹ طھظپط§ط¹ظ„ ظ…ط³ط¨ظ‚ ظ…ظ† ط§ظ„ظ…ط³طھط®ط¯ظ….
+ */
+export function focusFirst(container?: HTMLElement | null, selector?: string): boolean {
+  const root = container || (typeof document !== "undefined" ? document.body : null);
+  if (!root) return false;
+  const list = selector
+    ? Array.from(root.querySelectorAll<HTMLElement>(selector)).filter(isVisible)
+    : getFocusableElements(root);
+  const first = list[0];
+  if (!first) return false;
+  try {
+    first.focus({ preventScroll: true });
+    first.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * ظٹط±ظƒظ‘ط² ط¹ظ†طµط±ط§ظ‹ ظ…ط­ط¯ط¯ط§ظ‹ ط¨ط§ظ„ظ…ط¹ط±ظ‘ظپ ط£ظˆ ط§ظ„ظ…ط­ط¯ظگظ‘ط¯ (ظٹظڈط³طھط®ط¯ظ… ظ„ط¥ط¹ط§ط¯ط© ط§ظ„طھط±ظƒظٹط² ط¨ط¹ط¯ طھط؛ظٹظٹط± ط§ظ„ط´ط§ط´ط©).
+ */
+export function focusSelector(selector: string): boolean {
+  if (typeof document === "undefined") return false;
+  const el = document.querySelector<HTMLElement>(selector);
+  if (!el || !isVisible(el)) return false;
+  try {
+    el.focus({ preventScroll: true });
+    el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function moveFocus(direction: Direction): boolean {
   const focusables = getFocusableElements();
   if (focusables.length === 0) return false;
-
   const current = document.activeElement as HTMLElement | null;
 
-  // إذا لم يكن أي عنصر محدداً حالياً، نركز على أول عنصر منطقي
+  // ط¥ط°ط§ ظ„ظ… ظٹظƒظ† ط£ظٹ ط¹ظ†طµط± ظ…ط­ط¯ط¯ط§ظ‹ ط­ط§ظ„ظٹط§ظ‹طŒ ظ†ط±ظƒط² ط¹ظ„ظ‰ ط£ظˆظ„ ط¹ظ†طµط± ظ…ظ†ط·ظ‚ظٹ
   if (!current || current === document.body || !focusables.includes(current)) {
     const first = focusables[0];
     if (first) {
@@ -132,24 +178,38 @@ export function moveFocus(direction: Direction): boolean {
 
 export function triggerActiveClick(): boolean {
   const current = document.activeElement as HTMLElement | null;
-  if (current && current !== document.body) {
+  if (current && current !== document.body && current !== document.documentElement) {
     current.click();
+    return true;
+  }
+  // ظ„ط§ ظٹظˆط¬ط¯ ط¹ظ†طµط± ظ…ظڈط±ظƒظژظ‘ط² (ظ…ط«ظ„ ط¨ط¯ط§ظٹط© ط§ظ„طھط´ط؛ظٹظ„) â€” ظ†ط±ظƒظ‘ط² ط£ظˆظ„ ط¹ظ†طµط± ط«ظ… ظ†ط¶ط؛ط·ظ‡
+  const first = getFocusableElements()[0];
+  if (first) {
+    first.focus({ preventScroll: true });
+    first.click();
     return true;
   }
   return false;
 }
 
 export function handleControllerBack(): boolean {
-  // 1. فحص ما إذا كانت هناك نافذة مفتوحة لإغلاقها
+  // 1. ظپط­طµ ظ…ط§ ط¥ط°ط§ ظƒط§ظ†طھ ظ‡ظ†ط§ظƒ ظ†ط§ظپط°ط© ظ…ظپطھظˆط­ط© ظ„ط¥ط؛ظ„ط§ظ‚ظ‡ط§
   const closeBtn = document.querySelector<HTMLElement>(
-    "[role='dialog'] [aria-label*='إغلاق'], [role='dialog'] button.close, [data-state='open'] button[aria-label*='Close']"
+    "[role='dialog'] [aria-label*='ط¥ط؛ظ„ط§ظ‚'], [aria-modal='true'] [aria-label*='ط¥ط؛ظ„ط§ظ‚'], [role='dialog'] button.close, [role='dialog'] button[aria-label*='Close'], [role='dialog'] [aria-label*='close']"
   );
   if (closeBtn && isVisible(closeBtn)) {
     closeBtn.click();
     return true;
   }
 
-  // 2. إذا لم تكن هناك نافذة، نرجع خطوة للوراء
+  // 2. ط£ظٹ ظ†ط§ظپط°ط© ظ…ظ†ط¨ط«ظ‚ط© ط£ط®ط±ظ‰ ظ…ط؛ظ„ظ‚ط© ط¨ط§ظ„ظ†ظ‚ط± ط¹ظ„ظ‰ ط§ظ„ط®ظ„ظپظٹط© â€” ظ†ط؛ظ„ظ‚ظ‡ط§
+  const scrim = document.querySelector<HTMLElement>("[data-overlay-close], .overlay-close");
+  if (scrim && isVisible(scrim)) {
+    scrim.click();
+    return true;
+  }
+
+  // 3. ط¥ط°ط§ ظ„ظ… طھظƒظ† ظ‡ظ†ط§ظƒ ظ†ط§ظپط°ط©طŒ ظ†ط±ط¬ط¹ ط®ط·ظˆط© ظ„ظ„ظˆط±ط§ط،
   if (window.history.length > 1) {
     window.history.back();
     return true;
@@ -159,28 +219,14 @@ export function handleControllerBack(): boolean {
 }
 
 /**
- * تشغيل/إيقاف الوسائط الحالية (زر تشغيل بالريموت أو أذرع التحكم)
- */
-function toggleMediaPlayback(): void {
-  const media = Array.from(document.querySelectorAll<HTMLMediaElement>("audio, video"));
-  const playing = media.find(m => !m.paused && !m.ended);
-  if (playing) {
-    playing.pause();
-    return;
-  }
-  media[0]?.play().catch(() => { /* ignore */ });
-}
-
-/**
- * تهيئة مستمعات الريموت كنترول ولوحة المفاتيح
+ * طھظ‡ظٹط¦ط© ظ…ط³طھظ…ط¹ط§طھ ظ„ظˆط­ط© ط§ظ„ظ…ظپط§طھظٹط­ (ط§ظ„ط£ط³ظ‡ظ… + ط§ظ„ط±ط¬ظˆط¹)
  */
 export function setupRemoteControlListeners(): () => void {
-  // إبراز واضح للعنصر المحدد بالريموت/لوحة المفاتيح (يُفعَّل عند أول استخدام للأسهم)
+  // ط¥ط¨ط±ط§ط² ظˆط§ط¶ط­ ظ„ظ„ط¹ظ†طµط± ط§ظ„ظ…ط­ط¯ط¯ ط¨ظ„ظˆط­ط© ط§ظ„ظ…ظپط§طھظٹط­
   const style = document.createElement("style");
   style.textContent = `
-    html.tv-nav button:focus, html.tv-nav a:focus, html.tv-nav [tabindex]:focus,
-    html.tv-nav input:focus, html.tv-nav select:focus, html.tv-nav textarea:focus,
-    button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+    button:focus-visible, a:focus-visible, [tabindex]:focus-visible,
+    input:focus-visible, select:focus-visible, textarea:focus-visible {
       outline: 3px solid #f59e0b !important;
       outline-offset: 2px !important;
     }
@@ -188,25 +234,16 @@ export function setupRemoteControlListeners(): () => void {
   document.head.appendChild(style);
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    // تجاهل الأحداث إذا كان المستخدم يكتب في حقل نصي
+    // طھط¬ط§ظ‡ظ„ ط§ظ„ط£ط­ط¯ط§ط« ط¥ط°ط§ ظƒط§ظ† ط§ظ„ظ…ط³طھط®ط¯ظ… ظٹظƒطھط¨ ظپظٹ ط­ظ‚ظ„ ظ†طµظٹ
     const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
     const isInput = tag === "input" || tag === "textarea" || (e.target as HTMLElement)?.isContentEditable;
 
-    // أزرار الرجوع الخاصة بأجهزة التلفاز (keyCodes مخصصة للعلامات الكبرى)
-    if (e.keyCode === 10009 || e.keyCode === 461 || e.keyCode === 4) {
-      e.preventDefault();
-      handleControllerBack();
-      return;
-    }
-    // Backspace خارج الحقول = رجوع
+    // Backspace ط®ط§ط±ط¬ ط§ظ„ط­ظ‚ظˆظ„ = ط±ط¬ظˆط¹
     if (e.key === "Backspace" && !isInput) {
       e.preventDefault();
       handleControllerBack();
       return;
     }
-
-    // الأسهم تُفعّل نمط إبراز التحديد بالريموت
-    if (e.key.startsWith("Arrow")) document.documentElement.classList.add("tv-nav");
 
     switch (e.key) {
       case "ArrowUp":
@@ -239,12 +276,14 @@ export function setupRemoteControlListeners(): () => void {
         break;
       case "Enter":
       case "Select":
-        // زر OK في الريموت
+      case " ": 
+      case "Spacebar":
+        // زر OK في الريموت — يعمل من أي عنصر مُركَّز (أزرار حقيقية + role="button")
         if (!isInput && document.activeElement && document.activeElement !== document.body) {
-          // المتصفح يضغط الأزرار تلقائياً عند Enter، ولكن نضمن تفعيل العناصر ذات الدور button
-          if (document.activeElement.getAttribute("role") === "button") {
+          const ae = document.activeElement as HTMLElement;
+          if (ae.tagName === "BUTTON" || ae.getAttribute("role") === "button" || ae.getAttribute("data-nav-click") !== null) {
             e.preventDefault();
-            (document.activeElement as HTMLElement).click();
+            ae.click();
           }
         }
         break;
@@ -255,93 +294,66 @@ export function setupRemoteControlListeners(): () => void {
         e.preventDefault();
         handleControllerBack();
         break;
-      case "MediaPlayPause":
-        e.preventDefault();
-        toggleMediaPlayback();
-        break;
     }
   };
 
   window.addEventListener("keydown", handleKeyDown, { passive: false });
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}
 
-/**
- * حلقة مراقبة ذراع التحكم بالألعاب (Gamepad Polling Loop)
- * تدعم أجهزة Xbox, PlayStation, وأذرع البلوتوث على التلفاز والكمبيوتر
- */
-export function setupGamepadListener(): () => void {
-  let animationFrameId: number | null = null;
-  let lastActionTime = 0;
-  const REPEAT_DELAY = 180; // مللي ثانية بين الحركات المتكررة
-  let prevButtonA = false;
-  let prevButtonB = false;
-
-  const pollGamepads = (now: number) => {
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    const gp = gamepads.find((g) => g && g.connected);
-
-    if (gp) {
-      const canRepeat = now - lastActionTime > REPEAT_DELAY;
-
-      // 1. الاتجاهات: D-pad أو عصا التحكم اليسرى (Analog Stick)
-      const dpadUp = gp.buttons[12]?.pressed || gp.axes[1] < -0.5;
-      const dpadDown = gp.buttons[13]?.pressed || gp.axes[1] > 0.5;
-      const dpadLeft = gp.buttons[14]?.pressed || gp.axes[0] < -0.5;
-      const dpadRight = gp.buttons[15]?.pressed || gp.axes[0] > 0.5;
-
-      if (canRepeat) {
-        if (dpadUp) {
-          moveFocus("up");
-          lastActionTime = now;
-        } else if (dpadDown) {
-          moveFocus("down");
-          lastActionTime = now;
-        } else if (dpadLeft) {
-          moveFocus("left");
-          lastActionTime = now;
-        } else if (dpadRight) {
-          moveFocus("right");
-          lastActionTime = now;
-        }
-      }
-
-      // 2. زر A (تأكيد / نقر) — Button 0
-      const btnA = gp.buttons[0]?.pressed;
-      if (btnA && !prevButtonA) {
-        triggerActiveClick();
-      }
-      prevButtonA = !!btnA;
-
-      // 3. زر B (رجوع) — Button 1
-      const btnB = gp.buttons[1]?.pressed;
-      if (btnB && !prevButtonB) {
-        handleControllerBack();
-      }
-      prevButtonB = !!btnB;
-
-      // 4. زر X أو Y (تشغيل/إيقاف مؤقت للتلاوة) — Button 2 أو 3
-      if (gp.buttons[2]?.pressed || gp.buttons[3]?.pressed) {
-        if (canRepeat) {
-          toggleMediaPlayback();
-          lastActionTime = now + 200;
-        }
-      }
+  // 🧭 دليل الزر المرئي: إطار ذهبي متحرك يوضّح أي عنصر سيُضغط (زر OK/الأسهم).
+  // يظهر فقط عندما يكون هناك تركيز فعلي، ويتحرك مع التركيز بسلاسة.
+  const guideId = "tv-focus-guide";
+  let guide = document.getElementById(guideId) as HTMLDivElement | null;
+  if (!guide) {
+    guide = document.createElement("div");
+    guide.id = guideId;
+    guide.setAttribute("aria-hidden", "true");
+    guide.style.cssText =
+      "position:fixed;z-index:99999;pointer-events:none;border:3px solid #f59e0b;border-radius:14px;box-shadow:0 0 0 4px rgba(245,158,11,.25),0 0 22px rgba(245,158,11,.65);transition:top .14s ease,left .14s ease,width .14s ease,height .14s ease,opacity .2s ease;opacity:0;display:none";
+    document.body.appendChild(guide);
+  }
+  const syncGuide = () => {
+    if (!guide) return;
+    const el = document.activeElement as HTMLElement | null;
+    if (
+      !el ||
+      el === document.body ||
+      el === document.documentElement ||
+      !el.isConnected ||
+      !isVisible(el)
+    ) {
+      guide.style.display = "none";
+      return;
     }
-
-    animationFrameId = requestAnimationFrame(pollGamepads);
+    const r = el.getBoundingClientRect();
+    if (r.width < 4 || r.height < 4) {
+      guide.style.display = "none";
+      return;
+    }
+    guide.style.display = "block";
+    guide.style.opacity = "1";
+    guide.style.top = `${Math.max(4, r.top - 4)}px`;
+    guide.style.left = `${Math.max(4, r.left - 4)}px`;
+    guide.style.width = `${r.width + 8}px`;
+    guide.style.height = `${r.height + 8}px`;
   };
-
-  animationFrameId = requestAnimationFrame(pollGamepads);
-
-  const onConnected = (e: GamepadEvent) => {
-    console.log("🎮 Gamepad connected:", e.gamepad.id);
-  };
-
-  window.addEventListener("gamepadconnected", onConnected);
+  // نرسم بعد كل حركة سهم/تركيز، وعند تغيّر التركيز بأي طريقة
+  const guideRaf = () => requestAnimationFrame(syncGuide);
+  window.addEventListener("keydown", guideRaf, { passive: true });
+  window.addEventListener("keyup", guideRaf, { passive: true });
+  document.addEventListener("focusin", guideRaf);
+  document.addEventListener("focusout", guideRaf);
+  window.addEventListener("resize", guideRaf, { passive: true });
+  window.addEventListener("scroll", guideRaf, { passive: true, capture: true });
 
   return () => {
-    if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
-    window.removeEventListener("gamepadconnected", onConnected);
+    window.removeEventListener("keydown", handleKeyDown);
+    window.removeEventListener("keydown", guideRaf);
+    window.removeEventListener("keyup", guideRaf);
+    document.removeEventListener("focusin", guideRaf);
+    document.removeEventListener("focusout", guideRaf);
+    window.removeEventListener("resize", guideRaf);
+    window.removeEventListener("scroll", guideRaf, { capture: true } as EventListenerOptions);
+    guide?.remove();
   };
 }
+

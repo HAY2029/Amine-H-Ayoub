@@ -16,13 +16,14 @@ concurrency:
   cancel-in-progress: true
 
 # ═══════════════════════════════════════════════════════════════════
-#   يُنتج بالضبط 6 ملفات جاهزة للمتاجر:
-#   ① Quran_1.0.0_Android_Mobile.aab   → Google Play Store (هاتف)
+#   يُنتج بالضبط 4 ملفات جاهزة للمتاجر:
+#   ① Quran_1.0.0_Android_Mobile.aab   → Google Play Store (هاتف/جهاز لوحي)
 #   ② Quran_1.0.0_Android_Mobile.apk   → توزيع مباشر (هاتف)
-#   ③ Quran_1.0.0_Android_TV.aab       → Google Play Store (تلفاز)
-#   ④ Quran_1.0.0_Android_TV.apk       → توزيع مباشر (تلفاز)
-#   ⑤ Quran-Amine-H-Ayoub_1.0.0_Setup.exe         → ويندوز
-#   ⑥ Quran-Amine-H-Ayoub_1.0.0_Microsoft_Store.msi → متجر مايكروسوفت
+#   ③ Quran-Amine-H-Ayoub_1.0.0_Setup.exe         → ويندوز
+#   ④ Quran-Amine-H-Ayoub_1.0.0_Microsoft_Store.msi → متجر مايكروسوفت
+#
+#   ملاحظة: تمت إزالة نسخة Android TV (Leanback) نهائياً — التطبيق للهاتف
+#   والأجهزة اللوحية والكمبيوتر فقط.
 # ═══════════════════════════════════════════════════════════════════
 
 jobs:
@@ -217,143 +218,13 @@ jobs:
           if-no-files-found: error
           path: dist-mobile/*
 
-  # ╔═══════════════════════════════════════════════╗
-  # ║  3/3 — 📺 أندرويد تلفاز: AAB + APK            ║
-  # ╚═══════════════════════════════════════════════╝
-  android-tv:
-    name: "📺 Android TV (AAB + APK)"
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Free disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk/platforms /usr/local/lib/android/sdk/build-tools/3[0-2]* /opt/ghc
-          sudo apt-get clean
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - uses: android-actions/setup-android@v3
-
-      - name: Install Android NDK
-        run: |
-          sdkmanager "ndk;26.1.10909125"
-          echo "NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android
-
-      - uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
-
-      - run: npm ci
-      - run: npm install -D @tauri-apps/cli@^2
-
-      - name: Build frontend
-        run: npm run build
-
-      - name: Initialize Android project
-        run: npx tauri android init || true
-
-      - name: Inject custom app icon
-        run: |
-          npx tauri icon src-tauri/icons/app-icon.png
-          mkdir -p src-tauri/gen/android/app/src/main/res
-          cp -rf src-tauri/icons/android/* src-tauri/gen/android/app/src/main/res/ || true
-
-      - name: Configure Android TV Manifest (Leanback Support)
-        run: |
-          MANIFEST="src-tauri/gen/android/app/src/main/AndroidManifest.xml"
-          if [ -f "$MANIFEST" ]; then
-            # دعم واجهة التلفاز + لا يتطلب شاشة لمس
-            sed -i '/<manifest/a \    <uses-feature android:name="android.software.leanback" android:required="false" \/>\n    <uses-feature android:name="android.hardware.touchscreen" android:required="false" \/>' "$MANIFEST"
-            # إضافة LEANBACK_LAUNCHER ليظهر في قائمة التلفاز
-            sed -i '/<category android:name="android.intent.category.LAUNCHER" \/>/a \                <category android:name="android.intent.category.LEANBACK_LAUNCHER" \/>' "$MANIFEST"
-            echo "✅ Android TV Manifest configured"
-          fi
-
-      - name: Build TV APK
-        run: npx tauri android build --apk --target aarch64
-
-      - name: Build TV AAB (Google Play TV Bundle)
-        run: npx tauri android build --aab --target aarch64
-
-      - name: Prepare and sign 2 TV files (AAB + APK)
-        run: |
-          VERSION="1.0.0"
-          BUILD_TOOLS_DIR="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools/" | sort -V | tail -1)"
-          mkdir -p dist-tv
-
-          # إنشاء مفتاح التوقيع
-          KEYSTORE="${{ runner.temp }}/tv.keystore"
-          keytool -genkeypair -v -keystore "$KEYSTORE" -alias "qurantv" \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass "quran2026" -keypass "quran2026" \
-            -dname "CN=QuranTV, OU=App, O=QuranKids, L=Algiers, ST=Algiers, C=DZ"
-
-          # ③ توقيع TV APK
-          RAW_APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*release*.apk" -type f 2>/dev/null | head -1)
-          if [ -z "$RAW_APK" ]; then
-            RAW_APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" -type f 2>/dev/null | head -1)
-          fi
-          if [ -z "$RAW_APK" ]; then
-            RAW_APK=$(find src-tauri -name "*.apk" -type f 2>/dev/null | head -1)
-          fi
-          echo "Found TV APK: $RAW_APK"
-          if [ -n "$RAW_APK" ]; then
-            "$BUILD_TOOLS_DIR/zipalign" -f -p 4 "$RAW_APK" "dist-tv/Quran_${VERSION}_Android_TV.apk"
-            "$BUILD_TOOLS_DIR/apksigner" sign --ks "$KEYSTORE" --ks-pass "pass:quran2026" "dist-tv/Quran_${VERSION}_Android_TV.apk"
-            echo "✅ TV APK signed"
-          else
-            echo "::error::No TV APK found!"
-            exit 1
-          fi
-
-          # ④ توقيع TV AAB
-          RAW_AAB=$(find src-tauri/gen/android/app/build/outputs/bundle -name "*release*.aab" -type f 2>/dev/null | head -1)
-          if [ -z "$RAW_AAB" ]; then
-            RAW_AAB=$(find src-tauri/gen/android/app/build/outputs/bundle -name "*.aab" -type f 2>/dev/null | head -1)
-          fi
-          if [ -z "$RAW_AAB" ]; then
-            RAW_AAB=$(find src-tauri -name "*.aab" -type f 2>/dev/null | head -1)
-          fi
-          echo "Found TV AAB: $RAW_AAB"
-          if [ -n "$RAW_AAB" ]; then
-            cp "$RAW_AAB" "dist-tv/Quran_${VERSION}_Android_TV.aab"
-            jarsigner -keystore "$KEYSTORE" -storepass "quran2026" -keypass "quran2026" "dist-tv/Quran_${VERSION}_Android_TV.aab" "qurantv"
-            echo "✅ TV AAB signed"
-          else
-            echo "::error::No TV AAB found!"
-            exit 1
-          fi
-
-          echo "=== TV files (2/6) ==="
-          ls -lh dist-tv/
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: android-tv-files
-          if-no-files-found: error
-          path: dist-tv/*
-
   # ╔═══════════════════════════════════════════════════════════════╗
-  # ║  🚀 النشر: رفع 6 ملفات إلى GitHub Release عند إنشاء tag    ║
+  # ║  🚀 النشر: رفع الملفات إلى GitHub Release عند إنشاء tag     ║
   # ╚═══════════════════════════════════════════════════════════════╝
   publish:
-    name: "🚀 Publish 6 Store-Ready Files"
-    needs: [windows, android-mobile, android-tv]
-    if: needs.windows.result == 'success' && needs.android-mobile.result == 'success' && needs.android-tv.result == 'success'
+    name: "🚀 Publish Store-Ready Files"
+    needs: [windows, android-mobile]
+    if: needs.windows.result == 'success' && needs.android-mobile.result == 'success'
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -365,14 +236,14 @@ jobs:
         with:
           path: all-artifacts
 
-      - name: Collect all 6 files into one folder
+      - name: Collect all files into one folder
         run: |
           mkdir -p release-files
           find all-artifacts -type f \( -name "*.exe" -o -name "*.msi" -o -name "*.aab" -o -name "*.apk" \) -exec cp {} release-files/ \;
 
           echo ""
           echo "╔══════════════════════════════════════════════╗"
-          echo "║     📦 6 Store-Ready Files for v1.0.0        ║"
+          echo "║     📦 Store-Ready Files for v1.0.0          ║"
           echo "╠══════════════════════════════════════════════╣"
 
           COUNT=0
@@ -392,8 +263,8 @@ jobs:
             exit 1
           fi
 
-      # حذف جميع الملفات القديمة من الإصدار ورفع الـ 6 فقط
-      - name: Clean old assets and upload 6 files to GitHub Release
+      # حذف جميع الملفات القديمة من الإصدار ورفع الملفات الجديدة
+      - name: Clean old assets and upload files to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -418,9 +289,9 @@ jobs:
             done
           fi
 
-          # رفع الـ 6 ملفات الجديدة فقط
+          # رفع الملفات الجديدة
           echo ""
-          echo "📤 Uploading 6 store-ready files..."
+          echo "📤 Uploading store-ready files..."
           gh release upload "$TAG" release-files/* --clobber
 
           # تحديث عنوان الإصدار
@@ -428,18 +299,16 @@ jobs:
             --title "Quran-Amine H Ayoub $TAG" \
             --notes "المصحف المرتل برواية ورش — القارئ الشيخ حاج أيوب أمين
 
-          📱 Google Play (هاتف): Quran_1.0.0_Android_Mobile.aab
-          📺 Google Play (تلفاز): Quran_1.0.0_Android_TV.aab
+          📱 Google Play (هاتف/لوحي): Quran_1.0.0_Android_Mobile.aab
           🤖 APK مباشر (هاتف): Quran_1.0.0_Android_Mobile.apk
-          📺 APK مباشر (تلفاز): Quran_1.0.0_Android_TV.apk
           💻 ويندوز: Quran-Amine-H-Ayoub_1.0.0_Setup.exe
           🏪 متجر مايكروسوفت: Quran-Amine-H-Ayoub_1.0.0_Microsoft_Store.msi"
 
           echo ""
-          echo "✅ Release $TAG updated with exactly 6 files!"
+          echo "✅ Release $TAG updated!"
 
       # رفع إلى HuggingFace
-      - name: Upload 6 files to Hugging Face
+      - name: Upload files to Hugging Face
         if: success()
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}

@@ -190,6 +190,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen page-nour text-foreground" dir="rtl">
+      <AppNav />
       {showSplash && (
         <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background/95 backdrop-blur-md animate-in fade-in duration-500">
           <div className="w-24 h-24 mb-6 relative">
@@ -210,7 +211,6 @@ export default function SettingsPage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-accent/10 to-transparent" aria-hidden="true" />
 
       <div className="relative mx-auto max-w-md px-4 py-5 space-y-5">
-        <AppNav />
         <header className="flex items-center justify-between">
           <button onClick={() => navigate(-1)} className="flex h-10 items-center gap-1 rounded-full bg-secondary text-secondary-foreground px-4 text-sm font-bold border border-border hover:brightness-95 active:scale-95 transition-all shadow-soft">
             <ArrowRight className="h-4 w-4" /> رجوع

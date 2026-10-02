@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Bell, BellOff, Info, Megaphone, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import AppNav from "@/components/AppNav";
 
 interface Announcement {
   id: string;
@@ -52,6 +53,7 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="min-h-screen page-nour text-foreground" dir="rtl">
+      <AppNav />
       <div className="mx-auto max-w-md px-4 py-4 space-y-4">
         <header className="flex items-center justify-between gap-2">
           <button

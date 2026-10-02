@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Apple, Smartphone, Monitor, Tv, Download } from "lucide-react";
+import { Apple, Smartphone, Monitor, Download } from "lucide-react";
 import { openExternalUrl } from "../utils/tauriUtils";
 
 export default function LegendaryDownloadHub() {
@@ -13,8 +13,6 @@ export default function LegendaryDownloadHub() {
     { name: "Android AAB", icon: <Smartphone className="w-6 h-6" />, desc: "حزمة Google Play للهاتف", url: `${RELEASE_BASE}/Quran_1.0.0_Android_Mobile.aab`, color: "from-teal-500 to-teal-700" },
     { name: "Windows", icon: <Monitor className="w-6 h-6" />, desc: "كمبيوتر ولابتوب (EXE)", url: `${RELEASE_BASE}/Quran-Amine-H-Ayoub_1.0.0_Setup.exe`, color: "from-blue-500 to-blue-700" },
     { name: "Windows MSI", icon: <Monitor className="w-6 h-6" />, desc: "حزمة Microsoft Store (MSI)", url: `${RELEASE_BASE}/Quran-Amine-H-Ayoub_1.0.0_Microsoft_Store.msi`, color: "from-cyan-500 to-cyan-700" },
-    { name: "Smart TV", icon: <Tv className="w-6 h-6" />, desc: "شاشات Android TV (APK)", url: `${RELEASE_BASE}/Quran_1.0.0_Android_TV.apk`, color: "from-purple-500 to-purple-700" },
-    { name: "TV AAB", icon: <Tv className="w-6 h-6" />, desc: "حزمة Google Play للتلفاز", url: `${RELEASE_BASE}/Quran_1.0.0_Android_TV.aab`, color: "from-violet-500 to-violet-700" },
   ];
 
   return (

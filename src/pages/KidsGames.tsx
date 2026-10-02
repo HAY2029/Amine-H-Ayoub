@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Play, RefreshCw, BookOpen, Lock, Settings, Bell, Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Gift, Star, Hash, Grid3x3, Flame, Sparkles, Gamepad2, Puzzle, X, Crown, Brain, Camera, Award, Download, Clock } from "lucide-react";
+import { ArrowRight, Play, RefreshCw, BookOpen, Lock, Settings, Bell, Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Gift, Star, Hash, Grid3x3, Flame, Sparkles, Gamepad2, Puzzle, X, Crown, Brain, Camera, Award, Download, Clock, Mic } from "lucide-react";
 import { getAllSurahs } from "../data/quranData";
 import { getSurahAudioUrl, hasCloudAudio, getFallbackAudioUrl } from "../data/audioUrls";
 import { getProfile, getProgress, getProfiles, getCoins, addCoins, kidsRouteBlocked, setCurrentSurah, addPlayMinutes, setAppMode, ownItem, unlockItem, getActiveId, getAppMode, isPureMode, formatCoins } from "../data/kidsProfile";
@@ -20,6 +20,7 @@ import DetectiveGame from "../games/DetectiveGame";
 import WordBuilderGame from "../games/WordBuilderGame";
 import CatchStarGame from "../games/CatchStarGame";
 import AyahMathGame from "../games/AyahMathGame";
+import ListenKidsGame from "../games/ListenKidsGame";
 import RemoteGameFrame from "../components/RemoteGameFrame";
 import Avatar, { getAvatarSrc } from "../components/Avatar";
 import { drawQRCodeOnCanvas } from "../utils/qrCode";
@@ -32,6 +33,8 @@ import { toast } from "../hooks/use-toast";
 import { isTimeAllowed } from "../data/kidsSchedule";
 import { calculateStreak, recordTodayActivity } from "../data/kidsBadges";
 import { showLocalNotification } from "../utils/notifications";
+import { playGameVoice, stopGameVoice, precacheGameVoice } from "../utils/gameVoice";
+import { focusFirst } from "../utils/controllerNavigation";
 
 async function enterKioskMode() {
   // تم إيقاف تكبير الشاشة التلقائي بناءً على طلب المستخدم
@@ -146,6 +149,18 @@ const neighborPool = (def: GameDef, minSurahOverride: number, n: number) => {
 };
 
 /* ───────────────── نواة الحماس ───────────────── */
+const PRAISE_NORMAL = ["أحسنت يا بطل!", "رائع!", "أنت ذكي!"];
+const PRAISE_GOOD = ["ممتاز جداً!", "أداء مذهل!", "عمل رائع!"];
+const PRAISE_SUPER = ["ما شاء الله!", "أنت عبقري!", "أسطورة!"];
+const ENCOURAGE_MISTAKE = ["حاول ثانية يا بطل! 🌟", "لا بأس، التكرار يعلّم!", "ركّز جيداً، أنت تستطيع! 💪", "قريب جداً! استمر! ✨"];
+
+/** يختار عبارة التشجيع بحسب سلسلة الإجابات الصحيحة الحالية */
+const pickPraise = (streak: number, seed: number): string => {
+  if (streak >= 5) return PRAISE_SUPER[seed % PRAISE_SUPER.length];
+  if (streak >= 3) return PRAISE_GOOD[seed % PRAISE_GOOD.length];
+  return PRAISE_NORMAL[seed % PRAISE_NORMAL.length];
+};
+
 function useGame() {
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState(0);
@@ -162,6 +177,8 @@ function useGame() {
     const bonus = Math.max(1, 3 - mistakes);
     addCoins(bonus); setGain(bonus); setEarned(e => e + bonus);
     setScore(s => s + 1); setAnswers(a => a + 1); setStreak(ns); setFlash(f => f + 1);
+    // صوت تشجيع حقيقي بحسب مستوى الإجادة
+    playGameVoice(pickPraise(ns, flash + 1));
     window.setTimeout(() => setGain(0), 900);
   };
   const miss = () => {
@@ -170,6 +187,8 @@ function useGame() {
     setMistakes(m => m + 1);
     setWrongFlash(w => w + 1);
     setAnswers(a => a + 1);
+    // صوت تحفيزي لطيف عند الخطأ
+    playGameVoice(ENCOURAGE_MISTAKE[wrongFlash % ENCOURAGE_MISTAKE.length]);
   };
   const reset = () => {
     setScore(0);
@@ -183,11 +202,6 @@ function useGame() {
   return { score, answers, mistakes, earned, streak, flash, gain, wrongFlash, correct, miss, reset };
 }
 type Game = ReturnType<typeof useGame>;
-
-const PRAISE_NORMAL = ["أحسنت يا بطل!", "رائع!", "أنت ذكي!"];
-const PRAISE_GOOD = ["ممتاز جداً!", "أداء مذهل!", "عمل رائع!"];
-const PRAISE_SUPER = ["ما شاء الله!", "أنت عبقري!", "أسطورة!"];
-const ENCOURAGE_MISTAKE = ["حاول ثانية يا بطل! 🌟", "لا بأس، التكرار يعلّم!", "ركّز جيداً، أنت تستطيع! 💪", "قريب جداً! استمر! ✨"];
 
 const GameHud = ({ g }: { g: Game }) => {
   const [showPraise, setShowPraise] = useState(false);
@@ -209,11 +223,7 @@ const GameHud = ({ g }: { g: Game }) => {
     }
   }, [g.wrongFlash]);
 
-  const getPraise = () => {
-    if (g.streak >= 5) return PRAISE_SUPER[g.flash % PRAISE_SUPER.length];
-    if (g.streak >= 3) return PRAISE_GOOD[g.flash % PRAISE_GOOD.length];
-    return PRAISE_NORMAL[g.flash % PRAISE_NORMAL.length];
-  };
+  const getPraise = () => pickPraise(g.streak, g.flash);
 
   const getEncourage = () => {
     return ENCOURAGE_MISTAKE[g.wrongFlash % ENCOURAGE_MISTAKE.length];
@@ -1893,8 +1903,9 @@ const ENGINES: Record<GameEngine, (p: { def: GameDef; minSurah: number }) => JSX
   catchstar: ({ def, minSurah }) => <CatchStarGame def={def} minSurah={minSurah} />,
   ayahmath: ({ def, minSurah }) => <AyahMathGame def={def} minSurah={minSurah} />,
   server_quiz: ({ def }) => <ServerQuizEngine def={def} />,
+  listenkids: ({ def, minSurah }) => <ListenKidsGame def={def} minSurah={minSurah} onExit={() => window.dispatchEvent(new Event("mushaf:listenkids:exit"))} />,
 };
-const ICONS: Record<string, typeof Headphones> = { Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Hash, Grid3x3, Gamepad2, BookOpen, Sparkles, Puzzle, Brain };
+const ICONS: Record<string, typeof Headphones> = { Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Hash, Grid3x3, Gamepad2, BookOpen, Sparkles, Puzzle, Brain, Mic };
 const iconFor = (key: string) => ICONS[key] || Gamepad2;
 
 /* ───────────────── ركن الأطفال ───────────────── */
@@ -2064,6 +2075,9 @@ export default function KidsGames() {
     fetchRemoteGames().then(() => { precacheRemoteGames().catch(() => { /* ignore */ }); }).catch(() => { /* ignore */ });
   }, []);
 
+  // تسخين أصوات التشجيع (ملفات MP3) لتعمل فوراً ودون إنترنت
+  useEffect(() => { precacheGameVoice(); }, []);
+
   const [showBadges, setShowBadges] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showLockGateModal, setShowLockGateModal] = useState(false);
@@ -2076,6 +2090,27 @@ export default function KidsGames() {
     window.addEventListener("mushaf:remotegame:exit", h);
     return () => window.removeEventListener("mushaf:remotegame:exit", h);
   }, []);
+
+  // إغلاق لعبة «استمع ← أكمِل ← سجِّل» والعودة لقائمة الألعاب
+  useEffect(() => {
+    const h = () => setActive(null);
+    window.addEventListener("mushaf:listenkids:exit", h);
+    return () => window.removeEventListener("mushaf:listenkids:exit", h);
+  }, []);
+
+  // إيقاف صوت التشجيع فوراً عند إغلاق أي لعبة
+  useEffect(() => { if (!active) stopGameVoice(); }, [active]);
+
+  // ── تركيز تلقائي للتنقل بالأسهم/الريموت (مهم جداً لوضع الأطفال على التلفاز) ──
+  // عند فتح ركن الأطفال نركّز أول عنصر، وعند الدخول لأي لعبة نركّز أول زر داخلها،
+  // وعند الخروج نعيد التركيز لقائمة الألعاب — فتشتغل الأسهم فوراً بلا أي نقرة.
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      if (active) focusFirst(null, "[data-game-panel] button, [data-game-panel] select, [data-game-panel] input");
+      else focusFirst(null, "[data-game-entry], [data-game-entry] button");
+    }, 120);
+    return () => window.clearTimeout(t);
+  }, [active]);
 
   useEffect(() => {
     const refresh = () => { setProfile(getProfile()); setProgress(getProgress()); setCoins(getCoins()); setCatalog(getGameCatalog()); };
@@ -2846,8 +2881,8 @@ export default function KidsGames() {
   }
 
   return (
-    <div className="min-h-screen-safe page-nour text-foreground" dir="rtl">
-      <div className={`mx-auto w-full px-3 py-3 sm:px-4 sm:py-4 space-y-3 sm:space-y-4 container-mobile transition-all duration-300 ${active ? "max-w-3xl" : "max-w-md"}`}>
+    <div className="min-h-screen-safe page-nour text-foreground w-full kids-games-wrap" dir="rtl">
+      <div className={`mx-auto w-full px-3 py-3 sm:px-4 sm:py-4 space-y-3 sm:space-y-4 container-mobile transition-all duration-300 ${active ? "max-w-3xl" : ""}`}>
         <header className="flex flex-wrap items-center justify-between gap-2">
           <button onClick={headerBack} className="flex h-9 sm:h-10 shrink-0 items-center gap-1.5 rounded-full bg-secondary text-secondary-foreground px-3 sm:px-4 text-xs sm:text-sm font-extrabold hover:brightness-95 active:scale-95 border border-border shadow-sm">
             <ArrowRight className="h-4 w-4" /> {active ? "الرجوع للألعاب" : "الخروج للتلاوات"}
@@ -2934,7 +2969,7 @@ export default function KidsGames() {
         {def && (def.remote || def.engine === "remote") ? (
           <RemoteGameFrame def={def} onExit={() => setActive(null)} />
         ) : def && Engine ? (
-          <div className="card-nour p-3.5 sm:p-6 rounded-3xl border-2 border-accent/25 bg-card/95 shadow-2xl backdrop-blur-md animate-fade-up game-container space-y-3">
+          <div data-game-panel className="card-nour p-3.5 sm:p-6 rounded-3xl border-2 border-accent/25 bg-card/95 shadow-2xl backdrop-blur-md animate-fade-up game-container space-y-3">
             {profile.playMinutes > 0 && (
               <div className="mb-2 p-2 sm:p-2.5 rounded-2xl bg-secondary/40 border border-border/60">
                 <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground mb-1">
@@ -3033,11 +3068,11 @@ export default function KidsGames() {
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
-              {myGames.map(g => {
+              {myGames.map((g, gi) => {
                 const I = iconFor(g.icon);
                 const owned = isGameOwned(g);
                 return (
-                  <button key={g.id} onClick={() => tapGame(g.id)}
+                  <button key={g.id} onClick={() => tapGame(g.id)} {...(gi === 0 ? { "data-game-entry": "" } : {})}
                     className={`relative overflow-hidden rounded-[1.2rem] sm:rounded-[1.7rem] p-[2px] active:scale-[0.98] transition-transform text-right ${!canPlay ? "opacity-60" : "hover:shadow-xl hover:shadow-accent/20"}`}>
                     <div className={`absolute inset-0 opacity-80 ${g.tint}`} />
                     <div className="relative bg-card/95 backdrop-blur-md rounded-[1.1rem] sm:rounded-[1.6rem] p-3 sm:p-4 flex items-center gap-3 sm:gap-4">

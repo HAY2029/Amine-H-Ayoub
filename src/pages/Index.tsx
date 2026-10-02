@@ -1,6 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import AppHeader from "@/components/AppHeader";
 import AppFooter from "@/components/AppFooter";
 import PointsDisplay from "@/components/PointsDisplay";
 import SurahList from "@/components/SurahList";
@@ -324,113 +323,118 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen relative">
-      <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/background-kids.jpg')" }}
-      />
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" />
+    <div className="quran-kids-page">
+      {/* شريط التنقل الذكي مثبت في الأعلى */}
+      <div className="fixed top-0 left-0 right-0 z-40 px-2 pt-1 pointer-events-none">
+        <AppNav transparentBg={true} className="scale-90 sm:scale-95 origin-top" hideBottomNav={!!currentSurah} />
+      </div>
 
-      <div className="relative z-10 min-h-screen pb-8">
-        {/* شريط التنقل الذكي المتجاوب لكافة الأوضاع */}
-        <div className="pt-2 px-2">
-          <AppNav />
-        </div>
-        <AppHeader />
+      <div className="quran-kids-frame">
+        {/* الصورة الخلفية فائقة الدقة لإطار تعليم القرآن للأطفال */}
+        <img
+          src="/quran-kids-frame.jpg"
+          alt="تعليم القرآن للأطفال - القارئ أمين حاج أيوب"
+          className="quran-kids-frame-bg"
+        />
 
-        {kidsOn && !isPureMode() && (
-          <div className="flex justify-center mb-4">
-            <PointsDisplay points={points} />
-          </div>
-        )}
-
-        <main className="mx-auto max-w-2xl px-4 py-4 space-y-4 transition-all duration-300 animate-fade-up">
-          {/* Search + Shuffle */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="flex-1 min-w-0">
-              <SearchBar value={search} onChange={setSearch} />
-            </div>
-            <div className="flex flex-wrap gap-2 items-center">
+        {/* المكان الأبيض المخصص لقائمة السور */}
+        <div className="quran-kids-white-area">
+          {/* شريط أدوات قائمة السور: بحث + ترتيب + نجوم */}
+          <div className="p-2 sm:p-2.5 pb-2 border-b border-amber-500/20 bg-white/50 dark:bg-card/50 backdrop-blur-xs flex flex-col gap-1.5 shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <SearchBar value={search} onChange={setSearch} />
+              </div>
               <button
                 onClick={handleShuffle}
-                className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 border ${
+                className={`shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 border ${
                   isShuffled
-                    ? "bg-accent text-accent-foreground border-accent shadow-lg scale-105"
-                    : "bg-card border-border hover:border-accent/50 hover:shadow-md"
+                    ? "bg-amber-500 text-white border-amber-600 shadow-md scale-105"
+                    : "bg-white/90 dark:bg-card/90 border-amber-400/40 text-stone-700 dark:text-stone-200 hover:border-amber-500 hover:shadow-xs"
                 }`}
                 title={isShuffled ? "العودة للترتيب الأصلي" : "ترتيب عشوائي"}
                 aria-label={isShuffled ? "العودة للترتيب الأصلي" : "ترتيب عشوائي"}
               >
                 {isShuffled ? (
-                  <ListOrdered className="w-5 h-5" />
+                  <ListOrdered className="w-5 h-5 text-white" />
                 ) : (
-                  <Shuffle className="w-5 h-5" />
+                  <Shuffle className="w-5 h-5 text-amber-700 dark:text-amber-400" />
                 )}
               </button>
+              {kidsOn && !isPureMode() && (
+                <div className="shrink-0 hidden sm:block">
+                  <PointsDisplay points={points} />
+                </div>
+              )}
+            </div>
+
+            {/* شريط معلومات عدد السور والحالة */}
+            <div className="flex items-center justify-between text-[11px] sm:text-xs text-amber-950/70 dark:text-amber-200/70 px-1 font-semibold">
+              <span>
+                {displaySurahs.length === 114
+                  ? "جميع سور القرآن الكريم (١١٤ سورة)"
+                  : `السور المطابقة: ${displaySurahs.length}`}
+              </span>
+              {isShuffled && (
+                <div className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30">
+                    <Shuffle className="w-3 h-3" /> الترتيب العشوائي
+                  </span>
+                  <button
+                    onClick={handleShuffle}
+                    className="text-[10px] text-amber-800 underline hover:text-amber-950 font-bold"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Shuffle indicator */}
-          {isShuffled && (
-            <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-accent/10 border border-accent/30 text-accent-foreground text-sm font-bold animate-fade-in">
-              <Shuffle className="w-4 h-4" />
-              <span>الترتيب العشوائي مُفعّل</span>
-              <button
-                onClick={handleShuffle}
-                className="mr-2 px-2 py-0.5 rounded-md bg-accent/20 hover:bg-accent/30 text-xs transition-colors"
-              >
-                إلغاء
-              </button>
-            </div>
-          )}
-
-          {loading && (
-            <div className="space-y-3">
-              <div className="text-center py-6">
-                <div className="w-14 h-14 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-muted-foreground text-lg font-quran">
-                  جاري جلب التلاوات العطرة...
+          {/* محتوى قائمة السور قابل للتمرير بسلاسة داخل الإطار الأبيض */}
+          <div className="flex-1 overflow-y-auto quran-kids-scroll p-2 sm:p-2.5">
+            {loading && (
+              <div className="space-y-3 py-6 text-center">
+                <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                <p className="text-amber-950 dark:text-amber-100 font-bold font-amiri text-sm">
+                  جاري جلب قائمة السور والتلاوات...
                 </p>
-                <p className="text-muted-foreground/70 text-sm mt-1">
-                  قد يستغرق الأمر بضع ثوانٍ
-                </p>
-              </div>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
-                  <Skeleton className="w-12 h-12 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-3 w-16" />
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-white/60 border border-amber-400/20">
+                      <Skeleton className="w-10 h-10 rounded-xl" />
+                      <div className="flex-1 space-y-1.5">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            )}
 
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-8 text-center space-y-4">
-              <p className="text-destructive text-lg font-bold">خطأ في تحميل البيانات</p>
-              <p className="text-muted-foreground text-sm">{error}</p>
-              <button
-                onClick={retry}
-                className="px-6 py-3 bg-accent text-accent-foreground font-bold rounded-xl transition-all duration-300 hover:scale-105 active:scale-95"
-              >
-                🔄 إعادة المحاولة
-              </button>
-            </div>
-          )}
+            {error && (
+              <div className="bg-destructive/10 border border-destructive/30 rounded-2xl p-6 text-center space-y-3 my-4">
+                <p className="text-destructive font-bold">خطأ في تحميل البيانات</p>
+                <p className="text-muted-foreground text-sm">{error}</p>
+                <button
+                  onClick={retry}
+                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-all shadow-md active:scale-95"
+                >
+                  🔄 إعادة المحاولة
+                </button>
+              </div>
+            )}
 
-          {/* Surah list */}
-          {!loading && !error && (
-            <div className="w-full flex flex-col gap-6">
+            {!loading && !error && (
               <SurahList
                 surahs={displaySurahs}
                 currentPlaying={currentSurah?.number ?? null}
                 onSelect={handleSelect}
               />
-            </div>
-          )}
-        </main>
+            )}
+          </div>
+        </div>
       </div>
 
       {currentSurah && (

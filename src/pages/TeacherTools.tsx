@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Pencil, Scissors, Link2, ChevronLeft, GraduationCap, Mic, Timer, Image as ImageIcon, Sparkles } from "lucide-react";
+import { ArrowRight, Pencil, Scissors, Link2, ChevronLeft, GraduationCap, Mic, Timer, Image as ImageIcon, Sparkles, Palette } from "lucide-react";
+import AppNav from "@/components/AppNav";
 
 const TOOLS = [
   { to: "/surah-shading", Icon: Sparkles, name: "تظليل السور (مربع التظليل الجديد)", desc: "عرض السورة ومربع تظليل تفاعلي قابل للسحب والتكبير والتصغير وحفظ الموضع", tint: "bg-amber-500/20 text-amber-300" },
@@ -9,6 +10,7 @@ const TOOLS = [
   { to: "/audio-splitter", Icon: Scissors, name: "مقسِّم التلاوة المتقدم", desc: "أداة ذكية لتقسيم الصوت ورفع المخرجات للسيرفر", tint: "bg-indigo-500/20 text-indigo-300" },
   { to: "/link", Icon: Link2, name: "ربط الصوت بالتظليل", desc: "رفع صوت → تقسيم → ربط بالآيات في مكان واحد", tint: "bg-amber-500/20 text-amber-300" },
   { to: "/custom-audio", Icon: Mic, name: "مكتبتي الصوتية الخاصة", desc: "رفع وترتيب ملفات صوتية خاصة تظهر فوراً للأطفال", tint: "bg-rose-500/20 text-rose-300" },
+  { to: "/shading-settings", Icon: Palette, name: "إعدادات التظليل والألوان", desc: "ضبط ألوان تظليل المعلم والطفل وشفافية العرض", tint: "bg-cyan-500/20 text-cyan-300" },
   { to: "/image-manager", Icon: ImageIcon, name: "مدير الصور", desc: "جلب الصور من HuggingFace وترتيبها", tint: "bg-fuchsia-500/20 text-fuchsia-300" },
 ];
 
@@ -18,6 +20,7 @@ export default function TeacherTools() {
   const navigate = useNavigate();
   return (
     <div className="min-h-screen page-nour text-foreground" dir="rtl">
+      <AppNav />
       {/* وهج ذهبي زخرفي علوي */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-accent/10 to-transparent" aria-hidden="true" />
 

@@ -175,54 +175,69 @@ function Face({ acc }: { acc: Acc }) {
   );
 }
 
-/** مسارات صور الشخصيات ثلاثية الأبعاد الفاخرة المتاحة في public/avatars */
+/**
+ * الأسماء الرمزية (aliases) لصور الشخصيات ثلاثية الأبعاد.
+ *
+ * ⚠️ كل قيمة هنا يجب أن تشير إلى ملف موجود فعلاً في public/avatars (28 ملفاً: img-boy-1..15 و img-girl-1..13).
+ * سابقاً كانت هذه الخريطة تشير إلى ملفات غير موجودة (مثل img-boy-bisht-white.jpg وأسماء PNG طويلة)
+ * فكان الأفاتار يفشل في التحميل ويسقط على رسم SVG بسيط — تم تصحيحها كلها.
+ */
 export const AVATAR_IMAGE_PATHS: Record<string, string> = {
-  // الشخصية الأساسية والمستوى البرونزي
-  "img-boy-scholar": "/avatars/img-boy-bisht-white.jpg",
-  "img-boy-reciter": "/avatars/img-boy-reciter.jpg",
-  "img-girl-scholar": "/avatars/img-girl-gold.jpg",
-  "img-boy-taqiyah-gold": "/avatars/img-boy-taqiyah-gold.jpg",
-  "img-girl-gold": "/avatars/img-girl-gold.jpg",
+  // الشخصيات الأساسية (تُختار عند إنشاء الملف)
+  "img-boy-scholar": "/avatars/img-boy-1.jpg",
+  "img-girl-scholar": "/avatars/img-girl-1.jpg",
+  "img-boy-reciter": "/avatars/img-boy-6.jpg",
+  "img-boy-bisht-white": "/avatars/img-boy-12.jpg",
+  "img-boy-taqiyah-gold": "/avatars/img-boy-15.jpg",
+  "img-girl-gold": "/avatars/img-girl-10.jpg",
+  "img-girl-emerald-queen": "/avatars/img-girl-13.jpg",
 
   // المستوى الذهبي
-  "img-boy-reciter-green": "/avatars/ChatGPT Image 2 سبتمبر 2026، 10_04_13 م.png",
-  "img-boy-royal-blue": "/avatars/ChatGPT Image 2 سبتمبر 2026، 10_04_36 م.png",
-  "img-boy-turquoise-vest": "/avatars/ChatGPT Image 2 سبتمبر 2026، 10_05_38 م.png",
-  "img-boy-indigo-scarf": "/avatars/ChatGPT Image 2 سبتمبر 2026، 10_05_46 م.png",
+  "img-boy-reciter-green": "/avatars/img-boy-5.jpg",
+  "img-boy-royal-blue": "/avatars/img-boy-8.jpg",
+  "img-boy-turquoise-vest": "/avatars/img-boy-7.jpg",
+  "img-boy-indigo-scarf": "/avatars/img-boy-9.jpg",
 
   // المستوى الماسي
-  "img-boy-knight-ruby": "/avatars/img-boy-knight-ruby.jpg",
-  "img-boy-turban": "/avatars/img-boy-turban.jpg",
-  "img-boy-turban-master": "/avatars/img-boy-turban-master.jpg",
-  "img-girl-hijab-emerald": "/avatars/img-girl-hijab-emerald.jpg",
+  "img-boy-knight-ruby": "/avatars/img-boy-10.jpg",
+  "img-boy-turban": "/avatars/img-boy-11.jpg",
+  "img-boy-turban-master": "/avatars/img-boy-13.jpg",
+  "img-girl-hijab-emerald": "/avatars/img-girl-12.jpg",
 
   // المستوى الأسطوري
-  "img-boy-sultan-navy": "/avatars/ChatGPT Image 2 سبتمبر 2026، 10_05_41 م.png",
-  "img-boy-crimson-master": "/avatars/ChatGPT Image 2 سبتمبر 2026، 10_05_35 م.png",
-  "img-boy-crescent-purple": "/avatars/ChatGPT Image Sep 2, 2026, 06_46_28 PM.png",
-  "img-boy-bisht-white": "/avatars/img-boy-bisht-white.jpg",
-  "img-girl-emerald-queen": "/avatars/img-girl-emerald-queen.jpg",
-  "img-boy-quran-carrier": "/avatars/ChatGPT Image 2 سبتمبر 2026، 10_05_44 م.png",
+  "img-boy-sultan-navy": "/avatars/img-boy-14.jpg",
+  "img-boy-crimson-master": "/avatars/img-boy-12.jpg",
+  "img-boy-crescent-purple": "/avatars/img-boy-15.jpg",
+  "img-boy-quran-carrier": "/avatars/img-boy-15.jpg",
 };
+
+/**
+ * ملاحظة الأداء/الحجم: صور public/avatars مضغوطة إلى 512px بجودة 82 (سكربت scripts/compress-avatars.mjs)
+ * لذلك كل الصور تُطلب بامتداد .jpg — حتى التي كان أصلها .png — لتقليل حجم التطبيق من ~48MB إلى ~1.7MB.
+ */
+export const AVATAR_FILE_EXT = "jpg";
+
+/** يجعل امتداد المسار .jpg (المتاح فعلياً بعد الضغط) */
+function toCompressed(src: string): string {
+  return src.replace(/\.(png|jpe?g|bmp|tiff)$/i, `.${AVATAR_FILE_EXT}`);
+}
 
 /** دالة مساعدة للحصول على مسار الصورة المباشر */
 export function getAvatarSrc(name: string): string {
   const clean = name.startsWith("av-") ? name.replace(/^av-/, "") : name;
   const direct = AVATAR_IMAGE_PATHS[clean] || AVATAR_IMAGE_PATHS[name];
-  if (direct) return direct;
-  
+  if (direct) return encodeURI(toCompressed(direct));
+
   if (clean.startsWith("img-boy-")) {
     const num = parseInt(clean.replace("img-boy-", ""));
-    if (num >= 1 && num <= 10) return `/avatars/${clean}.png`;
-    if (num >= 11 && num <= 15) return `/avatars/${clean}.jpg`;
+    if (num >= 1 && num <= 15) return encodeURI(`/avatars/${clean}.${AVATAR_FILE_EXT}`);
   }
   if (clean.startsWith("img-girl-")) {
     const num = parseInt(clean.replace("img-girl-", ""));
-    if (num >= 1 && num <= 10) return `/avatars/${clean}.png`;
-    if (num >= 11 && num <= 13) return `/avatars/${clean}.jpg`;
+    if (num >= 1 && num <= 13) return encodeURI(`/avatars/${clean}.${AVATAR_FILE_EXT}`);
   }
 
-  if (clean.startsWith("img-")) return `/avatars/${clean}.jpg`;
+  if (clean.startsWith("img-")) return encodeURI(`/avatars/${clean}.${AVATAR_FILE_EXT}`);
   return "/avatars/img-boy-bisht-white.jpg";
 }
 
@@ -245,10 +260,11 @@ export default function Avatar({ name, className }: { name: string; className?: 
   if (!imgFailed && imageSrc) {
     return (
       <img
-        src={encodeURI(imageSrc)}
+        src={imageSrc}
         alt={cleanName}
         className={cn("object-cover rounded-full shadow-sm w-full h-full bg-accent/10 p-0.5 transition-transform", className)}
         loading="lazy"
+        decoding="async"
         onError={() => setImgFailed(true)}
       />
     );

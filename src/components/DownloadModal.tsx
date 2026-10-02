@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, Smartphone, Monitor, Tv, Apple, Download, CheckCircle2, Sparkles, ExternalLink } from "lucide-react";
+﻿import { useState } from "react";
+import { X, Smartphone, Monitor, Apple, Download, CheckCircle2, Sparkles, ExternalLink } from "lucide-react";
 import { openExternalUrl } from "../utils/tauriUtils";
 
 interface DownloadModalProps {
@@ -13,9 +13,9 @@ const RELEASE_VERSION = "1.0.0";
 export const DOWNLOAD_PACKAGES = [
   {
     id: "android",
-    name: "تطبيق أندرويد للهواتف (APK)",
+    name: "طھط·ط¨ظٹظ‚ ط£ظ†ط¯ط±ظˆظٹط¯ ظ„ظ„ظ‡ظˆط§طھظپ (APK)",
     platform: "Android Phone & Tablet",
-    desc: "ملف تثبيت APK مباشر لجميع هواتف أندرويد (سامسونج، شاومي، هواوي...)",
+    desc: "ظ…ظ„ظپ طھط«ط¨ظٹطھ APK ظ…ط¨ط§ط´ط± ظ„ط¬ظ…ظٹط¹ ظ‡ظˆط§طھظپ ط£ظ†ط¯ط±ظˆظٹط¯ (ط³ط§ظ…ط³ظˆظ†ط¬طŒ ط´ط§ظˆظ…ظٹطŒ ظ‡ظˆط§ظˆظٹ...)",
     version: "1.0.0",
     size: "45 MB",
     icon: <Smartphone className="w-7 h-7 text-emerald-400" />,
@@ -26,9 +26,9 @@ export const DOWNLOAD_PACKAGES = [
   },
   {
     id: "android-aab",
-    name: "حزمة أندرويد للمتجر (AAB)",
+    name: "ط­ط²ظ…ط© ط£ظ†ط¯ط±ظˆظٹط¯ ظ„ظ„ظ…طھط¬ط± (AAB)",
     platform: "Google Play - Android Mobile",
-    desc: "حزمة Google Play الرسمية لهواتف أندرويد",
+    desc: "ط­ط²ظ…ط© Google Play ط§ظ„ط±ط³ظ…ظٹط© ظ„ظ‡ظˆط§طھظپ ط£ظ†ط¯ط±ظˆظٹط¯",
     version: RELEASE_VERSION,
     size: "AAB",
     icon: <Smartphone className="w-7 h-7 text-emerald-400" />,
@@ -39,9 +39,9 @@ export const DOWNLOAD_PACKAGES = [
   },
   {
     id: "windows",
-    name: "برنامج ويندوز للكمبيوتر (EXE)",
+    name: "ط¨ط±ظ†ط§ظ…ط¬ ظˆظٹظ†ط¯ظˆط² ظ„ظ„ظƒظ…ط¨ظٹظˆطھط± (EXE)",
     platform: "Windows 10 / 11",
-    desc: "برنامج سطح المكتب المستقل خفيف وسريع يعمل دون اتصال بالإنترنت",
+    desc: "ط¨ط±ظ†ط§ظ…ط¬ ط³ط·ط­ ط§ظ„ظ…ظƒطھط¨ ط§ظ„ظ…ط³طھظ‚ظ„ ط®ظپظٹظپ ظˆط³ط±ظٹط¹ ظٹط¹ظ…ظ„ ط¯ظˆظ† ط§طھطµط§ظ„ ط¨ط§ظ„ط¥ظ†طھط±ظ†طھ",
     version: "1.0.0",
     size: "75 MB",
     icon: <Monitor className="w-7 h-7 text-blue-400" />,
@@ -52,9 +52,9 @@ export const DOWNLOAD_PACKAGES = [
   },
   {
     id: "windows-msi",
-    name: "برنامج ويندوز للمتجر (MSI)",
+    name: "ط¨ط±ظ†ط§ظ…ط¬ ظˆظٹظ†ط¯ظˆط² ظ„ظ„ظ…طھط¬ط± (MSI)",
     platform: "Microsoft Store - Windows 10 / 11",
-    desc: "حزمة MSI لتثبيت التطبيق على أجهزة ويندوز",
+    desc: "ط­ط²ظ…ط© MSI ظ„طھط«ط¨ظٹطھ ط§ظ„طھط·ط¨ظٹظ‚ ط¹ظ„ظ‰ ط£ط¬ظ‡ط²ط© ظˆظٹظ†ط¯ظˆط²",
     version: RELEASE_VERSION,
     size: "MSI",
     icon: <Monitor className="w-7 h-7 text-cyan-400" />,
@@ -64,38 +64,12 @@ export const DOWNLOAD_PACKAGES = [
     isDirect: true,
   },
   {
-    id: "tv",
-    name: "نسخة شاشات التلفاز الذكية (Android TV)",
-    platform: "Android TV & Smart Box",
-    desc: "واجهة مهيأة للشاشات الكبيرة مع دعم كامل لجهاز التحكم (الريموت)",
-    version: "1.0.0",
-    size: "45 MB",
-    icon: <Tv className="w-7 h-7 text-purple-400" />,
-    color: "from-purple-600/30 to-purple-950/40 border-purple-500/40 hover:border-purple-400",
-    btnColor: "bg-purple-600 hover:bg-purple-500 text-white",
-    url: `${RELEASE_BASE}/Quran_1.0.0_Android_TV.apk`,
-    isDirect: true,
-  },
-  {
-    id: "tv-aab",
-    name: "حزمة التلفاز للمتجر (AAB)",
-    platform: "Google Play - Android TV",
-    desc: "حزمة Google Play المخصصة لشاشات التلفاز وTV Box",
-    version: RELEASE_VERSION,
-    size: "AAB",
-    icon: <Tv className="w-7 h-7 text-purple-400" />,
-    color: "from-violet-600/30 to-violet-950/40 border-violet-500/40 hover:border-violet-400",
-    btnColor: "bg-violet-600 hover:bg-violet-500 text-white",
-    url: `${RELEASE_BASE}/Quran_${RELEASE_VERSION}_Android_TV.aab`,
-    isDirect: true,
-  },
-  {
     id: "ios",
-    name: "تثبيت على آيفون وآيباد (PWA)",
+    name: "طھط«ط¨ظٹطھ ط¹ظ„ظ‰ ط¢ظٹظپظˆظ† ظˆط¢ظٹط¨ط§ط¯ (PWA)",
     platform: "iOS / Safari",
-    desc: "أضف الموقع إلى شاشتك الرئيسية من زر المشاركة (Share ⎘ ➔ Add to Home Screen)",
+    desc: "ط£ط¶ظپ ط§ظ„ظ…ظˆظ‚ط¹ ط¥ظ„ظ‰ ط´ط§ط´طھظƒ ط§ظ„ط±ط¦ظٹط³ظٹط© ظ…ظ† ط²ط± ط§ظ„ظ…ط´ط§ط±ظƒط© (Share âژک â‍” Add to Home Screen)",
     version: "1.0.0",
-    size: "فوري",
+    size: "ظپظˆط±ظٹ",
     icon: <Apple className="w-7 h-7 text-amber-300" />,
     color: "from-amber-600/20 to-amber-950/40 border-amber-500/40 hover:border-amber-400",
     btnColor: "bg-amber-600 hover:bg-amber-500 text-white",
@@ -134,13 +108,13 @@ export default function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl md:text-2xl font-bold text-gold">تحميل تطبيق تلاوات القرآن</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-gold">طھط­ظ…ظٹظ„ طھط·ط¨ظٹظ‚ طھظ„ط§ظˆط§طھ ط§ظ„ظ‚ط±ط¢ظ†</h2>
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-gold/20 text-gold border border-gold/30 font-mono font-bold">
                   v1.0.0
                 </span>
               </div>
               <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                القارئ الشيخ حاج أيوب أمين — المصحف المرتل برواية ورش
+                ط§ظ„ظ‚ط§ط±ط¦ ط§ظ„ط´ظٹط® ط­ط§ط¬ ط£ظٹظˆط¨ ط£ظ…ظٹظ† â€” ط§ظ„ظ…طµط­ظپ ط§ظ„ظ…ط±طھظ„ ط¨ط±ظˆط§ظٹط© ظˆط±ط´
               </p>
             </div>
           </div>
@@ -148,7 +122,7 @@ export default function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
-            title="إغلاق"
+            title="ط¥ط؛ظ„ط§ظ‚"
           >
             <X className="w-6 h-6" />
           </button>
@@ -188,12 +162,12 @@ export default function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
                   {downloadingId === pkg.id ? (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-white" />
-                      <span>جاري بدء التحميل...</span>
+                      <span>ط¬ط§ط±ظٹ ط¨ط¯ط، ط§ظ„طھط­ظ…ظٹظ„...</span>
                     </>
                   ) : (
                     <>
                       {pkg.isDirect ? <Download className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />}
-                      <span>{pkg.isDirect ? "تحميل الآن" : "فتح الموقع"}</span>
+                      <span>{pkg.isDirect ? "طھط­ظ…ظٹظ„ ط§ظ„ط¢ظ†" : "ظپطھط­ ط§ظ„ظ…ظˆظ‚ط¹"}</span>
                     </>
                   )}
                 </button>
@@ -206,9 +180,9 @@ export default function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
         <div className="pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground flex-wrap gap-2">
           <span className="flex items-center gap-1.5 text-gold font-medium">
             <Sparkles className="w-4 h-4" />
-            جميع النسخ مجانية 100% وتعمل دون إنترنت
+            ط¬ظ…ظٹط¹ ط§ظ„ظ†ط³ط® ظ…ط¬ط§ظ†ظٹط© 100% ظˆطھط¹ظ…ظ„ ط¯ظˆظ† ط¥ظ†طھط±ظ†طھ
           </span>
-          <span className="font-mono">الإصدار: 1.0.0</span>
+          <span className="font-mono">ط§ظ„ط¥طµط¯ط§ط±: 1.0.0</span>
         </div>
       </div>
     </div>

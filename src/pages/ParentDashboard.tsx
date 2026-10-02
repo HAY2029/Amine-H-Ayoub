@@ -32,6 +32,17 @@ import {
   MessageSquare,
   Mail,
   Scale,
+  Eye,
+  EyeOff,
+  Download,
+  BarChart3,
+  Filter,
+  CloudOff,
+  CheckCircle2,
+  Unlock,
+  Moon,
+  Info,
+  ChevronLeft,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showLocalNotification, requestNotificationPermission, saveReminderSettings } from "../utils/notifications";
@@ -78,7 +89,13 @@ import {
 } from "../data/kidsLock";
 import { calculateStreak } from "../data/kidsBadges";
 import { SURAHS } from "../data/quranData";
-import { getGameCatalog, type GameDef } from "../data/gameCatalog";
+import {
+  getGameCatalog,
+  hideRemoteGame,
+  showRemoteGame,
+  getHiddenRemoteIds,
+  type GameDef,
+} from "../data/gameCatalog";
 import Avatar from "../components/Avatar";
 import BadgesModal from "../components/BadgesModal";
 import ParentalGateModal from "../components/ParentalGateModal";
@@ -94,7 +111,7 @@ import {
   SUPPORT_WHATSAPP_DISPLAY,
 } from "../services/resendService";
 
-type DashboardTab = "overview" | "goals";
+type DashboardTab = "overview" | "goals" | "games" | "safety";
 
 export default function ParentDashboard() {
   const navigate = useNavigate();
@@ -110,6 +127,7 @@ export default function ParentDashboard() {
   const [pureMode, setPureModeState] = useState(isPureMode);
   const [kidsLocked, setKidsLockedState] = useState(isKidsMode);
   const [catalog, setCatalog] = useState<GameDef[]>(getGameCatalog);
+  const [hiddenGameIds, setHiddenGameIds] = useState<string[]>(getHiddenRemoteIds);
 
   // التبويب النشط في اللوحة
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
@@ -170,6 +188,7 @@ export default function ParentDashboard() {
     setPureModeState(isPureMode());
     setKidsLockedState(isKidsMode());
     setCatalog(getGameCatalog());
+    setHiddenGameIds(getHiddenRemoteIds());
   };
 
   useEffect(() => {
@@ -329,6 +348,71 @@ export default function ParentDashboard() {
     setSecAnswer("");
     refresh();
     toast({ title: "✓ تم تعيين رمز مرور الوالدين بنجاح!" });
+  };
+
+  // إظهار/إخفاء لعبة من ركن الأطفال
+  const toggleGameVisibility = (game: GameDef) => {
+    const hidden = hiddenGameIds.includes(game.id);
+    if (hidden) {
+      showRemoteGame(game.id);
+    } else {
+      hideRemoteGame(game.id);
+    }
+    setHiddenGameIds(getHiddenRemoteIds());
+    toast({
+      title: hidden ? `✓ تم إظهار «${game.title}»` : `تم إخفاء «${game.title}» عن الطفل`,
+    });
+  };
+
+  // تفعيل/تعطيل كل الألعاب
+  const toggleAllGames = (show: boolean) => {
+    for (const g of catalog) {
+      if (g.id === "surahaudio") continue; // لعبة الاستماع الأساسية تبقى دائماً
+      if (show) showRemoteGame(g.id);
+      else hideRemoteGame(g.id);
+    }
+    setHiddenGameIds(getHiddenRemoteIds());
+    toast({ title: show ? "✓ تم تفعيل جميع الألعاب" : "تم تعطيل جميع الألعاب باستثناء الاستماع" });
+  };
+
+  // تصدير تقرير بيانات الطفل (نسخة احتياطية)
+  const exportChildReport = () => {
+    const report = {
+      generatedAt: new Date().toISOString(),
+      child: {
+        name: profile.name || "البطل",
+        age: profile.age,
+        goalMinutes: profile.goalMinutes,
+        playMinutes: profile.playMinutes,
+        currentSurah: profile.currentSurah || 0,
+        coins: profile.coins || 0,
+      },
+      progress,
+      stats,
+      history,
+      schedule,
+      appMode,
+      pureMode,
+      kidsLocked,
+      games: {
+        total: catalog.length,
+        hidden: hiddenGameIds.length,
+      },
+    };
+    try {
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `تقرير-${profile.name || "الطفل"}-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({ title: "✓ تم تصدير تقرير الطفل بنجاح" });
+    } catch {
+      toast({ title: "تعذّر تصدير التقرير", variant: "destructive" });
+    }
   };
 
   return (
@@ -491,9 +575,27 @@ export default function ParentDashboard() {
             <span>الإعدادات والأهداف</span>
           </button>
 
+          <button
+            onClick={() => setActiveTab("games")}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all shrink-0 ${activeTab === "games"
+                ? "bg-card text-accent shadow-sm scale-[1.02]"
+                : "text-muted-foreground hover:text-foreground"
+              }`}
+          >
+            <Gamepad2 className="w-4 h-4" />
+            <span>مركز الألعاب</span>
+          </button>
 
-
-
+          <button
+            onClick={() => setActiveTab("safety")}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all shrink-0 ${activeTab === "safety"
+                ? "bg-card text-accent shadow-sm scale-[1.02]"
+                : "text-muted-foreground hover:text-foreground"
+              }`}
+          >
+            <Shield className="w-4 h-4" />
+            <span>الأمان والوضع</span>
+          </button>
         </div>
 
         {/* ── التبويب 1: نظرة عامة واليوم ── */}
@@ -971,6 +1073,554 @@ export default function ParentDashboard() {
             </button>
           </div>
         )}
+        {/* ── التبويب 3: مركز الألعاب ── */}
+        {activeTab === "games" && (
+          <div className="space-y-4 animate-fade-in">
+            {/* إحصاءات الألعاب */}
+            <div className="card-nour p-4 space-y-3 shadow-soft">
+              <p className="font-bold text-accent flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" /> إحصاءات الألعاب
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                  <p className="text-[10px] text-muted-foreground">ألعاب متاحة</p>
+                  <p className="text-lg font-black text-emerald-500">
+                    {catalog.length - hiddenGameIds.length}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center">
+                  <p className="text-[10px] text-muted-foreground">ألعاب مخفية</p>
+                  <p className="text-lg font-black text-rose-500">{hiddenGameIds.length}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
+                  <p className="text-[10px] text-muted-foreground">وقت اللعب اليوم</p>
+                  <p className="text-lg font-black text-blue-500">{progress.played || 0} د</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => toggleAllGames(true)}
+                  className="flex-1 p-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 font-black text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-emerald-500/30"
+                >
+                  <Eye className="w-4 h-4" /> تفعيل الكل
+                </button>
+                <button
+                  onClick={() => toggleAllGames(false)}
+                  className="flex-1 p-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 font-black text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all border border-rose-500/30"
+                >
+                  <EyeOff className="w-4 h-4" /> تعطيل الكل
+                </button>
+              </div>
+            </div>
+
+            {/* قائمة الألعاب */}
+            <div className="card-nour p-4 space-y-2.5 shadow-soft">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-accent flex items-center gap-2">
+                  <Gamepad2 className="w-4 h-4" /> إدارة ألعاب {(profile.name || "الطفل")}
+                </p>
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Filter className="w-3 h-3" /> {catalog.length} لعبة
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                اختر الألعاب التي يراها طفلك في ركن الأطفال. الألعاب المخفية تختفي فوراً من واجهته.
+              </p>
+
+              <div className="space-y-1.5 max-h-[26rem] overflow-y-auto pr-1">
+
+
+
+
+                {catalog.map((g) => {
+                  const isHidden = hiddenGameIds.includes(g.id);
+                  const isCore = g.id === "surahaudio";
+                  return (
+                    <div
+                      key={g.id}
+                      className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all ${isHidden
+                          ? "bg-secondary/40 border-border/40 opacity-70"
+                          : "bg-card border-border/70"
+                        }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${g.tint}`}
+                        >
+                          <Gamepad2 className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black text-foreground truncate">{g.title}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {g.cost > 0 ? `${formatCoins(g.cost)} ⭐` : "مجانية"} · {g.ageMin}+ سنوات
+                          </p>
+                        </div>
+                      </div>
+
+                      {isCore ? (
+                        <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/15 px-2 py-1 rounded-full shrink-0">
+                          أساسية دائماً
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => toggleGameVisibility(g)}
+                          className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center active:scale-90 transition-all ${isHidden
+                              ? "bg-rose-500/15 text-rose-500"
+                              : "bg-emerald-500/15 text-emerald-500"
+                            }`}
+                          title={isHidden ? "إظهار اللعبة" : "إخفاء اللعبة"}
+                        >
+                          {isHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* بطاقة ملخص اللعب */}
+            <div className="card-nour p-4 space-y-2 shadow-soft">
+              <p className="font-bold text-accent flex items-center gap-2 text-sm">
+                <Clock className="w-4 h-4" /> ملخص وقت اللعب
+              </p>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground font-bold">المستهلك اليوم</span>
+                  <span className="font-extrabold text-foreground">
+                    {progress.played || 0} / {profile.playMinutes > 0 ? `${profile.playMinutes} دقيقة` : "بلا حد"}
+                  </span>
+                </div>
+                <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-500 to-rose-500 transition-all duration-500"
+                    style={{ width: `${playPct}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-muted-foreground">
+                    حالة الفتح: {progress.unlocked ? "مفتوح ✓" : "مقفل 🔒"}
+                  </span>
+                  <button
+                    onClick={() => {
+                      unlockToday();
+                      refresh();
+                      toast({ title: "✓ تم فتح الألعاب لهذا اليوم" });
+                    }}
+                    className="text-[11px] font-black text-accent bg-accent/15 hover:bg-accent/25 px-2.5 py-1 rounded-full active:scale-95 transition-all"
+                  >
+                    فتح اليوم يدوياً
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* ── التبويب 4: الأمان والوضع ── */}
+        {activeTab === "safety" && (
+          <div className="space-y-4 animate-fade-in">
+            {/* أوضاع التطبيق — شريط الحالة الحالي */}
+            <div
+              className={`rounded-3xl p-4 border-2 shadow-soft transition-all ${pureMode
+                  ? "border-indigo-500/40 bg-gradient-to-br from-indigo-500/10 to-transparent"
+                  : kidsLocked
+                    ? "border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 to-transparent"
+                    : "border-accent/40 bg-gradient-to-br from-accent/10 to-transparent"
+                }`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${pureMode
+                        ? "bg-indigo-500/20 text-indigo-500"
+                        : kidsLocked
+                          ? "bg-emerald-500/20 text-emerald-500"
+                          : "bg-accent/20 text-accent"
+                      }`}
+                  >
+                    {pureMode ? (
+                      <Headphones className="w-6 h-6" />
+                    ) : kidsLocked ? (
+                      <Baby className="w-6 h-6" />
+                    ) : (
+                      <RefreshCw className="w-6 h-6" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                      الوضع الحالي
+                    </p>
+                    <p className="text-base font-black text-foreground truncate">
+                      {pureMode
+                        ? "الوضع الصارم (تلاوات فقط)"
+                        : kidsLocked
+                          ? "وضع الأطفال المقفل"
+                          : "وضع التنقل المرن"}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`text-[10px] font-black px-3 py-1.5 rounded-full shrink-0 flex items-center gap-1 ${pureMode
+                      ? "bg-indigo-500/15 text-indigo-500"
+                      : kidsLocked
+                        ? "bg-emerald-500/15 text-emerald-500"
+                        : "bg-accent/15 text-accent"
+                    }`}
+                >
+                  <CheckCircle2 className="w-3 h-3" /> مُفعّل
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                {pureMode
+                  ? "ركن الأطفال مخفيٌّ تماماً. التطبيق مخصّص للبالغين: المصحف والتلاوات والاستماع فقط."
+                  : kidsLocked
+                    ? "التطبيق مقفلٌ داخل ركن الأطفال. لا يمكن الخروج إلا بإدخال رمز ولي الأمر."
+                    : "كامل ميزات التطبيق وركن الأطفال متاحة ومفتوحة للجميع دون قيود."}
+              </p>
+            </div>
+
+            {/* أوضاع التطبيق — بطاقات الاختيار */}
+            <div className="card-nour p-4 space-y-3 shadow-soft">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-accent flex items-center gap-2">
+                  <Sliders className="w-4 h-4" /> أوضاع التطبيق
+                </p>
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Info className="w-3 h-3" /> اختر وضعاً واحداً
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                اضغط على أي وضع لتفعيله فوراً. الأوضاع الثلاثة مستقلّة ويمكنك التبديل بينها في أي وقت.
+              </p>
+
+              <div className="grid grid-cols-1 gap-2.5">
+                <button
+                  onClick={() => handleModeChange("flexible")}
+                  className={`group relative p-3.5 rounded-2xl border-2 transition-all text-right active:scale-[0.98] flex items-start gap-3 ${!kidsLocked && !pureMode
+                      ? "border-accent bg-accent/10 shadow-sm"
+                      : "border-border/60 bg-card hover:border-accent/50 hover:bg-accent/5"
+                    }`}
+                >
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${!kidsLocked && !pureMode
+                        ? "bg-accent/20 text-accent"
+                        : "bg-secondary text-muted-foreground group-hover:text-accent"
+                      }`}
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-black text-foreground">وضع التنقل المرن</p>
+                      {!kidsLocked && !pureMode && (
+                        <span className="text-[9px] font-black text-accent bg-accent/15 px-1.5 py-0.5 rounded-full">
+                          الحالي
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      كل الميزات مفتوحة: المصحف + التلاوات + ركن الأطفال والألعاب.
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {["المصحف", "التلاوات", "ركن الأطفال", "الألعاب"].map((f) => (
+                        <span
+                          key={f}
+                          className="text-[9px] font-bold text-muted-foreground bg-secondary/70 px-1.5 py-0.5 rounded-md"
+                        >
+                          ✓ {f}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleModeChange("kids")}
+                  className={`group relative p-3.5 rounded-2xl border-2 transition-all text-right active:scale-[0.98] flex items-start gap-3 ${kidsLocked
+                      ? "border-emerald-500 bg-emerald-500/10 shadow-sm"
+                      : "border-border/60 bg-card hover:border-emerald-500/50 hover:bg-emerald-500/5"
+                    }`}
+                >
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${kidsLocked
+                        ? "bg-emerald-500/20 text-emerald-500"
+                        : "bg-secondary text-muted-foreground group-hover:text-emerald-500"
+                      }`}
+                  >
+                    <Baby className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-black text-foreground">وضع الأطفال المقفل</p>
+                      {kidsLocked && (
+                        <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">
+                          الحالي
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      التطبيق مقفل داخل ركن الأطفال، والخروج برمز ولي الأمر فقط.
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                        <Lock className="w-2.5 h-2.5" /> قفل بالرمز
+                      </span>
+                      <span className="text-[9px] font-bold text-muted-foreground bg-secondary/70 px-1.5 py-0.5 rounded-md">
+                        ألعاب + استماع
+                      </span>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleModeChange("pure")}
+                  className={`group relative p-3.5 rounded-2xl border-2 transition-all text-right active:scale-[0.98] flex items-start gap-3 ${pureMode
+                      ? "border-indigo-500 bg-indigo-500/10 shadow-sm"
+                      : "border-border/60 bg-card hover:border-indigo-500/50 hover:bg-indigo-500/5"
+                    }`}
+                >
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${pureMode
+                        ? "bg-indigo-500/20 text-indigo-500"
+                        : "bg-secondary text-muted-foreground group-hover:text-indigo-500"
+                      }`}
+                  >
+                    <Headphones className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-black text-foreground">الوضع الصارم (تلاوات فقط)</p>
+                      {pureMode && (
+                        <span className="text-[9px] font-black text-indigo-500 bg-indigo-500/15 px-1.5 py-0.5 rounded-full">
+                          الحالي
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      للبالغين: إخفاء تام لركن الأطفال. المصحف والتلاوات فقط.
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/15 px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                        <Moon className="w-2.5 h-2.5" /> بلا أطفال
+                      </span>
+                      <span className="text-[9px] font-bold text-muted-foreground bg-secondary/70 px-1.5 py-0.5 rounded-md">
+                        مصحف + تلاوات
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* رمز الحماية */}
+            <div className="card-nour p-4 space-y-3 shadow-soft">
+              <p className="font-bold text-accent flex items-center gap-2">
+                <Lock className="w-4 h-4" /> رمز حماية ولي الأمر
+              </p>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-accent" />
+                  <div>
+                    <p className="text-xs font-bold text-foreground">
+                      {hasKidsPin() ? "رمز المرور مفعّل ✓" : "لا يوجد رمز مرور بعد"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {hasKidsPin()
+                        ? "مطلوب للخروج من وضع الأطفال والدخول للوحة"
+                        : "عيّن رمزاً لحماية طفلك من الخروج"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPinDialog(true)}
+                  className="px-3 py-2 rounded-xl btn-gold text-xs font-black active:scale-95 shrink-0"
+                >
+                  {hasKidsPin() ? "تغيير الرمز" : "تعيين الرمز"}
+                </button>
+              </div>
+              {hasKidsPin() && (
+                <button
+                  onClick={() => {
+                    if (window.confirm("هل أنت متأكد من إزالة رمز الحماية؟ سيتم فتح التطبيق للجميع.")) {
+                      removeKidsPin();
+                      refresh();
+                      toast({ title: "تم إزالة رمز الحماية" });
+                    }
+                  }}
+                  className="w-full p-2.5 rounded-xl bg-destructive/15 hover:bg-destructive/25 text-destructive font-black text-xs active:scale-95 transition-all"
+                >
+                  إزالة رمز الحماية
+                </button>
+              )}
+            </div>
+            {/* جدول اللعب */}
+            <div className="card-nour p-4 space-y-3 shadow-soft">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-accent flex items-center gap-2">
+                    <Calendar className="w-4 h-4" /> جدول أوقات اللعب
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    تحديد ساعات وأيام محددة يُسمح فيها بفتح ركن الألعاب.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    const s = { ...schedule, enabled: !schedule.enabled };
+                    setSchedule(s);
+                    saveKidsSchedule(s);
+                    toast({ title: s.enabled ? "✓ تم تفعيل جدول اللعب" : "تم تعطيل جدول اللعب" });
+                  }}
+                  className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${schedule.enabled ? "bg-accent" : "bg-muted-foreground/30"
+                    }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-all ${schedule.enabled ? "left-0.5" : "left-[26px]"
+                      }`}
+                  />
+                </button>
+              </div>
+
+              {schedule.enabled && (
+                <div className="p-3 rounded-2xl bg-secondary/40 border border-border/50 space-y-3 animate-fade-down">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[11px] text-muted-foreground font-bold mb-1 block">
+                        مسموح من الساعة:
+                      </label>
+                      <input
+                        type="time"
+                        value={schedule.startTime}
+                        onChange={(e) => {
+                          const s = { ...schedule, startTime: e.target.value };
+                          setSchedule(s);
+                          saveKidsSchedule(s);
+                        }}
+                        className="w-full rounded-xl bg-card border border-border p-2 text-xs font-bold text-foreground"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-muted-foreground font-bold mb-1 block">
+                        إلى الساعة:
+                      </label>
+                      <input
+                        type="time"
+                        value={schedule.endTime}
+                        onChange={(e) => {
+                          const s = { ...schedule, endTime: e.target.value };
+                          setSchedule(s);
+                          saveKidsSchedule(s);
+                        }}
+                        className="w-full rounded-xl bg-card border border-border p-2 text-xs font-bold text-foreground"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] text-muted-foreground font-bold mb-1.5 block">
+                      الأيام المسموح فيها باللعب:
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"].map(
+                        (day, idx) => {
+                          const isAllowed = schedule.allowedDays.includes(idx);
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                const days = isAllowed
+                                  ? schedule.allowedDays.filter((d) => d !== idx)
+                                  : [...schedule.allowedDays, idx];
+                                const s = { ...schedule, allowedDays: days };
+                                setSchedule(s);
+                                saveKidsSchedule(s);
+                              }}
+                              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors ${isAllowed
+                                  ? "bg-accent text-accent-foreground border-accent shadow-sm"
+                                  : "bg-secondary text-muted-foreground border-border hover:border-accent/40"
+                                }`}
+                            >
+                              {day}
+                            </button>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+
+
+
+            {/* نسخ احتياطي */}
+            <div className="card-nour p-4 space-y-3 shadow-soft">
+              <p className="font-bold text-accent flex items-center gap-2">
+                <Download className="w-4 h-4" /> تقرير ونسخة احتياطية
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                صدّر تقريراً كاملاً بتقدم طفلك وإعداداته وإحصاءاته (ملف JSON).
+              </p>
+              <button
+                onClick={exportChildReport}
+                className="w-full p-2.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-600 dark:text-blue-400 font-black text-xs flex items-center justify-center gap-2 active:scale-95 transition-all border border-blue-500/30"
+              >
+                <Download className="w-4 h-4" /> تصدير تقرير {profile.name || "الطفل"}
+              </button>
+            </div>
+
+            {/* صندوق رسائل الدعم */}
+            {inboxMessages.length > 0 && (
+              <div className="card-nour p-4 space-y-2.5 shadow-soft">
+                <p className="font-bold text-accent flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" /> رسائل الدعم الفني
+                  <span className="text-[10px] font-black text-white bg-accent px-1.5 py-0.5 rounded-full">
+                    {inboxMessages.length}
+                  </span>
+                </p>
+                <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                  {inboxMessages.map((m, i) => (
+                    <div
+                      key={m.id || i}
+                      className="p-2.5 rounded-xl bg-secondary/50 border border-border/50 text-xs space-y-1"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-black text-foreground truncate">
+                          {m.typeLabel || "رسالة دعم"}
+                        </span>
+                        <button
+                          onClick={() => {
+                            deleteLocalSupportMessage(m.id || "");
+                            setInboxMessages(getLocalSupportMessages());
+                          }}
+                          className="w-6 h-6 rounded-full bg-destructive/15 text-destructive flex items-center justify-center shrink-0"
+                          title="حذف الرسالة"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground line-clamp-2">{m.description}</p>
+                      <span className="text-[9px] text-muted-foreground/70">{m.timestamp}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => {
+                    if (window.confirm("هل أنت متأكد من مسح كل رسائل الدعم؟")) {
+                      clearLocalSupportMessages();
+                      setInboxMessages(getLocalSupportMessages());
+                      toast({ title: "تم مسح كل الرسائل" });
+                    }
+                  }}
+                  className="w-full p-2 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive font-bold text-[11px] active:scale-95 transition-all"
+                >
+                  مسح كل الرسائل
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
 
 
 

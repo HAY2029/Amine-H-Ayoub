@@ -26,6 +26,10 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    // publicDir الافتراضي هو "public" — تُنسخ كل محتوياته إلى dist.
+    // ملاحظة: مجلد النسخ الأصلية public/avatars/_originals مستثنى عبر .gitignore ولا يجب رفعه؛
+    // ومن أراد تقليل حجم dist أكثر يحذفه قبل البناء (يُحتسب ~50MB).
+    copyPublicDir: true,
     rollupOptions: {
       output: {
         manualChunks(id) {

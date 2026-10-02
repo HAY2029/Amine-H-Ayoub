@@ -179,24 +179,12 @@ jobs:
       - name: Initialize Android project
         run: npx tauri android init || true
 
-      # ── توافق التلفاز (Android TV) ──
-      # 1) إضافة LEANBACK_LAUNCHER كي يظهر التطبيق في قائمة التلفاز
-      # 2) إلغاء اشتراط شاشة اللمس كي يعمل على أجهزة التلفاز بجهاز التحكم
-      # 3) دعم معمارية armv7 لأجهزة التلفاز القديمة + aarch64 للأجهزة الحديثة
-      - name: Make app Android TV compatible
+      # ── إعداد مشروع أندرويد ──
+      # ملاحظة: تمت إزالة توافق Android TV (Leanback) — التطبيق للهاتف والأجهزة
+      # اللوحية. نُبقي فقط ضبط minSdk على 24 (Android 7.0) لدعم أوسع للأجهزة القديمة.
+      - name: Configure Android SDK level
         run: |
-          MANIFEST="src-tauri/gen/android/app/src/main/AndroidManifest.xml"
-          if [ -f "$MANIFEST" ]; then
-            # إلغاء اشتراط شاشة اللمس وإضافة ميزة leanback (اختيارية)
-            sed -i 's|<application|<uses-feature android:name="android.hardware.touchscreen" android:required="false" /><uses-feature android:name="android.software.leanback" android:required="false" /><application|' "$MANIFEST"
-            # إضافة LEANBACK_LAUNCHER إلى intent-filter النشاط الرئيسي
-            sed -i 's|<category android:name="android.intent.category.LAUNCHER" />|<category android:name="android.intent.category.LAUNCHER" /><category android:name="android.intent.category.LEANBACK_LAUNCHER" />|' "$MANIFEST"
-            echo "--- Patched AndroidManifest.xml ---"
-            cat "$MANIFEST"
-          else
-            echo "::warning::AndroidManifest.xml not found!"
-          fi
-          # التأكد من أن minSdkVersion لا يقل عن 24 (Android 7.0) وأنه متوافق معها
+          # التأكد من أن minSdkVersion لا يقل عن 24 (Android 7.0)
           GRADLE="src-tauri/gen/android/app/build.gradle.kts"
           [ -f "$GRADLE" ] || GRADLE="src-tauri/gen/android/app/build.gradle"
           if [ -f "$GRADLE" ]; then
@@ -205,7 +193,7 @@ jobs:
             grep -n "minSdk" "$GRADLE" || true
           fi
 
-      - name: Add Android build targets (incl. old TV armv7)
+      - name: Add Android build targets
         run: |
           rustup target add aarch64-linux-android armv7-linux-androideabi || true
 
@@ -215,7 +203,7 @@ jobs:
           mkdir -p src-tauri/gen/android/app/src/main/res
           cp -rf src-tauri/icons/android/* src-tauri/gen/android/app/src/main/res/ || true
 
-      # بناء نسخة Release لمعماريتي aarch64 (الأجهزة الحديثة) و armv7 (التلفازات والهواتف القديمة)
+      # بناء نسخة Release لمعماريتي aarch64 (الأجهزة الحديثة) و armv7 (الهواتف القديمة)
       - name: Build release APK & AAB (aarch64 + armv7)
         run: |
           npx tauri android build --apk --target aarch64

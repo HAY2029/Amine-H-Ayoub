@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+﻿import React, { useState, useEffect, useCallback } from "react";
 import { supabase, hasValidSupabaseKey } from "@/lib/supabase";
 
 // ════════════════════════════════════════════════════════════════
@@ -38,7 +38,6 @@ interface ReleasesData {
     android?: PlatformData;
     android_aab?: PlatformData;
     ios?: PlatformData;
-    android_tv?: PlatformData;
     linux?: PlatformData;
   };
 }
@@ -48,7 +47,6 @@ const PLATFORM_LABELS: Record<string, { name: string; icon: string }> = {
   android: { name: "Android (APK)", icon: "📱" },
   android_aab: { name: "Google Play Bundle (AAB)", icon: "📦" },
   ios: { name: "iOS (iPhone/iPad IPA)", icon: "🍏" },
-  android_tv: { name: "Android TV", icon: "📺" },
   macos: { name: "macOS (DMG)", icon: "🍎" },
   linux: { name: "Linux (AppImage)", icon: "🐧" },
 };

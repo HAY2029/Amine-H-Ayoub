@@ -168,7 +168,10 @@ export async function downloadStreakCertificate({
   const displayName = (!studentName || studentName === "طفلي" || studentName === "الطفل 1") ? "بطل القرآن الكريم" : studentName;
 
   try {
-    const avatarImg = await loadCanvasImage(`/avatars/${avatarName || "boy1"}.png`);
+    // صور الأفاتار مضغوطة إلى .jpg (512px) — راجع scripts/compress-avatars.mjs
+    const avatarImg =
+      (await loadCanvasImage(`/avatars/${avatarName || "img-boy-1"}.jpg`)) ||
+      (await loadCanvasImage(`/avatars/${avatarName || "boy1"}.png`));
     if (avatarImg && avatarImg.naturalWidth > 0) {
       ctx.drawImage(avatarImg, canvasW / 2 - avatarRadius, avatarCenterY - avatarRadius, avatarRadius * 2, avatarRadius * 2);
     } else {
