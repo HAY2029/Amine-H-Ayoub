@@ -59,6 +59,12 @@ test-*.mjs
 test.mjs
 tmp-sw.js
 
+# Vite temp config bundles & typecheck dumps
+vite.config.ts.timestamp-*.mjs
+tsc-out.txt
+build-out.txt
+_gv-check.txt
+
 # صور الأفاتار الأصلية (قبل الضغط) — تُنشأ بـ scripts/compress-avatars.mjs --in-place
 # لا تُرفع للمستودع ولا تُضمَّن في الحزمة (توفير ~50MB)
 public/avatars/_originals/

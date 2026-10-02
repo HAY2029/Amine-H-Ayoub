@@ -540,7 +540,7 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
     /* ======================= BOTTOM BAR PLAYER (Desktop & Mobile Mini) ======================= */
     return (
       <div
-        className="player-bottom-bar animate-slide-up-short"
+        className="player-bottom-bar animate-fade-up"
         dir="rtl"
       >
         {/* Top progress bar — always visible */}

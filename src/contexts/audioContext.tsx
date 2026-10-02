@@ -1,38 +1,30 @@
-import { createContext, useContext, useCallback, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useRef, useCallback, type ReactNode } from "react";
 
-/**
- * مصادر الصوت المختلفة في التطبيق
- * - mushaf: مشغل المصحف (QuranReader)
- * - audio-list: مشغل قائمة التلاوات (Index / CustomPlayer)
- */
-export type AudioSource = "mushaf" | "audio-list";
+export interface GlobalTrack {
+  surahNumber: number;
+  surahName: string;
+  audioSrc: string;
+  isCustom?: boolean;
+  initialTime?: number;
+  source: "mushaf" | "audio-list";
+}
 
 interface AudioContextType {
-  /**
-   * يُستدعى عندما يريد مصدر ما بدء التشغيل.
-   * يُوقف أي مصدر آخر يعمل حالياً.
-   */
-  requestPlay: (source: AudioSource, audioElement: HTMLAudioElement) => void;
-
-  /**
-   * يُستدعى عندما يتوقف مصدر عن التشغيل.
-   */
-  notifyStop: (source: AudioSource) => void;
-
-  /**
-   * تسجيل عنصر صوت لمصدر معين حتى يمكن إيقافه عن بُعد.
-   */
-  registerAudio: (source: AudioSource, audioElement: HTMLAudioElement) => void;
-
-  /**
-   * إلغاء تسجيل عنصر صوت.
-   */
-  unregisterAudio: (source: AudioSource) => void;
-
-  /** المصدر النشط حالياً (أو null إذا لا يوجد تشغيل) */
-  activeSource: AudioSource | null;
-
-  /** وضع التشغيل المتزامن (المعلم والطفل معاً) */
+  currentTrack: GlobalTrack | null;
+  setCurrentTrack: (track: GlobalTrack | null) => void;
+  
+  // CustomPlayer exposes its audio element here so others (like QuranReader) can control it
+  globalAudioRef: React.MutableRefObject<HTMLAudioElement | null>;
+  
+  // Commands for CustomPlayer
+  playNext: () => void;
+  playPrev: () => void;
+  setPlayNextHandler: (handler: () => void) => void;
+  setPlayPrevHandler: (handler: () => void) => void;
+  
+  autoNext: boolean;
+  setAutoNext: (v: boolean) => void;
+  
   simultaneousMode: boolean;
   setSimultaneousMode: (v: boolean) => void;
 }
@@ -40,42 +32,37 @@ interface AudioContextType {
 const AudioCtx = createContext<AudioContextType | null>(null);
 
 export function AudioContextProvider({ children }: { children: ReactNode }) {
-  const [activeSource, setActiveSource] = useState<AudioSource | null>(null);
+  const [currentTrack, setCurrentTrack] = useState<GlobalTrack | null>(null);
+  const globalAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [autoNext, setAutoNext] = useState(false);
   const [simultaneousMode, setSimultaneousMode] = useState(false);
+  
+  const playNextHandler = useRef<() => void>(() => {});
+  const playPrevHandler = useRef<() => void>(() => {});
 
-  // خريطة المشغلات المسجلة: المصدر → عنصر الصوت
-  const registeredAudios = useRef<Map<AudioSource, HTMLAudioElement>>(new Map());
-
-  const registerAudio = useCallback((source: AudioSource, audioElement: HTMLAudioElement) => {
-    registeredAudios.current.set(source, audioElement);
+  const setPlayNextHandler = useCallback((handler: () => void) => {
+    playNextHandler.current = handler;
   }, []);
 
-  const unregisterAudio = useCallback((source: AudioSource) => {
-    registeredAudios.current.delete(source);
+  const setPlayPrevHandler = useCallback((handler: () => void) => {
+    playPrevHandler.current = handler;
   }, []);
 
-  const requestPlay = useCallback((source: AudioSource, _audioElement: HTMLAudioElement) => {
-    // إيقاف أي مصدر آخر يعمل
-    registeredAudios.current.forEach((audio, registeredSource) => {
-      if (registeredSource !== source && !audio.paused) {
-        audio.pause();
-      }
-    });
-    setActiveSource(source);
-  }, []);
-
-  const notifyStop = useCallback((source: AudioSource) => {
-    setActiveSource(prev => (prev === source ? null : prev));
-  }, []);
+  const playNext = useCallback(() => playNextHandler.current(), []);
+  const playPrev = useCallback(() => playPrevHandler.current(), []);
 
   return (
     <AudioCtx.Provider
       value={{
-        requestPlay,
-        notifyStop,
-        registerAudio,
-        unregisterAudio,
-        activeSource,
+        currentTrack,
+        setCurrentTrack,
+        globalAudioRef,
+        playNext,
+        playPrev,
+        setPlayNextHandler,
+        setPlayPrevHandler,
+        autoNext,
+        setAutoNext,
         simultaneousMode,
         setSimultaneousMode,
       }}
@@ -85,9 +72,6 @@ export function AudioContextProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * Hook لاستخدام AudioContext من أي مكون.
- */
 export function useAudioContext(): AudioContextType {
   const ctx = useContext(AudioCtx);
   if (!ctx) {

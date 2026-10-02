@@ -40,34 +40,79 @@ export const PRAISE_AUDIO: Record<string, string | null> = {
   "ركّز جيداً، أنت تستطيع": "rakkiz-jayyidan.mp3", // ✅ موجود
   "قريب جداً! استمر": "qareeb-jiddan.mp3",    // ✅ موجود
 
-  // ═══ ⬇️ كلمات جديدة بلا صوت — ضع اسم ملف الصوت مكان null عند صناعته ═══
-  "عمل رائع": null,
-  "ممتاز جدا": null,
-  "أحسنت يا بطل": null,
-  "أنت رائع": null,
-  "بطل": null,
-  "واصل": null,
-  "أكمل": null,
-  "شكراً": null,
-  "خطأ": null,
-  "حاول مرة أخرى": null,
-  "لا تقلق": null,
-  "أنت تستطيع": null,
-  "لا بأس": null,
-  "ركّز": null,
-  "استمر": null,
-  "بالتوفيق": null,
-  "بارك الله فيك": null,
-  "ما شاء الله": null,
-  "أنت مبدع": null,
-  "أنت الأفضل": null,
-  "الأول": null,
-  "مذهل": null,
-  "جميل": null,
-  "صح": null,
-  "نعم صحيح": null,
-  "لا ليس صحيحاً": null,
+  // ═══ عبارات الترتيب والنجاح في الألعاب ═══
+  "أحسنت، رتّبتها صحيحاً": null,                 // 🆕 ملف مقترح: ahsant-rattabtha.mp3
+  "ما شاء الله! إتقان ممتاز يا بطل": null,       // 🆕 ملف مقترح: itqan-mumtaz.mp3
+
+  // ═══ ⬇️ كلمات مفردة قصيرة بلا صوت — ضع اسم ملف الصوت مكان null عند صناعته ═══
+  // ⚡ القاعدة: **كلمة واحدة فقط** لكل ملف — لا جمل ولا عبارات طويلة.
+  "ممتاز": null,                               // ممتاز    → mumtaz.mp3
+  "بطل": null,                                 // بطل      → batal.mp3
+  "واصل": null,                                // واصل     → wasel.mp3
+  "أكمل": null,                                // أكمل     → akmil.mp3
+  "استمر": null,                               // استمر    → istamir.mp3
+  "خطأ": null,                                 // خطأ      → khata.mp3
+  "صح": null,                                  // صح       → sah.mp3
+  "جميل": null,                                // جميل     → jameel.mp3
+  "مذهل": null,                                // مذهل     → muthil.mp3
+  "عبقري": null,                               // عبقري    → abqari.mp3
+  "أسطورة": null,                              // أسطورة   → ustura-word.mp3
+  "شكراً": null,                               // شكراً    → shukran.mp3
+  "ركّز": null,                                // ركّز     → rakkiz.mp3
+  "الأول": null,                               // الأول    → al-awwal.mp3
+  "بالتوفيق": null,                            // بالتوفيق → bittawfiq.mp3
+  "طيب": null,                                 // طيب      → tayyib.mp3
+  "سهل": null,                                 // سهل      → sahl.mp3
+  "جاهز": null,                                // جاهز     → jahiz.mp3
+  "الأفضل": null,                              // الأفضل   → al-afdal.mp3
+  "مبدع": null,                                // مبدع     → mubdi.mp3
 };
+
+/**
+ * 📋 قائمة النصوص المطلوب تحويلها إلى صوت (MP3).
+ *
+ * الطريقة:
+ *  1) حوّل النص إلى صوت MP3 بنفس نبرة الملفات الموجودة في public/audio/praise.
+ *  2) سمِّ الملف بالاسم المقترح أعلاه (أو أي اسم، ثم حدّث القيمة في PRAISE_AUDIO).
+ *  3) ضع الملف في المجلد:  public/audio/praise/
+ *  4) استبدل null باسم الملف في PRAISE_AUDIO أعلاه → يعمل الصوت فوراً بلا أي كود إضافي.
+ *
+ * ترتيب الأولوية (الأهم أولاً):
+ */
+export const VOICE_TODO: { text: string; file: string; priority: 1 | 2 | 3 }[] = [
+  // ⚡ القاعدة: **كلمة واحدة فقط** لكل ملف صوتي — قصيرة، واضحة، بلا جمل.
+
+  // ── أولوية ١: كلمات تُنادى كثيراً في كل الألعاب ──
+  { text: "أحسنت", file: "ahsant.mp3", priority: 1 },          // ✅ الملف موجود أصلاً
+  { text: "رائع", file: "raea.mp3", priority: 1 },             // ✅ الملف موجود أصلاً
+  { text: "ممتاز", file: "mumtaz.mp3", priority: 1 },
+  { text: "بطل", file: "batal.mp3", priority: 1 },
+  { text: "واصل", file: "wasel.mp3", priority: 1 },
+  { text: "أكمل", file: "akmil.mp3", priority: 1 },
+  { text: "استمر", file: "istamir.mp3", priority: 1 },
+  { text: "خطأ", file: "khata.mp3", priority: 1 },
+  { text: "صح", file: "sah.mp3", priority: 1 },
+
+  // ── أولوية ٢: كلمات التشجيع المتنوّعة ──
+  { text: "جميل", file: "jameel.mp3", priority: 2 },
+  { text: "مذهل", file: "muthil.mp3", priority: 2 },
+  { text: "عبقري", file: "abqari.mp3", priority: 2 },          // ⚠️ «أنت عبقري» موجود، هذه الكلمة وحدها
+  { text: "أسطورة", file: "ustura-word.mp3", priority: 2 },    // ⚠️ الملف الحالي يحوي «يا أسطورة»
+  { text: "شكراً", file: "shukran.mp3", priority: 2 },
+  { text: "ركّز", file: "rakkiz.mp3", priority: 2 },
+  { text: "الأول", file: "al-awwal.mp3", priority: 2 },
+
+  // ── أولوية ٣: كلمات مساعدة ومجاملة ──
+  { text: "بالتوفيق", file: "bittawfiq.mp3", priority: 3 },
+  { text: "طيب", file: "tayyib.mp3", priority: 3 },
+  { text: "سهل", file: "sahl.mp3", priority: 3 },
+  { text: "جاهز", file: "jahiz.mp3", priority: 3 },
+  { text: "الأفضل", file: "al-afdal.mp3", priority: 3 },
+  { text: "مبدع", file: "mubdi.mp3", priority: 3 },
+];
+
+/** النصوص التي تحتاج تسجيلاً فعلياً (كل المداخل بلا ملف صوتي). */
+export const listVoiceTodo = (): string[] => VOICE_TODO.map((v) => v.text);
 
 /** اسم أي عبارة تشجيع معروفة في الموقع */
 export type PraisePhrase = keyof typeof PRAISE_AUDIO;

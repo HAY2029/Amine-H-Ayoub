@@ -392,7 +392,7 @@ const Index = () => {
           </div>
 
           {/* محتوى قائمة السور قابل للتمرير بسلاسة داخل الإطار الأبيض */}
-          <div className="flex-1 overflow-y-auto quran-kids-scroll p-2 sm:p-2.5">
+          <div className={`flex-1 overflow-y-auto quran-kids-scroll p-2 sm:p-2.5 ${currentSurah ? 'pb-[90px]' : ''}`}>
             {loading && (
               <div className="space-y-3 py-6 text-center">
                 <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
