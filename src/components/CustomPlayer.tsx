@@ -32,20 +32,20 @@ const formatTime = (s: number) => {
   return `${m}:${sec.toString().padStart(2, "0")}`;
 };
 
-  const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
-    ({ surahName, surahNumber, audioSrc, isCustom = false, initialTime = 0, onClose, onTimeUpdate, onPlayNext, onPlayPrev, autoNext = false, onToggleAutoNext, onPlayingChange }, ref) => {
-      const { requestPlay, notifyStop, registerAudio, unregisterAudio } = useAudioContext();
-      const audioRef = useRef<HTMLAudioElement>(null);
-      const [isPlaying, setIsPlaying] = useState(false);
-      const [duration, setDuration] = useState(0);
-      const [current, setCurrent] = useState(initialTime);
-      const [loading, setLoading] = useState(true);
-      const [error, setError] = useState(false);
-      const [loop, setLoop] = useState(false);
-      const [fallbackToCloud, setFallbackToCloud] = useState(false);
-      const initialTimeApplied = useRef(false);
+const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
+  ({ surahName, surahNumber, audioSrc, isCustom = false, initialTime = 0, onClose, onTimeUpdate, onPlayNext, onPlayPrev, autoNext = false, onToggleAutoNext, onPlayingChange }, ref) => {
+    const { requestPlay, notifyStop, registerAudio, unregisterAudio } = useAudioContext();
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [duration, setDuration] = useState(0);
+    const [current, setCurrent] = useState(initialTime);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [loop, setLoop] = useState(false);
+    const [fallbackToCloud, setFallbackToCloud] = useState(false);
+    const initialTimeApplied = useRef(false);
 
-      useImperativeHandle(ref, () => ({
+    useImperativeHandle(ref, () => ({
         seekTo: (seconds: number) => {
           const a = audioRef.current;
           if (!a) return;
@@ -61,7 +61,7 @@ const formatTime = (s: number) => {
         },
       }));
 
-      useEffect(() => {
+    useEffect(() => {
         let active = true;
         const getSrc = async () => {
           setLoading(true);
@@ -102,16 +102,16 @@ const formatTime = (s: number) => {
         };
       }, [audioSrc, surahNumber, fallbackToCloud]);
 
-      useEffect(() => {
+    useEffect(() => {
         if (audioRef.current) audioRef.current.loop = loop;
       }, [loop]);
 
-      useEffect(() => {
+    useEffect(() => {
         onPlayingChange?.(isPlaying);
       }, [isPlaying, onPlayingChange]);
-      useEffect(() => () => onPlayingChange?.(false), [onPlayingChange]);
+    useEffect(() => () => onPlayingChange?.(false), [onPlayingChange]);
 
-      useEffect(() => {
+    useEffect(() => {
         const a = audioRef.current;
         if (a) {
           registerAudio("audio-list", a);
@@ -119,7 +119,7 @@ const formatTime = (s: number) => {
         return () => { unregisterAudio("audio-list"); };
       }, [registerAudio, unregisterAudio]);
 
-      useEffect(() => {
+    useEffect(() => {
         if (isPlaying) {
           updateMediaSession({
             title: `سورة ${surahName}`,
@@ -137,7 +137,7 @@ const formatTime = (s: number) => {
         }
       }, [isPlaying, surahName, onPlayNext, onPlayPrev]);
 
-      useEffect(() => {
+    useEffect(() => {
         const handleVisibility = () => {
           if (document.hidden && !isBackgroundAudioEnabled()) {
             audioRef.current?.pause();
@@ -147,7 +147,7 @@ const formatTime = (s: number) => {
         return () => document.removeEventListener("visibilitychange", handleVisibility);
       }, []);
 
-      useEffect(() => {
+    useEffect(() => {
         const a = audioRef.current;
         if (!a) return;
         const handlePause = () => {
@@ -157,7 +157,7 @@ const formatTime = (s: number) => {
         return () => a.removeEventListener("pause", handlePause);
       }, [isPlaying]);
 
-      const retry = () => {
+    const retry = () => {
         const audio = audioRef.current;
         if (!audio) return;
         setError(false);
@@ -172,7 +172,7 @@ const formatTime = (s: number) => {
         });
       };
 
-      const togglePlay = async () => {
+    const togglePlay = async () => {
         const audio = audioRef.current;
         if (!audio) return;
         try {
@@ -194,7 +194,7 @@ const formatTime = (s: number) => {
         }
       };
 
-      const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
         const audio = audioRef.current;
         if (!audio) return;
         const t = (parseFloat(e.target.value) / 100) * (duration || 0);
@@ -202,19 +202,19 @@ const formatTime = (s: number) => {
         setCurrent(t);
       };
 
-      const skipBack = () => {
+    const skipBack = () => {
         const a = audioRef.current;
         if (!a) return;
         a.currentTime = Math.max(0, a.currentTime - 10);
       };
 
-      const skipForward = () => {
+    const skipForward = () => {
         const a = audioRef.current;
         if (!a) return;
         a.currentTime = Math.min(duration, a.currentTime + 10);
       };
 
-      const handleClosePlayer = () => {
+    const handleClosePlayer = () => {
         if (audioRef.current) {
           audioRef.current.pause();
           notifyStop("audio-list");
@@ -222,9 +222,9 @@ const formatTime = (s: number) => {
         onClose();
       };
 
-      const progress = duration > 0 ? (current / duration) * 100 : 0;
+    const progress = duration > 0 ? (current / duration) * 100 : 0;
 
-      return (
+    return (
         <div className="fixed bottom-[68px] left-0 right-0 z-50 px-3 pb-2 md:max-w-2xl md:left-1/2 md:-translate-x-1/2">
           <div
             className="rounded-3xl shadow-2xl overflow-hidden border border-accent/25"
