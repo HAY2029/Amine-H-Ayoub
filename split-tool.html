@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>أداة تقسيم المصحف المعلم</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f0e6; padding: 20px; }
+.container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+h1 { text-align: center; color: #b45309; margin-bottom: 10px; }
+.btn { display: block; width: 100%; padding: 15px; background: linear-gradient(135deg, #b45309, #d97706); color: white; border: none; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
+.btn:hover { background: linear-gradient(135deg, #92400e, #b45309); transform: scale(1.02); }
+.surah-card { border: 1px solid #e2e8f0; margin-bottom: 20px; padding: 15px; border-radius: 10px; background: #f8fafc; }
+.surah-header { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #1e293b; }
+.canvas-container { width: 100%; height: 150px; background: #f1f5f9; border-radius: 6px; overflow: hidden; margin-bottom: 15px; position: relative; border: 1px solid #cbd5e1; }
+canvas { display: block; width: 100%; height: 100%; }
+.segments { display: flex; flex-wrap: wrap; gap: 8px; }
+.segment { padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; border: 1px solid transparent; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+.segment:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.segment.teacher { background: #fef08a; border-color: #fde047; color: #854d0e; }
+.segment.kids { background: #bae6fd; border-color: #7dd3fc; color: #075985; }
+.log { padding: 15px; background: #1e293b; color: #38bdf8; border-radius: 8px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 13px; margin-top: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>أداة تقسيم المصحف المعلم</h1>
+    <button class="btn" id="startBtn">تحليل وتقسيم الكل</button>
+    <div id="surahsContainer"></div>
+    <div class="log" id="log"></div>
+</div>
+
+<script>
+const logEl = document.getElementById('log');
+function log(msg) { logEl.innerHTML += `<div>> ${msg}</div>`; logEl.scrollTop = logEl.scrollHeight; }
+
+const SURAHS = [
+    { number: 1, ayahCount: 7 },
+    { number: 14, ayahCount: 8 },
+    { number: 13, ayahCount: 3 },
+    { number: 12, ayahCount: 9 },
+    { number: 11, ayahCount: 5 },
+    { number: 10, ayahCount: 4 },
+    { number: 9, ayahCount: 7 },
+    { number: 8, ayahCount: 3 },
+    { number: 7, ayahCount: 6 },
+    { number: 6, ayahCount: 3 },
+    { number: 5, ayahCount: 5 },
+    { number: 4, ayahCount: 4 },
+    { number: 3, ayahCount: 5 },
+    { number: 2, ayahCount: 6 }
+];
+
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+async function processSurah(surah) {
+    log(`جاري تحميل سورة رقم ${surah.number}...`);
+    try {
+        const resp = await fetch(`/audio/surahs/${surah.number}.mp3`);
+        if (!resp.ok) throw new Error('الملف الصوتي غير موجود');
+        const arrayBuffer = await resp.arrayBuffer();
+        const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+        
+        log(`تم التحميل. جاري تحليل الفترات الصامتة...`);
+        const channelData = audioBuffer.getChannelData(0);
+        const sampleRate = audioBuffer.sampleRate;
+        const windowSize = Math.floor(sampleRate * 0.05);
+        
+        let rmsValues = [];
+        for (let i = 0; i < channelData.length; i += windowSize) {
+            let sum = 0;
+            for (let j = 0; j < windowSize && i + j < channelData.length; j++) {
+                sum += channelData[i + j] * channelData[i + j];
+            }
+            rmsValues.push(Math.sqrt(sum / windowSize));
+        }
+
+        const threshold = 0.02; 
+        let silentRegions = [];
+        let inSilence = false;
+        let silenceStart = 0;
+
+        for (let i = 0; i < rmsValues.length; i++) {
+            if (rmsValues[i] < threshold) {
+                if (!inSilence) { inSilence = true; silenceStart = i; }
+            } else {
+                if (inSilence) {
+                    inSilence = false;
+                    const duration = (i - silenceStart) * windowSize / sampleRate;
+                    if (duration > 0.4) {
+                        silentRegions.push({
+                            start: silenceStart * windowSize / sampleRate,
+                            end: i * windowSize / sampleRate,
+                            mid: ((silenceStart + i) / 2) * windowSize / sampleRate
+                        });
+                    }
+                }
+            }
+        }
+
+        const duration = audioBuffer.duration;
+        
+        // الكود الأول بالكامل بدون فلاتر إضافية للوقت (الذي كان يقسم بشكل صحيح)
+        let timestamps = [0, ...silentRegions.map(r => r.mid), duration];
+        
+        renderSurah(surah, timestamps, audioBuffer, rmsValues, duration);
+        
+        // Save files
+        for (let i = 0; i < timestamps.length - 1; i++) {
+            const start = timestamps[i];
+            const end = timestamps[i+1];
+            
+            // الكود الأول: جعلنا المقطع الأول طفل والثاني معلم كما أردت في البداية تماماً
+            const isTeacher = (i % 2 === 1);
+            const ayahNum = Math.floor(i / 2) + 1;
+            if (ayahNum > surah.ayahCount) continue;
+            
+            const role = isTeacher ? 'teacher' : 'kids';
+            const filename = `${surah.number}_${ayahNum}.mp3`;
+            const segmentBuffer = createSegmentBuffer(audioBuffer, start, end);
+            const wavBlob = bufferToWave(segmentBuffer);
+            
+            uploadSegment(role, filename, wavBlob);
+        }
+        log(`اكتملت السورة ${surah.number} بنجاح.`);
+    } catch (e) {
+        log(`خطأ في سورة ${surah.number}: ${e.message}`);
+    }
+}
+
+// Draw waveform function
+function drawWaveform(canvas, rmsValues, timestamps, duration) {
+    const c = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    c.clearRect(0, 0, width, height);
+    
+    // Draw waves
+    c.fillStyle = '#94a3b8';
+    const barWidth = width / rmsValues.length;
+    for (let i = 0; i < rmsValues.length; i++) {
+        const val = Math.min(rmsValues[i] * 5, 1);
+        const barHeight = val * height;
+        c.fillRect(i * barWidth, (height - barHeight) / 2, Math.max(1, barWidth - 0.5), barHeight);
+    }
+    
+    // Draw split lines
+    c.strokeStyle = '#ef4444';
+    c.lineWidth = 2;
+    c.setLineDash([5, 5]);
+    for (let i = 1; i < timestamps.length - 1; i++) {
+        const x = (timestamps[i] / duration) * width;
+        c.beginPath();
+        c.moveTo(x, 0);
+        c.lineTo(x, height);
+        c.stroke();
+    }
+}
+
+function createSegmentBuffer(buffer, startSec, endSec) {
+    const startOffset = Math.floor(startSec * buffer.sampleRate);
+    const endOffset = Math.floor(endSec * buffer.sampleRate);
+    const frameCount = endOffset - startOffset;
+    const newBuffer = ctx.createBuffer(buffer.numberOfChannels, frameCount, buffer.sampleRate);
+    for (let c = 0; c < buffer.numberOfChannels; c++) {
+        const channelData = buffer.getChannelData(c);
+        const newChannelData = newBuffer.getChannelData(c);
+        for (let i = 0; i < frameCount; i++) {
+            newChannelData[i] = channelData[startOffset + i];
+        }
+    }
+    return newBuffer;
+}
+
+function bufferToWave(abuffer) {
+    let numOfChan = abuffer.numberOfChannels, length = abuffer.length * numOfChan * 2 + 44,
+        buffer = new ArrayBuffer(length), view = new DataView(buffer),
+        channels = [], i, sample, offset = 0, pos = 0;
+    function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
+    function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
+    setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
+    setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
+    setUint32(abuffer.sampleRate); setUint32(abuffer.sampleRate * 2 * numOfChan);
+    setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
+    for (i = 0; i < abuffer.numberOfChannels; i++) channels.push(abuffer.getChannelData(i));
+    while(pos < length) {
+        for (i = 0; i < numOfChan; i++) {
+            sample = Math.max(-1, Math.min(1, channels[i][offset]));
+            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0;
+            view.setInt16(pos, sample, true); pos += 2;
+        }
+        offset++;
+    }
+    return new Blob([buffer], {type: "audio/wav"});
+}
+
+async function uploadSegment(role, filename, blob) {
+    const formData = new FormData();
+    formData.append('audio', blob, filename); formData.append('role', role); formData.append('filename', filename);
+    try { await fetch('http://localhost:3333/upload', { method: 'POST', body: formData }); } catch (e) {}
+}
+
+let activeSource = null;
+function playSegment(audioBuffer, start, end) {
+    if (activeSource) { activeSource.stop(); activeSource.disconnect(); }
+    activeSource = ctx.createBufferSource();
+    activeSource.buffer = audioBuffer;
+    activeSource.connect(ctx.destination);
+    activeSource.start(0, start, end - start);
+}
+
+function renderSurah(surah, timestamps, audioBuffer, rmsValues, duration) {
+    const container = document.getElementById('surahsContainer');
+    const card = document.createElement('div');
+    card.className = 'surah-card';
+    
+    const header = document.createElement('div');
+    header.className = 'surah-header';
+    header.innerText = `سورة رقم ${surah.number}`;
+    card.appendChild(header);
+
+    const canvasContainer = document.createElement('div');
+    canvasContainer.className = 'canvas-container';
+    const canvas = document.createElement('canvas');
+    canvas.width = 900; canvas.height = 150;
+    canvasContainer.appendChild(canvas);
+    card.appendChild(canvasContainer);
+    
+    drawWaveform(canvas, rmsValues, timestamps, duration);
+
+    const segContainer = document.createElement('div');
+    segContainer.className = 'segments';
+    
+    for (let i = 0; i < timestamps.length - 1; i++) {
+        const start = timestamps[i];
+        const end = timestamps[i+1];
+        const isTeacher = (i % 2 === 1);
+        const ayahNum = Math.floor(i / 2) + 1;
+        if (ayahNum > surah.ayahCount) continue;
+        
+        const btn = document.createElement('div');
+        btn.className = `segment ${isTeacher ? 'teacher' : 'kids'}`;
+        btn.innerHTML = `<span>▶️</span> <span>${isTeacher ? 'معلم' : 'طفل'} ${ayahNum}</span>`;
+        btn.onclick = () => playSegment(audioBuffer, start, end);
+        segContainer.appendChild(btn);
+    }
+    card.appendChild(segContainer);
+    container.appendChild(card);
+}
+
+document.getElementById('startBtn').addEventListener('click', async () => {
+    document.getElementById('startBtn').disabled = true;
+    log('بدء عملية التحليل...');
+    if (ctx.state === 'suspended') await ctx.resume();
+    for (const surah of SURAHS) { await processSurah(surah); }
+    log('انتهت العملية للجميع!');
+});
+</script>
+</body>
+</html>

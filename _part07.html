@@ -1,0 +1,80 @@
+
+    <!-- المعالجة -->
+    <div class="card hide" id="secProc">
+        <div class="topActions">
+            <span id="curName" style="font-size:1.2rem;font-weight:700;color:var(--gold2)">—</span>
+            <span id="curProg" style="font-size:0.85rem;color:var(--text3)">—</span>
+        </div>
+        <div class="wave-box">
+            <div class="wave-wrap"><canvas id="cvs"></canvas></div>
+        </div>
+        <div class="legend">
+            <span><div class="dot t"></div> المعلم</span>
+            <span><div class="dot c"></div> الطفل</span>
+            <span><div class="dot s"></div> صمت</span>
+        </div>
+        <div class="player">
+            <span class="ptime" id="pCur">0:00</span>
+            <button class="pbtn" onclick="skip(-5)">⏪</button>
+            <button class="pbtn main" id="pBtn" onclick="togPlay()">▶</button>
+            <button class="pbtn" onclick="skip(5)">⏩</button>
+            <input type="range" class="pseek" id="pSeek" min="0" max="100" value="0" step="0.1" oninput="seek(this.value)">
+            <span class="ptime" id="pTot">0:00</span>
+        </div>
+        <div class="prog">
+            <div class="progBg"><div class="progFill" id="pBar"></div></div>
+            <div class="progTxt"><span id="pLbl">—</span><span id="pPct">0%</span></div>
+        </div>
+        <div class="msg hide" id="sMsg"></div>
+
+        <!-- بطاقة المعايرة التلقائية -->
+        <div class="calib-card hide" id="calibCard">
+            <div class="calib-title">🔬 المعايرة التلقائية — تحليل طبيعة الملف</div>
+            <div class="calib-grid" id="calibGrid"></div>
+        </div>
+    </div>
+
+    <!-- النتائج -->
+    <div class="card hide" id="secRes">
+        <div class="topActions">
+            <div class="card-title" style="margin:0">📊 نتائج التقسيم</div>
+            <div class="segActions">
+                <button class="btn" onclick="playType('teacher')">🎓 المعلم فقط</button>
+                <button class="btn" onclick="playType('child')">👶 الطفل فقط</button>
+                <button class="btn g" onclick="expJSON()">💾 JSON</button>
+                <button class="btn" onclick="expCSV()">📊 CSV</button>
+            </div>
+        </div>
+        <div class="stats" id="stGrid"></div>
+        <div class="segList" id="segList"></div>
+    </div>
+
+    <!-- التصدير -->
+    <div class="card hide" id="secExp">
+        <div class="card-title">💾 تصدير الملفات الصوتية</div>
+        <div class="expGrid">
+            <div class="expCard" onclick="expAudio('teacher')">
+                <div class="ei">🎓</div>
+                <h4>صوت المعلم فقط</h4>
+                <p>ملف WAV لجميع أجزاء المعلم</p>
+            </div>
+            <div class="expCard" onclick="expAudio('child')">
+                <div class="ei">👶</div>
+                <h4>صوت الطفل فقط</h4>
+                <p>ملف WAV لجميع أجزاء الطفل</p>
+            </div>
+            <div class="expCard" onclick="expJSON()">
+                <div class="ei">📋</div>
+                <h4>بيانات JSON</h4>
+                <p>تقسيم كامل مع الأوقات</p>
+            </div>
+            <div class="expCard" onclick="expCSV()">
+                <div class="ei">📊</div>
+                <h4>جدول CSV</h4>
+                <p>جدول بيانات التقسيم</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>

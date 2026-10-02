@@ -1,0 +1,103 @@
+
+        /* === الإعدادات === */
+        .sGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+        .sItem {
+            background:rgba(255,255,255,0.02);
+            border:1px solid rgba(255,255,255,0.04);
+            border-radius:14px; padding:16px;
+        }
+        .sItem label { display:block; font-size:0.9rem; color:var(--text2); margin-bottom:8px; font-weight:500; }
+        .sItem input[type=range] {
+            width:100%; -webkit-appearance:none; height:5px; border-radius:3px;
+            background:linear-gradient(to left, var(--gold), rgba(212,168,83,0.15)); outline:none;
+        }
+        .sItem input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+            background:var(--gold); cursor:pointer; box-shadow:0 0 10px rgba(212,168,83,0.5);
+        }
+        .sVal { text-align:center; font-size:1rem; font-weight:700; color:var(--gold); margin-top:6px; }
+        .sDesc { font-size:0.75rem; color:var(--text3); margin-top:4px; }
+        .sel {
+            width:100%; padding:10px; background:var(--bg); border:1px solid var(--border);
+            border-radius:8px; color:var(--text); font-family:'Tajawal',sans-serif; font-size:0.9rem; outline:none;
+        }
+
+        /* === قائمة الملفات === */
+        .fGrid {
+            display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+            gap:10px; max-height:350px; overflow-y:auto;
+        }
+        .fGrid::-webkit-scrollbar { width:5px; }
+        .fGrid::-webkit-scrollbar-thumb { background:var(--glow); border-radius:3px; }
+        .fItem {
+            display:flex; align-items:center; gap:8px; padding:10px 12px;
+            background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);
+            border-radius:10px; cursor:pointer; transition:all 0.25s; font-size:0.88rem;
+        }
+        .fItem:hover { background:rgba(212,168,83,0.06); border-color:var(--glow); }
+        .fItem.act { background:rgba(212,168,83,0.1); border-color:var(--gold); }
+        .fItem.done { border-color:var(--green2); }
+        .fBadge {
+            font-size:0.7rem; padding:2px 8px; border-radius:6px; margin-right:auto;
+        }
+        .fBadge.p { background:rgba(100,116,139,0.2); color:var(--text3); }
+        .fBadge.w { background:rgba(212,168,83,0.2); color:var(--gold); animation:pulse 1.2s infinite; }
+        .fBadge.d { background:rgba(16,185,129,0.2); color:var(--green); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* === أزرار === */
+        .btn {
+            padding:10px 22px; border:1px solid var(--border); border-radius:10px;
+            background:transparent; color:var(--text2); font-family:'Tajawal',sans-serif;
+            font-size:0.9rem; font-weight:500; cursor:pointer; transition:all 0.3s;
+            display:inline-flex; align-items:center; gap:6px;
+        }
+        .btn:hover { border-color:var(--gold); color:var(--gold2); transform:translateY(-1px); }
+        .btn.g {
+            background:linear-gradient(135deg,var(--gold),var(--gold3));
+            border:none; color:var(--bg); font-weight:700;
+        }
+        .btn.g:hover { box-shadow:0 6px 24px rgba(212,168,83,0.4); }
+        .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+        /* === الموجة الصوتية === */
+        .wave-box {
+            background:rgba(0,0,0,0.35); border-radius:14px; padding:16px; margin:14px 0;
+            position:relative; overflow:hidden;
+        }
+        .wave-wrap { position:relative; width:100%; height:180px; cursor:crosshair; }
+        .wave-wrap canvas { width:100%; height:100%; border-radius:8px; display:block; }
+
+        /* === المؤشرات === */
+        .legend { display:flex; justify-content:center; gap:24px; margin:10px 0; flex-wrap:wrap; }
+        .legend span { display:flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--text2); }
+        .dot { width:10px; height:10px; border-radius:50%; }
+        .dot.t { background:var(--blue); }
+        .dot.c { background:var(--green); }
+        .dot.s { background:var(--text3); }
+
+        /* === مشغل الصوت === */
+        .player {
+            display:flex; align-items:center; justify-content:center; gap:12px;
+            padding:16px; background:rgba(0,0,0,0.25); border-radius:14px; margin:12px 0;
+        }
+        .pbtn {
+            width:40px; height:40px; border-radius:50%; border:1px solid var(--border);
+            background:transparent; color:var(--text); cursor:pointer; display:flex;
+            align-items:center; justify-content:center; transition:all 0.3s; font-size:1rem;
+        }
+        .pbtn:hover { background:var(--gold); color:var(--bg); border-color:var(--gold); }
+        .pbtn.main {
+            width:50px; height:50px; background:linear-gradient(135deg,var(--gold),var(--gold3));
+            border:none; color:var(--bg); font-size:1.2rem;
+        }
+        .pbtn.main:hover { box-shadow:0 0 20px rgba(212,168,83,0.5); }
+        .ptime { font-family:monospace; font-size:0.9rem; color:var(--text2); direction:ltr; min-width:70px; text-align:center; }
+        .pseek {
+            flex:1; max-width:400px; -webkit-appearance:none; height:4px;
+            border-radius:2px; background:rgba(255,255,255,0.08); outline:none;
+        }
+        .pseek::-webkit-slider-thumb {
+            -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+            background:var(--gold); cursor:pointer;
+        }

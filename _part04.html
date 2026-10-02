@@ -1,0 +1,63 @@
+
+        .segDel {
+            width:28px; height:28px; border-radius:50%; border:1px solid rgba(244,63,94,0.2);
+            background:transparent; color:var(--red); cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:all 0.3s;
+            font-size:0.75rem; opacity:0.5;
+        }
+        .segDel:hover { background:rgba(244,63,94,0.15); opacity:1; border-color:var(--red); }
+
+        .segW { height:36px; border-radius:5px; overflow:hidden; }
+        .segW canvas { width:100%; height:100%; display:block; }
+
+        .segTime { font-size:0.8rem; color:var(--text2); font-family:monospace; direction:ltr; }
+        .segDur { font-size:0.8rem; color:var(--text3); font-family:monospace; direction:ltr; }
+        .segPlay {
+            width:32px; height:32px; border-radius:50%; border:1px solid var(--border);
+            background:transparent; color:var(--text2); cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:all 0.3s; font-size:0.8rem;
+        }
+        .segPlay:hover { background:var(--gold); color:var(--bg); border-color:var(--gold); }
+
+        /* === التصدير === */
+        .expGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:14px; }
+        .expCard {
+            background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);
+            border-radius:14px; padding:20px; text-align:center; cursor:pointer; transition:all 0.3s;
+        }
+        .expCard:hover {
+            border-color:var(--gold); background:rgba(212,168,83,0.04);
+            transform:translateY(-3px); box-shadow:0 8px 30px rgba(212,168,83,0.1);
+        }
+        .expCard .ei { font-size:2.2rem; margin-bottom:8px; }
+        .expCard h4 { font-size:1rem; color:var(--gold2); margin-bottom:4px; }
+        .expCard p { font-size:0.8rem; color:var(--text3); }
+
+        /* === الإخفاء === */
+        .hide { display:none !important; }
+        .show { display:block !important; animation: fadeUp 0.4s ease; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+        /* === رسالة الحالة === */
+        .msg {
+            text-align:center; padding:12px; border-radius:10px; font-size:0.9rem; margin:10px 0;
+        }
+        .msg.info { background:rgba(74,158,255,0.08); color:var(--blue); border:1px solid rgba(74,158,255,0.15); }
+        .msg.ok { background:rgba(52,211,153,0.08); color:var(--green); border:1px solid rgba(52,211,153,0.15); }
+        .msg.err { background:rgba(244,63,94,0.08); color:var(--red); border:1px solid rgba(244,63,94,0.15); }
+
+        /* === توست === */
+        .toast {
+            position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+            background:var(--bg3); border:1px solid var(--gold); border-radius:10px;
+            padding:12px 24px; color:var(--text); font-family:'Tajawal',sans-serif; font-size:0.9rem;
+            z-index:999; transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+            box-shadow:0 10px 40px rgba(0,0,0,0.5);
+        }
+        .toast.on { transform:translateX(-50%) translateY(0); }
+
+        .spinner { display:inline-block; width:16px; height:16px; border:2px solid transparent; border-top-color:currentColor; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+
+        .topActions { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+        .segActions { display:flex; gap:8px; flex-wrap:wrap; }

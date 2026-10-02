@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة تحكم التطبيق — مشرف</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
+body{background:#0f172a;color:#e2e8f0;margin:0;padding:20px}
+h1{text-align:center;color:#fbbf24}
+.card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px;margin:14px auto;max-width:720px}
+.card h2{margin:0 0 10px;color:#38bdf8;font-size:18px}
+input,textarea,select{background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px;width:100%;font-size:14px}
+textarea{min-height:90px;resize:vertical}
+button{background:#f59e0b;color:#111;border:none;border-radius:8px;padding:8px 16px;font-weight:bold;cursor:pointer;margin-top:8px}
+button:hover{background:#fbbf24}
+button.sec{background:#334155;color:#e2e8f0}
+button.danger{background:#dc2626;color:#fff}
+.row{display:flex;gap:8px;align-items:center;margin:6px 0}
+.row input{flex:1}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid #334155;padding:6px;text-align:right}
+th{color:#fbbf24}
+.cost-input{width:80px}
+.msg{font-size:13px;color:#4ade80;margin-top:6px;font-weight:bold}
+.err{color:#f87171}
+.login{max-width:360px;margin:80px auto;text-align:center}
+.badge{display:inline-block;background:#334155;border-radius:50px;padding:2px 12px;font-size:12px;color:#fbbf24}
+</style>
+</head>
+<body>
+
+<div id="login" class="card login">
+  <h1>🔐 لوحة تحكم مشرف</h1>
+  <input id="pw" type="password" placeholder="كلمة المرور">
+  <button onclick="doLogin()">دخول</button>
+  <p id="loginMsg" class="msg"></p>
+</div>
+
+<div id="panel" style="display:none">
+  <h1>⚙️ لوحة تحكم التطبيق</h1>
+  <p id="cloudStatus" style="text-align:center;font-size:13px;font-weight:bold;margin:0 0 6px"></p>
+
+  <!-- معلومات الطفل واللقب -->
+  <div class="card">
+    <h2>👶 ملف الطفل واللقب الحالي</h2>
+    <div id="profilesInfo"></div>
+  </div>
+
+  <!-- الألقاب -->
+  <div class="card">
+    <h2>🏅 الألقاب (لقب جديد كل عدد السور المحدد — افتراضي 5 أجزاء)</h2>
+    <div class="row"><span style="white-space:nowrap">عدد السور/الأجزاء لكل لقب:</span><input id="spl" type="number" min="1" style="width:90px" value="5"></div>
+    <div class="row"><span style="white-space:nowrap">عنوان الشهادة:</span><input id="certHead"></div>
+    <div id="titlesList"></div>
+    <button class="sec" onclick="addTitle()">➕ إضافة لقب</button>
+    <button onclick="saveTitles()">💾 حفظ الألقاب</button>
+    <p id="titlesMsg" class="msg"></p>
+  </div>
+
+  <!-- أسعار الألعاب -->
+  <div class="card">
+    <h2>🎮 أسعار الألعاب والصور والنصوص</h2>
+    <table id="gamesTable"><thead><tr><th>اللعبة</th><th>المعرّف</th><th>السعر (⭐)</th><th></th></tr></thead><tbody></tbody></table>
+    <button onclick="resetPrices()">🔄 إعادة تعيين الأسعار</button>
+    <p id="gamesMsg" class="msg"></p>
+  </div>
+
+  <!-- كود النقاط -->
+  <div class="card">
+    <h2>🎁 كود نقاط مجانية (يُستخدم مرة واحدة)</h2>
+    <div class="row"><input id="codeAmount" type="number" placeholder="عدد النقاط (مثال: 5000)"></div>
+    <button onclick="genCode()">🔑 توليد كود</button>
+    <div id="codesList"></div>
+  </div>
+
+  <!-- كود HTML خارجي -->
+  <div class="card">
+    <h2>🧩 كود HTML خارجي (يُعرض أسفل قسم الألعاب)</h2>
+    <textarea id="extHtml" placeholder="<div style='...'>إعلان أو محتوى HTML هنا</div>"></textarea>
+    <button onclick="saveHtml()">💾 حفظ كود HTML</button>
+    <p id="htmlMsg" class="msg"></p>
+  </div>
+
+  <!-- المستخدمون -->
+  <div class="card">
+    <h2>👥 إدارة المستخدمين (<span id="usersCount">0</span> مستخدم)</h2>
+    <div class="row"><input id="userSearch" placeholder="🔍 ابحث باسم المستخدم..." oninput="renderUsers()"></div>
+    <div class="row">
+      <select id="coinUser" aria-label="اختر الطفل لإضافة النجوم"><option value="">اختر الطفل</option></select>
+      <input id="coinAmount" type="number" min="1" step="1" placeholder="عدد النجوم">
+      <button type="button" onclick="addCoinsToUser()">⭐ إضافة النجوم</button>
+    </div>
+    <p id="coinsMsg" class="msg"></p>
+    <table id="usersTable"><thead><tr><th>الاسم</th><th>النقاط</th><th>الدرجة/اللقب</th><th>التوثيق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody></tbody></table>
+    <p id="usersMsg" class="msg"></p>
+  </div>
+
+  <!-- كلمة المرور -->
+  <div class="card">
+    <h2>🔒 كلمة مرور المشرف</h2>
+    <div class="row"><input id="newPw" type="text" placeholder="كلمة مرور جديدة"></div>
+    <button onclick="savePw()">💾 حفظ كلمة المرور</button>
+    <p id="pwMsg" class="msg"></p>
+  </div>
+
+  <p style="text-align:center;color:#64748b">ملاحظة: تُحفظ الإعدادات على نفس الجهاز/النطاق (localStorage) وتُزامَن مع السيرفر إن كان مفعّلاً.</p>
+</div>
+
+<script>
+var ADMIN_PW_KEY = "mushaf:adminPassword:v1";
+var TITLES_KEY = "mushaf:titlesConfig:v1";
+var PRICES_KEY = "mushaf:gamePriceOverrides:v1";
+var CATALOG_KEY = "mushaf:gameCatalog:v1";
+var CODES_KEY = "mushaf:oneTimeCodes:v1";
+var HTML_KEY = "mushaf:externalHtml:v1";
+var PROFILES_KEY = "mushaf:profiles:v1";
+var ACTIVE_KEY = "mushaf:activeProfile:v1";
+
+/* ===== الاتصال المركزي بـ Supabase (كل الأجهزة ترى نفس البيانات) ===== */
+var SB_URL = "https://ktfxeccahsfsuhwdjjjn.supabase.co";
+var SB_KEY = "sb_publishable_g3fgEXSq3PsAXAfGh6zqrA_dXje4zeh";
+var sb = null;
+try { sb = supabase.createClient(SB_URL, SB_KEY); } catch (e) { sb = null; }
+
+var cloudOn = document.createElement("span"); // مؤشر حالة الاتصال
+function setCloudStatus(ok, msg){
+  var el = document.getElementById("cloudStatus");
+  if (el) { el.textContent = msg; el.style.color = ok ? "#4ade80" : "#f87171"; }
+}
+
+/** يقرأ مفتاحاً من السيرفر المركزي ويدمجه محلياً (السيرفر له الأولوية إن وُجد). */
+async function pullKey(key){
+  if (!sb) return false;
+  try {
+    var res = await sb.from("store").select("value").eq("key", key).maybeSingle();
+    if (res.data && res.data.value != null) {
+      var v = res.data.value;
+      try { localStorage.setItem(key, typeof v === "string" ? v : JSON.stringify(v)); } catch(e){}
+    }
+    return !res.error;
+  } catch (e) { setCloudStatus(false, "☁️ تعذر الاتصال بالسيرفر — تعمل محلياً فقط"); return false; }
+}
+
+async function loadCloud(){
+  if (!sb) { setCloudStatus(false, "☁️ وضع محلي (لا يوجد اتصال سيرفر)"); return; }
+  var keys = [ADMIN_PW_KEY, TITLES_KEY, PRICES_KEY, CODES_KEY, HTML_KEY, PROFILES_KEY, CATALOG_KEY];
+  var results = [];
+  for (var i = 0; i < keys.length; i++) results.push(await pullKey(keys[i]));
+  if (results.some(function(ok){ return !ok; })) {
+    setCloudStatus(false, "☁️ تعذر جلب بعض البيانات — تعمل البيانات المحلية فقط");
+  } else {
+    setCloudStatus(true, "☁️ متصل بالسيرفر المركزي — التغييرات تصل لكل الأجهزة");
+  }
+}
+
+/** يكتب مفتاحاً على السيرفر المركزي (بدون انتظار). */
+function pushKey(key, value){
+  if (!sb) return Promise.resolve(false);
+  return sb.from("store").upsert({ key: key, value: value }).then(function(r){
+    if (r.error) { setCloudStatus(false, "☁️ تعذر الحفظ على السيرفر — حُفظ محلياً فقط"); return false; }
+    return true;
+  }, function(){ setCloudStatus(false, "☁️ تعذر الحفظ على السيرفر — حُفظ محلياً فقط"); return false; });
+}
+
+var DEFAULT_TITLES = ["بستان القرآن","قارئ النور","حافظ الهمّة","نجم المصحف","صاحب الآيات","درّة التلاوة","فارس الإتقان","قبّة الإيمان","نور الأحزاب","أمير الحفظ"];
+
+function ls(k, d){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } }
+function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+function getAdminPw(){ try{ return localStorage.getItem(ADMIN_PW_KEY) || "2012"; }catch(e){ return "2012"; } }
+function doLogin(){
+  var v = document.getElementById("pw").value;
+  if (v === getAdminPw()) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    renderAll();
+    // جلب البيانات المركزية من السيرفر ثم إعادة العرض (السيرفر له الأولوية)
+    loadCloud().then(function(){ renderAll(); });
+  } else {
+    document.getElementById("loginMsg").textContent = "❌ كلمة مرور خاطئة";
+    document.getElementById("loginMsg").className = "msg err";
+  }
+}
+function savePw(){
+  var v = document.getElementById("newPw").value.trim();
+  if (!v) return;
+  try{ localStorage.setItem(ADMIN_PW_KEY, v); }catch(e){}
+  pushKey(ADMIN_PW_KEY, v); // ☁️ مركزي
+  document.getElementById("pwMsg").textContent = "✅ تم حفظ كلمة المرور مركزياً";
+}
+
+/* ---------- الألقاب ---------- */
+function getTitlesCfg(){
+  var p = ls(TITLES_KEY, null);
+  if (!p) p = { surahsPerLevel: 5, titles: DEFAULT_TITLES.slice(), certificateHeader: "شهادة إتقان وتقدّم في القرآن الكريم" };
+  return p;
+}
+function renderTitles(){
+  var cfg = getTitlesCfg();
+  document.getElementById("spl").value = cfg.surahsPerLevel;
+  document.getElementById("certHead").value = cfg.certificateHeader;
+  var box = document.getElementById("titlesList"); box.innerHTML = "";
+  cfg.titles.forEach(function(t, i){
+    var r = document.createElement("div"); r.className = "row";
+    r.innerHTML = '<span class="badge">درجة ' + (i + 1) + '</span>';
+    var inp = document.createElement("input"); inp.value = t; inp.oninput = function(){ cfg.titles[i] = inp.value; };
+    var del = document.createElement("button"); del.className = "sec"; del.textContent = "🗑"; del.onclick = function(){ cfg.titles.splice(i, 1); renderTitles(); };
+    r.appendChild(inp); r.appendChild(del); box.appendChild(r);
+  });
+  window.__titlesCfg = cfg;
+}
+function addTitle(){ window.__titlesCfg.titles.push("لقب جديد"); renderTitles(); }
+function saveTitles(){
+  window.__titlesCfg.surahsPerLevel = parseInt(document.getElementById("spl").value) || 5;
+  window.__titlesCfg.certificateHeader = document.getElementById("certHead").value || window.__titlesCfg.certificateHeader;
+  lsSet(TITLES_KEY, window.__titlesCfg);
+  pushKey(TITLES_KEY, window.__titlesCfg); // ☁️ مركزي
+  document.getElementById("titlesMsg").textContent = "✅ تم حفظ الألقاب مركزياً — ستصل لكل الأجهزة";
+}
+
+/* ---------- أسعار الألعاب ---------- */
+function getOverrides(){ return ls(PRICES_KEY, {}) || {}; }
+function renderGames(){
+  var catalog = ls(CATALOG_KEY, []) || [];
+  var overrides = getOverrides();
+  var seen = {}, list = [];
+  catalog.forEach(function(g){ if (g && g.id && !seen[g.id]) { seen[g.id] = 1; list.push(g); } });
+  var tb = document.querySelector("#gamesTable tbody"); tb.innerHTML = "";
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="4">افتح التطبيق مرة واحدة أولاً ليتم تحميل قائمة الألعاب، ثم عد إلى هذه الصفحة.</td></tr>';
+    return;
+  }
+  list.forEach(function(g){
+    var tr = document.createElement("tr");
+    var cost = (overrides[g.id] !== undefined ? overrides[g.id] : g.cost);
+    tr.innerHTML = "<td>" + (g.title || g.id) + "</td><td style='color:#64748b'>" + g.id + "</td>";
+    var tdIn = document.createElement("td");
+    var inp = document.createElement("input"); inp.className = "cost-input"; inp.type = "number"; inp.value = cost;
+    inp.oninput = function(){ overrides[g.id] = parseInt(inp.value) || 0; };
+    tdIn.appendChild(inp); tr.appendChild(tdIn);
+    var tdS = document.createElement("td");
+    var b = document.createElement("button"); b.textContent = "💾"; b.onclick = function(){ lsSet(PRICES_KEY, overrides); pushKey(PRICES_KEY, overrides); document.getElementById("gamesMsg").textContent = "✅ حُفظ سعر " + g.title + " مركزياً"; };
+    tdS.appendChild(b); tr.appendChild(tdS);
+    tb.appendChild(tr);
+  });
+}
+function resetPrices(){ try{ localStorage.removeItem(PRICES_KEY); }catch(e){} pushKey(PRICES_KEY, {}); renderGames(); document.getElementById("gamesMsg").textContent = "✅ أُعيدت الأسعار الافتراضية مركزياً"; }
+
+/* ---------- كود النقاط ---------- */
+async function genCode(){
+  var amt = parseInt(document.getElementById("codeAmount").value) || 0;
+  if (amt <= 0) { alert("أدخل عدد نقاط صحيحاً"); return; }
+  var codes = ls(CODES_KEY, {}) || {};
+  var code = Math.random().toString(36).slice(2, 8).toUpperCase() + Math.floor(Math.random() * 90 + 10);
+  codes[code] = { amount: amt, used: false, createdAt: new Date().toISOString() };
+  lsSet(CODES_KEY, codes);
+  var savedToCloud = await pushKey(CODES_KEY, codes); // ☁️ مركزي
+  renderCodes();
+  var cloudMessage = savedToCloud ? " وتمت مزامنته" : " وحُفظ محلياً فقط";
+  document.getElementById("codesList").insertAdjacentHTML("afterbegin", '<p class="msg">✅ تم توليد الكود' + cloudMessage + ': <b>' + code + '</b></p>');
+}
+function renderCodes(){
+  var codes = ls(CODES_KEY, {}) || {};
+  var box = document.getElementById("codesList"); box.innerHTML = "";
+  Object.keys(codes).forEach(function(c){
+    var info = codes[c];
+    var r = document.createElement("div"); r.className = "row";
+    r.innerHTML = '<input readonly value="' + c + '" style="flex:1;text-align:center;font-weight:bold"> <span class="badge">' + info.amount + ' ⭐</span> <span class="badge" style="' + (info.used ? "color:#f87171" : "color:#4ade80") + '">' + (info.used ? "مستخدَم" : "متاح") + '</span>';
+    var del = document.createElement("button"); del.className = "danger"; del.textContent = "🗑";
+    del.onclick = function(){ delete codes[c]; lsSet(CODES_KEY, codes); pushKey(CODES_KEY, codes); renderCodes(); };
+    r.appendChild(del); box.appendChild(r);
+  });
+  if (!Object.keys(codes).length) box.innerHTML = '<p style="color:#64748b;font-size:13px">لا توجد أكواد بعد. أدخل عدد النقاط ثم اضغط توليد، وامنح الكود للطفل ليدخله في بوابة السؤال اليومي.</p>';
+}
+
+/* ---------- كود HTML خارجي ---------- */
+function saveHtml(){
+  var v = document.getElementById("extHtml").value;
+  try{ localStorage.setItem(HTML_KEY, v); }catch(e){}
+  pushKey(HTML_KEY, v); // ☁️ مركزي
+  document.getElementById("htmlMsg").textContent = "✅ تم الحفظ مركزياً — سيظهر أسفل قسم الألعاب في كل الأجهزة";
+}
+
+/* ---------- ملفات الأطفال والألقاب ---------- */
+function levelFor(completed, per){ return Math.max(0, Math.floor(Math.max(0, completed) / Math.max(1, per))); }
+function titleFor(level, cfg){
+  var t = cfg.titles;
+  if (level <= 0) return t[0] || "بستان القرآن";
+  return t[Math.min(level, t.length) - 1] || t[t.length - 1] || "بستان القرآن";
+}
+function renderProfiles(){
+  var profiles = ls(PROFILES_KEY, []) || [];
+  var activeId = null;
+  try{ activeId = localStorage.getItem(ACTIVE_KEY); }catch(e){}
+  var cfg = getTitlesCfg();
+  var box = document.getElementById("profilesInfo"); box.innerHTML = "";
+  if (!profiles.length) { box.innerHTML = '<p style="color:#64748b;font-size:13px">افتح التطبيق مرة واحدة أولاً لتظهر ملفات الأطفال.</p>'; return; }
+  profiles.forEach(function(p){
+    var div = document.createElement("div");
+    div.style.cssText = "border:1px solid #334155;border-radius:12px;padding:10px;margin:8px 0";
+    var curIdx = p.currentSurah || 1;
+    var completed = Math.max(0, curIdx - 1);
+    var level = levelFor(completed, cfg.surahsPerLevel);
+    div.innerHTML = "<b>" + (p.name || "بدون اسم") + "</b> " + (p.id === activeId ? '<span class="badge">نشِط</span>' : "") +
+      "<br><span style='font-size:13px;color:#94a3b8'>النقاط: " + (p.coins || 0) + " ⭐ — السورة الحالية رقم: " + curIdx +
+      " — الدرجة: " + level + " — اللقب: <b style='color:#fbbf24'>" + titleFor(level, cfg) + "</b></span>";
+    var row = document.createElement("div"); row.className = "row";
+    var nameInp = document.createElement("input"); nameInp.value = p.name || ""; nameInp.placeholder = "اسم الطفل (يظهر في الشهادة)";
+    var b = document.createElement("button"); b.textContent = "💾 حفظ الاسم";
+    b.onclick = function(){ p.name = nameInp.value; saveUsers(profiles); renderProfiles(); };
+    row.appendChild(nameInp); row.appendChild(b); div.appendChild(row);
+    box.appendChild(div);
+  });
+}
+
+/* ---------- إدارة المستخدمين (توثيق/حظر + عدد المستخدمين) ---------- */
+function getUsers(){ return ls(PROFILES_KEY, []) || []; }
+function saveUsers(users){
+  lsSet(PROFILES_KEY, users);
+  pushKey(PROFILES_KEY, users); // ☁️ مركزي — التوثيق/الحظر يصل لكل الأجهزة
+}
+function renderUsers(){
+  var users = getUsers();
+  document.getElementById("usersCount").textContent = users.length;
+  var coinUser = document.getElementById("coinUser");
+  var selectedUser = coinUser.value;
+  coinUser.innerHTML = '<option value="">اختر الطفل</option>';
+  users.forEach(function(p){
+    var option = document.createElement("option");
+    option.value = p.id;
+    option.textContent = (p.name || "بدون اسم") + " — " + (p.coins || 0) + " ⭐";
+    coinUser.appendChild(option);
+  });
+  if (users.some(function(p){ return p.id === selectedUser; })) coinUser.value = selectedUser;
+  var q = (document.getElementById("userSearch").value || "").trim();
+  var cfg = getTitlesCfg();
+  var tb = document.querySelector("#usersTable tbody"); tb.innerHTML = "";
+  if (!users.length) {
+    tb.innerHTML = '<tr><td colspan="6">لا يوجد مستخدمون بعد — افتح التطبيق أولاً ليتم إنشاء الملفات.</td></tr>';
+    return;
+  }
+  users.forEach(function(p, i){
+    if (q && !(p.name || "").includes(q)) return;
+    var verified = !!p.verified;
+    var blocked = !!p.blocked;
+    var level = levelFor(Math.max(0, (p.currentSurah || 1) - 1), cfg.surahsPerLevel);
+    var tr = document.createElement("tr");
+    if (blocked) tr.style.opacity = ".55";
+    var tdName = document.createElement("td");
+    var nameInput = document.createElement("input");
+    nameInput.value = p.name || "";
+    nameInput.placeholder = "اسم المستخدم";
+    nameInput.style.minWidth = "120px";
+    var nameButton = document.createElement("button");
+    nameButton.className = "sec";
+    nameButton.textContent = "حفظ";
+    nameButton.onclick = function(){
+      users[i].name = nameInput.value.trim();
+      saveUsers(users);
+      renderUsers();
+      document.getElementById("usersMsg").textContent = "✅ تم حفظ اسم المستخدم";
+    };
+    tdName.appendChild(nameInput);
+    tdName.appendChild(nameButton);
+    var tdCoins = document.createElement("td"); tdCoins.textContent = (p.coins || 0) + " ⭐";
+    var tdLevel = document.createElement("td"); tdLevel.innerHTML = "درجة " + level + " — <b style='color:#fbbf24'>" + titleFor(level, cfg) + "</b>";
+    var tdVer = document.createElement("td");
+    var vBadge = document.createElement("span"); vBadge.className = "badge";
+    vBadge.style.color = verified ? "#4ade80" : "#94a3b8";
+    vBadge.textContent = verified ? "✅ موثّق" : "⛔ غير موثّق";
+    tdVer.appendChild(vBadge);
+    var tdState = document.createElement("td"); tdState.textContent = blocked ? "🚫 محظور" : "🟢 نشِط";
+    var tdAct = document.createElement("td");
+    var bVer = document.createElement("button"); bVer.className = "sec"; bVer.textContent = verified ? "إلغاء التوثيق" : "توثيق";
+    bVer.onclick = function(){ users[i].verified = !verified; saveUsers(users); renderUsers(); document.getElementById("usersMsg").textContent = "✅ تم تحديث توثيق " + (p.name || "المستخدم"); };
+    var bBlock = document.createElement("button"); bBlock.className = blocked ? "sec" : "danger"; bBlock.textContent = blocked ? "إلغاء الحظر" : "حظر";
+    bBlock.onclick = function(){ users[i].blocked = !blocked; saveUsers(users); renderUsers(); document.getElementById("usersMsg").textContent = blocked ? "✅ أُلغي حظر " + (p.name || "المستخدم") : "🚫 تم حظر " + (p.name || "المستخدم"); };
+    var bCoins = document.createElement("button"); bCoins.className = "sec"; bCoins.textContent = "+نقاط";
+    bCoins.onclick = function(){
+      var amt = parseInt(prompt("عدد النقاط المراد إضافتها (او سالب للخصم):") || "0", 10);
+      if (!amt) return;
+      users[i].coins = Math.max(0, (users[i].coins || 0) + amt);
+      saveUsers(users); renderUsers();
+      document.getElementById("usersMsg").textContent = "✅ تم تحديث نقاط " + (p.name || "المستخدم");
+    };
+    tdAct.appendChild(bVer); tdAct.appendChild(bBlock); tdAct.appendChild(bCoins);
+    tr.appendChild(tdName); tr.appendChild(tdCoins); tr.appendChild(tdLevel); tr.appendChild(tdVer); tr.appendChild(tdState); tr.appendChild(tdAct);
+    tb.appendChild(tr);
+  });
+}
+
+function addCoinsToUser(){
+  var userId = document.getElementById("coinUser").value;
+  var amount = parseInt(document.getElementById("coinAmount").value, 10);
+  var users = getUsers();
+  var user = users.find(function(p){ return p.id === userId; });
+  var message = document.getElementById("coinsMsg");
+  if (!user || !Number.isFinite(amount) || amount <= 0) {
+    message.textContent = "❌ اختر طفلاً وأدخل عدداً صحيحاً أكبر من صفر";
+    message.className = "msg err";
+    return;
+  }
+  user.coins = Math.min(100000000, Math.floor((user.coins || 0) + amount));
+  saveUsers(users);
+  document.getElementById("coinAmount").value = "";
+  message.className = "msg";
+  message.textContent = "✅ تمت إضافة " + amount + " ⭐ إلى " + (user.name || "الطفل") + " وحُفظت محلياً/سحابياً";
+  renderProfiles();
+  renderUsers();
+}
+
+function renderAll(){
+  renderTitles();
+  renderGames();
+  renderCodes();
+  renderProfiles();
+  renderUsers();
+  try{ document.getElementById("extHtml").value = localStorage.getItem(HTML_KEY) || ""; }catch(e){}
+}
+
+document.getElementById("pw").addEventListener("keydown", function(e){ if (e.key === "Enter") doLogin(); });
+</script>
+</body>
+</html>

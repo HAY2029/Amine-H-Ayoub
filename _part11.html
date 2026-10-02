@@ -1,0 +1,65 @@
+
+// ======================================================================
+//  خوارزمية التقسيم الذكية
+// ======================================================================
+function splitAudio(buf){
+    const data=buf.getChannelData(0);
+    const sr=buf.sampleRate;
+    const thDB=parseFloat($('rThresh').value);
+    const minSil=parseFloat($('rMinSil').value);
+    const minSeg=parseFloat($('rMinSeg').value);
+    const thresh=Math.pow(10,thDB/20);
+
+    const winSize=Math.floor(sr*0.025);
+    const hop=Math.floor(sr*0.01);
+
+    const frames=[];
+    for(let i=0;i<data.length-winSize;i+=hop){
+        let sum=0;
+        for(let j=0;j<winSize;j++) sum+=data[i+j]*data[i+j];
+        frames.push({t:i/sr, rms:Math.sqrt(sum/winSize)});
+    }
+
+    const smooth=[];
+    const W=5;
+    for(let i=0;i<frames.length;i++){
+        let s=0,c=0;
+        for(let j=Math.max(0,i-W);j<=Math.min(frames.length-1,i+W);j++){s+=frames[j].rms;c++;}
+        smooth.push({t:frames[i].t, rms:s/c, silent:s/c<thresh});
+    }
+
+    const silences=[];
+    let ss=null;
+    for(let i=0;i<smooth.length;i++){
+        if(smooth[i].silent){
+            if(ss===null) ss=smooth[i].t;
+        }else{
+            if(ss!==null){
+                const dur=smooth[i].t-ss;
+                if(dur>=minSil) silences.push({start:ss, end:smooth[i].t, dur});
+                ss=null;
+            }
+        }
+    }
+    if(ss!==null){
+        const end=data.length/sr;
+        if(end-ss>=minSil) silences.push({start:ss,end,dur:end-ss});
+    }
+
+    const result=[];
+    let cur=0;
+    for(const sil of silences){
+        if(sil.start-cur>=minSeg){
+            result.push({start:cur,end:sil.start,duration:sil.start-cur,type:'speech',speaker:null});
+        }
+        if(sil.dur>=minSil*2){
+            result.push({start:sil.start,end:sil.end,duration:sil.dur,type:'silence',speaker:'silence'});
+        }
+        cur=sil.end;
+    }
+    const tot=data.length/sr;
+    if(tot-cur>=minSeg){
+        result.push({start:cur,end:tot,duration:tot-cur,type:'speech',speaker:null});
+    }
+    return result;
+}

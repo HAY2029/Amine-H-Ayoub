@@ -1,0 +1,81 @@
+
+// ======================================================================
+//  التشغيل والتصدير
+// ======================================================================
+let audioBuf=null, segsArr=[], playCtx=null;
+
+async function loadFile(file){
+    const arrayBuf=await file.arrayBuffer();
+    const actx=new (window.AudioContext||window.webkitAudioContext)();
+    audioBuf=await actx.decodeAudioData(arrayBuf);
+    await actx.close();
+
+    runPipeline();
+    $('calibBtn').disabled=false;
+}
+
+function runPipeline(){
+    if(!audioBuf)return;
+    let segs=splitAudio(audioBuf);
+    segs=mergeShort(segs);
+    classifySpeakers(segs,audioBuf);
+    segsArr=segs;
+
+    drawTimeline(segs);
+    drawSegs(segs);
+    drawSpectrum(audioBuf);
+    $('exportBtn').disabled=!segs.length;
+    $('spectrumCard').style.display='block';
+}
+
+function playSeg(i){
+    const s=segsArr[i];
+    if(!s)return;
+    const actx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=actx.createBufferSource();
+    src.buffer=audioBuf;
+    const gain=actx.createGain();
+    gain.gain.value=1;
+    src.connect(gain);
+    gain.connect(actx.destination);
+    const start=s.start*audioBuf.sampleRate;
+    const end=Math.min(s.end*audioBuf.sampleRate,audioBuf.length);
+    src.start(0,start,end-start);
+    document.querySelectorAll('.seg-row').forEach(r=>r.classList.remove('playing'));
+    document.querySelector(`.seg-row[data-i="${i}"]`)?.classList.add('playing');
+}
+
+function exportCSV(){
+    if(!segsArr.length)return;
+    const rows=[['رقم','المتحدث','البداية','النهاية','المدة (ث)','النوع']];
+    segsArr.forEach((s,i)=>{
+        const sp=s.type==='silence'?'صمت':s.speaker==='teacher'?'معلم':s.speaker==='child'?'طفل':'مبدأ';
+        rows.push([i+1,sp,s.start.toFixed(2),s.end.toFixed(2),s.duration.toFixed(2),s.type]);
+    });
+    const csv=rows.map(r=>r.join(',')).join('\n');
+    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='quran-timeline.csv';
+    a.click();
+}
+
+function exportJSON(){
+    if(!segsArr.length)return;
+    const data={
+        total:audioBuf.duration,
+        segments:segsArr.map((s,i)=>({
+            index:i+1,
+            speaker:s.type==='silence'?'silence':s.speaker,
+            start:parseFloat(s.start.toFixed(2)),
+            end:parseFloat(s.end.toFixed(2)),
+            duration:parseFloat(s.duration.toFixed(2)),
+            type:s.type
+        }))
+    };
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='quran-timeline.json';
+    a.click();
+}
