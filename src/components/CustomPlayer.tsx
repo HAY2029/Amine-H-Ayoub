@@ -93,7 +93,6 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
     const [sleepRemainingSeconds, setSleepRemainingSeconds] = useState<number | null>(null);
     const [fallbackToCloud, setFallbackToCloud] = useState(false);
     const initialTimeApplied = useRef(false);
-    const [isEntering, setIsEntering] = useState(true);
     const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth < 768 : false);
 
     // Track mobile vs desktop
@@ -101,14 +100,6 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
       const handler = () => setIsMobile(window.innerWidth < 768);
       window.addEventListener("resize", handler);
       return () => window.removeEventListener("resize", handler);
-    }, []);
-
-    // Entry animation
-    useEffect(() => {
-      const raf = requestAnimationFrame(() => {
-        setTimeout(() => setIsEntering(false), 50);
-      });
-      return () => cancelAnimationFrame(raf);
     }, []);
 
     useImperativeHandle(ref, () => ({
@@ -549,13 +540,8 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
     /* ======================= BOTTOM BAR PLAYER (Desktop & Mobile Mini) ======================= */
     return (
       <div
-        className="player-bottom-bar"
+        className="player-bottom-bar animate-slide-up-short"
         dir="rtl"
-        style={{
-          opacity: isEntering ? 0 : 1,
-          transform: isEntering ? "translateY(100%)" : "translateY(0)",
-          transition: "all 0.4s cubic-bezier(0.22,1,0.36,1)",
-        }}
       >
         {/* Top progress bar — always visible */}
         <div className="player-progress-track" onClick={handleProgressClick} dir="ltr" style={{ borderRadius: 0 }}>
