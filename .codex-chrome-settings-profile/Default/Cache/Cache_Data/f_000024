@@ -1,0 +1,1621 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/Avatar.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/Avatar.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"]; const _Fragment = __vite__cjsImport2_react_jsxDevRuntime["Fragment"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const useState = __vite__cjsImport3_react["useState"];
+import { cn } from "/src/lib/utils.ts";
+/**
+ * وجوه الأطفال «صور» مرسومة (SVG) — أطفال كرتونيون ملوّنون، لا إيموجي ولا صور خارجية،
+ * فتعمل دون إنترنت وتكبُر بلا فقدان جودة. المجانية أطفال عاديون؛ المميّزة أطفال بأزياء فخمة.
+ */ const SKIN = {
+    light: "#F6D3AE",
+    tan: "#E7B085",
+    brown: "#C6875A",
+    deep: "#A2673B"
+};
+const HAIR = {
+    black: "#2E2A28",
+    brown: "#6B4A2B",
+    blonde: "#DDAE45",
+    auburn: "#9E4B2E"
+};
+/** إعداد كل وجه: لون البشرة + الشعر + الزينة. */ export const AVATAR_CONFIG = {
+    // ── مجانية: أطفال عاديون بألوان متنوّعة ──
+    boy: {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.brown,
+        acc: "none"
+    },
+    girl: {
+        skin: SKIN.light,
+        hair: "ponytail",
+        hc: HAIR.auburn,
+        acc: "bow"
+    },
+    child: {
+        skin: SKIN.brown,
+        hair: "curly",
+        hc: HAIR.black,
+        acc: "none"
+    },
+    baby: {
+        skin: SKIN.light,
+        hair: "bald",
+        hc: HAIR.brown,
+        acc: "none"
+    },
+    smile: {
+        skin: SKIN.light,
+        hair: "short",
+        hc: HAIR.blonde,
+        acc: "freckles"
+    },
+    grin: {
+        skin: SKIN.tan,
+        hair: "spiky",
+        hc: HAIR.black,
+        acc: "none"
+    },
+    cool: {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.brown,
+        acc: "sunglasses"
+    },
+    wow: {
+        skin: SKIN.deep,
+        hair: "curly",
+        hc: HAIR.black,
+        acc: "none"
+    },
+    wink: {
+        skin: SKIN.light,
+        hair: "bob",
+        hc: HAIR.brown,
+        acc: "wink"
+    },
+    happy: {
+        skin: SKIN.tan,
+        hair: "bob",
+        hc: HAIR.auburn,
+        acc: "none"
+    },
+    // ── مميّزة (بالنجوم): أطفال بأزياء فخمة ──
+    hero: {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.black,
+        acc: "mask"
+    },
+    ninja: {
+        skin: SKIN.light,
+        hair: "short",
+        hc: HAIR.black,
+        acc: "ninja"
+    },
+    artist: {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.brown,
+        acc: "beret"
+    },
+    graduate: {
+        skin: SKIN.brown,
+        hair: "short",
+        hc: HAIR.black,
+        acc: "gradcap"
+    },
+    detective: {
+        skin: SKIN.light,
+        hair: "short",
+        hc: HAIR.auburn,
+        acc: "detective"
+    },
+    astronaut: {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.brown,
+        acc: "helmet"
+    },
+    king: {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.brown,
+        acc: "crown"
+    },
+    queen: {
+        skin: SKIN.light,
+        hair: "bob",
+        hc: HAIR.blonde,
+        acc: "tiara"
+    },
+    superstar: {
+        skin: SKIN.tan,
+        hair: "spiky",
+        hc: HAIR.black,
+        acc: "starglasses"
+    },
+    champion: {
+        skin: SKIN.brown,
+        hair: "short",
+        hc: HAIR.black,
+        acc: "headband"
+    },
+    royal: {
+        skin: SKIN.light,
+        hair: "bob",
+        hc: HAIR.auburn,
+        acc: "bigcrown"
+    },
+    // ── صور جديدة مخصصة للأطفال في التطبيق — أزياء إسلامية أنيقة ──
+    "img-boy-scholar": {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.black,
+        acc: "purplecap"
+    },
+    "img-boy-turban": {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.black,
+        acc: "turban"
+    },
+    "img-boy-bisht": {
+        skin: SKIN.deep,
+        hair: "short",
+        hc: HAIR.black,
+        acc: "royalcap"
+    },
+    "img-boy-knight": {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.brown,
+        acc: "helmet"
+    },
+    "img-boy-knight-legend": {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.brown,
+        acc: "crown"
+    },
+    "img-girl-scholar": {
+        skin: SKIN.light,
+        hair: "bob",
+        hc: HAIR.brown,
+        acc: "hijab"
+    },
+    "img-girl-hijab-rose": {
+        skin: SKIN.light,
+        hair: "bob",
+        hc: HAIR.auburn,
+        acc: "hijab"
+    },
+    "img-girl-hijab-emerald": {
+        skin: SKIN.light,
+        hair: "bob",
+        hc: HAIR.black,
+        acc: "hijab"
+    },
+    "img-girl-emerald": {
+        skin: SKIN.light,
+        hair: "bob",
+        hc: HAIR.blonde,
+        acc: "tiara"
+    },
+    "img-girl-emerald-queen": {
+        skin: SKIN.light,
+        hair: "bob",
+        hc: HAIR.blonde,
+        acc: "bigcrown"
+    },
+    "img-girl-gold": {
+        skin: SKIN.light,
+        hair: "bob",
+        hc: HAIR.auburn,
+        acc: "bow"
+    },
+    "img-girl-purple": {
+        skin: SKIN.light,
+        hair: "ponytail",
+        hc: HAIR.auburn,
+        acc: "hijab"
+    },
+    "img-boy-reciter": {
+        skin: SKIN.tan,
+        hair: "short",
+        hc: HAIR.black,
+        acc: "crescent"
+    }
+};
+const GOLD = "#F4C63B", GOLD_D = "#D9A62B";
+const CUSTOM_ART_KEYS = new Set([
+    "img-boy-scholar",
+    "img-boy-reciter",
+    "img-boy-knight",
+    "img-boy-knight-legend",
+    "img-boy-turban",
+    "img-boy-bisht",
+    "img-girl-scholar",
+    "img-girl-hijab-rose",
+    "img-girl-hijab-emerald",
+    "img-girl-emerald",
+    "img-girl-emerald-queen",
+    "img-girl-gold",
+    "img-girl-purple"
+]);
+const eyesHidden = (a)=>a === "sunglasses" || a === "starglasses" || a === "mask";
+/** شعر خلفي (يُرسم قبل الوجه): كعكة/ذيل جانبي. */ function BackHair({ hair, hc }) {
+    if (hair === "bob") return /*#__PURE__*/ _jsxDEV("path", {
+        d: "M18 52 Q16 78 32 80 L32 50 Z M82 52 Q84 78 68 80 L68 50 Z",
+        fill: hc
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+        lineNumber: 71,
+        columnNumber: 30
+    }, this);
+    if (hair === "ponytail") return /*#__PURE__*/ _jsxDEV(_Fragment, {
+        children: [
+            /*#__PURE__*/ _jsxDEV("circle", {
+                cx: "78",
+                cy: "44",
+                r: "9",
+                fill: hc
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 72,
+                columnNumber: 37
+            }, this),
+            /*#__PURE__*/ _jsxDEV("path", {
+                d: "M74 44 Q92 52 84 74",
+                stroke: hc,
+                strokeWidth: "9",
+                fill: "none",
+                strokeLinecap: "round"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 72,
+                columnNumber: 79
+            }, this)
+        ]
+    }, void 0, true);
+    return null;
+}
+_c = BackHair;
+/** شعر أمامي فوق الجبهة. */ function FrontHair({ hair, hc }) {
+    switch(hair){
+        case "short":
+            return /*#__PURE__*/ _jsxDEV("path", {
+                d: "M22 50 C22 27 78 27 78 50 C73 39 64 34 50 34 C36 34 27 39 22 50 Z",
+                fill: hc
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 80,
+                columnNumber: 14
+            }, this);
+        case "spiky":
+            return /*#__PURE__*/ _jsxDEV("path", {
+                d: "M22 50 L27 28 L35 43 L43 25 L51 43 L59 25 L67 43 L78 50 C73 40 64 34 50 34 C36 34 27 41 22 50 Z",
+                fill: hc
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 82,
+                columnNumber: 14
+            }, this);
+        case "curly":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                fill: hc,
+                children: [
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "30",
+                        cy: "37",
+                        r: "9"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 84,
+                        columnNumber: 27
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "42",
+                        cy: "31",
+                        r: "10"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 84,
+                        columnNumber: 59
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "58",
+                        cy: "31",
+                        r: "10"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 84,
+                        columnNumber: 92
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "70",
+                        cy: "37",
+                        r: "9"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 84,
+                        columnNumber: 125
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M22 52 C24 41 30 35 42 35 L58 35 C70 35 76 41 78 52 C70 42 30 42 22 52 Z"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 84,
+                        columnNumber: 157
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 84,
+                columnNumber: 14
+            }, this);
+        case "bob":
+            return /*#__PURE__*/ _jsxDEV("path", {
+                d: "M22 50 C22 28 78 28 78 50 C72 40 63 35 50 35 C37 35 28 40 22 50 Z",
+                fill: hc
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 86,
+                columnNumber: 14
+            }, this);
+        case "ponytail":
+            return /*#__PURE__*/ _jsxDEV("path", {
+                d: "M24 49 C24 29 76 29 76 49 C71 39 62 34 50 34 C38 34 29 39 24 49 Z",
+                fill: hc
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 88,
+                columnNumber: 14
+            }, this);
+        case "bald":
+            return /*#__PURE__*/ _jsxDEV("path", {
+                d: "M46 32 q4 -7 8 -1",
+                stroke: hc,
+                strokeWidth: "2.5",
+                fill: "none",
+                strokeLinecap: "round"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 90,
+                columnNumber: 14
+            }, this);
+    }
+}
+_c1 = FrontHair;
+/** الزينة (تُرسم فوق كل شيء). */ function Accessory({ acc }) {
+    switch(acc){
+        case "bow":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                transform: "translate(70 30)",
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M0 0 L-10 -6 L-10 6 Z",
+                        fill: "#EE6FA2"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 98,
+                        columnNumber: 46
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M0 0 L10 -6 L10 6 Z",
+                        fill: "#EE6FA2"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 98,
+                        columnNumber: 95
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        r: "3.2",
+                        fill: "#D64D8A"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 98,
+                        columnNumber: 142
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 98,
+                columnNumber: 14
+            }, this);
+        case "crown":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M32 32 L38 17 L50 28 L62 17 L68 32 Z",
+                        fill: GOLD,
+                        stroke: GOLD_D,
+                        strokeWidth: "1.6",
+                        strokeLinejoin: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 100,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "38",
+                        cy: "18",
+                        r: "2",
+                        fill: "#E7533B"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 100,
+                        columnNumber: 135
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "50",
+                        cy: "27",
+                        r: "2.3",
+                        fill: "#3BA6E7"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 100,
+                        columnNumber: 182
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "62",
+                        cy: "18",
+                        r: "2",
+                        fill: "#43C06B"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 100,
+                        columnNumber: 231
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 100,
+                columnNumber: 14
+            }, this);
+        case "tiara":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M34 32 Q50 18 66 32",
+                        fill: "none",
+                        stroke: GOLD,
+                        strokeWidth: "4",
+                        strokeLinecap: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 102,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "50",
+                        cy: "21",
+                        r: "3.2",
+                        fill: "#7BD1F0",
+                        stroke: GOLD_D,
+                        strokeWidth: "1"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 102,
+                        columnNumber: 113
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 102,
+                columnNumber: 14
+            }, this);
+        case "bigcrown":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "30",
+                        y: "28",
+                        width: "40",
+                        height: "7",
+                        rx: "2",
+                        fill: GOLD_D
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 104,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M30 30 L37 12 L50 25 L63 12 L70 30 Z",
+                        fill: GOLD,
+                        stroke: GOLD_D,
+                        strokeWidth: "1.6",
+                        strokeLinejoin: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 104,
+                        columnNumber: 82
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "37",
+                        cy: "14",
+                        r: "2.4",
+                        fill: "#E7533B"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 104,
+                        columnNumber: 200
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "50",
+                        cy: "24",
+                        r: "2.8",
+                        fill: "#7BD1F0"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 104,
+                        columnNumber: 249
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "63",
+                        cy: "14",
+                        r: "2.4",
+                        fill: "#43C06B"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 104,
+                        columnNumber: 298
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "50",
+                        cy: "32",
+                        r: "2",
+                        fill: "#fff"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 104,
+                        columnNumber: 347
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 104,
+                columnNumber: 14
+            }, this);
+        case "mask":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M26 49 Q50 43 74 49 L74 56 Q50 63 26 56 Z",
+                        fill: "#3D7BE0"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 106,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("ellipse", {
+                        cx: "41",
+                        cy: "53",
+                        rx: "4.5",
+                        ry: "3.2",
+                        fill: "#fff"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 106,
+                        columnNumber: 86
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("ellipse", {
+                        cx: "59",
+                        cy: "53",
+                        rx: "4.5",
+                        ry: "3.2",
+                        fill: "#fff"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 106,
+                        columnNumber: 143
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "41",
+                        cy: "53",
+                        r: "2",
+                        fill: "#2A2A2A"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 106,
+                        columnNumber: 200
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "59",
+                        cy: "53",
+                        r: "2",
+                        fill: "#2A2A2A"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 106,
+                        columnNumber: 247
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 106,
+                columnNumber: 14
+            }, this);
+        case "ninja":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "16",
+                        y: "42",
+                        width: "68",
+                        height: "9",
+                        rx: "2",
+                        fill: "#C0392B"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 108,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M16 46 l-9 3 M16 50 l-9 8",
+                        stroke: "#C0392B",
+                        strokeWidth: "3.5",
+                        strokeLinecap: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 108,
+                        columnNumber: 83
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "46",
+                        y: "45",
+                        width: "8",
+                        height: "3",
+                        rx: "1.5",
+                        fill: "#8E2A20"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 108,
+                        columnNumber: 178
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M31 61 Q50 67 69 61 L69 82 Q50 87 31 82 Z",
+                        fill: "#2B2B2B"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 108,
+                        columnNumber: 245
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 108,
+                columnNumber: 14
+            }, this);
+        case "gradcap":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("polygon", {
+                        points: "50,16 82,27 50,38 18,27",
+                        fill: "#2B2B36"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 110,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("polygon", {
+                        points: "50,38 50,31 62,26.5 62,33.5",
+                        fill: "#22222C"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 110,
+                        columnNumber: 76
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("line", {
+                        x1: "70",
+                        y1: "24",
+                        x2: "72",
+                        y2: "41",
+                        stroke: GOLD,
+                        strokeWidth: "1.6"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 110,
+                        columnNumber: 139
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "72",
+                        cy: "42",
+                        r: "2.6",
+                        fill: GOLD
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 110,
+                        columnNumber: 211
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 110,
+                columnNumber: 14
+            }, this);
+        case "beret":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                transform: "rotate(-8 54 27)",
+                children: [
+                    /*#__PURE__*/ _jsxDEV("ellipse", {
+                        cx: "54",
+                        cy: "27",
+                        rx: "22",
+                        ry: "9",
+                        fill: "#C0392B"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 112,
+                        columnNumber: 46
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "54",
+                        cy: "19",
+                        r: "2.6",
+                        fill: "#8E2D22"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 112,
+                        columnNumber: 103
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 112,
+                columnNumber: 14
+            }, this);
+        case "detective":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M24 42 Q50 20 76 42 Z",
+                        fill: "#7A6A55"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 114,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "19",
+                        y: "40",
+                        width: "62",
+                        height: "6",
+                        rx: "3",
+                        fill: "#6B5B47"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 114,
+                        columnNumber: 66
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 114,
+                columnNumber: 14
+            }, this);
+        case "helmet":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "50",
+                        cy: "50",
+                        r: "35",
+                        fill: "#BFE0FF",
+                        opacity: "0.28"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 116,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "50",
+                        cy: "50",
+                        r: "35",
+                        fill: "none",
+                        stroke: "#9CC7EE",
+                        strokeWidth: "3"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 116,
+                        columnNumber: 80
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "26",
+                        y: "82",
+                        width: "48",
+                        height: "14",
+                        rx: "5",
+                        fill: "#ECECEC",
+                        stroke: "#C9C9C9",
+                        strokeWidth: "1.5"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 116,
+                        columnNumber: 158
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 116,
+                columnNumber: 14
+            }, this);
+        case "sunglasses":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                fill: "#232323",
+                children: [
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "29",
+                        y: "48",
+                        width: "17",
+                        height: "11",
+                        rx: "4"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 118,
+                        columnNumber: 32
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "54",
+                        y: "48",
+                        width: "17",
+                        height: "11",
+                        rx: "4"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 118,
+                        columnNumber: 84
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "46",
+                        y: "51",
+                        width: "8",
+                        height: "3"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 118,
+                        columnNumber: 136
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 118,
+                columnNumber: 14
+            }, this);
+        case "starglasses":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "29",
+                        y: "48",
+                        width: "17",
+                        height: "11",
+                        rx: "4",
+                        fill: "#232323"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 120,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "54",
+                        y: "48",
+                        width: "17",
+                        height: "11",
+                        rx: "4",
+                        fill: "#232323"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 120,
+                        columnNumber: 84
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "46",
+                        y: "51",
+                        width: "8",
+                        height: "3",
+                        fill: "#232323"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 120,
+                        columnNumber: 151
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M37.5 49 l1.3 2.6 2.9 .3 -2.1 2 .6 2.8 -2.6 -1.4 -2.6 1.4 .6 -2.8 -2.1 -2 2.9 -.3 Z",
+                        fill: GOLD
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 120,
+                        columnNumber: 209
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 120,
+                columnNumber: 14
+            }, this);
+        case "headband":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("rect", {
+                        x: "18",
+                        y: "40",
+                        width: "64",
+                        height: "7",
+                        rx: "3",
+                        fill: "#E67E22"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 122,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M50 39 l-4 6 h8 Z",
+                        fill: GOLD
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 122,
+                        columnNumber: 83
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 122,
+                columnNumber: 14
+            }, this);
+        case "turban":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M17 46 C22 26, 78 26, 83 46 L81 36 Q50 20 19 36 Z",
+                        fill: "#6F4CC4",
+                        stroke: "#9B8AE8",
+                        strokeWidth: "2.5"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 124,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M24 44 Q50 36 76 44",
+                        fill: "none",
+                        stroke: "#F3E8FF",
+                        strokeWidth: "3",
+                        strokeLinecap: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 124,
+                        columnNumber: 129
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "77",
+                        cy: "27",
+                        r: "3.8",
+                        fill: "#DCCBFF"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 124,
+                        columnNumber: 228
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "50",
+                        cy: "20",
+                        r: "2.8",
+                        fill: "#F5D36F"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 124,
+                        columnNumber: 277
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M50 19 C52 12 58 9 62 13",
+                        fill: "none",
+                        stroke: "#F5D36F",
+                        strokeWidth: "2"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 124,
+                        columnNumber: 326
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 124,
+                columnNumber: 14
+            }, this);
+        case "hijab":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M18 44 Q50 16 82 44 L84 54 Q50 68 16 54 Z",
+                        fill: "#8D5ADF",
+                        stroke: "#C8B4FF",
+                        strokeWidth: "2.4"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 126,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M29 44 Q50 27 71 44",
+                        fill: "none",
+                        stroke: "#F3E8FF",
+                        strokeWidth: "2.4",
+                        strokeLinecap: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 126,
+                        columnNumber: 121
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "50",
+                        cy: "39",
+                        r: "4",
+                        fill: "#F3D0E3"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 126,
+                        columnNumber: 222
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 126,
+                columnNumber: 14
+            }, this);
+        case "purplecap":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M16 44 Q50 26 84 44 L80 52 Q50 60 20 52 Z",
+                        fill: "#7C4CC8",
+                        stroke: "#F2E4FF",
+                        strokeWidth: "2.2"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 128,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M25 47 Q50 35 75 47",
+                        fill: "none",
+                        stroke: "#F5D36F",
+                        strokeWidth: "2.6",
+                        strokeLinecap: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 128,
+                        columnNumber: 121
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M35 58 Q50 63 65 58",
+                        fill: "none",
+                        stroke: "#E8D7FF",
+                        strokeWidth: "2",
+                        strokeLinecap: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 128,
+                        columnNumber: 222
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 128,
+                columnNumber: 14
+            }, this);
+        case "royalcap":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M18 45 Q50 21 82 45 L74 51 Q50 62 26 51 Z",
+                        fill: "#5D4AB0",
+                        stroke: "#E8DBFF",
+                        strokeWidth: "2.2"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 130,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M31 46 Q50 33 69 46",
+                        fill: "none",
+                        stroke: "#F8E49A",
+                        strokeWidth: "2.8",
+                        strokeLinecap: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 130,
+                        columnNumber: 121
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M44 19 L50 13 L56 19",
+                        fill: "none",
+                        stroke: "#F8E49A",
+                        strokeWidth: "2.8",
+                        strokeLinecap: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 130,
+                        columnNumber: 222
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 130,
+                columnNumber: 14
+            }, this);
+        case "crescent":
+            return /*#__PURE__*/ _jsxDEV("g", {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M19 45 C19 30, 34 18, 49 18 C35 26, 29 41, 35 56 C26 56, 19 52, 19 45 Z",
+                        fill: "#F3D36A"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 132,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M65 45 Q80 31 81 47 Q80 61 66 55 Z",
+                        fill: "#F3D36A"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 132,
+                        columnNumber: 116
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 132,
+                columnNumber: 14
+            }, this);
+        default:
+            return null;
+    }
+}
+_c2 = Accessory;
+function Body({ acc }) {
+    const robeColor = acc === "hijab" || acc === "purplecap" ? "#6D4ACD" : acc === "turban" || acc === "royalcap" ? "#5B3A9A" : "#7A46BD";
+    return /*#__PURE__*/ _jsxDEV("g", {
+        children: [
+            /*#__PURE__*/ _jsxDEV("path", {
+                d: "M24 75 L16 100 H84 L76 75 Z",
+                fill: robeColor
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 142,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("path", {
+                d: "M34 75 Q50 68 66 75 L62 100 H38 Z",
+                fill: "#8E64E8",
+                opacity: "0.6"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 143,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("path", {
+                d: "M38 75 H62 L67 100 H33 Z",
+                fill: "#A67BFF",
+                opacity: "0.4"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 144,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("circle", {
+                cx: "50",
+                cy: "76",
+                r: "2.5",
+                fill: "#F8E9FF",
+                opacity: "0.8"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 145,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+        lineNumber: 141,
+        columnNumber: 5
+    }, this);
+}
+_c3 = Body;
+/** ملامح الوجه: عينان + خدّان + ابتسامة (تتكيّف مع الزينة). */ function Face({ acc }) {
+    const hideEyes = eyesHidden(acc);
+    const smile = acc === "ninja" ? null : /*#__PURE__*/ _jsxDEV("path", {
+        d: "M42 65 Q50 72 58 65",
+        fill: "none",
+        stroke: "#9C5A46",
+        strokeWidth: "2.6",
+        strokeLinecap: "round"
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+        lineNumber: 155,
+        columnNumber: 7
+    }, this);
+    return /*#__PURE__*/ _jsxDEV(_Fragment, {
+        children: [
+            /*#__PURE__*/ _jsxDEV("circle", {
+                cx: "35",
+                cy: "60",
+                r: "4.5",
+                fill: "#F49B94",
+                opacity: "0.5"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 158,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("circle", {
+                cx: "65",
+                cy: "60",
+                r: "4.5",
+                fill: "#F49B94",
+                opacity: "0.5"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 159,
+                columnNumber: 7
+            }, this),
+            !hideEyes && /*#__PURE__*/ _jsxDEV(_Fragment, {
+                children: [
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "41",
+                        cy: "53",
+                        r: "3.4",
+                        fill: "#3A2A22"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 162,
+                        columnNumber: 11
+                    }, this),
+                    acc === "wink" ? /*#__PURE__*/ _jsxDEV("path", {
+                        d: "M55 53 q4 3.5 8 0",
+                        stroke: "#3A2A22",
+                        strokeWidth: "2.8",
+                        fill: "none",
+                        strokeLinecap: "round"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 164,
+                        columnNumber: 15
+                    }, this) : /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "59",
+                        cy: "53",
+                        r: "3.4",
+                        fill: "#3A2A22"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 165,
+                        columnNumber: 15
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "42.2",
+                        cy: "51.8",
+                        r: "1.1",
+                        fill: "#fff"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 166,
+                        columnNumber: 11
+                    }, this),
+                    acc !== "wink" && /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "60.2",
+                        cy: "51.8",
+                        r: "1.1",
+                        fill: "#fff"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 167,
+                        columnNumber: 30
+                    }, this)
+                ]
+            }, void 0, true),
+            acc === "freckles" && /*#__PURE__*/ _jsxDEV("g", {
+                fill: "#C4805A",
+                children: [
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "33",
+                        cy: "61",
+                        r: "1"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 171,
+                        columnNumber: 27
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "37",
+                        cy: "63",
+                        r: "1"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 171,
+                        columnNumber: 59
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "63",
+                        cy: "63",
+                        r: "1"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 171,
+                        columnNumber: 91
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("circle", {
+                        cx: "67",
+                        cy: "61",
+                        r: "1"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                        lineNumber: 171,
+                        columnNumber: 123
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 171,
+                columnNumber: 9
+            }, this),
+            smile
+        ]
+    }, void 0, true);
+}
+_c4 = Face;
+/**
+ * الأسماء الرمزية (aliases) لصور الشخصيات ثلاثية الأبعاد.
+ *
+ * ⚠️ كل قيمة هنا يجب أن تشير إلى ملف موجود فعلاً في public/avatars (28 ملفاً: img-boy-1..15 و img-girl-1..13).
+ * سابقاً كانت هذه الخريطة تشير إلى ملفات غير موجودة (مثل img-boy-bisht-white.jpg وأسماء PNG طويلة)
+ * فكان الأفاتار يفشل في التحميل ويسقط على رسم SVG بسيط — تم تصحيحها كلها.
+ */ export const AVATAR_IMAGE_PATHS = {
+    // الشخصيات الأساسية (تُختار عند إنشاء الملف)
+    "img-boy-scholar": "/avatars/img-boy-1.jpg",
+    "img-girl-scholar": "/avatars/img-girl-1.jpg",
+    "img-boy-reciter": "/avatars/img-boy-6.jpg",
+    "img-boy-bisht-white": "/avatars/img-boy-12.jpg",
+    "img-boy-taqiyah-gold": "/avatars/img-boy-15.jpg",
+    "img-girl-gold": "/avatars/img-girl-10.jpg",
+    "img-girl-emerald-queen": "/avatars/img-girl-13.jpg",
+    // المستوى الذهبي
+    "img-boy-reciter-green": "/avatars/img-boy-5.jpg",
+    "img-boy-royal-blue": "/avatars/img-boy-8.jpg",
+    "img-boy-turquoise-vest": "/avatars/img-boy-7.jpg",
+    "img-boy-indigo-scarf": "/avatars/img-boy-9.jpg",
+    // المستوى الماسي
+    "img-boy-knight-ruby": "/avatars/img-boy-10.jpg",
+    "img-boy-turban": "/avatars/img-boy-11.jpg",
+    "img-boy-turban-master": "/avatars/img-boy-13.jpg",
+    "img-girl-hijab-emerald": "/avatars/img-girl-12.jpg",
+    // المستوى الأسطوري
+    "img-boy-sultan-navy": "/avatars/img-boy-14.jpg",
+    "img-boy-crimson-master": "/avatars/img-boy-12.jpg",
+    "img-boy-crescent-purple": "/avatars/img-boy-15.jpg",
+    "img-boy-quran-carrier": "/avatars/img-boy-15.jpg"
+};
+/**
+ * ملاحظة الأداء/الحجم: صور public/avatars مضغوطة إلى 512px بجودة 82 (سكربت scripts/compress-avatars.mjs)
+ * لذلك كل الصور تُطلب بامتداد .jpg — حتى التي كان أصلها .png — لتقليل حجم التطبيق من ~48MB إلى ~1.7MB.
+ */ export const AVATAR_FILE_EXT = "jpg";
+/** يجعل امتداد المسار .jpg (المتاح فعلياً بعد الضغط) */ function toCompressed(src) {
+    return src.replace(/\.(png|jpe?g|bmp|tiff)$/i, `.${AVATAR_FILE_EXT}`);
+}
+/** دالة مساعدة للحصول على مسار الصورة المباشر */ export function getAvatarSrc(name) {
+    const clean = name.startsWith("av-") ? name.replace(/^av-/, "") : name;
+    const direct = AVATAR_IMAGE_PATHS[clean] || AVATAR_IMAGE_PATHS[name];
+    if (direct) return encodeURI(toCompressed(direct));
+    if (clean.startsWith("img-boy-")) {
+        const num = parseInt(clean.replace("img-boy-", ""));
+        if (num >= 1 && num <= 15) return encodeURI(`/avatars/${clean}.${AVATAR_FILE_EXT}`);
+    }
+    if (clean.startsWith("img-girl-")) {
+        const num = parseInt(clean.replace("img-girl-", ""));
+        if (num >= 1 && num <= 13) return encodeURI(`/avatars/${clean}.${AVATAR_FILE_EXT}`);
+    }
+    if (clean.startsWith("img-")) return encodeURI(`/avatars/${clean}.${AVATAR_FILE_EXT}`);
+    return "/avatars/img-boy-bisht-white.jpg";
+}
+/** يعرض وجه الطفل بصورة ثلاثية الأبعاد فاخرة مع دعم SVG كبديل احتياطي */ export default function Avatar({ name, className }) {
+    _s();
+    const [imgFailed, setImgFailed] = useState(false);
+    if (!name || name === "default") {
+        return /*#__PURE__*/ _jsxDEV("svg", {
+            viewBox: "0 0 100 100",
+            className: cn("select-none bg-secondary/50", className),
+            role: "img",
+            "aria-label": "default",
+            children: [
+                /*#__PURE__*/ _jsxDEV("circle", {
+                    cx: "50",
+                    cy: "40",
+                    r: "20",
+                    fill: "#a0a0a0",
+                    opacity: "0.5"
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                    lineNumber: 251,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("path", {
+                    d: "M20 90 Q50 60 80 90",
+                    stroke: "#a0a0a0",
+                    strokeWidth: "15",
+                    strokeLinecap: "round",
+                    fill: "none",
+                    opacity: "0.5"
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                    lineNumber: 252,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+            lineNumber: 250,
+            columnNumber: 7
+        }, this);
+    }
+    const cleanName = name.startsWith("av-") ? name.replace(/^av-/, "") : name;
+    const imageSrc = cleanName.startsWith("img-") ? getAvatarSrc(cleanName) : AVATAR_IMAGE_PATHS[cleanName];
+    if (!imgFailed && imageSrc) {
+        return /*#__PURE__*/ _jsxDEV("img", {
+            src: imageSrc,
+            alt: cleanName,
+            className: cn("object-cover rounded-full shadow-sm w-full h-full bg-accent/10 p-0.5 transition-transform", className),
+            loading: "lazy",
+            decoding: "async",
+            onError: ()=>setImgFailed(true)
+        }, void 0, false, {
+            fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+            lineNumber: 262,
+            columnNumber: 7
+        }, this);
+    }
+    const cfg = AVATAR_CONFIG[cleanName];
+    if (cfg) {
+        return /*#__PURE__*/ _jsxDEV("svg", {
+            viewBox: "0 0 100 100",
+            className: cn("select-none bg-secondary/30 rounded-full", className),
+            role: "img",
+            "aria-label": name,
+            children: [
+                /*#__PURE__*/ _jsxDEV(BackHair, {
+                    hair: cfg.hair,
+                    hc: cfg.hc
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                    lineNumber: 277,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV(Body, {
+                    acc: cfg.acc
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                    lineNumber: 278,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("circle", {
+                    cx: "50",
+                    cy: "52",
+                    r: "26",
+                    fill: cfg.skin
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                    lineNumber: 279,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV(FrontHair, {
+                    hair: cfg.hair,
+                    hc: cfg.hc
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                    lineNumber: 280,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV(Face, {
+                    acc: cfg.acc
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                    lineNumber: 281,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV(Accessory, {
+                    acc: cfg.acc
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                    lineNumber: 282,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+            lineNumber: 276,
+            columnNumber: 7
+        }, this);
+    }
+    return /*#__PURE__*/ _jsxDEV("svg", {
+        viewBox: "0 0 100 100",
+        className: cn("select-none bg-secondary/50 rounded-full", className),
+        role: "img",
+        "aria-label": "default",
+        children: [
+            /*#__PURE__*/ _jsxDEV("circle", {
+                cx: "50",
+                cy: "40",
+                r: "20",
+                fill: "#a0a0a0",
+                opacity: "0.5"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 289,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("path", {
+                d: "M20 90 Q50 60 80 90",
+                stroke: "#a0a0a0",
+                strokeWidth: "15",
+                strokeLinecap: "round",
+                fill: "none",
+                opacity: "0.5"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+                lineNumber: 290,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "H:/Amine-H-Ayoub/src/components/Avatar.tsx",
+        lineNumber: 288,
+        columnNumber: 5
+    }, this);
+}
+_s(Avatar, "JcPs102XE9TFjwikWKWNUDaZLtU=");
+_c5 = Avatar;
+var _c, _c1, _c2, _c3, _c4, _c5;
+$RefreshReg$(_c, "BackHair");
+$RefreshReg$(_c1, "FrontHair");
+$RefreshReg$(_c2, "Accessory");
+$RefreshReg$(_c3, "Body");
+$RefreshReg$(_c4, "Face");
+$RefreshReg$(_c5, "Avatar");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/Avatar.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/Avatar.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkF2YXRhci50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgdXNlU3RhdGUgfSBmcm9tIFwicmVhY3RcIjtcclxuaW1wb3J0IHsgY24gfSBmcm9tIFwiQC9saWIvdXRpbHNcIjtcclxuXHJcbi8qKlxyXG4gKiDZiNis2YjZhyDYp9mE2KPYt9mB2KfZhCDCq9i12YjYscK7INmF2LHYs9mI2YXYqSAoU1ZHKSDigJQg2KPYt9mB2KfZhCDZg9ix2KrZiNmG2YrZiNmGINmF2YTZiNmR2YbZiNmG2Iwg2YTYpyDYpdmK2YXZiNis2Yog2YjZhNinINi12YjYsSDYrtin2LHYrNmK2KnYjFxyXG4gKiDZgdiq2LnZhdmEINiv2YjZhiDYpdmG2KrYsdmG2Kog2YjYqtmD2KjZj9ixINio2YTYpyDZgdmC2K/Yp9mGINis2YjYr9ipLiDYp9mE2YXYrNin2YbZitipINij2LfZgdin2YQg2LnYp9iv2YrZiNmG2Jsg2KfZhNmF2YXZitmR2LLYqSDYo9i32YHYp9mEINio2KPYstmK2KfYoSDZgdiu2YXYqS5cclxuICovXHJcbmNvbnN0IFNLSU46IFJlY29yZDxzdHJpbmcsIHN0cmluZz4gPSB7IGxpZ2h0OiBcIiNGNkQzQUVcIiwgdGFuOiBcIiNFN0IwODVcIiwgYnJvd246IFwiI0M2ODc1QVwiLCBkZWVwOiBcIiNBMjY3M0JcIiB9O1xyXG5jb25zdCBIQUlSOiBSZWNvcmQ8c3RyaW5nLCBzdHJpbmc+ID0geyBibGFjazogXCIjMkUyQTI4XCIsIGJyb3duOiBcIiM2QjRBMkJcIiwgYmxvbmRlOiBcIiNEREFFNDVcIiwgYXVidXJuOiBcIiM5RTRCMkVcIiB9O1xyXG5cclxudHlwZSBIYWlyU3R5bGUgPSBcInNob3J0XCIgfCBcInNwaWt5XCIgfCBcImN1cmx5XCIgfCBcImJvYlwiIHwgXCJwb255dGFpbFwiIHwgXCJiYWxkXCI7XHJcbnR5cGUgQWNjID1cclxuICB8IFwibm9uZVwiIHwgXCJib3dcIiB8IFwiY3Jvd25cIiB8IFwidGlhcmFcIiB8IFwiYmlnY3Jvd25cIiB8IFwibWFza1wiIHwgXCJuaW5qYVwiIHwgXCJncmFkY2FwXCJcclxuICB8IFwiYmVyZXRcIiB8IFwiZGV0ZWN0aXZlXCIgfCBcImhlbG1ldFwiIHwgXCJzdW5nbGFzc2VzXCIgfCBcInN0YXJnbGFzc2VzXCIgfCBcImZyZWNrbGVzXCIgfCBcImhlYWRiYW5kXCIgfCBcIndpbmtcIlxyXG4gIHwgXCJ0dXJiYW5cIiB8IFwiaGlqYWJcIiB8IFwicm95YWxjYXBcIiB8IFwiY3Jlc2NlbnRcIiB8IFwicHVycGxlY2FwXCI7XHJcblxyXG5pbnRlcmZhY2UgQ2ZnIHsgc2tpbjogc3RyaW5nOyBoYWlyOiBIYWlyU3R5bGU7IGhjOiBzdHJpbmc7IGFjYzogQWNjOyB9XHJcblxyXG4vKiog2KXYudiv2KfYryDZg9mEINmI2KzZhzog2YTZiNmGINin2YTYqNi02LHYqSArINin2YTYtNi52LEgKyDYp9mE2LLZitmG2KkuICovXHJcbmV4cG9ydCBjb25zdCBBVkFUQVJfQ09ORklHOiBSZWNvcmQ8c3RyaW5nLCBDZmc+ID0ge1xyXG4gIC8vIOKUgOKUgCDZhdis2KfZhtmK2Kk6INij2LfZgdin2YQg2LnYp9iv2YrZiNmGINio2KPZhNmI2KfZhiDZhdiq2YbZiNmR2LnYqSDilIDilIBcclxuICBib3k6ICAgeyBza2luOiBTS0lOLnRhbiwgICBoYWlyOiBcInNob3J0XCIsICAgIGhjOiBIQUlSLmJyb3duLCAgYWNjOiBcIm5vbmVcIiB9LFxyXG4gIGdpcmw6ICB7IHNraW46IFNLSU4ubGlnaHQsIGhhaXI6IFwicG9ueXRhaWxcIiwgaGM6IEhBSVIuYXVidXJuLCBhY2M6IFwiYm93XCIgfSxcclxuICBjaGlsZDogeyBza2luOiBTS0lOLmJyb3duLCBoYWlyOiBcImN1cmx5XCIsICAgIGhjOiBIQUlSLmJsYWNrLCAgYWNjOiBcIm5vbmVcIiB9LFxyXG4gIGJhYnk6ICB7IHNraW46IFNLSU4ubGlnaHQsIGhhaXI6IFwiYmFsZFwiLCAgICAgaGM6IEhBSVIuYnJvd24sICBhY2M6IFwibm9uZVwiIH0sXHJcbiAgc21pbGU6IHsgc2tpbjogU0tJTi5saWdodCwgaGFpcjogXCJzaG9ydFwiLCAgICBoYzogSEFJUi5ibG9uZGUsIGFjYzogXCJmcmVja2xlc1wiIH0sXHJcbiAgZ3JpbjogIHsgc2tpbjogU0tJTi50YW4sICAgaGFpcjogXCJzcGlreVwiLCAgICBoYzogSEFJUi5ibGFjaywgIGFjYzogXCJub25lXCIgfSxcclxuICBjb29sOiAgeyBza2luOiBTS0lOLnRhbiwgICBoYWlyOiBcInNob3J0XCIsICAgIGhjOiBIQUlSLmJyb3duLCAgYWNjOiBcInN1bmdsYXNzZXNcIiB9LFxyXG4gIHdvdzogICB7IHNraW46IFNLSU4uZGVlcCwgIGhhaXI6IFwiY3VybHlcIiwgICAgaGM6IEhBSVIuYmxhY2ssICBhY2M6IFwibm9uZVwiIH0sXHJcbiAgd2luazogIHsgc2tpbjogU0tJTi5saWdodCwgaGFpcjogXCJib2JcIiwgICAgICBoYzogSEFJUi5icm93biwgIGFjYzogXCJ3aW5rXCIgfSxcclxuICBoYXBweTogeyBza2luOiBTS0lOLnRhbiwgICBoYWlyOiBcImJvYlwiLCAgICAgIGhjOiBIQUlSLmF1YnVybiwgYWNjOiBcIm5vbmVcIiB9LFxyXG4gIC8vIOKUgOKUgCDZhdmF2YrZkdiy2KkgKNio2KfZhNmG2KzZiNmFKTog2KPYt9mB2KfZhCDYqNij2LLZitin2KEg2YHYrtmF2Kkg4pSA4pSAXHJcbiAgaGVybzogICAgICB7IHNraW46IFNLSU4udGFuLCAgIGhhaXI6IFwic2hvcnRcIiwgICAgaGM6IEhBSVIuYmxhY2ssICBhY2M6IFwibWFza1wiIH0sXHJcbiAgbmluamE6ICAgICB7IHNraW46IFNLSU4ubGlnaHQsIGhhaXI6IFwic2hvcnRcIiwgICAgaGM6IEhBSVIuYmxhY2ssICBhY2M6IFwibmluamFcIiB9LFxyXG4gIGFydGlzdDogICAgeyBza2luOiBTS0lOLnRhbiwgICBoYWlyOiBcInNob3J0XCIsICAgIGhjOiBIQUlSLmJyb3duLCAgYWNjOiBcImJlcmV0XCIgfSxcclxuICBncmFkdWF0ZTogIHsgc2tpbjogU0tJTi5icm93biwgaGFpcjogXCJzaG9ydFwiLCAgICBoYzogSEFJUi5ibGFjaywgIGFjYzogXCJncmFkY2FwXCIgfSxcclxuICBkZXRlY3RpdmU6IHsgc2tpbjogU0tJTi5saWdodCwgaGFpcjogXCJzaG9ydFwiLCAgICBoYzogSEFJUi5hdWJ1cm4sIGFjYzogXCJkZXRlY3RpdmVcIiB9LFxyXG4gIGFzdHJvbmF1dDogeyBza2luOiBTS0lOLnRhbiwgICBoYWlyOiBcInNob3J0XCIsICAgIGhjOiBIQUlSLmJyb3duLCAgYWNjOiBcImhlbG1ldFwiIH0sXHJcbiAga2luZzogICAgICB7IHNraW46IFNLSU4udGFuLCAgIGhhaXI6IFwic2hvcnRcIiwgICAgaGM6IEhBSVIuYnJvd24sICBhY2M6IFwiY3Jvd25cIiB9LFxyXG4gIHF1ZWVuOiAgICAgeyBza2luOiBTS0lOLmxpZ2h0LCBoYWlyOiBcImJvYlwiLCAgICAgIGhjOiBIQUlSLmJsb25kZSwgYWNjOiBcInRpYXJhXCIgfSxcclxuICBzdXBlcnN0YXI6IHsgc2tpbjogU0tJTi50YW4sICAgaGFpcjogXCJzcGlreVwiLCAgICBoYzogSEFJUi5ibGFjaywgIGFjYzogXCJzdGFyZ2xhc3Nlc1wiIH0sXHJcbiAgY2hhbXBpb246ICB7IHNraW46IFNLSU4uYnJvd24sIGhhaXI6IFwic2hvcnRcIiwgICAgaGM6IEhBSVIuYmxhY2ssICBhY2M6IFwiaGVhZGJhbmRcIiB9LFxyXG4gIHJveWFsOiAgICAgeyBza2luOiBTS0lOLmxpZ2h0LCBoYWlyOiBcImJvYlwiLCAgICAgIGhjOiBIQUlSLmF1YnVybiwgYWNjOiBcImJpZ2Nyb3duXCIgfSxcclxuXHJcbiAgLy8g4pSA4pSAINi12YjYsSDYrNiv2YrYr9ipINmF2K7Ytdi12Kkg2YTZhNij2LfZgdin2YQg2YHZiiDYp9mE2KrYt9io2YrZgiDigJQg2KPYstmK2KfYoSDYpdiz2YTYp9mF2YrYqSDYo9mG2YrZgtipIOKUgOKUgFxyXG4gIFwiaW1nLWJveS1zY2hvbGFyXCI6IHsgc2tpbjogU0tJTi50YW4sIGhhaXI6IFwic2hvcnRcIiwgaGM6IEhBSVIuYmxhY2ssIGFjYzogXCJwdXJwbGVjYXBcIiB9LFxyXG4gIFwiaW1nLWJveS10dXJiYW5cIjogeyBza2luOiBTS0lOLnRhbiwgaGFpcjogXCJzaG9ydFwiLCBoYzogSEFJUi5ibGFjaywgYWNjOiBcInR1cmJhblwiIH0sXHJcbiAgXCJpbWctYm95LWJpc2h0XCI6IHsgc2tpbjogU0tJTi5kZWVwLCBoYWlyOiBcInNob3J0XCIsIGhjOiBIQUlSLmJsYWNrLCBhY2M6IFwicm95YWxjYXBcIiB9LFxyXG4gIFwiaW1nLWJveS1rbmlnaHRcIjogeyBza2luOiBTS0lOLnRhbiwgaGFpcjogXCJzaG9ydFwiLCBoYzogSEFJUi5icm93biwgYWNjOiBcImhlbG1ldFwiIH0sXHJcbiAgXCJpbWctYm95LWtuaWdodC1sZWdlbmRcIjogeyBza2luOiBTS0lOLnRhbiwgaGFpcjogXCJzaG9ydFwiLCBoYzogSEFJUi5icm93biwgYWNjOiBcImNyb3duXCIgfSxcclxuICBcImltZy1naXJsLXNjaG9sYXJcIjogeyBza2luOiBTS0lOLmxpZ2h0LCBoYWlyOiBcImJvYlwiLCBoYzogSEFJUi5icm93biwgYWNjOiBcImhpamFiXCIgfSxcclxuICBcImltZy1naXJsLWhpamFiLXJvc2VcIjogeyBza2luOiBTS0lOLmxpZ2h0LCBoYWlyOiBcImJvYlwiLCBoYzogSEFJUi5hdWJ1cm4sIGFjYzogXCJoaWphYlwiIH0sXHJcbiAgXCJpbWctZ2lybC1oaWphYi1lbWVyYWxkXCI6IHsgc2tpbjogU0tJTi5saWdodCwgaGFpcjogXCJib2JcIiwgaGM6IEhBSVIuYmxhY2ssIGFjYzogXCJoaWphYlwiIH0sXHJcbiAgXCJpbWctZ2lybC1lbWVyYWxkXCI6IHsgc2tpbjogU0tJTi5saWdodCwgaGFpcjogXCJib2JcIiwgaGM6IEhBSVIuYmxvbmRlLCBhY2M6IFwidGlhcmFcIiB9LFxyXG4gIFwiaW1nLWdpcmwtZW1lcmFsZC1xdWVlblwiOiB7IHNraW46IFNLSU4ubGlnaHQsIGhhaXI6IFwiYm9iXCIsIGhjOiBIQUlSLmJsb25kZSwgYWNjOiBcImJpZ2Nyb3duXCIgfSxcclxuICBcImltZy1naXJsLWdvbGRcIjogeyBza2luOiBTS0lOLmxpZ2h0LCBoYWlyOiBcImJvYlwiLCBoYzogSEFJUi5hdWJ1cm4sIGFjYzogXCJib3dcIiB9LFxyXG4gIFwiaW1nLWdpcmwtcHVycGxlXCI6IHsgc2tpbjogU0tJTi5saWdodCwgaGFpcjogXCJwb255dGFpbFwiLCBoYzogSEFJUi5hdWJ1cm4sIGFjYzogXCJoaWphYlwiIH0sXHJcbiAgXCJpbWctYm95LXJlY2l0ZXJcIjogeyBza2luOiBTS0lOLnRhbiwgaGFpcjogXCJzaG9ydFwiLCBoYzogSEFJUi5ibGFjaywgYWNjOiBcImNyZXNjZW50XCIgfSxcclxufTtcclxuXHJcbmNvbnN0IEdPTEQgPSBcIiNGNEM2M0JcIiwgR09MRF9EID0gXCIjRDlBNjJCXCI7XHJcbmNvbnN0IENVU1RPTV9BUlRfS0VZUyA9IG5ldyBTZXQoW1xyXG4gIFwiaW1nLWJveS1zY2hvbGFyXCIsIFwiaW1nLWJveS1yZWNpdGVyXCIsIFwiaW1nLWJveS1rbmlnaHRcIiwgXCJpbWctYm95LWtuaWdodC1sZWdlbmRcIixcclxuICBcImltZy1ib3ktdHVyYmFuXCIsIFwiaW1nLWJveS1iaXNodFwiLCBcImltZy1naXJsLXNjaG9sYXJcIiwgXCJpbWctZ2lybC1oaWphYi1yb3NlXCIsXHJcbiAgXCJpbWctZ2lybC1oaWphYi1lbWVyYWxkXCIsIFwiaW1nLWdpcmwtZW1lcmFsZFwiLCBcImltZy1naXJsLWVtZXJhbGQtcXVlZW5cIiwgXCJpbWctZ2lybC1nb2xkXCIsIFwiaW1nLWdpcmwtcHVycGxlXCJcclxuXSk7XHJcbmNvbnN0IGV5ZXNIaWRkZW4gPSAoYTogQWNjKSA9PiBhID09PSBcInN1bmdsYXNzZXNcIiB8fCBhID09PSBcInN0YXJnbGFzc2VzXCIgfHwgYSA9PT0gXCJtYXNrXCI7XHJcblxyXG4vKiog2LTYudixINiu2YTZgdmKICjZitmP2LHYs9mFINmC2KjZhCDYp9mE2YjYrNmHKTog2YPYudmD2Kkv2LDZitmEINis2KfZhtio2YouICovXHJcbmZ1bmN0aW9uIEJhY2tIYWlyKHsgaGFpciwgaGMgfTogeyBoYWlyOiBIYWlyU3R5bGU7IGhjOiBzdHJpbmcgfSkge1xyXG4gIGlmIChoYWlyID09PSBcImJvYlwiKSByZXR1cm4gPHBhdGggZD1cIk0xOCA1MiBRMTYgNzggMzIgODAgTDMyIDUwIFogTTgyIDUyIFE4NCA3OCA2OCA4MCBMNjggNTAgWlwiIGZpbGw9e2hjfSAvPjtcclxuICBpZiAoaGFpciA9PT0gXCJwb255dGFpbFwiKSByZXR1cm4gPD48Y2lyY2xlIGN4PVwiNzhcIiBjeT1cIjQ0XCIgcj1cIjlcIiBmaWxsPXtoY30gLz48cGF0aCBkPVwiTTc0IDQ0IFE5MiA1MiA4NCA3NFwiIHN0cm9rZT17aGN9IHN0cm9rZVdpZHRoPVwiOVwiIGZpbGw9XCJub25lXCIgc3Ryb2tlTGluZWNhcD1cInJvdW5kXCIgLz48Lz47XHJcbiAgcmV0dXJuIG51bGw7XHJcbn1cclxuXHJcbi8qKiDYtNi52LEg2KPZhdin2YXZiiDZgdmI2YIg2KfZhNis2KjZh9ipLiAqL1xyXG5mdW5jdGlvbiBGcm9udEhhaXIoeyBoYWlyLCBoYyB9OiB7IGhhaXI6IEhhaXJTdHlsZTsgaGM6IHN0cmluZyB9KSB7XHJcbiAgc3dpdGNoIChoYWlyKSB7XHJcbiAgICBjYXNlIFwic2hvcnRcIjpcclxuICAgICAgcmV0dXJuIDxwYXRoIGQ9XCJNMjIgNTAgQzIyIDI3IDc4IDI3IDc4IDUwIEM3MyAzOSA2NCAzNCA1MCAzNCBDMzYgMzQgMjcgMzkgMjIgNTAgWlwiIGZpbGw9e2hjfSAvPjtcclxuICAgIGNhc2UgXCJzcGlreVwiOlxyXG4gICAgICByZXR1cm4gPHBhdGggZD1cIk0yMiA1MCBMMjcgMjggTDM1IDQzIEw0MyAyNSBMNTEgNDMgTDU5IDI1IEw2NyA0MyBMNzggNTAgQzczIDQwIDY0IDM0IDUwIDM0IEMzNiAzNCAyNyA0MSAyMiA1MCBaXCIgZmlsbD17aGN9IC8+O1xyXG4gICAgY2FzZSBcImN1cmx5XCI6XHJcbiAgICAgIHJldHVybiA8ZyBmaWxsPXtoY30+PGNpcmNsZSBjeD1cIjMwXCIgY3k9XCIzN1wiIHI9XCI5XCIgLz48Y2lyY2xlIGN4PVwiNDJcIiBjeT1cIjMxXCIgcj1cIjEwXCIgLz48Y2lyY2xlIGN4PVwiNThcIiBjeT1cIjMxXCIgcj1cIjEwXCIgLz48Y2lyY2xlIGN4PVwiNzBcIiBjeT1cIjM3XCIgcj1cIjlcIiAvPjxwYXRoIGQ9XCJNMjIgNTIgQzI0IDQxIDMwIDM1IDQyIDM1IEw1OCAzNSBDNzAgMzUgNzYgNDEgNzggNTIgQzcwIDQyIDMwIDQyIDIyIDUyIFpcIiAvPjwvZz47XHJcbiAgICBjYXNlIFwiYm9iXCI6XHJcbiAgICAgIHJldHVybiA8cGF0aCBkPVwiTTIyIDUwIEMyMiAyOCA3OCAyOCA3OCA1MCBDNzIgNDAgNjMgMzUgNTAgMzUgQzM3IDM1IDI4IDQwIDIyIDUwIFpcIiBmaWxsPXtoY30gLz47XHJcbiAgICBjYXNlIFwicG9ueXRhaWxcIjpcclxuICAgICAgcmV0dXJuIDxwYXRoIGQ9XCJNMjQgNDkgQzI0IDI5IDc2IDI5IDc2IDQ5IEM3MSAzOSA2MiAzNCA1MCAzNCBDMzggMzQgMjkgMzkgMjQgNDkgWlwiIGZpbGw9e2hjfSAvPjtcclxuICAgIGNhc2UgXCJiYWxkXCI6XHJcbiAgICAgIHJldHVybiA8cGF0aCBkPVwiTTQ2IDMyIHE0IC03IDggLTFcIiBzdHJva2U9e2hjfSBzdHJva2VXaWR0aD1cIjIuNVwiIGZpbGw9XCJub25lXCIgc3Ryb2tlTGluZWNhcD1cInJvdW5kXCIgLz47XHJcbiAgfVxyXG59XHJcblxyXG4vKiog2KfZhNiy2YrZhtipICjYqtmP2LHYs9mFINmB2YjZgiDZg9mEINi02YrYoSkuICovXHJcbmZ1bmN0aW9uIEFjY2Vzc29yeSh7IGFjYyB9OiB7IGFjYzogQWNjIH0pIHtcclxuICBzd2l0Y2ggKGFjYykge1xyXG4gICAgY2FzZSBcImJvd1wiOlxyXG4gICAgICByZXR1cm4gPGcgdHJhbnNmb3JtPVwidHJhbnNsYXRlKDcwIDMwKVwiPjxwYXRoIGQ9XCJNMCAwIEwtMTAgLTYgTC0xMCA2IFpcIiBmaWxsPVwiI0VFNkZBMlwiIC8+PHBhdGggZD1cIk0wIDAgTDEwIC02IEwxMCA2IFpcIiBmaWxsPVwiI0VFNkZBMlwiIC8+PGNpcmNsZSByPVwiMy4yXCIgZmlsbD1cIiNENjREOEFcIiAvPjwvZz47XHJcbiAgICBjYXNlIFwiY3Jvd25cIjpcclxuICAgICAgcmV0dXJuIDxnPjxwYXRoIGQ9XCJNMzIgMzIgTDM4IDE3IEw1MCAyOCBMNjIgMTcgTDY4IDMyIFpcIiBmaWxsPXtHT0xEfSBzdHJva2U9e0dPTERfRH0gc3Ryb2tlV2lkdGg9XCIxLjZcIiBzdHJva2VMaW5lam9pbj1cInJvdW5kXCIgLz48Y2lyY2xlIGN4PVwiMzhcIiBjeT1cIjE4XCIgcj1cIjJcIiBmaWxsPVwiI0U3NTMzQlwiIC8+PGNpcmNsZSBjeD1cIjUwXCIgY3k9XCIyN1wiIHI9XCIyLjNcIiBmaWxsPVwiIzNCQTZFN1wiIC8+PGNpcmNsZSBjeD1cIjYyXCIgY3k9XCIxOFwiIHI9XCIyXCIgZmlsbD1cIiM0M0MwNkJcIiAvPjwvZz47XHJcbiAgICBjYXNlIFwidGlhcmFcIjpcclxuICAgICAgcmV0dXJuIDxnPjxwYXRoIGQ9XCJNMzQgMzIgUTUwIDE4IDY2IDMyXCIgZmlsbD1cIm5vbmVcIiBzdHJva2U9e0dPTER9IHN0cm9rZVdpZHRoPVwiNFwiIHN0cm9rZUxpbmVjYXA9XCJyb3VuZFwiIC8+PGNpcmNsZSBjeD1cIjUwXCIgY3k9XCIyMVwiIHI9XCIzLjJcIiBmaWxsPVwiIzdCRDFGMFwiIHN0cm9rZT17R09MRF9EfSBzdHJva2VXaWR0aD1cIjFcIiAvPjwvZz47XHJcbiAgICBjYXNlIFwiYmlnY3Jvd25cIjpcclxuICAgICAgcmV0dXJuIDxnPjxyZWN0IHg9XCIzMFwiIHk9XCIyOFwiIHdpZHRoPVwiNDBcIiBoZWlnaHQ9XCI3XCIgcng9XCIyXCIgZmlsbD17R09MRF9EfSAvPjxwYXRoIGQ9XCJNMzAgMzAgTDM3IDEyIEw1MCAyNSBMNjMgMTIgTDcwIDMwIFpcIiBmaWxsPXtHT0xEfSBzdHJva2U9e0dPTERfRH0gc3Ryb2tlV2lkdGg9XCIxLjZcIiBzdHJva2VMaW5lam9pbj1cInJvdW5kXCIgLz48Y2lyY2xlIGN4PVwiMzdcIiBjeT1cIjE0XCIgcj1cIjIuNFwiIGZpbGw9XCIjRTc1MzNCXCIgLz48Y2lyY2xlIGN4PVwiNTBcIiBjeT1cIjI0XCIgcj1cIjIuOFwiIGZpbGw9XCIjN0JEMUYwXCIgLz48Y2lyY2xlIGN4PVwiNjNcIiBjeT1cIjE0XCIgcj1cIjIuNFwiIGZpbGw9XCIjNDNDMDZCXCIgLz48Y2lyY2xlIGN4PVwiNTBcIiBjeT1cIjMyXCIgcj1cIjJcIiBmaWxsPVwiI2ZmZlwiIC8+PC9nPjtcclxuICAgIGNhc2UgXCJtYXNrXCI6XHJcbiAgICAgIHJldHVybiA8Zz48cGF0aCBkPVwiTTI2IDQ5IFE1MCA0MyA3NCA0OSBMNzQgNTYgUTUwIDYzIDI2IDU2IFpcIiBmaWxsPVwiIzNEN0JFMFwiIC8+PGVsbGlwc2UgY3g9XCI0MVwiIGN5PVwiNTNcIiByeD1cIjQuNVwiIHJ5PVwiMy4yXCIgZmlsbD1cIiNmZmZcIiAvPjxlbGxpcHNlIGN4PVwiNTlcIiBjeT1cIjUzXCIgcng9XCI0LjVcIiByeT1cIjMuMlwiIGZpbGw9XCIjZmZmXCIgLz48Y2lyY2xlIGN4PVwiNDFcIiBjeT1cIjUzXCIgcj1cIjJcIiBmaWxsPVwiIzJBMkEyQVwiIC8+PGNpcmNsZSBjeD1cIjU5XCIgY3k9XCI1M1wiIHI9XCIyXCIgZmlsbD1cIiMyQTJBMkFcIiAvPjwvZz47XHJcbiAgICBjYXNlIFwibmluamFcIjpcclxuICAgICAgcmV0dXJuIDxnPjxyZWN0IHg9XCIxNlwiIHk9XCI0MlwiIHdpZHRoPVwiNjhcIiBoZWlnaHQ9XCI5XCIgcng9XCIyXCIgZmlsbD1cIiNDMDM5MkJcIiAvPjxwYXRoIGQ9XCJNMTYgNDYgbC05IDMgTTE2IDUwIGwtOSA4XCIgc3Ryb2tlPVwiI0MwMzkyQlwiIHN0cm9rZVdpZHRoPVwiMy41XCIgc3Ryb2tlTGluZWNhcD1cInJvdW5kXCIgLz48cmVjdCB4PVwiNDZcIiB5PVwiNDVcIiB3aWR0aD1cIjhcIiBoZWlnaHQ9XCIzXCIgcng9XCIxLjVcIiBmaWxsPVwiIzhFMkEyMFwiIC8+PHBhdGggZD1cIk0zMSA2MSBRNTAgNjcgNjkgNjEgTDY5IDgyIFE1MCA4NyAzMSA4MiBaXCIgZmlsbD1cIiMyQjJCMkJcIiAvPjwvZz47XHJcbiAgICBjYXNlIFwiZ3JhZGNhcFwiOlxyXG4gICAgICByZXR1cm4gPGc+PHBvbHlnb24gcG9pbnRzPVwiNTAsMTYgODIsMjcgNTAsMzggMTgsMjdcIiBmaWxsPVwiIzJCMkIzNlwiIC8+PHBvbHlnb24gcG9pbnRzPVwiNTAsMzggNTAsMzEgNjIsMjYuNSA2MiwzMy41XCIgZmlsbD1cIiMyMjIyMkNcIiAvPjxsaW5lIHgxPVwiNzBcIiB5MT1cIjI0XCIgeDI9XCI3MlwiIHkyPVwiNDFcIiBzdHJva2U9e0dPTER9IHN0cm9rZVdpZHRoPVwiMS42XCIgLz48Y2lyY2xlIGN4PVwiNzJcIiBjeT1cIjQyXCIgcj1cIjIuNlwiIGZpbGw9e0dPTER9IC8+PC9nPjtcclxuICAgIGNhc2UgXCJiZXJldFwiOlxyXG4gICAgICByZXR1cm4gPGcgdHJhbnNmb3JtPVwicm90YXRlKC04IDU0IDI3KVwiPjxlbGxpcHNlIGN4PVwiNTRcIiBjeT1cIjI3XCIgcng9XCIyMlwiIHJ5PVwiOVwiIGZpbGw9XCIjQzAzOTJCXCIgLz48Y2lyY2xlIGN4PVwiNTRcIiBjeT1cIjE5XCIgcj1cIjIuNlwiIGZpbGw9XCIjOEUyRDIyXCIgLz48L2c+O1xyXG4gICAgY2FzZSBcImRldGVjdGl2ZVwiOlxyXG4gICAgICByZXR1cm4gPGc+PHBhdGggZD1cIk0yNCA0MiBRNTAgMjAgNzYgNDIgWlwiIGZpbGw9XCIjN0E2QTU1XCIgLz48cmVjdCB4PVwiMTlcIiB5PVwiNDBcIiB3aWR0aD1cIjYyXCIgaGVpZ2h0PVwiNlwiIHJ4PVwiM1wiIGZpbGw9XCIjNkI1QjQ3XCIgLz48L2c+O1xyXG4gICAgY2FzZSBcImhlbG1ldFwiOlxyXG4gICAgICByZXR1cm4gPGc+PGNpcmNsZSBjeD1cIjUwXCIgY3k9XCI1MFwiIHI9XCIzNVwiIGZpbGw9XCIjQkZFMEZGXCIgb3BhY2l0eT1cIjAuMjhcIiAvPjxjaXJjbGUgY3g9XCI1MFwiIGN5PVwiNTBcIiByPVwiMzVcIiBmaWxsPVwibm9uZVwiIHN0cm9rZT1cIiM5Q0M3RUVcIiBzdHJva2VXaWR0aD1cIjNcIiAvPjxyZWN0IHg9XCIyNlwiIHk9XCI4MlwiIHdpZHRoPVwiNDhcIiBoZWlnaHQ9XCIxNFwiIHJ4PVwiNVwiIGZpbGw9XCIjRUNFQ0VDXCIgc3Ryb2tlPVwiI0M5QzlDOVwiIHN0cm9rZVdpZHRoPVwiMS41XCIgLz48L2c+O1xyXG4gICAgY2FzZSBcInN1bmdsYXNzZXNcIjpcclxuICAgICAgcmV0dXJuIDxnIGZpbGw9XCIjMjMyMzIzXCI+PHJlY3QgeD1cIjI5XCIgeT1cIjQ4XCIgd2lkdGg9XCIxN1wiIGhlaWdodD1cIjExXCIgcng9XCI0XCIgLz48cmVjdCB4PVwiNTRcIiB5PVwiNDhcIiB3aWR0aD1cIjE3XCIgaGVpZ2h0PVwiMTFcIiByeD1cIjRcIiAvPjxyZWN0IHg9XCI0NlwiIHk9XCI1MVwiIHdpZHRoPVwiOFwiIGhlaWdodD1cIjNcIiAvPjwvZz47XHJcbiAgICBjYXNlIFwic3RhcmdsYXNzZXNcIjpcclxuICAgICAgcmV0dXJuIDxnPjxyZWN0IHg9XCIyOVwiIHk9XCI0OFwiIHdpZHRoPVwiMTdcIiBoZWlnaHQ9XCIxMVwiIHJ4PVwiNFwiIGZpbGw9XCIjMjMyMzIzXCIgLz48cmVjdCB4PVwiNTRcIiB5PVwiNDhcIiB3aWR0aD1cIjE3XCIgaGVpZ2h0PVwiMTFcIiByeD1cIjRcIiBmaWxsPVwiIzIzMjMyM1wiIC8+PHJlY3QgeD1cIjQ2XCIgeT1cIjUxXCIgd2lkdGg9XCI4XCIgaGVpZ2h0PVwiM1wiIGZpbGw9XCIjMjMyMzIzXCIgLz48cGF0aCBkPVwiTTM3LjUgNDkgbDEuMyAyLjYgMi45IC4zIC0yLjEgMiAuNiAyLjggLTIuNiAtMS40IC0yLjYgMS40IC42IC0yLjggLTIuMSAtMiAyLjkgLS4zIFpcIiBmaWxsPXtHT0xEfSAvPjwvZz47XHJcbiAgICBjYXNlIFwiaGVhZGJhbmRcIjpcclxuICAgICAgcmV0dXJuIDxnPjxyZWN0IHg9XCIxOFwiIHk9XCI0MFwiIHdpZHRoPVwiNjRcIiBoZWlnaHQ9XCI3XCIgcng9XCIzXCIgZmlsbD1cIiNFNjdFMjJcIiAvPjxwYXRoIGQ9XCJNNTAgMzkgbC00IDYgaDggWlwiIGZpbGw9e0dPTER9IC8+PC9nPjtcclxuICAgIGNhc2UgXCJ0dXJiYW5cIjpcclxuICAgICAgcmV0dXJuIDxnPjxwYXRoIGQ9XCJNMTcgNDYgQzIyIDI2LCA3OCAyNiwgODMgNDYgTDgxIDM2IFE1MCAyMCAxOSAzNiBaXCIgZmlsbD1cIiM2RjRDQzRcIiBzdHJva2U9XCIjOUI4QUU4XCIgc3Ryb2tlV2lkdGg9XCIyLjVcIiAvPjxwYXRoIGQ9XCJNMjQgNDQgUTUwIDM2IDc2IDQ0XCIgZmlsbD1cIm5vbmVcIiBzdHJva2U9XCIjRjNFOEZGXCIgc3Ryb2tlV2lkdGg9XCIzXCIgc3Ryb2tlTGluZWNhcD1cInJvdW5kXCIgLz48Y2lyY2xlIGN4PVwiNzdcIiBjeT1cIjI3XCIgcj1cIjMuOFwiIGZpbGw9XCIjRENDQkZGXCIgLz48Y2lyY2xlIGN4PVwiNTBcIiBjeT1cIjIwXCIgcj1cIjIuOFwiIGZpbGw9XCIjRjVEMzZGXCIgLz48cGF0aCBkPVwiTTUwIDE5IEM1MiAxMiA1OCA5IDYyIDEzXCIgZmlsbD1cIm5vbmVcIiBzdHJva2U9XCIjRjVEMzZGXCIgc3Ryb2tlV2lkdGg9XCIyXCIgLz48L2c+O1xyXG4gICAgY2FzZSBcImhpamFiXCI6XHJcbiAgICAgIHJldHVybiA8Zz48cGF0aCBkPVwiTTE4IDQ0IFE1MCAxNiA4MiA0NCBMODQgNTQgUTUwIDY4IDE2IDU0IFpcIiBmaWxsPVwiIzhENUFERlwiIHN0cm9rZT1cIiNDOEI0RkZcIiBzdHJva2VXaWR0aD1cIjIuNFwiIC8+PHBhdGggZD1cIk0yOSA0NCBRNTAgMjcgNzEgNDRcIiBmaWxsPVwibm9uZVwiIHN0cm9rZT1cIiNGM0U4RkZcIiBzdHJva2VXaWR0aD1cIjIuNFwiIHN0cm9rZUxpbmVjYXA9XCJyb3VuZFwiIC8+PGNpcmNsZSBjeD1cIjUwXCIgY3k9XCIzOVwiIHI9XCI0XCIgZmlsbD1cIiNGM0QwRTNcIiAvPjwvZz47XHJcbiAgICBjYXNlIFwicHVycGxlY2FwXCI6XHJcbiAgICAgIHJldHVybiA8Zz48cGF0aCBkPVwiTTE2IDQ0IFE1MCAyNiA4NCA0NCBMODAgNTIgUTUwIDYwIDIwIDUyIFpcIiBmaWxsPVwiIzdDNENDOFwiIHN0cm9rZT1cIiNGMkU0RkZcIiBzdHJva2VXaWR0aD1cIjIuMlwiIC8+PHBhdGggZD1cIk0yNSA0NyBRNTAgMzUgNzUgNDdcIiBmaWxsPVwibm9uZVwiIHN0cm9rZT1cIiNGNUQzNkZcIiBzdHJva2VXaWR0aD1cIjIuNlwiIHN0cm9rZUxpbmVjYXA9XCJyb3VuZFwiIC8+PHBhdGggZD1cIk0zNSA1OCBRNTAgNjMgNjUgNThcIiBmaWxsPVwibm9uZVwiIHN0cm9rZT1cIiNFOEQ3RkZcIiBzdHJva2VXaWR0aD1cIjJcIiBzdHJva2VMaW5lY2FwPVwicm91bmRcIiAvPjwvZz47XHJcbiAgICBjYXNlIFwicm95YWxjYXBcIjpcclxuICAgICAgcmV0dXJuIDxnPjxwYXRoIGQ9XCJNMTggNDUgUTUwIDIxIDgyIDQ1IEw3NCA1MSBRNTAgNjIgMjYgNTEgWlwiIGZpbGw9XCIjNUQ0QUIwXCIgc3Ryb2tlPVwiI0U4REJGRlwiIHN0cm9rZVdpZHRoPVwiMi4yXCIgLz48cGF0aCBkPVwiTTMxIDQ2IFE1MCAzMyA2OSA0NlwiIGZpbGw9XCJub25lXCIgc3Ryb2tlPVwiI0Y4RTQ5QVwiIHN0cm9rZVdpZHRoPVwiMi44XCIgc3Ryb2tlTGluZWNhcD1cInJvdW5kXCIgLz48cGF0aCBkPVwiTTQ0IDE5IEw1MCAxMyBMNTYgMTlcIiBmaWxsPVwibm9uZVwiIHN0cm9rZT1cIiNGOEU0OUFcIiBzdHJva2VXaWR0aD1cIjIuOFwiIHN0cm9rZUxpbmVjYXA9XCJyb3VuZFwiIC8+PC9nPjtcclxuICAgIGNhc2UgXCJjcmVzY2VudFwiOlxyXG4gICAgICByZXR1cm4gPGc+PHBhdGggZD1cIk0xOSA0NSBDMTkgMzAsIDM0IDE4LCA0OSAxOCBDMzUgMjYsIDI5IDQxLCAzNSA1NiBDMjYgNTYsIDE5IDUyLCAxOSA0NSBaXCIgZmlsbD1cIiNGM0QzNkFcIiAvPjxwYXRoIGQ9XCJNNjUgNDUgUTgwIDMxIDgxIDQ3IFE4MCA2MSA2NiA1NSBaXCIgZmlsbD1cIiNGM0QzNkFcIiAvPjwvZz47XHJcbiAgICBkZWZhdWx0OlxyXG4gICAgICByZXR1cm4gbnVsbDtcclxuICB9XHJcbn1cclxuXHJcbmZ1bmN0aW9uIEJvZHkoeyBhY2MgfTogeyBhY2M6IEFjYyB9KSB7XHJcbiAgY29uc3Qgcm9iZUNvbG9yID0gYWNjID09PSBcImhpamFiXCIgfHwgYWNjID09PSBcInB1cnBsZWNhcFwiID8gXCIjNkQ0QUNEXCIgOiBhY2MgPT09IFwidHVyYmFuXCIgfHwgYWNjID09PSBcInJveWFsY2FwXCIgPyBcIiM1QjNBOUFcIiA6IFwiIzdBNDZCRFwiO1xyXG4gIHJldHVybiAoXHJcbiAgICA8Zz5cclxuICAgICAgPHBhdGggZD1cIk0yNCA3NSBMMTYgMTAwIEg4NCBMNzYgNzUgWlwiIGZpbGw9e3JvYmVDb2xvcn0gLz5cclxuICAgICAgPHBhdGggZD1cIk0zNCA3NSBRNTAgNjggNjYgNzUgTDYyIDEwMCBIMzggWlwiIGZpbGw9XCIjOEU2NEU4XCIgb3BhY2l0eT1cIjAuNlwiIC8+XHJcbiAgICAgIDxwYXRoIGQ9XCJNMzggNzUgSDYyIEw2NyAxMDAgSDMzIFpcIiBmaWxsPVwiI0E2N0JGRlwiIG9wYWNpdHk9XCIwLjRcIiAvPlxyXG4gICAgICA8Y2lyY2xlIGN4PVwiNTBcIiBjeT1cIjc2XCIgcj1cIjIuNVwiIGZpbGw9XCIjRjhFOUZGXCIgb3BhY2l0eT1cIjAuOFwiIC8+XHJcbiAgICA8L2c+XHJcbiAgKTtcclxufVxyXG5cclxuLyoqINmF2YTYp9mF2K0g2KfZhNmI2KzZhzog2LnZitmG2KfZhiArINiu2K/Zkdin2YYgKyDYp9io2KrYs9in2YXYqSAo2KrYqtmD2YrZkdmBINmF2Lkg2KfZhNiy2YrZhtipKS4gKi9cclxuZnVuY3Rpb24gRmFjZSh7IGFjYyB9OiB7IGFjYzogQWNjIH0pIHtcclxuICBjb25zdCBoaWRlRXllcyA9IGV5ZXNIaWRkZW4oYWNjKTtcclxuICBjb25zdCBzbWlsZSA9IGFjYyA9PT0gXCJuaW5qYVwiXHJcbiAgICA/IG51bGxcclxuICAgIDogPHBhdGggZD1cIk00MiA2NSBRNTAgNzIgNTggNjVcIiBmaWxsPVwibm9uZVwiIHN0cm9rZT1cIiM5QzVBNDZcIiBzdHJva2VXaWR0aD1cIjIuNlwiIHN0cm9rZUxpbmVjYXA9XCJyb3VuZFwiIC8+O1xyXG4gIHJldHVybiAoXHJcbiAgICA8PlxyXG4gICAgICA8Y2lyY2xlIGN4PVwiMzVcIiBjeT1cIjYwXCIgcj1cIjQuNVwiIGZpbGw9XCIjRjQ5Qjk0XCIgb3BhY2l0eT1cIjAuNVwiIC8+XHJcbiAgICAgIDxjaXJjbGUgY3g9XCI2NVwiIGN5PVwiNjBcIiByPVwiNC41XCIgZmlsbD1cIiNGNDlCOTRcIiBvcGFjaXR5PVwiMC41XCIgLz5cclxuICAgICAgeyFoaWRlRXllcyAmJiAoXHJcbiAgICAgICAgPD5cclxuICAgICAgICAgIDxjaXJjbGUgY3g9XCI0MVwiIGN5PVwiNTNcIiByPVwiMy40XCIgZmlsbD1cIiMzQTJBMjJcIiAvPlxyXG4gICAgICAgICAge2FjYyA9PT0gXCJ3aW5rXCJcclxuICAgICAgICAgICAgPyA8cGF0aCBkPVwiTTU1IDUzIHE0IDMuNSA4IDBcIiBzdHJva2U9XCIjM0EyQTIyXCIgc3Ryb2tlV2lkdGg9XCIyLjhcIiBmaWxsPVwibm9uZVwiIHN0cm9rZUxpbmVjYXA9XCJyb3VuZFwiIC8+XHJcbiAgICAgICAgICAgIDogPGNpcmNsZSBjeD1cIjU5XCIgY3k9XCI1M1wiIHI9XCIzLjRcIiBmaWxsPVwiIzNBMkEyMlwiIC8+fVxyXG4gICAgICAgICAgPGNpcmNsZSBjeD1cIjQyLjJcIiBjeT1cIjUxLjhcIiByPVwiMS4xXCIgZmlsbD1cIiNmZmZcIiAvPlxyXG4gICAgICAgICAge2FjYyAhPT0gXCJ3aW5rXCIgJiYgPGNpcmNsZSBjeD1cIjYwLjJcIiBjeT1cIjUxLjhcIiByPVwiMS4xXCIgZmlsbD1cIiNmZmZcIiAvPn1cclxuICAgICAgICA8Lz5cclxuICAgICAgKX1cclxuICAgICAge2FjYyA9PT0gXCJmcmVja2xlc1wiICYmIChcclxuICAgICAgICA8ZyBmaWxsPVwiI0M0ODA1QVwiPjxjaXJjbGUgY3g9XCIzM1wiIGN5PVwiNjFcIiByPVwiMVwiIC8+PGNpcmNsZSBjeD1cIjM3XCIgY3k9XCI2M1wiIHI9XCIxXCIgLz48Y2lyY2xlIGN4PVwiNjNcIiBjeT1cIjYzXCIgcj1cIjFcIiAvPjxjaXJjbGUgY3g9XCI2N1wiIGN5PVwiNjFcIiByPVwiMVwiIC8+PC9nPlxyXG4gICAgICApfVxyXG4gICAgICB7c21pbGV9XHJcbiAgICA8Lz5cclxuICApO1xyXG59XHJcblxyXG4vKipcclxuICog2KfZhNij2LPZhdin2KEg2KfZhNix2YXYstmK2KkgKGFsaWFzZXMpINmE2LXZiNixINin2YTYtNiu2LXZitin2Kog2KvZhNin2KvZitipINin2YTYo9io2LnYp9ivLlxyXG4gKlxyXG4gKiDimqDvuI8g2YPZhCDZgtmK2YXYqSDZh9mG2Kcg2YrYrNioINij2YYg2KrYtNmK2LEg2KXZhNmJINmF2YTZgSDZhdmI2KzZiNivINmB2LnZhNin2Ysg2YHZiiBwdWJsaWMvYXZhdGFycyAoMjgg2YXZhNmB2KfZizogaW1nLWJveS0xLi4xNSDZiCBpbWctZ2lybC0xLi4xMykuXHJcbiAqINiz2KfYqNmC2KfZiyDZg9in2YbYqiDZh9iw2Ycg2KfZhNiu2LHZiti32Kkg2KrYtNmK2LEg2KXZhNmJINmF2YTZgdin2Kog2LrZitixINmF2YjYrNmI2K/YqSAo2YXYq9mEIGltZy1ib3ktYmlzaHQtd2hpdGUuanBnINmI2KPYs9mF2KfYoSBQTkcg2LfZiNmK2YTYqSlcclxuICog2YHZg9in2YYg2KfZhNij2YHYp9iq2KfYsSDZitmB2LTZhCDZgdmKINin2YTYqtit2YXZitmEINmI2YrYs9mC2Lcg2LnZhNmJINix2LPZhSBTVkcg2KjYs9mK2Lcg4oCUINiq2YUg2KrYtdit2YrYrdmH2Kcg2YPZhNmH2KcuXHJcbiAqL1xyXG5leHBvcnQgY29uc3QgQVZBVEFSX0lNQUdFX1BBVEhTOiBSZWNvcmQ8c3RyaW5nLCBzdHJpbmc+ID0ge1xyXG4gIC8vINin2YTYtNiu2LXZitin2Kog2KfZhNij2LPYp9iz2YrYqSAo2KrZj9iu2KrYp9ixINi52YbYryDYpdmG2LTYp9ihINin2YTZhdmE2YEpXHJcbiAgXCJpbWctYm95LXNjaG9sYXJcIjogXCIvYXZhdGFycy9pbWctYm95LTEuanBnXCIsXHJcbiAgXCJpbWctZ2lybC1zY2hvbGFyXCI6IFwiL2F2YXRhcnMvaW1nLWdpcmwtMS5qcGdcIixcclxuICBcImltZy1ib3ktcmVjaXRlclwiOiBcIi9hdmF0YXJzL2ltZy1ib3ktNi5qcGdcIixcclxuICBcImltZy1ib3ktYmlzaHQtd2hpdGVcIjogXCIvYXZhdGFycy9pbWctYm95LTEyLmpwZ1wiLFxyXG4gIFwiaW1nLWJveS10YXFpeWFoLWdvbGRcIjogXCIvYXZhdGFycy9pbWctYm95LTE1LmpwZ1wiLFxyXG4gIFwiaW1nLWdpcmwtZ29sZFwiOiBcIi9hdmF0YXJzL2ltZy1naXJsLTEwLmpwZ1wiLFxyXG4gIFwiaW1nLWdpcmwtZW1lcmFsZC1xdWVlblwiOiBcIi9hdmF0YXJzL2ltZy1naXJsLTEzLmpwZ1wiLFxyXG5cclxuICAvLyDYp9mE2YXYs9iq2YjZiSDYp9mE2LDZh9io2YpcclxuICBcImltZy1ib3ktcmVjaXRlci1ncmVlblwiOiBcIi9hdmF0YXJzL2ltZy1ib3ktNS5qcGdcIixcclxuICBcImltZy1ib3ktcm95YWwtYmx1ZVwiOiBcIi9hdmF0YXJzL2ltZy1ib3ktOC5qcGdcIixcclxuICBcImltZy1ib3ktdHVycXVvaXNlLXZlc3RcIjogXCIvYXZhdGFycy9pbWctYm95LTcuanBnXCIsXHJcbiAgXCJpbWctYm95LWluZGlnby1zY2FyZlwiOiBcIi9hdmF0YXJzL2ltZy1ib3ktOS5qcGdcIixcclxuXHJcbiAgLy8g2KfZhNmF2LPYqtmI2Ykg2KfZhNmF2KfYs9mKXHJcbiAgXCJpbWctYm95LWtuaWdodC1ydWJ5XCI6IFwiL2F2YXRhcnMvaW1nLWJveS0xMC5qcGdcIixcclxuICBcImltZy1ib3ktdHVyYmFuXCI6IFwiL2F2YXRhcnMvaW1nLWJveS0xMS5qcGdcIixcclxuICBcImltZy1ib3ktdHVyYmFuLW1hc3RlclwiOiBcIi9hdmF0YXJzL2ltZy1ib3ktMTMuanBnXCIsXHJcbiAgXCJpbWctZ2lybC1oaWphYi1lbWVyYWxkXCI6IFwiL2F2YXRhcnMvaW1nLWdpcmwtMTIuanBnXCIsXHJcblxyXG4gIC8vINin2YTZhdiz2KrZiNmJINin2YTYo9iz2LfZiNix2YpcclxuICBcImltZy1ib3ktc3VsdGFuLW5hdnlcIjogXCIvYXZhdGFycy9pbWctYm95LTE0LmpwZ1wiLFxyXG4gIFwiaW1nLWJveS1jcmltc29uLW1hc3RlclwiOiBcIi9hdmF0YXJzL2ltZy1ib3ktMTIuanBnXCIsXHJcbiAgXCJpbWctYm95LWNyZXNjZW50LXB1cnBsZVwiOiBcIi9hdmF0YXJzL2ltZy1ib3ktMTUuanBnXCIsXHJcbiAgXCJpbWctYm95LXF1cmFuLWNhcnJpZXJcIjogXCIvYXZhdGFycy9pbWctYm95LTE1LmpwZ1wiLFxyXG59O1xyXG5cclxuLyoqXHJcbiAqINmF2YTYp9it2LjYqSDYp9mE2KPYr9in2KEv2KfZhNit2KzZhTog2LXZiNixIHB1YmxpYy9hdmF0YXJzINmF2LbYutmI2LfYqSDYpdmE2YkgNTEycHgg2KjYrNmI2K/YqSA4MiAo2LPZg9ix2KjYqiBzY3JpcHRzL2NvbXByZXNzLWF2YXRhcnMubWpzKVxyXG4gKiDZhNiw2YTZgyDZg9mEINin2YTYtdmI2LEg2KrZj9i32YTYqCDYqNin2YXYqtiv2KfYryAuanBnIOKAlCDYrdiq2Ykg2KfZhNiq2Yog2YPYp9mGINij2LXZhNmH2KcgLnBuZyDigJQg2YTYqtmC2YTZitmEINit2KzZhSDYp9mE2KrYt9io2YrZgiDZhdmGIH40OE1CINil2YTZiSB+MS43TUIuXHJcbiAqL1xyXG5leHBvcnQgY29uc3QgQVZBVEFSX0ZJTEVfRVhUID0gXCJqcGdcIjtcclxuXHJcbi8qKiDZitis2LnZhCDYp9mF2KrYr9in2K8g2KfZhNmF2LPYp9ixIC5qcGcgKNin2YTZhdiq2KfYrSDZgdi52YTZitin2Ysg2KjYudivINin2YTYtti62LcpICovXHJcbmZ1bmN0aW9uIHRvQ29tcHJlc3NlZChzcmM6IHN0cmluZyk6IHN0cmluZyB7XHJcbiAgcmV0dXJuIHNyYy5yZXBsYWNlKC9cXC4ocG5nfGpwZT9nfGJtcHx0aWZmKSQvaSwgYC4ke0FWQVRBUl9GSUxFX0VYVH1gKTtcclxufVxyXG5cclxuLyoqINiv2KfZhNipINmF2LPYp9i52K/YqSDZhNmE2K3YtdmI2YQg2LnZhNmJINmF2LPYp9ixINin2YTYtdmI2LHYqSDYp9mE2YXYqNin2LTYsSAqL1xyXG5leHBvcnQgZnVuY3Rpb24gZ2V0QXZhdGFyU3JjKG5hbWU6IHN0cmluZyk6IHN0cmluZyB7XHJcbiAgY29uc3QgY2xlYW4gPSBuYW1lLnN0YXJ0c1dpdGgoXCJhdi1cIikgPyBuYW1lLnJlcGxhY2UoL15hdi0vLCBcIlwiKSA6IG5hbWU7XHJcbiAgY29uc3QgZGlyZWN0ID0gQVZBVEFSX0lNQUdFX1BBVEhTW2NsZWFuXSB8fCBBVkFUQVJfSU1BR0VfUEFUSFNbbmFtZV07XHJcbiAgaWYgKGRpcmVjdCkgcmV0dXJuIGVuY29kZVVSSSh0b0NvbXByZXNzZWQoZGlyZWN0KSk7XHJcblxyXG4gIGlmIChjbGVhbi5zdGFydHNXaXRoKFwiaW1nLWJveS1cIikpIHtcclxuICAgIGNvbnN0IG51bSA9IHBhcnNlSW50KGNsZWFuLnJlcGxhY2UoXCJpbWctYm95LVwiLCBcIlwiKSk7XHJcbiAgICBpZiAobnVtID49IDEgJiYgbnVtIDw9IDE1KSByZXR1cm4gZW5jb2RlVVJJKGAvYXZhdGFycy8ke2NsZWFufS4ke0FWQVRBUl9GSUxFX0VYVH1gKTtcclxuICB9XHJcbiAgaWYgKGNsZWFuLnN0YXJ0c1dpdGgoXCJpbWctZ2lybC1cIikpIHtcclxuICAgIGNvbnN0IG51bSA9IHBhcnNlSW50KGNsZWFuLnJlcGxhY2UoXCJpbWctZ2lybC1cIiwgXCJcIikpO1xyXG4gICAgaWYgKG51bSA+PSAxICYmIG51bSA8PSAxMykgcmV0dXJuIGVuY29kZVVSSShgL2F2YXRhcnMvJHtjbGVhbn0uJHtBVkFUQVJfRklMRV9FWFR9YCk7XHJcbiAgfVxyXG5cclxuICBpZiAoY2xlYW4uc3RhcnRzV2l0aChcImltZy1cIikpIHJldHVybiBlbmNvZGVVUkkoYC9hdmF0YXJzLyR7Y2xlYW59LiR7QVZBVEFSX0ZJTEVfRVhUfWApO1xyXG4gIHJldHVybiBcIi9hdmF0YXJzL2ltZy1ib3ktYmlzaHQtd2hpdGUuanBnXCI7XHJcbn1cclxuXHJcbi8qKiDZiti52LHYtiDZiNis2Ycg2KfZhNi32YHZhCDYqNi12YjYsdipINir2YTYp9ir2YrYqSDYp9mE2KPYqNi52KfYryDZgdin2K7YsdipINmF2Lkg2K/YudmFIFNWRyDZg9io2K/ZitmEINin2K3YqtmK2KfYt9mKICovXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIEF2YXRhcih7IG5hbWUsIGNsYXNzTmFtZSB9OiB7IG5hbWU6IHN0cmluZzsgY2xhc3NOYW1lPzogc3RyaW5nIH0pIHtcclxuICBjb25zdCBbaW1nRmFpbGVkLCBzZXRJbWdGYWlsZWRdID0gdXNlU3RhdGUoZmFsc2UpO1xyXG5cclxuICBpZiAoIW5hbWUgfHwgbmFtZSA9PT0gXCJkZWZhdWx0XCIpIHtcclxuICAgIHJldHVybiAoXHJcbiAgICAgIDxzdmcgdmlld0JveD1cIjAgMCAxMDAgMTAwXCIgY2xhc3NOYW1lPXtjbihcInNlbGVjdC1ub25lIGJnLXNlY29uZGFyeS81MFwiLCBjbGFzc05hbWUpfSByb2xlPVwiaW1nXCIgYXJpYS1sYWJlbD1cImRlZmF1bHRcIj5cclxuICAgICAgICA8Y2lyY2xlIGN4PVwiNTBcIiBjeT1cIjQwXCIgcj1cIjIwXCIgZmlsbD1cIiNhMGEwYTBcIiBvcGFjaXR5PVwiMC41XCIgLz5cclxuICAgICAgICA8cGF0aCBkPVwiTTIwIDkwIFE1MCA2MCA4MCA5MFwiIHN0cm9rZT1cIiNhMGEwYTBcIiBzdHJva2VXaWR0aD1cIjE1XCIgc3Ryb2tlTGluZWNhcD1cInJvdW5kXCIgZmlsbD1cIm5vbmVcIiBvcGFjaXR5PVwiMC41XCIgLz5cclxuICAgICAgPC9zdmc+XHJcbiAgICApO1xyXG4gIH1cclxuXHJcbiAgY29uc3QgY2xlYW5OYW1lID0gbmFtZS5zdGFydHNXaXRoKFwiYXYtXCIpID8gbmFtZS5yZXBsYWNlKC9eYXYtLywgXCJcIikgOiBuYW1lO1xyXG4gIGNvbnN0IGltYWdlU3JjID0gY2xlYW5OYW1lLnN0YXJ0c1dpdGgoXCJpbWctXCIpID8gZ2V0QXZhdGFyU3JjKGNsZWFuTmFtZSkgOiBBVkFUQVJfSU1BR0VfUEFUSFNbY2xlYW5OYW1lXTtcclxuXHJcbiAgaWYgKCFpbWdGYWlsZWQgJiYgaW1hZ2VTcmMpIHtcclxuICAgIHJldHVybiAoXHJcbiAgICAgIDxpbWdcclxuICAgICAgICBzcmM9e2ltYWdlU3JjfVxyXG4gICAgICAgIGFsdD17Y2xlYW5OYW1lfVxyXG4gICAgICAgIGNsYXNzTmFtZT17Y24oXCJvYmplY3QtY292ZXIgcm91bmRlZC1mdWxsIHNoYWRvdy1zbSB3LWZ1bGwgaC1mdWxsIGJnLWFjY2VudC8xMCBwLTAuNSB0cmFuc2l0aW9uLXRyYW5zZm9ybVwiLCBjbGFzc05hbWUpfVxyXG4gICAgICAgIGxvYWRpbmc9XCJsYXp5XCJcclxuICAgICAgICBkZWNvZGluZz1cImFzeW5jXCJcclxuICAgICAgICBvbkVycm9yPXsoKSA9PiBzZXRJbWdGYWlsZWQodHJ1ZSl9XHJcbiAgICAgIC8+XHJcbiAgICApO1xyXG4gIH1cclxuXHJcbiAgY29uc3QgY2ZnID0gQVZBVEFSX0NPTkZJR1tjbGVhbk5hbWVdO1xyXG4gIGlmIChjZmcpIHtcclxuICAgIHJldHVybiAoXHJcbiAgICAgIDxzdmcgdmlld0JveD1cIjAgMCAxMDAgMTAwXCIgY2xhc3NOYW1lPXtjbihcInNlbGVjdC1ub25lIGJnLXNlY29uZGFyeS8zMCByb3VuZGVkLWZ1bGxcIiwgY2xhc3NOYW1lKX0gcm9sZT1cImltZ1wiIGFyaWEtbGFiZWw9e25hbWV9PlxyXG4gICAgICAgIDxCYWNrSGFpciBoYWlyPXtjZmcuaGFpcn0gaGM9e2NmZy5oY30gLz5cclxuICAgICAgICA8Qm9keSBhY2M9e2NmZy5hY2N9IC8+XHJcbiAgICAgICAgPGNpcmNsZSBjeD1cIjUwXCIgY3k9XCI1MlwiIHI9XCIyNlwiIGZpbGw9e2NmZy5za2lufSAvPlxyXG4gICAgICAgIDxGcm9udEhhaXIgaGFpcj17Y2ZnLmhhaXJ9IGhjPXtjZmcuaGN9IC8+XHJcbiAgICAgICAgPEZhY2UgYWNjPXtjZmcuYWNjfSAvPlxyXG4gICAgICAgIDxBY2Nlc3NvcnkgYWNjPXtjZmcuYWNjfSAvPlxyXG4gICAgICA8L3N2Zz5cclxuICAgICk7XHJcbiAgfVxyXG5cclxuICByZXR1cm4gKFxyXG4gICAgPHN2ZyB2aWV3Qm94PVwiMCAwIDEwMCAxMDBcIiBjbGFzc05hbWU9e2NuKFwic2VsZWN0LW5vbmUgYmctc2Vjb25kYXJ5LzUwIHJvdW5kZWQtZnVsbFwiLCBjbGFzc05hbWUpfSByb2xlPVwiaW1nXCIgYXJpYS1sYWJlbD1cImRlZmF1bHRcIj5cclxuICAgICAgPGNpcmNsZSBjeD1cIjUwXCIgY3k9XCI0MFwiIHI9XCIyMFwiIGZpbGw9XCIjYTBhMGEwXCIgb3BhY2l0eT1cIjAuNVwiIC8+XHJcbiAgICAgIDxwYXRoIGQ9XCJNMjAgOTAgUTUwIDYwIDgwIDkwXCIgc3Ryb2tlPVwiI2EwYTBhMFwiIHN0cm9rZVdpZHRoPVwiMTVcIiBzdHJva2VMaW5lY2FwPVwicm91bmRcIiBmaWxsPVwibm9uZVwiIG9wYWNpdHk9XCIwLjVcIiAvPlxyXG4gICAgPC9zdmc+XHJcbiAgKTtcclxufVxyXG4iXSwibmFtZXMiOlsidXNlU3RhdGUiLCJjbiIsIlNLSU4iLCJsaWdodCIsInRhbiIsImJyb3duIiwiZGVlcCIsIkhBSVIiLCJibGFjayIsImJsb25kZSIsImF1YnVybiIsIkFWQVRBUl9DT05GSUciLCJib3kiLCJza2luIiwiaGFpciIsImhjIiwiYWNjIiwiZ2lybCIsImNoaWxkIiwiYmFieSIsInNtaWxlIiwiZ3JpbiIsImNvb2wiLCJ3b3ciLCJ3aW5rIiwiaGFwcHkiLCJoZXJvIiwibmluamEiLCJhcnRpc3QiLCJncmFkdWF0ZSIsImRldGVjdGl2ZSIsImFzdHJvbmF1dCIsImtpbmciLCJxdWVlbiIsInN1cGVyc3RhciIsImNoYW1waW9uIiwicm95YWwiLCJHT0xEIiwiR09MRF9EIiwiQ1VTVE9NX0FSVF9LRVlTIiwiU2V0IiwiZXllc0hpZGRlbiIsImEiLCJCYWNrSGFpciIsInBhdGgiLCJkIiwiZmlsbCIsImNpcmNsZSIsImN4IiwiY3kiLCJyIiwic3Ryb2tlIiwic3Ryb2tlV2lkdGgiLCJzdHJva2VMaW5lY2FwIiwiRnJvbnRIYWlyIiwiZyIsIkFjY2Vzc29yeSIsInRyYW5zZm9ybSIsInN0cm9rZUxpbmVqb2luIiwicmVjdCIsIngiLCJ5Iiwid2lkdGgiLCJoZWlnaHQiLCJyeCIsImVsbGlwc2UiLCJyeSIsInBvbHlnb24iLCJwb2ludHMiLCJsaW5lIiwieDEiLCJ5MSIsIngyIiwieTIiLCJvcGFjaXR5IiwiQm9keSIsInJvYmVDb2xvciIsIkZhY2UiLCJoaWRlRXllcyIsIkFWQVRBUl9JTUFHRV9QQVRIUyIsIkFWQVRBUl9GSUxFX0VYVCIsInRvQ29tcHJlc3NlZCIsInNyYyIsInJlcGxhY2UiLCJnZXRBdmF0YXJTcmMiLCJuYW1lIiwiY2xlYW4iLCJzdGFydHNXaXRoIiwiZGlyZWN0IiwiZW5jb2RlVVJJIiwibnVtIiwicGFyc2VJbnQiLCJBdmF0YXIiLCJjbGFzc05hbWUiLCJpbWdGYWlsZWQiLCJzZXRJbWdGYWlsZWQiLCJzdmciLCJ2aWV3Qm94Iiwicm9sZSIsImFyaWEtbGFiZWwiLCJjbGVhbk5hbWUiLCJpbWFnZVNyYyIsImltZyIsImFsdCIsImxvYWRpbmciLCJkZWNvZGluZyIsIm9uRXJyb3IiLCJjZmciXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQVNBLFFBQVEsUUFBUSxRQUFRO0FBQ2pDLFNBQVNDLEVBQUUsUUFB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

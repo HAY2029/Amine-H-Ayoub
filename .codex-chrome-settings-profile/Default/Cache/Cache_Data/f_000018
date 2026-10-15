@@ -1,0 +1,355 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/ProfilePicker.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const useEffect = __vite__cjsImport3_react["useEffect"]; const useState = __vite__cjsImport3_react["useState"];
+import { useNavigate } from "/node_modules/.vite/deps/react-router-dom.js?v=c05fb7b0";
+import { User, Plus, Settings, Sparkles } from "/node_modules/.vite/deps/lucide-react.js?v=c05fb7b0";
+import { getProfiles, getAppMode, setAppMode, setActiveProfile, kidsRouteBlocked, getProgress, getActiveId, setKidsHidden, setPureMode, isPureMode } from "/src/data/kidsProfile.ts?t=1791820648188";
+import { hasKidsPin, setKidsLocked } from "/src/data/kidsLock.ts";
+import PinModal from "/src/components/PinModal.tsx";
+import Avatar from "/src/components/Avatar.tsx";
+const PICKED_FLAG = "mushaf:pickedSession";
+/** يُعلِّم أنّ ملفّاً اختير في هذه الجلسة (حتى لا تتكرّر شاشة الاختيار). */ export const markPicked = ()=>{
+    try {
+        sessionStorage.setItem(PICKED_FLAG, "1");
+    } catch  {}
+};
+export const isPicked = ()=>{
+    try {
+        return sessionStorage.getItem(PICKED_FLAG) === "1";
+    } catch  {
+        return true;
+    }
+};
+/**
+ * شاشة "من يتعلّم الآن؟" على غرار يوتيوب على التلفاز.
+ * تُستخدم كطبقة عند فتح التطبيق (gate) أو كصفحة لتبديل الطفل (/profiles).
+ */ export default function ProfilePicker({ onPicked }) {
+    _s();
+    const navigate = useNavigate();
+    const profiles = getProfiles();
+    const appMode = getAppMode();
+    const activeIdFallback = getActiveId();
+    const [showPin, setShowPin] = useState(false);
+    // إذا أخفى المالك ركن الأطفال: هذه الصفحة (لا كطبقة فتح) تُحوَّل للسماع
+    useEffect(()=>{
+        if (kidsRouteBlocked() && !onPicked) navigate("/audio", {
+            replace: true
+        });
+    }, [
+        navigate,
+        onPicked
+    ]);
+    const close = ()=>{
+        markPicked();
+        onPicked?.();
+    };
+    const pickChild = (id)=>{
+        setActiveProfile(id);
+        setAppMode("kids");
+        setKidsHidden(false);
+        setPureMode(false); // تعطيل الوضع العادي عند اختيار طفل
+        setKidsLocked(true);
+        close();
+        const profile = profiles.find((p)=>p.id === id);
+        const progress = getProgress();
+        // إذا كان هناك وقت دراسة مطلوب ولم يُنجز بعد، وجّه الطفل للقرآن، وإلا للألعاب
+        if (profile && profile.goalMinutes > 0 && !progress.unlocked) {
+            navigate("/audio");
+        } else {
+            navigate("/games");
+        }
+    };
+    const asParent = ()=>{
+        setAppMode("parent");
+        // في وضع التنقل المرن: نعيد تعيين إخفاء الأطفال لكي يظهر ركن الأطفال والألعاب للمالك
+        // لا نغير وضع pureMode - نترك كما هو (flexible أو pure حسب اختيار المستخدم السابق)
+        if (!isPureMode()) setKidsHidden(false);
+        setKidsLocked(false);
+        close();
+        navigate("/audio");
+    };
+    const goParent = ()=>{
+        close();
+        navigate("/parent");
+    };
+    // إدارة الملفّات (لوحة وليّ الأمر) — بنافذة رمز أنيقة إن وُجد رمز، وإلّا دخول مباشر
+    const manage = ()=>{
+        if (hasKidsPin()) setShowPin(true);
+        else goParent();
+    };
+    const goSettings = ()=>{
+        close();
+        navigate("/settings");
+    };
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: "fixed inset-0 z-[95] page-nour text-foreground overflow-y-auto",
+        dir: "rtl",
+        children: [
+            /*#__PURE__*/ _jsxDEV("div", {
+                className: "pointer-events-none absolute inset-0 overflow-hidden",
+                "aria-hidden": "true",
+                children: [
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "absolute -top-32 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-accent/15 blur-3xl animate-breathe"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                        lineNumber: 65,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "absolute bottom-[-10rem] right-[-6rem] w-[420px] h-[420px] rounded-full bg-primary/10 blur-3xl"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                        lineNumber: 66,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                lineNumber: 64,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("div", {
+                className: "relative mx-auto max-w-3xl px-5 py-12 min-h-full flex flex-col items-center justify-center",
+                children: [
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "animate-fade-up mb-5 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-bold text-accent shadow-soft",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV(Sparkles, {
+                                className: "w-3.5 h-3.5"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                lineNumber: 72,
+                                columnNumber: 11
+                            }, this),
+                            " نور"
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                        lineNumber: 71,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("h1", {
+                        className: "animate-fade-up text-3xl sm:text-4xl font-extrabold text-gradient-gold text-center mb-2 tracking-tight",
+                        children: "من يتعلّم الآن؟"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                        lineNumber: 75,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("p", {
+                        className: "animate-fade-up text-muted-foreground text-sm sm:text-base text-center mb-10",
+                        children: "اختر ملفّك للمتابعة في رحلة النور"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                        lineNumber: 76,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "animate-fade-up flex flex-wrap items-start justify-center gap-6 sm:gap-8",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("button", {
+                                onClick: asParent,
+                                className: "group flex flex-col items-center gap-3 w-24 sm:w-28 active:scale-95 transition-transform",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-secondary border border-border flex items-center justify-center ring-2 ring-transparent ring-offset-2 ring-offset-background group-hover:ring-accent shadow-soft transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl",
+                                        children: /*#__PURE__*/ _jsxDEV(User, {
+                                            className: "w-12 h-12 text-accent"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                            lineNumber: 81,
+                                            columnNumber: 310
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                        lineNumber: 81,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "font-bold text-center text-foreground group-hover:text-accent transition-colors",
+                                        children: "لي نفسي"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                        lineNumber: 82,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                lineNumber: 80,
+                                columnNumber: 11
+                            }, this),
+                            profiles.length > 0 ? profiles.map((p, idx)=>/*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: ()=>pickChild(p.id),
+                                    className: "group flex flex-col items-center gap-3 w-24 sm:w-28 active:scale-95 transition-transform",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            className: "relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center ring-2 ring-transparent ring-offset-2 ring-offset-background group-hover:ring-accent rounded-full transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl",
+                                            children: [
+                                                /*#__PURE__*/ _jsxDEV(Avatar, {
+                                                    name: p.avatar,
+                                                    className: "w-24 h-24 sm:w-28 sm:h-28 drop-shadow-md"
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                                    lineNumber: 90,
+                                                    columnNumber: 19
+                                                }, this),
+                                                p.id === activeIdFallback && /*#__PURE__*/ _jsxDEV("span", {
+                                                    className: "absolute -bottom-1 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground text-[9px] font-bold px-2 py-0.5 rounded-full shadow",
+                                                    children: "الآن"
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                                    lineNumber: 92,
+                                                    columnNumber: 21
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                            lineNumber: 89,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            className: "font-bold text-center truncate w-full text-foreground group-hover:text-accent transition-colors",
+                                            children: p.name || (profiles.length === 1 ? "لي طفلي" : `الطفل ${idx + 1}`)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                            lineNumber: 95,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, p.id, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                    lineNumber: 88,
+                                    columnNumber: 15
+                                }, this)) : /*#__PURE__*/ _jsxDEV("button", {
+                                onClick: ()=>{
+                                    manage();
+                                },
+                                className: "group flex flex-col items-center gap-3 w-24 sm:w-28 active:scale-95 transition-transform",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-muted border border-dashed border-border flex items-center justify-center ring-2 ring-transparent ring-offset-2 ring-offset-background group-hover:ring-accent/60 shadow-soft transition-all duration-300 group-hover:-translate-y-1",
+                                        children: /*#__PURE__*/ _jsxDEV(Plus, {
+                                            className: "w-12 h-12 text-muted-foreground group-hover:text-accent transition-colors"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                            lineNumber: 102,
+                                            columnNumber: 303
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                        lineNumber: 102,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "font-bold text-center text-muted-foreground group-hover:text-accent transition-colors",
+                                        children: "لي طفلي"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                        lineNumber: 103,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                lineNumber: 101,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                        lineNumber: 78,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("button", {
+                        onClick: goSettings,
+                        className: "animate-fade-up mt-12 inline-flex items-center gap-2 rounded-full bg-secondary border border-border px-5 py-2.5 text-sm font-bold text-secondary-foreground hover:brightness-95 shadow-soft active:scale-95 transition-all",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV(Settings, {
+                                className: "w-4 h-4 text-accent"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                                lineNumber: 109,
+                                columnNumber: 11
+                            }, this),
+                            " الإعدادات"
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                        lineNumber: 108,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                lineNumber: 69,
+                columnNumber: 7
+            }, this),
+            showPin && /*#__PURE__*/ _jsxDEV(PinModal, {
+                mode: "verify",
+                title: "رمز وليّ الأمر",
+                onSuccess: ()=>{
+                    setShowPin(false);
+                    goParent();
+                },
+                onCancel: ()=>setShowPin(false)
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+                lineNumber: 114,
+                columnNumber: 9
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx",
+        lineNumber: 62,
+        columnNumber: 5
+    }, this);
+}
+_s(ProfilePicker, "5J/RtKCOyxbNW7ccY6I4SL3qu2M=", false, function() {
+    return [
+        useNavigate
+    ];
+});
+_c = ProfilePicker;
+var _c;
+$RefreshReg$(_c, "ProfilePicker");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/ProfilePicker.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlByb2ZpbGVQaWNrZXIudHN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IHVzZUVmZmVjdCwgdXNlU3RhdGUgfSBmcm9tIFwicmVhY3RcIjtcclxuaW1wb3J0IHsgdXNlTmF2aWdhdGUgfSBmcm9tIFwicmVhY3Qtcm91dGVyLWRvbVwiO1xyXG5pbXBvcnQgeyBVc2VyLCBQbHVzLCBTZXR0aW5ncywgU3BhcmtsZXMgfSBmcm9tIFwibHVjaWRlLXJlYWN0XCI7XHJcbmltcG9ydCB7IGdldFByb2ZpbGVzLCBnZXRBcHBNb2RlLCBzZXRBcHBNb2RlLCBzZXRBY3RpdmVQcm9maWxlLCBraWRzUm91dGVCbG9ja2VkLCBnZXRQcm9ncmVzcywgZ2V0QWN0aXZlSWQsIHNldEtpZHNIaWRkZW4sIHNldFB1cmVNb2RlLCBpc1B1cmVNb2RlLCB0eXBlIEtpZHNQcm9maWxlIH0gZnJvbSBcIi4uL2RhdGEva2lkc1Byb2ZpbGVcIjtcclxuaW1wb3J0IHsgaGFzS2lkc1Bpbiwgc2V0S2lkc0xvY2tlZCB9IGZyb20gXCIuLi9kYXRhL2tpZHNMb2NrXCI7XHJcbmltcG9ydCBQaW5Nb2RhbCBmcm9tIFwiLi9QaW5Nb2RhbFwiO1xyXG5pbXBvcnQgQXZhdGFyIGZyb20gXCIuL0F2YXRhclwiO1xyXG5cclxuY29uc3QgUElDS0VEX0ZMQUcgPSBcIm11c2hhZjpwaWNrZWRTZXNzaW9uXCI7XHJcblxyXG4vKiog2YrZj9i52YTZkNmR2YUg2KPZhtmRINmF2YTZgdmR2KfZiyDYp9iu2KrZitixINmB2Yog2YfYsNmHINin2YTYrNmE2LPYqSAo2K3YqtmJINmE2Kcg2KrYqtmD2LHZkdixINi02KfYtNipINin2YTYp9iu2KrZitin2LEpLiAqL1xyXG5leHBvcnQgY29uc3QgbWFya1BpY2tlZCA9ICgpID0+IHsgdHJ5IHsgc2Vzc2lvblN0b3JhZ2Uuc2V0SXRlbShQSUNLRURfRkxBRywgXCIxXCIpOyB9IGNhdGNoIHsgLyogaWdub3JlICovIH0gfTtcclxuZXhwb3J0IGNvbnN0IGlzUGlja2VkID0gKCk6IGJvb2xlYW4gPT4geyB0cnkgeyByZXR1cm4gc2Vzc2lvblN0b3JhZ2UuZ2V0SXRlbShQSUNLRURfRkxBRykgPT09IFwiMVwiOyB9IGNhdGNoIHsgcmV0dXJuIHRydWU7IH0gfTtcclxuXHJcbi8qKlxyXG4gKiDYtNin2LTYqSBcItmF2YYg2YrYqti52YTZkdmFINin2YTYotmG2J9cIiDYudmE2Ykg2LrYsdin2LEg2YrZiNiq2YrZiNioINi52YTZiSDYp9mE2KrZhNmB2KfYsi5cclxuICog2KrZj9iz2KrYrtiv2YUg2YPYt9io2YLYqSDYudmG2K8g2YHYqtitINin2YTYqti32KjZitmCIChnYXRlKSDYo9mIINmD2LXZgdit2Kkg2YTYqtio2K/ZitmEINin2YTYt9mB2YQgKC9wcm9maWxlcykuXHJcbiAqL1xyXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBQcm9maWxlUGlja2VyKHsgb25QaWNrZWQgfTogeyBvblBpY2tlZD86ICgpID0+IHZvaWQgfSkge1xyXG4gIGNvbnN0IG5hdmlnYXRlID0gdXNlTmF2aWdhdGUoKTtcclxuICBjb25zdCBwcm9maWxlczogS2lkc1Byb2ZpbGVbXSA9IGdldFByb2ZpbGVzKCk7XHJcbiAgY29uc3QgYXBwTW9kZSA9IGdldEFwcE1vZGUoKTtcclxuICBjb25zdCBhY3RpdmVJZEZhbGxiYWNrID0gZ2V0QWN0aXZlSWQoKTtcclxuICBjb25zdCBbc2hvd1Bpbiwgc2V0U2hvd1Bpbl0gPSB1c2VTdGF0ZShmYWxzZSk7XHJcbiAgLy8g2KXYsNinINij2K7ZgdmJINin2YTZhdin2YTZgyDYsdmD2YYg2KfZhNij2LfZgdin2YQ6INmH2LDZhyDYp9mE2LXZgdit2KkgKNmE2Kcg2YPYt9io2YLYqSDZgdiq2K0pINiq2Y/YrdmI2Y7ZkdmEINmE2YTYs9mF2KfYuVxyXG4gIHVzZUVmZmVjdCgoKSA9PiB7IGlmIChraWRzUm91dGVCbG9ja2VkKCkgJiYgIW9uUGlja2VkKSBuYXZpZ2F0ZShcIi9hdWRpb1wiLCB7IHJlcGxhY2U6IHRydWUgfSk7IH0sIFtuYXZpZ2F0ZSwgb25QaWNrZWRdKTtcclxuXHJcbiAgY29uc3QgY2xvc2UgPSAoKSA9PiB7IG1hcmtQaWNrZWQoKTsgb25QaWNrZWQ/LigpOyB9O1xyXG4gIGNvbnN0IHBpY2tDaGlsZCA9IChpZDogc3RyaW5nKSA9PiB7XHJcbiAgICBzZXRBY3RpdmVQcm9maWxlKGlkKTtcclxuICAgIHNldEFwcE1vZGUoXCJraWRzXCIpO1xyXG4gICAgc2V0S2lkc0hpZGRlbihmYWxzZSk7XHJcbiAgICBzZXRQdXJlTW9kZShmYWxzZSk7IC8vINiq2LnYt9mK2YQg2KfZhNmI2LbYuSDYp9mE2LnYp9iv2Yog2LnZhtivINin2K7YqtmK2KfYsSDYt9mB2YRcclxuICAgIHNldEtpZHNMb2NrZWQodHJ1ZSk7XHJcbiAgICBjbG9zZSgpO1xyXG5cclxuICAgIGNvbnN0IHByb2ZpbGUgPSBwcm9maWxlcy5maW5kKHAgPT4gcC5pZCA9PT0gaWQpO1xyXG4gICAgY29uc3QgcHJvZ3Jlc3MgPSBnZXRQcm9ncmVzcygpO1xyXG4gICAgXHJcbiAgICAvLyDYpdiw2Kcg2YPYp9mGINmH2YbYp9mDINmI2YLYqiDYr9ix2KfYs9ipINmF2LfZhNmI2Kgg2YjZhNmFINmK2Y/Zhtis2LIg2KjYudiv2Iwg2YjYrNmR2Ycg2KfZhNi32YHZhCDZhNmE2YLYsdii2YbYjCDZiNil2YTYpyDZhNmE2KPZhNi52KfYqFxyXG4gICAgaWYgKHByb2ZpbGUgJiYgcHJvZmlsZS5nb2FsTWludXRlcyA+IDAgJiYgIXByb2dyZXNzLnVubG9ja2VkKSB7XHJcbiAgICAgIG5hdmlnYXRlKFwiL2F1ZGlvXCIpO1xyXG4gICAgfSBlbHNlIHtcclxuICAgICAgbmF2aWdhdGUoXCIvZ2FtZXNcIik7XHJcbiAgICB9XHJcbiAgfTtcclxuICAgIGNvbnN0IGFzUGFyZW50ID0gKCkgPT4ge1xyXG4gICAgc2V0QXBwTW9kZShcInBhcmVudFwiKTtcclxuICAgIC8vINmB2Yog2YjYtti5INin2YTYqtmG2YLZhCDYp9mE2YXYsdmGOiDZhti52YrYryDYqti52YrZitmGINil2K7Zgdin2KEg2KfZhNij2LfZgdin2YQg2YTZg9mKINmK2LjZh9ixINix2YPZhiDYp9mE2KPYt9mB2KfZhCDZiNin2YTYo9mE2LnYp9ioINmE2YTZhdin2YTZg1xyXG4gICAgLy8g2YTYpyDZhti62YrYsSDZiNi22LkgcHVyZU1vZGUgLSDZhtiq2LHZgyDZg9mF2Kcg2YfZiCAoZmxleGlibGUg2KPZiCBwdXJlINit2LPYqCDYp9iu2KrZitin2LEg2KfZhNmF2LPYqtiu2K/ZhSDYp9mE2LPYp9io2YIpXHJcbiAgICBpZiAoIWlzUHVyZU1vZGUoKSkgc2V0S2lkc0hpZGRlbihmYWxzZSk7XHJcbiAgICBzZXRLaWRzTG9ja2VkKGZhbHNlKTtcclxuICAgIGNsb3NlKCk7XHJcbiAgICBuYXZpZ2F0ZShcIi9hdWRpb1wiKTtcclxuICB9O1xyXG4gIGNvbnN0IGdvUGFyZW50ID0gKCkgPT4geyBjbG9zZSgpOyBuYXZpZ2F0ZShcIi9wYXJlbnRcIik7IH07XHJcbiAgLy8g2KXYr9in2LHYqSDYp9mE2YXZhNmB2ZHYp9iqICjZhNmI2K3YqSDZiNmE2YrZkSDYp9mE2KPZhdixKSDigJQg2KjZhtin2YHYsNipINix2YXYsiDYo9mG2YrZgtipINil2YYg2YjZj9is2K8g2LHZhdiy2Iwg2YjYpdmE2ZHYpyDYr9iu2YjZhCDZhdio2KfYtNixXHJcbiAgY29uc3QgbWFuYWdlID0gKCkgPT4geyBpZiAoaGFzS2lkc1BpbigpKSBzZXRTaG93UGluKHRydWUpOyBlbHNlIGdvUGFyZW50KCk7IH07XHJcbiAgY29uc3QgZ29TZXR0aW5ncyA9ICgpID0+IHsgY2xvc2UoKTsgbmF2aWdhdGUoXCIvc2V0dGluZ3NcIik7IH07XHJcblxyXG4gIHJldHVybiAoXHJcbiAgICA8ZGl2IGNsYXNzTmFtZT1cImZpeGVkIGluc2V0LTAgei1bOTVdIHBhZ2Utbm91ciB0ZXh0LWZvcmVncm91bmQgb3ZlcmZsb3cteS1hdXRvXCIgZGlyPVwicnRsXCI+XHJcbiAgICAgIHsvKiDZiNmH2Kwg2LDZh9io2Yog2LLYrtix2YHZitmRINiu2YTZgdmK2ZEgKi99XHJcbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwicG9pbnRlci1ldmVudHMtbm9uZSBhYnNvbHV0ZSBpbnNldC0wIG92ZXJmbG93LWhpZGRlblwiIGFyaWEtaGlkZGVuPVwidHJ1ZVwiPlxyXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYWJzb2x1dGUgLXRvcC0zMiBsZWZ0LTEvMiAtdHJhbnNsYXRlLXgtMS8yIHctWzUyMHB4XSBoLVs1MjBweF0gcm91bmRlZC1mdWxsIGJnLWFjY2VudC8xNSBibHVyLTN4bCBhbmltYXRlLWJyZWF0aGVcIiAvPlxyXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYWJzb2x1dGUgYm90dG9tLVstMTByZW1dIHJpZ2h0LVstNnJlbV0gdy1bNDIwcHhdIGgtWzQyMHB4XSByb3VuZGVkLWZ1bGwgYmctcHJpbWFyeS8xMCBibHVyLTN4bFwiIC8+XHJcbiAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJyZWxhdGl2ZSBteC1hdXRvIG1heC13LTN4bCBweC01IHB5LTEyIG1pbi1oLWZ1bGwgZmxleCBmbGV4LWNvbCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXJcIj5cclxuICAgICAgICB7Lyog2LTYp9ix2Kkg2LnZhNmI2YrYqSDYsdmC2YrZgtipICovfVxyXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYW5pbWF0ZS1mYWRlLXVwIG1iLTUgaW5saW5lLWZsZXggaXRlbXMtY2VudGVyIGdhcC0yIHJvdW5kZWQtZnVsbCBib3JkZXIgYm9yZGVyLWFjY2VudC8zMCBiZy1hY2NlbnQvMTAgcHgtNCBweS0xLjUgdGV4dC14cyBmb250LWJvbGQgdGV4dC1hY2NlbnQgc2hhZG93LXNvZnRcIj5cclxuICAgICAgICAgIDxTcGFya2xlcyBjbGFzc05hbWU9XCJ3LTMuNSBoLTMuNVwiIC8+INmG2YjYsVxyXG4gICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICA8aDEgY2xhc3NOYW1lPVwiYW5pbWF0ZS1mYWRlLXVwIHRleHQtM3hsIHNtOnRleHQtNHhsIGZvbnQtZXh0cmFib2xkIHRleHQtZ3JhZGllbnQtZ29sZCB0ZXh0LWNlbnRlciBtYi0yIHRyYWNraW5nLXRpZ2h0XCI+2YXZhiDZitiq2LnZhNmR2YUg2KfZhNii2YbYnzwvaDE+XHJcbiAgICAgICAgPHAgY2xhc3NOYW1lPVwiYW5pbWF0ZS1mYWRlLXVwIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCB0ZXh0LXNtIHNtOnRleHQtYmFzZSB0ZXh0LWNlbnRlciBtYi0xMFwiPtin2K7YqtixINmF2YTZgdmR2YMg2YTZhNmF2KrYp9io2LnYqSDZgdmKINix2K3ZhNipINin2YTZhtmI2LE8L3A+XHJcblxyXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYW5pbWF0ZS1mYWRlLXVwIGZsZXggZmxleC13cmFwIGl0ZW1zLXN0YXJ0IGp1c3RpZnktY2VudGVyIGdhcC02IHNtOmdhcC04XCI+XHJcbiAgICAgICAgICB7Lyog2K7Zitin2LE6INmE2Yog2YbZgdiz2YogKNin2YTZhdi52YTZhS/Yp9mE2YjYp9mE2K8pICovfVxyXG4gICAgICAgICAgPGJ1dHRvbiBvbkNsaWNrPXthc1BhcmVudH0gY2xhc3NOYW1lPVwiZ3JvdXAgZmxleCBmbGV4LWNvbCBpdGVtcy1jZW50ZXIgZ2FwLTMgdy0yNCBzbTp3LTI4IGFjdGl2ZTpzY2FsZS05NSB0cmFuc2l0aW9uLXRyYW5zZm9ybVwiPlxyXG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ3LTI0IGgtMjQgc206dy0yOCBzbTpoLTI4IHJvdW5kZWQtM3hsIGJnLXNlY29uZGFyeSBib3JkZXIgYm9yZGVyLWJvcmRlciBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciByaW5nLTIgcmluZy10cmFuc3BhcmVudCByaW5nLW9mZnNldC0yIHJpbmctb2Zmc2V0LWJhY2tncm91bmQgZ3JvdXAtaG92ZXI6cmluZy1hY2NlbnQgc2hhZG93LXNvZnQgdHJhbnNpdGlvbi1hbGwgZHVyYXRpb24tMzAwIGdyb3VwLWhvdmVyOi10cmFuc2xhdGUteS0xIGdyb3VwLWhvdmVyOnNoYWRvdy14bFwiPjxVc2VyIGNsYXNzTmFtZT1cInctMTIgaC0xMiB0ZXh0LWFjY2VudFwiIC8+PC9zcGFuPlxyXG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJmb250LWJvbGQgdGV4dC1jZW50ZXIgdGV4dC1mb3JlZ3JvdW5kIGdyb3VwLWhvdmVyOnRleHQtYWNjZW50IHRyYW5zaXRpb24tY29sb3JzXCI+2YTZiiDZhtmB2LPZijwvc3Bhbj5cclxuICAgICAgICAgIDwvYnV0dG9uPlxyXG5cclxuICAgICAgICAgIHsvKiDYrtmK2KfYsdin2Ko6INmD2YQg2KfZhNij2LfZgdin2YQg2KfZhNmF2LPYrNmR2YTZiNmGICjZiNmE2YrYsyDYp9mE2KPZiNmEINmB2YLYtykgKi99XHJcbiAgICAgICAgICB7cHJvZmlsZXMubGVuZ3RoID4gMCA/IChcclxuICAgICAgICAgICAgcHJvZmlsZXMubWFwKChwLCBpZHgpID0+IChcclxuICAgICAgICAgICAgICA8YnV0dG9uIGtleT17cC5pZH0gb25DbGljaz17KCkgPT4gcGlja0NoaWxkKHAuaWQpfSBjbGFzc05hbWU9XCJncm91cCBmbGV4IGZsZXgtY29sIGl0ZW1zLWNlbnRlciBnYXAtMyB3LTI0IHNtOnctMjggYWN0aXZlOnNjYWxlLTk1IHRyYW5zaXRpb24tdHJhbnNmb3JtXCI+XHJcbiAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJyZWxhdGl2ZSB3LTI0IGgtMjQgc206dy0yOCBzbTpoLTI4IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHJpbmctMiByaW5nLXRyYW5zcGFyZW50IHJpbmctb2Zmc2V0LTIgcmluZy1vZmZzZXQtYmFja2dyb3VuZCBncm91cC1ob3ZlcjpyaW5nLWFjY2VudCByb3VuZGVkLWZ1bGwgdHJhbnNpdGlvbi1hbGwgZHVyYXRpb24tMzAwIGdyb3VwLWhvdmVyOi10cmFuc2xhdGUteS0xIGdyb3VwLWhvdmVyOnNoYWRvdy14bFwiPlxyXG4gICAgICAgICAgICAgICAgICA8QXZhdGFyIG5hbWU9e3AuYXZhdGFyfSBjbGFzc05hbWU9XCJ3LTI0IGgtMjQgc206dy0yOCBzbTpoLTI4IGRyb3Atc2hhZG93LW1kXCIgLz5cclxuICAgICAgICAgICAgICAgICAge3AuaWQgPT09IGFjdGl2ZUlkRmFsbGJhY2sgJiYgKFxyXG4gICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImFic29sdXRlIC1ib3R0b20tMSBsZWZ0LTEvMiAtdHJhbnNsYXRlLXgtMS8yIGJnLWFjY2VudCB0ZXh0LWFjY2VudC1mb3JlZ3JvdW5kIHRleHQtWzlweF0gZm9udC1ib2xkIHB4LTIgcHktMC41IHJvdW5kZWQtZnVsbCBzaGFkb3dcIj7Yp9mE2KLZhjwvc3Bhbj5cclxuICAgICAgICAgICAgICAgICAgKX1cclxuICAgICAgICAgICAgICAgIDwvc3Bhbj5cclxuICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImZvbnQtYm9sZCB0ZXh0LWNlbnRlciB0cnVuY2F0ZSB3LWZ1bGwgdGV4dC1mb3JlZ3JvdW5kIGdyb3VwLWhvdmVyOnRleHQtYWNjZW50IHRyYW5zaXRpb24tY29sb3JzXCI+XHJcbiAgICAgICAgICAgICAgICAgIHtwLm5hbWUgfHwgKHByb2ZpbGVzLmxlbmd0aCA9PT0gMSA/IFwi2YTZiiDYt9mB2YTZilwiIDogYNin2YTYt9mB2YQgJHtpZHggKyAxfWApfVxyXG4gICAgICAgICAgICAgICAgPC9zcGFuPlxyXG4gICAgICAgICAgICAgIDwvYnV0dG9uPlxyXG4gICAgICAgICAgICApKVxyXG4gICAgICAgICAgKSA6IChcclxuICAgICAgICAgICAgPGJ1dHRvbiBvbkNsaWNrPXsoKSA9PiB7IG1hbmFnZSgpOyB9fSBjbGFzc05hbWU9XCJncm91cCBmbGV4IGZsZXgtY29sIGl0ZW1zLWNlbnRlciBnYXAtMyB3LTI0IHNtOnctMjggYWN0aXZlOnNjYWxlLTk1IHRyYW5zaXRpb24tdHJhbnNmb3JtXCI+XHJcbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidy0yNCBoLTI0IHNtOnctMjggc206aC0yOCByb3VuZGVkLTN4bCBiZy1tdXRlZCBib3JkZXIgYm9yZGVyLWRhc2hlZCBib3JkZXItYm9yZGVyIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHJpbmctMiByaW5nLXRyYW5zcGFyZW50IHJpbmctb2Zmc2V0LTIgcmluZy1vZmZzZXQtYmFja2dyb3VuZCBncm91cC1ob3ZlcjpyaW5nLWFjY2VudC82MCBzaGFkb3ctc29mdCB0cmFuc2l0aW9uLWFsbCBkdXJhdGlvbi0zMDAgZ3JvdXAtaG92ZXI6LXRyYW5zbGF0ZS15LTFcIj48UGx1cyBjbGFzc05hbWU9XCJ3LTEyIGgtMTIgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIGdyb3VwLWhvdmVyOnRleHQtYWNjZW50IHRyYW5zaXRpb24tY29sb3JzXCIgLz48L3NwYW4+XHJcbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwiZm9udC1ib2xkIHRleHQtY2VudGVyIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBncm91cC1ob3Zlcjp0ZXh0LWFjY2VudCB0cmFuc2l0aW9uLWNvbG9yc1wiPtmE2Yog2LfZgdmE2Yo8L3NwYW4+XHJcbiAgICAgICAgICAgIDwvYnV0dG9uPlxyXG4gICAgICAgICAgKX1cclxuICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgPGJ1dHRvbiBvbkNsaWNrPXtnb1NldHRpbmdzfSBjbGFzc05hbWU9XCJhbmltYXRlLWZhZGUtdXAgbXQtMTIgaW5saW5lLWZsZXggaXRlbXMtY2VudGVyIGdhcC0yIHJvdW5kZWQtZnVsbCBiZy1zZWNvbmRhcnkgYm9yZGVyIGJvcmRlci1ib3JkZXIgcHgtNSBweS0yLjUgdGV4dC1zbSBmb250LWJvbGQgdGV4dC1zZWNvbmRhcnktZm9yZWdyb3VuZCBob3ZlcjpicmlnaHRuZXNzLTk1IHNoYWRvdy1zb2Z0IGFjdGl2ZTpzY2FsZS05NSB0cmFuc2l0aW9uLWFsbFwiPlxyXG4gICAgICAgICAgPFNldHRpbmdzIGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC1hY2NlbnRcIiAvPiDYp9mE2KXYudiv2KfYr9in2KpcclxuICAgICAgICA8L2J1dHRvbj5cclxuICAgICAgPC9kaXY+XHJcblxyXG4gICAgICB7c2hvd1BpbiAmJiAoXHJcbiAgICAgICAgPFBpbk1vZGFsIG1vZGU9XCJ2ZXJpZnlcIiB0aXRsZT1cItix2YXYsiDZiNmE2YrZkSDYp9mE2KPZhdixXCIgb25TdWNjZXNzPXsoKSA9PiB7IHNldFNob3dQaW4oZmFsc2UpOyBnb1BhcmVudCgpOyB9fSBvbkNhbmNlbD17KCkgPT4gc2V0U2hvd1BpbihmYWxzZSl9IC8+XHJcbiAgICAgICl9XHJcbiAgICA8L2Rpdj5cclxuICApO1xyXG59XHJcbiJdLCJuYW1lcyI6WyJ1c2VFZmZlY3QiLCJ1c2VTdGF0ZSIsInVzZU5hdmlnYXRlIiwiVXNlciIsIlBsdXMiLCJTZXR0aW5ncyIsIlNwYXJrbGVzIiwiZ2V0UHJvZmlsZXMiLCJnZXRBcHBNb2RlIiwic2V0QXBwTW9kZSIsInNldEFjdGl2ZVByb2ZpbGUiLCJraWRzUm91dGVCbG9ja2VkIiwiZ2V0UHJvZ3Jlc3MiLCJnZXRBY3RpdmVJZCIsInNldEtpZHNIaWRkZW4iLCJzZXRQdXJlTW9kZSIsImlzUHVyZU1vZGUiLCJoYXNLaWRzUGluIiwic2V0S2lkc0xvY2tlZCIsIlBpbk1vZGFsIiwiQXZhdGFyIiwiUElDS0VEX0ZMQUciLCJtYXJrUGlja2VkIiwic2Vzc2lvblN0b3JhZ2UiLCJzZXRJdGVtIiwiaXNQaWNrZWQiLCJnZXRJdGVtIiwiUHJvZmlsZVBpY2tlciIsIm9uUGlja2VkIiwibmF2aWdhdGUiLCJwcm9maWxlcyIsImFwcE1vZGUiLCJhY3RpdmVJZEZhbGxiYWNrIiwic2hvd1BpbiIsInNldFNob3dQaW4iLCJyZXBsYWNlIiwiY2xvc2UiLCJwaWNrQ2hpbGQiLCJpZCIsInByb2ZpbGUiLCJmaW5kIiwicCIsInByb2dyZXNzIiwiZ29hbE1pbnV0ZXMiLCJ1bmxvY2tlZCIsImFzUGFyZW50IiwiZ29QYXJlbnQiLCJtYW5hZ2UiLCJnb1NldHRpbmdzIiwiZGl2IiwiY2xhc3NOYW1lIiwiZGlyIiwiYXJpYS1oaWRkZW4iLCJoMSIsImJ1dHRvbiIsIm9uQ2xpY2siLCJzcGFuIiwibGVuZ3RoIiwibWFwIiwiaWR4IiwibmFtZSIsImF2YXRhciIsIm1vZGUiLCJ0aXRsZSIsIm9uU3VjY2VzcyIsIm9uQ2FuY2VsIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxTQUFTQSxTQUFTLEVBQUVDLFFBQVEsUUFBUSxRQUFRO0FBQzVDLFNBQVNDLFdBQVcsUUFBUSxtQkFBbUI7QUFDL0MsU0FBU0MsSUFBSSxFQUFFQyxJQUFJLEVBQUVDLFFBQVEsRUFBRUMsUUFBUSxRQUFRLGVBQWU7QUFDOUQsU0FBU0MsV0FBVyxFQUFFQyxVQUFVLEVBQUVDLFVBQVUsRUFBRUMsZ0JBQWdCLEVBQUVDLGdCQUFnQixFQUFFQyxXQUFXLEVBQUVDLFdBQVcsRUFBRUMsYUFBYSxFQUFFQyxXQUFXLEVBQUVDLFVBQVUsUUFBMEIsc0JBQXNCO0FBQ2xNLFNBQVNDLFVBQVUsRUFBRUMsYUFBYSxRQUFRLG1CQUFtQjtBQUM3RCxPQUFPQyxjQUFjLGFBQWE7QUFDbEMsT0FBT0MsWUFBWSxXQUFXO0FBRTlCLE1BQU1DLGNBQWM7QUFFcEIsMEVBQTBFLEdBQzFFLE9BQU8sTUFBTUMsYUFBYTtJQUFRLElBQUk7UUFBRUMsZUFBZUMsT0FBTyxDQUFDSCxhQUFhO0lBQU0sRUFBRSxPQUFNLENBQWU7QUFBRSxFQUFFO0FBQzdHLE9BQU8sTUFBTUksV0FBVztJQUFpQixJQUFJO1FBQUUsT0FBT0YsZUFBZUcsT0FBTyxDQUFDTCxpQkFBaUI7SUFBSyxFQUFFLE9BQU07UUFBRSxPQUFPO0lBQU07QUFBRSxFQUFFO0FBRTlIOzs7Q0FHQyxHQUNELGVBQWUsU0FBU00sY0FBYyxFQUFFQyxRQUFRLEVBQTZCOztJQUMzRSxNQUFNQyxXQUFXM0I7SUFDakIsTUFBTTRCLFdBQTBCdkI7SUFDaEMsTUFBTXdCLFVBQVV2QjtJQUNoQixNQUFNd0IsbUJBQW1CbkI7SUFDekIsTUFBTSxDQUFDb0IsU0FBU0MsV0FB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

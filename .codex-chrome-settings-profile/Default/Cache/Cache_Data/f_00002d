@@ -1,0 +1,285 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/SiteLinksOverlay.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const useEffect = __vite__cjsImport3_react["useEffect"]; const useCallback = __vite__cjsImport3_react["useCallback"]; const startTransition = __vite__cjsImport3_react["startTransition"];
+import { useNavigate } from "/node_modules/.vite/deps/react-router-dom.js?v=c05fb7b0";
+import { BookOpen, Headphones, Timer, Target, Zap, X, Map } from "/node_modules/.vite/deps/lucide-react.js?v=c05fb7b0";
+const links = [
+    {
+        path: "/surah-shading",
+        label: "مربع التظليل الجديد",
+        description: "تظليل السورة مع مربع تظليل تفاعلي بالسحب والتكبير",
+        icon: Zap,
+        color: "from-amber-400 to-yellow-500",
+        glow: "shadow-amber-500/20"
+    },
+    {
+        path: "/",
+        label: "المصحف المعلم",
+        description: "قراءة القرآن مع التقسيم والتشغيل",
+        icon: BookOpen,
+        color: "from-amber-400 to-orange-500",
+        glow: "shadow-amber-500/20"
+    },
+    {
+        path: "/audio",
+        label: "التلاوات",
+        description: "قائمة السور الصوتية",
+        icon: Headphones,
+        color: "from-sky-400 to-blue-500",
+        glow: "shadow-sky-500/20"
+    },
+    {
+        path: "/shading",
+        label: "التظليل المزدوج",
+        description: "معلم وطفل بلونين مع صوتك",
+        icon: Timer,
+        color: "from-emerald-400 to-teal-500",
+        glow: "shadow-emerald-500/20"
+    },
+    {
+        path: "/timings",
+        label: "إعداد التوقيت",
+        description: "معايرة توقيت الآيات الصوتية",
+        icon: Timer,
+        color: "from-emerald-400 to-teal-500",
+        glow: "shadow-emerald-500/20"
+    },
+    {
+        path: "/calibrate",
+        label: "ضبط المواضع",
+        description: "ضبط مواضع الآيات على الصفحات",
+        icon: Target,
+        color: "from-violet-400 to-purple-500",
+        glow: "shadow-violet-500/20"
+    }
+];
+export default function SiteLinksOverlay({ open, onClose }) {
+    _s();
+    const navigate = useNavigate();
+    const handleKeyDown = useCallback((e)=>{
+        if (e.key === "Escape") onClose();
+    }, [
+        onClose
+    ]);
+    useEffect(()=>{
+        if (open) {
+            window.addEventListener("keydown", handleKeyDown);
+            return ()=>window.removeEventListener("keydown", handleKeyDown);
+        }
+    }, [
+        open,
+        handleKeyDown
+    ]);
+    if (!open) return null;
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: "fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in",
+        onClick: onClose,
+        children: [
+            /*#__PURE__*/ _jsxDEV("div", {
+                className: "absolute inset-0 bg-background/70 backdrop-blur-md"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                lineNumber: 41,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("div", {
+                className: "relative w-full max-w-lg glass-nour rounded-3xl p-6 shadow-soft animate-scale-up",
+                onClick: (e)=>e.stopPropagation(),
+                children: [
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "flex items-center justify-between mb-5",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("h2", {
+                                        className: "font-quran font-bold text-xl text-gradient-gold flex items-center gap-2",
+                                        children: [
+                                            /*#__PURE__*/ _jsxDEV(Map, {
+                                                className: "w-5 h-5 text-accent"
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                                lineNumber: 52,
+                                                columnNumber: 15
+                                            }, this),
+                                            " خريطة الموقع"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                        lineNumber: 51,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("p", {
+                                        className: "text-xs text-muted-foreground mt-0.5",
+                                        children: "Ctrl+5 للفتح/الإغلاق"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                        lineNumber: 54,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                lineNumber: 50,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("button", {
+                                onClick: onClose,
+                                className: "w-8 h-8 rounded-full bg-secondary text-secondary-foreground hover:brightness-95 flex items-center justify-center transition-colors",
+                                children: /*#__PURE__*/ _jsxDEV(X, {
+                                    className: "w-4 h-4 text-secondary-foreground"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                    lineNumber: 62,
+                                    columnNumber: 13
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                lineNumber: 58,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                        lineNumber: 49,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "w-20 h-1 bg-gradient-to-r from-amber-400 to-sky-400 mx-auto rounded-full mb-5"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                        lineNumber: 67,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "space-y-2.5",
+                        children: links.map((link)=>{
+                            const Icon = link.icon;
+                            return /*#__PURE__*/ _jsxDEV("button", {
+                                onClick: ()=>{
+                                    startTransition(()=>{
+                                        navigate(link.path);
+                                        onClose();
+                                    });
+                                },
+                                className: "w-full flex items-center gap-4 p-3.5 rounded-2xl bg-card hover:bg-muted border border-border hover:border-accent/50 shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98] group text-right",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        className: `w-12 h-12 rounded-xl bg-gradient-to-br ${link.color} flex items-center justify-center shrink-0 shadow-lg ${link.glow} group-hover:scale-110 transition-transform`,
+                                        children: /*#__PURE__*/ _jsxDEV(Icon, {
+                                            className: "w-5 h-5 text-white"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                            lineNumber: 85,
+                                            columnNumber: 19
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                        lineNumber: 84,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        className: "flex-1 min-w-0",
+                                        children: [
+                                            /*#__PURE__*/ _jsxDEV("p", {
+                                                className: "font-quran font-bold text-base text-foreground leading-tight",
+                                                children: link.label
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                                lineNumber: 88,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ _jsxDEV("p", {
+                                                className: "text-xs text-muted-foreground mt-0.5 truncate",
+                                                children: link.description
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                                lineNumber: 91,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                        lineNumber: 87,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        className: "text-[10px] text-muted-foreground font-mono bg-muted px-2 py-1 rounded-lg border border-border shrink-0 dir-ltr",
+                                        dir: "ltr",
+                                        children: link.path
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                        lineNumber: 95,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, link.path, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                                lineNumber: 74,
+                                columnNumber: 15
+                            }, this);
+                        })
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                        lineNumber: 70,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+                lineNumber: 44,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx",
+        lineNumber: 36,
+        columnNumber: 5
+    }, this);
+}
+_s(SiteLinksOverlay, "UWXqCtrmwxWYI4kwv8xCwazabHk=", false, function() {
+    return [
+        useNavigate
+    ];
+});
+_c = SiteLinksOverlay;
+var _c;
+$RefreshReg$(_c, "SiteLinksOverlay");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/SiteLinksOverlay.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlNpdGVMaW5rc092ZXJsYXkudHN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IHVzZUVmZmVjdCwgdXNlQ2FsbGJhY2ssIHN0YXJ0VHJhbnNpdGlvbiB9IGZyb20gXCJyZWFjdFwiO1xuaW1wb3J0IHsgdXNlTmF2aWdhdGUgfSBmcm9tIFwicmVhY3Qtcm91dGVyLWRvbVwiO1xuaW1wb3J0IHsgQm9va09wZW4sIEhlYWRwaG9uZXMsIFRpbWVyLCBUYXJnZXQsIFphcCwgWCwgTWFwLCBHcmFkdWF0aW9uQ2FwIH0gZnJvbSBcImx1Y2lkZS1yZWFjdFwiO1xuXG5pbnRlcmZhY2UgUHJvcHMge1xuICBvcGVuOiBib29sZWFuO1xuICBvbkNsb3NlOiAoKSA9PiB2b2lkO1xufVxuXG5jb25zdCBsaW5rcyA9IFtcbiAgeyBwYXRoOiBcIi9zdXJhaC1zaGFkaW5nXCIsIGxhYmVsOiBcItmF2LHYqNi5INin2YTYqti42YTZitmEINin2YTYrNiv2YrYr1wiLCBkZXNjcmlwdGlvbjogXCLYqti42YTZitmEINin2YTYs9mI2LHYqSDZhdi5INmF2LHYqNi5INiq2LjZhNmK2YQg2KrZgdin2LnZhNmKINio2KfZhNiz2K3YqCDZiNin2YTYqtmD2KjZitixXCIsIGljb246IFphcCwgY29sb3I6IFwiZnJvbS1hbWJlci00MDAgdG8teWVsbG93LTUwMFwiLCBnbG93OiBcInNoYWRvdy1hbWJlci01MDAvMjBcIiB9LFxuICB7IHBhdGg6IFwiL1wiLCBsYWJlbDogXCLYp9mE2YXYtdit2YEg2KfZhNmF2LnZhNmFXCIsIGRlc2NyaXB0aW9uOiBcItmC2LHYp9ih2Kkg2KfZhNmC2LHYotmGINmF2Lkg2KfZhNiq2YLYs9mK2YUg2YjYp9mE2KrYtNi62YrZhFwiLCBpY29uOiBCb29rT3BlbiwgY29sb3I6IFwiZnJvbS1hbWJlci00MDAgdG8tb3JhbmdlLTUwMFwiLCBnbG93OiBcInNoYWRvdy1hbWJlci01MDAvMjBcIiB9LFxuICB7IHBhdGg6IFwiL2F1ZGlvXCIsIGxhYmVsOiBcItin2YTYqtmE2KfZiNin2KpcIiwgZGVzY3JpcHRpb246IFwi2YLYp9im2YXYqSDYp9mE2LPZiNixINin2YTYtdmI2KrZitipXCIsIGljb246IEhlYWRwaG9uZXMsIGNvbG9yOiBcImZyb20tc2t5LTQwMCB0by1ibHVlLTUwMFwiLCBnbG93OiBcInNoYWRvdy1za3ktNTAwLzIwXCIgfSxcbiAgeyBwYXRoOiBcIi9zaGFkaW5nXCIsIGxhYmVsOiBcItin2YTYqti42YTZitmEINin2YTZhdiy2K/ZiNisXCIsIGRlc2NyaXB0aW9uOiBcItmF2LnZhNmFINmI2LfZgdmEINio2YTZiNmG2YrZhiDZhdi5INi12YjYqtmDXCIsIGljb246IFRpbWVyLCBjb2xvcjogXCJmcm9tLWVtZXJhbGQtNDAwIHRvLXRlYWwtNTAwXCIsIGdsb3c6IFwic2hhZG93LWVtZXJhbGQtNTAwLzIwXCIgfSxcbiAgeyBwYXRoOiBcIi90aW1pbmdzXCIsIGxhYmVsOiBcItil2LnYr9in2K8g2KfZhNiq2YjZgtmK2KpcIiwgZGVzY3JpcHRpb246IFwi2YXYudin2YrYsdipINiq2YjZgtmK2Kog2KfZhNii2YrYp9iqINin2YTYtdmI2KrZitipXCIsIGljb246IFRpbWVyLCBjb2xvcjogXCJmcm9tLWVtZXJhbGQtNDAwIHRvLXRlYWwtNTAwXCIsIGdsb3c6IFwic2hhZG93LWVtZXJhbGQtNTAwLzIwXCIgfSxcbiAgeyBwYXRoOiBcIi9jYWxpYnJhdGVcIiwgbGFiZWw6IFwi2LbYqNi3INin2YTZhdmI2KfYtti5XCIsIGRlc2NyaXB0aW9uOiBcIti22KjYtyDZhdmI2KfYtti5INin2YTYotmK2KfYqiDYudmE2Ykg2KfZhNi12YHYrdin2KpcIiwgaWNvbjogVGFyZ2V0LCBjb2xvcjogXCJmcm9tLXZpb2xldC00MDAgdG8tcHVycGxlLTUwMFwiLCBnbG93OiBcInNoYWRvdy12aW9sZXQtNTAwLzIwXCIgfSxcbl07XG5cbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIFNpdGVMaW5rc092ZXJsYXkoeyBvcGVuLCBvbkNsb3NlIH06IFByb3BzKSB7XG4gIGNvbnN0IG5hdmlnYXRlID0gdXNlTmF2aWdhdGUoKTtcblxuICBjb25zdCBoYW5kbGVLZXlEb3duID0gdXNlQ2FsbGJhY2soKGU6IEtleWJvYXJkRXZlbnQpID0+IHtcbiAgICBpZiAoZS5rZXkgPT09IFwiRXNjYXBlXCIpIG9uQ2xvc2UoKTtcbiAgfSwgW29uQ2xvc2VdKTtcblxuICB1c2VFZmZlY3QoKCkgPT4ge1xuICAgIGlmIChvcGVuKSB7XG4gICAgICB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcihcImtleWRvd25cIiwgaGFuZGxlS2V5RG93bik7XG4gICAgICByZXR1cm4gKCkgPT4gd2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoXCJrZXlkb3duXCIsIGhhbmRsZUtleURvd24pO1xuICAgIH1cbiAgfSwgW29wZW4sIGhhbmRsZUtleURvd25dKTtcblxuICBpZiAoIW9wZW4pIHJldHVybiBudWxsO1xuXG4gIHJldHVybiAoXG4gICAgPGRpdlxuICAgICAgY2xhc3NOYW1lPVwiZml4ZWQgaW5zZXQtMCB6LVsxMDBdIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHAtNCBhbmltYXRlLWZhZGUtaW5cIlxuICAgICAgb25DbGljaz17b25DbG9zZX1cbiAgICA+XG4gICAgICB7LyogQmFja2Ryb3AgKi99XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cImFic29sdXRlIGluc2V0LTAgYmctYmFja2dyb3VuZC83MCBiYWNrZHJvcC1ibHVyLW1kXCIgLz5cblxuICAgICAgey8qIE1vZGFsICovfVxuICAgICAgPGRpdlxuICAgICAgICBjbGFzc05hbWU9XCJyZWxhdGl2ZSB3LWZ1bGwgbWF4LXctbGcgZ2xhc3Mtbm91ciByb3VuZGVkLTN4bCBwLTYgc2hhZG93LXNvZnQgYW5pbWF0ZS1zY2FsZS11cFwiXG4gICAgICAgIG9uQ2xpY2s9eyhlKSA9PiBlLnN0b3BQcm9wYWdhdGlvbigpfVxuICAgICAgPlxuICAgICAgICB7LyogSGVhZGVyICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktYmV0d2VlbiBtYi01XCI+XG4gICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgIDxoMiBjbGFzc05hbWU9XCJmb250LXF1cmFuIGZvbnQtYm9sZCB0ZXh0LXhsIHRleHQtZ3JhZGllbnQtZ29sZCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMlwiPlxuICAgICAgICAgICAgICA8TWFwIGNsYXNzTmFtZT1cInctNSBoLTUgdGV4dC1hY2NlbnRcIiAvPiDYrtix2YrYt9ipINin2YTZhdmI2YLYuVxuICAgICAgICAgICAgPC9oMj5cbiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQteHMgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIG10LTAuNVwiPlxuICAgICAgICAgICAgICBDdHJsKzUg2YTZhNmB2KrYrS/Yp9mE2KXYutmE2KfZglxuICAgICAgICAgICAgPC9wPlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgIG9uQ2xpY2s9e29uQ2xvc2V9XG4gICAgICAgICAgICBjbGFzc05hbWU9XCJ3LTggaC04IHJvdW5kZWQtZnVsbCBiZy1zZWNvbmRhcnkgdGV4dC1zZWNvbmRhcnktZm9yZWdyb3VuZCBob3ZlcjpicmlnaHRuZXNzLTk1IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRyYW5zaXRpb24tY29sb3JzXCJcbiAgICAgICAgICA+XG4gICAgICAgICAgICA8WCBjbGFzc05hbWU9XCJ3LTQgaC00IHRleHQtc2Vjb25kYXJ5LWZvcmVncm91bmRcIiAvPlxuICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICB7LyogRGl2aWRlciAqL31cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LTIwIGgtMSBiZy1ncmFkaWVudC10by1yIGZyb20tYW1iZXItNDAwIHRvLXNreS00MDAgbXgtYXV0byByb3VuZGVkLWZ1bGwgbWItNVwiIC8+XG5cbiAgICAgICAgey8qIExpbmtzIEdyaWQgKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0yLjVcIj5cbiAgICAgICAgICB7bGlua3MubWFwKChsaW5rKSA9PiB7XG4gICAgICAgICAgICBjb25zdCBJY29uID0gbGluay5pY29uO1xuICAgICAgICAgICAgcmV0dXJuIChcbiAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgIGtleT17bGluay5wYXRofVxuICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHtcbiAgICAgICAgICAgICAgICAgIHN0YXJ0VHJhbnNpdGlvbigoKSA9PiB7XG4gICAgICAgICAgICAgICAgICAgIG5hdmlnYXRlKGxpbmsucGF0aCk7XG4gICAgICAgICAgICAgICAgICAgIG9uQ2xvc2UoKTtcbiAgICAgICAgICAgICAgICAgIH0pO1xuICAgICAgICAgICAgICAgIH19XG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIGZsZXggaXRlbXMtY2VudGVyIGdhcC00IHAtMy41IHJvdW5kZWQtMnhsIGJnLWNhcmQgaG92ZXI6YmctbXV0ZWQgYm9yZGVyIGJvcmRlci1ib3JkZXIgaG92ZXI6Ym9yZGVyLWFjY2VudC81MCBzaGFkb3ctc20gaG92ZXI6c2hhZG93LW1kIHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTIwMCBhY3RpdmU6c2NhbGUtWzAuOThdIGdyb3VwIHRleHQtcmlnaHRcIlxuICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2B3LTEyIGgtMTIgcm91bmRlZC14bCBiZy1ncmFkaWVudC10by1iciAke2xpbmsuY29sb3J9IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHNocmluay0wIHNoYWRvdy1sZyAke2xpbmsuZ2xvd30gZ3JvdXAtaG92ZXI6c2NhbGUtMTEwIHRyYW5zaXRpb24tdHJhbnNmb3JtYH0+XG4gICAgICAgICAgICAgICAgICA8SWNvbiBjbGFzc05hbWU9XCJ3LTUgaC01IHRleHQtd2hpdGVcIiAvPlxuICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleC0xIG1pbi13LTBcIj5cbiAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cImZvbnQtcXVyYW4gZm9udC1ib2xkIHRleHQtYmFzZSB0ZXh0LWZvcmVncm91bmQgbGVhZGluZy10aWdodFwiPlxuICAgICAgICAgICAgICAgICAgICB7bGluay5sYWJlbH1cbiAgICAgICAgICAgICAgICAgIDwvcD5cbiAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQteHMgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIG10LTAuNSB0cnVuY2F0ZVwiPlxuICAgICAgICAgICAgICAgICAgICB7bGluay5kZXNjcmlwdGlvbn1cbiAgICAgICAgICAgICAgICAgIDwvcD5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInRleHQtWzEwcHhdIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBmb250LW1vbm8gYmctbXV0ZWQgcHgtMiBweS0xIHJvdW5kZWQtbGcgYm9yZGVyIGJvcmRlci1ib3JkZXIgc2hyaW5rLTAgZGlyLWx0clwiIGRpcj1cImx0clwiPlxuICAgICAgICAgICAgICAgICAge2xpbmsucGF0aH1cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICApO1xuICAgICAgICAgIH0pfVxuICAgICAgICA8L2Rpdj5cbiAgICAgIDwvZGl2PlxuICAgIDwvZGl2PlxuICApO1xufVxuIl0sIm5hbWVzIjpbInVzZUVmZmVjdCIsInVzZUNhbGxiYWNrIiwic3RhcnRUcmFuc2l0aW9uIiwidXNlTmF2aWdhdGUiLCJCb29rT3BlbiIsIkhlYWRwaG9uZXMiLCJUaW1lciIsIlRhcmdldCIsIlphcCIsIlgiLCJNYXAiLCJsaW5rcyIsInBhdGgiLCJsYWJlbCIsImRlc2NyaXB0aW9uIiwiaWNvbiIsImNvbG9yIiwiZ2xvdyIsIlNpdGVMaW5rc092ZXJsYXkiLCJvcGVuIiwib25DbG9zZSIsIm5hdmlnYXRlIiwiaGFuZGxlS2V5RG93biIsImUiLCJrZXkiLCJ3aW5kb3ciLCJhZGRFdmVudExpc3RlbmVyIiwicmVtb3ZlRXZlbnRMaXN0ZW5lciIsImRpdiIsImNsYXNzTmFtZSIsIm9uQ2xpY2siLCJzdG9wUHJvcGFnYXRpb24iLCJoMiIsInAiLCJidXR0b24iLCJtYXAiLCJsaW5rIiwiSWNvbiIsImRpciJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsU0FBU0EsU0FBUyxFQUFFQyxXQUFXLEVBQUVDLGVBQWUsUUFBUSxRQUFRO0FBQ2hFLFNBQVNDLFdBQVcsUUFBUSxtQkFBbUI7QUFDL0MsU0FBU0MsUUFBUSxFQUFFQyxVQUFVLEVBQUVDLEtBQUssRUFBRUMsTUFBTSxFQUFFQyxHQUFHLEVBQUVDLENBQUMsRUFBRUMsR0FBRyxRQUF1QixlQUFlO0FBTy9GLE1BQU1DLFFBQVE7SUFDWjtRQUFFQyxNQUFNO1FBQWtCQyxPQUFPO1FBQXVCQyxhQUFhO1FBQXFEQyxNQUFNUDtRQUFLUSxPQUFPO1FBQWdDQyxNQUFNO0lBQXNCO0lBQ3hNO1FBQUVMLE1BQU07UUFBS0MsT0FBTztRQUFpQkMsYUFBYTtRQUFvQ0MsTUFBTVg7UUFBVVksT0FBTztRQUFnQ0MsTUFBTTtJQUFzQjtJQUN6SztRQUFFTCxNQUFNO1FBQVVDLE9BQU87UUFBWUMsYUFBYTtRQUF1QkMsTUFBTVY7UUFBWVcsT0FBTztRQUE0QkMsTUFBTTtJQUFvQjtJQUN4SjtRQUFFTCxNQUFNO1FBQVlDLE9BQU87UUFBbUJDLGFBQWE7UUFBNEJDLE1BQU1UO1FBQU9VLE9BQU87UUFBZ0NDLE1BQU07SUFBd0I7SUFDeks7UUFBRUwsTUFBTTtRQUFZQyxPQUFPO1FBQWlCQyxhQUFhO1FBQStCQyxNQUFNVDtRQUFPVSxPQUFPO1FBQWdDQyxNQUFNO0lBQXdCO0lBQzFLO1FBQUVMLE1BQU07UUFBY0MsT0FBTztRQUFlQyxhQUFhO1FBQWdDQyxNQUFNUjtRQUFRUyxPQUFPO1FBQWlDQyxNQUFNO0lBQXVCO0NBQzdLO0FBRUQsZUFBZSxTQUFTQyxpQkFBaUIsRUFBRUMsSUFBSSxFQUFFQyxPQUFPLEVBQVM7O0lBQy9ELE1BQU1DLFdBQVdsQjtJQUVqQixNQUFNbUIsZ0JBQWdCckIsWUFBWSxDQUFDc0I7UUFDakMsSUFBSUEsRUFBRUMsR0FBRyxLQUFLLFVBQVVKO0lBQzFCLEdBQUc7UUFBQ0E7S0FBUTtJQUVacEIsVUFBVTtRQUNSLElBQUltQixNQUFNO1lBQ1JNLE9BQU9DLGdCQUFnQixDQUFDLFdBQVdKO1lBQ25DLE9BQU8sSUFBTUcsT0FBT0UsbUJBQW1CLENBQUMsV0FBV0w7UUFDckQ7SUFDRixHQUFHO1FBQUNIO1FBQU1HO0tBQWM7SUFFeEIsSUFBSSxDQUFDSCxNQUFNLE9BQU87SUFFbEIscUJBQ0UsUUFBQ1M7UUFDQ0MsV0FBVTtRQUNWQyxTQUFTVjs7MEJBR1QsUUFBQ1E7Z0JBQUlDLFdBQVU7Ozs7OzswQkFHZixRQUFDRDtnQkFDQ0MsV0FBVTtnQkFDVkMsU0FBUyxDQUFDUCxJQUFNQSxFQUFFUSxlQUFlOztrQ0FHakMsUUFBQ0g7d0JBQUlDLFdBQVU7OzBDQUNiLFFBQUNEOztrREFDQyxRQUFDSTt3Q0FBR0gsV0FBVTs7MERBQ1osUUFBQ25CO2dEQUFJbUIsV0FBVTs7Ozs7OzRDQUF3Qjs7Ozs7OztrREFFekMsUUFBQ0k7d0NBQUVKLFdBQVU7a0RBQXVDOzs7Ozs7Ozs7Ozs7MENBSXRELFFBQUNLO2dDQUNDSixTQUFTVjtnQ0FDVFMsV0FBVTswQ0FFVixjQUFBLFFBQUNwQjtvQ0FBRW9CLFdBQVU7Ozs7Ozs7Ozs7Ozs7Ozs7O2tDQUtqQixRQUFDRDt3QkFBSUMsV0FBVTs7Ozs7O2tDQUdmLFFBQUNEO3dCQUFJQyxXQUFVO2tDQUNabEIsTUFBTXdCLEdBQUcsQ0FBQyxDQUFDQzs0QkFDVixNQUFNQyxPQUFPRCxLQUFLckIsSUFBSTs0QkFDdEIscUJBQ0UsUUFBQ21CO2dDQUVDSixTQUFTO29DQUNQNUIsZ0JBQWdCO3dDQUNkbUIsU0FBU2UsS0FBS3hCLElBQUk7d0NBQ2xCUTtvQ0FDRjtnQ0FDRjtnQ0FDQVMsV0FBVTs7a0RBRVYsUUFBQ0Q7d0NBQUlDLFdBQVcsQ0FBQyx1Q0FBdUMsRUFBRU8sS0FBS3BCLEtBQUssQ0FBQyxxREFBcUQsRUFBRW9CLEtBQUtuQixJQUFJLENBQUMsMkNBQTJDLENBQUM7a0RBQ2hMLGNBQUEsUUFBQ29COzRDQUFLUixXQUFVOzs7Ozs7Ozs7OztrREFFbEIsUUFBQ0Q7d0NBQUlDLFdBQVU7OzBEQUNiLFFBQUNJO2dEQUFFSixXQUFVOzBEQUNWTyxLQUFLdkIsS0FBSzs7Ozs7OzBEQUViLFFBQUNvQjtnREFBRUosV0FBVTswREFDVk8sS0FBS3RCLFdBQVc7Ozs7Ozs7Ozs7OztrREFHckIsUUFBQ2M7d0NBQUlDLFdBQVU7d0NBQWtIUyxLQUFJO2tEQUNsSUYsS0FBS3hCLElBQUk7Ozs7Ozs7K0JBckJQd0IsS0FBS3hCLElBQUk7Ozs7O3dCQXlCcEI7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUtWO0dBdEZ3Qk07O1FBQ0xmOzs7S0FES2UifQ==

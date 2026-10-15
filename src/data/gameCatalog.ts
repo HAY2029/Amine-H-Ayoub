@@ -171,6 +171,16 @@ export const setGameCost = (gameId: string, cost: number) => {
 
 export const getCustomGames = (): GameDef[] => getGameCatalog().filter(g => g.custom);
 
+/**
+ * الألعاب المرئية فعلياً للطفل = الفهرس الكامل ناقص الألعاب التي أخفاها وليّ الأمر.
+ * تُستخدم في ركن الأطفال حتى يختفي أي شيء يخفيه الوالد فوراً.
+ */
+export const getVisibleGames = (): GameDef[] => {
+  const hidden = hiddenIds();
+  if (!hidden.length) return getGameCatalog();
+  return getGameCatalog().filter((g) => !hidden.includes(g.id));
+};
+
 export const resetGamePrices = () => {
   try { localStorage.removeItem(PRICE_OVERRIDE_KEY); } catch { /* ignore */ }
   if (typeof window !== "undefined") window.dispatchEvent(new Event("mushaf:gamecatalog"));

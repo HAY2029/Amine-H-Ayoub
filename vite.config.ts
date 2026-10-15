@@ -194,7 +194,7 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 5000000,
+        maximumFileSizeToCacheInBytes: 1000000,
         navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ["**/*.{js,css,html,ico,png,jpg,jpeg,svg,woff,woff2}"],
         runtimeCaching: [
@@ -231,14 +231,8 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            // صور صفحات المصحف المحلية
-            urlPattern: /\/pages\/.*\.(?:jpg|jpeg|png)$/,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "pages-cache",
-              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
+            // صور صفحات المصحف المحلية: لا تُخزَّن في الـ SW لمنع اكتساب腌-cache وتأخير التحديثات
+            // (تحويل التخزين إلى تصفح مؤقت مباشر عبر الشبكة للملفات الثقيلة)
           },
           {
             // صور صفحات المصحف من سيرفر HuggingFace — تُحفظ بعد أول عرض للعمل دون إنترنت

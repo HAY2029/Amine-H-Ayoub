@@ -312,6 +312,21 @@ export default function ListenKidsGame({
             <Headphones className="h-9 w-9" />
           </button>
           <p className="text-xs font-bold text-muted-foreground">{playing ? "جارٍ التشغيل..." : "اضغط للاستماع"}</p>
+
+          {/* عرض آيات السورة الحالية (يتحدّث تلقائياً عند الانتقال للسورة التالية) */}
+          {surah ? (
+            <div className="mx-auto max-h-56 max-w-2xl overflow-y-auto custom-scrollbar rounded-2xl border-2 border-accent/25 bg-card/95 p-3 sm:p-4 text-right leading-loose" dir="rtl">
+              {surah.ayahs.map((a) => (
+                <span key={a.n} className="font-quran text-lg sm:text-xl font-bold text-foreground game-content">
+                  {a.text}
+                  <span className="mx-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent/15 text-[10px] text-accent align-middle">{a.n}</span>{" "}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="py-4 text-xs font-bold text-muted-foreground">جارٍ تحميل نصّ السورة...</p>
+          )}
+
           <button
             onClick={() => { stopAudio(); setPhase("complete"); }}
             className="mx-auto block rounded-full bg-accent text-accent-foreground px-6 py-2.5 text-sm font-extrabold active:scale-95"
@@ -325,7 +340,7 @@ export default function ListenKidsGame({
       {phase === "complete" && (
         <div className="space-y-3">
           <p className="text-sm sm:text-base font-extrabold text-foreground">اختر الكلمة الناقصة لتُكمل الآية</p>
-          <div className="rounded-2xl border-2 border-accent/25 bg-card/95 p-4 text-lg sm:text-xl font-bold leading-loose" dir="rtl">
+          <div className="rounded-2xl border-2 border-accent/25 bg-card/95 p-4 font-quran text-lg sm:text-xl font-bold leading-loose game-content" dir="rtl">
             {words.map((w, i) => (
               i === missingIdx ? (
                 <span key={i} className={`mx-1 inline-block min-w-[3.5rem] rounded-lg border-b-2 px-2 ${chosen === correctWord ? "border-success text-success" : chosen ? "border-destructive text-destructive" : "border-accent text-accent"}`}>

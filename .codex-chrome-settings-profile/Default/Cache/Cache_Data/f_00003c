@@ -1,0 +1,209 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/ui/DayNightSwitch.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const React = __vite__cjsImport3_react.__esModule ? __vite__cjsImport3_react.default : __vite__cjsImport3_react; const useEffect = __vite__cjsImport3_react["useEffect"]; const useState = __vite__cjsImport3_react["useState"];
+import { getTheme, setTheme } from "/src/utils/theme.ts";
+import "/src/components/ui/DayNightSwitch.css";
+/**
+ * زر التبديل الفاخر بين الوضع النهاري والليلي (Day / Night Sun & Moon Switch)
+ * رسوم متحركة متقنة: سحب، نجوم، شمس، وقمر مع فوهات وتوهج لطيف.
+ */ export const DayNightSwitch = ({ checked: controlledChecked, onChange, size = 26, className = "", ariaLabel = "التبديل بين الوضع النهاري والليلي", id = "day-night-theme-switch" })=>{
+    _s();
+    const [internalDark, setInternalDark] = useState(()=>getTheme() === "dark");
+    const isControlled = controlledChecked !== undefined;
+    const isDark = isControlled ? controlledChecked : internalDark;
+    // الاستماع لتغييرات الثيم من أي مكان في التطبيق
+    useEffect(()=>{
+        if (isControlled) return;
+        const handleThemeChange = (e)=>{
+            const customEvent = e;
+            if (customEvent.detail) {
+                setInternalDark(customEvent.detail === "dark");
+            } else {
+                setInternalDark(getTheme() === "dark");
+            }
+        };
+        window.addEventListener("mushaf:theme", handleThemeChange);
+        window.addEventListener("storage", handleThemeChange);
+        return ()=>{
+            window.removeEventListener("mushaf:theme", handleThemeChange);
+            window.removeEventListener("storage", handleThemeChange);
+        };
+    }, [
+        isControlled
+    ]);
+    const handleToggle = (e)=>{
+        const nextDark = e.target.checked;
+        if (!isControlled) {
+            setInternalDark(nextDark);
+            const nextTheme = nextDark ? "dark" : "light";
+            setTheme(nextTheme);
+        }
+        if (onChange) {
+            onChange(nextDark);
+        }
+    };
+    const toggleSizeValue = typeof size === "number" ? `${size}px` : size;
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: `day-night-switch-wrapper inline-flex items-center select-none ${className}`,
+        style: {
+            "--toggle-size": toggleSizeValue
+        },
+        children: /*#__PURE__*/ _jsxDEV("label", {
+            className: "theme-switch",
+            htmlFor: id,
+            title: isDark ? "تفعيل الوضع النهاري" : "تفعيل الوضع الليلي",
+            children: [
+                /*#__PURE__*/ _jsxDEV("input", {
+                    id: id,
+                    type: "checkbox",
+                    className: "theme-switch__checkbox",
+                    checked: isDark,
+                    onChange: handleToggle,
+                    "aria-label": ariaLabel
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                    lineNumber: 78,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "theme-switch__container",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "theme-switch__clouds"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                            lineNumber: 87,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "theme-switch__stars-container",
+                            children: /*#__PURE__*/ _jsxDEV("svg", {
+                                xmlns: "http://www.w3.org/2000/svg",
+                                viewBox: "0 0 144 55",
+                                fill: "none",
+                                children: /*#__PURE__*/ _jsxDEV("path", {
+                                    fillRule: "evenodd",
+                                    clipRule: "evenodd",
+                                    d: "M135.831 3.00688C135.055 3.85027 134.111 4.29946 133 4.35447C134.111 4.40947 135.055 4.85867 135.831 5.71123C136.607 6.55462 136.996 7.56303 136.996 8.72727C136.996 7.95722 137.172 7.25134 137.525 6.59129C137.886 5.93124 138.372 5.39954 138.98 5.00535C139.598 4.60199 140.268 4.39114 141 4.35447C139.88 4.2903 138.936 3.85027 138.16 3.00688C137.384 2.16348 136.996 1.16425 136.996 0C136.996 1.16425 136.607 2.16348 135.831 3.00688ZM31 23.3545C32.1114 23.2995 33.0551 22.8503 33.8313 22.0069C34.6075 21.1635 34.9956 20.1642 34.9956 19C34.9956 20.1642 35.3837 21.1635 36.1599 22.0069C36.9361 22.8503 37.8798 23.2903 39 23.3545C38.2679 23.3911 37.5976 23.602 36.9802 24.0053C36.3716 24.3995 35.8864 24.9312 35.5248 25.5913C35.172 26.2513 34.9956 26.9572 34.9956 27.7273C34.9956 26.563 34.6075 25.5546 33.8313 24.7112C33.0551 23.8587 32.1114 23.4095 31 23.3545ZM0 36.3545C1.11136 36.2995 2.05513 35.8503 2.83131 35.0069C3.6075 34.1635 3.99559 33.1642 3.99559 32C3.99559 33.1642 4.38368 34.1635 5.15987 35.0069C5.93605 35.8503 6.87982 36.2903 8 36.3545C7.26792 36.3911 6.59757 36.602 5.98015 37.0053C5.37155 37.3995 4.88644 37.9312 4.52481 38.5913C4.172 39.2513 3.99559 39.9572 3.99559 40.7273C3.99559 39.563 3.6075 38.5546 2.83131 37.7112C2.05513 36.8587 1.11136 36.4095 0 36.3545ZM56.8313 24.0069C56.0551 24.8503 55.1114 25.2995 54 25.3545C55.1114 25.4095 56.0551 25.8587 56.8313 26.7112C57.6075 27.5546 57.9956 28.563 57.9956 29.7273C57.9956 28.9572 58.172 28.2513 58.5248 27.5913C58.8864 26.9312 59.3716 26.3995 59.9802 26.0053C60.5976 25.602 61.2679 25.3911 62 25.3545C60.8798 25.2903 59.9361 24.8503 59.1599 24.0069C58.3837 23.1635 57.9956 22.1642 57.9956 21C57.9956 22.1642 57.6075 23.1635 56.8313 24.0069ZM81 25.3545C82.1114 25.2995 83.0551 24.8503 83.8313 24.0069C84.6075 23.1635 84.9956 22.1642 84.9956 21C84.9956 22.1642 85.3837 23.1635 86.1599 24.0069C86.9361 24.8503 87.8798 25.2903 89 25.3545C88.2679 25.3911 87.5976 25.602 86.9802 26.0053C86.3716 26.3995 85.8864 26.9312 85.5248 27.5913C85.172 28.2513 84.9956 28.9572 84.9956 29.7273C84.9956 28.563 84.6075 27.5546 83.8313 26.7112C83.0551 25.8587 82.1114 25.4095 81 25.3545ZM136 36.3545C137.111 36.2995 138.055 35.8503 138.831 35.0069C139.607 34.1635 139.996 33.1642 139.996 32C139.996 33.1642 140.384 34.1635 141.16 35.0069C141.936 35.8503 142.88 36.2903 144 36.3545C143.268 36.3911 142.598 36.602 141.98 37.0053C141.372 37.3995 140.886 37.9312 140.525 38.5913C140.172 39.2513 139.996 39.9572 139.996 40.7273C139.996 39.563 139.607 38.5546 138.831 37.7112C138.055 36.8587 137.111 36.4095 136 36.3545ZM101.831 49.0069C101.055 49.8503 100.111 50.2995 99 50.3545C100.111 50.4095 101.055 50.8587 101.831 51.7112C102.607 52.5546 102.996 53.563 102.996 54.7273C102.996 53.9572 103.172 53.2513 103.525 52.5913C103.886 51.9312 104.372 51.3995 104.98 51.0053C105.598 50.602 106.268 50.3911 107 50.3545C105.88 50.2903 104.936 49.8503 104.16 49.0069C103.384 48.1635 102.996 47.1642 102.996 46C102.996 47.1642 102.607 48.1635 101.831 49.0069Z",
+                                    fill: "currentColor"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                                    lineNumber: 90,
+                                    columnNumber: 15
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                                lineNumber: 89,
+                                columnNumber: 13
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                            lineNumber: 88,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "theme-switch__circle-container",
+                            children: /*#__PURE__*/ _jsxDEV("div", {
+                                className: "theme-switch__sun-moon-container",
+                                children: /*#__PURE__*/ _jsxDEV("div", {
+                                    className: "theme-switch__moon",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV("div", {
+                                            className: "theme-switch__spot"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                                            lineNumber: 101,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("div", {
+                                            className: "theme-switch__spot"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                                            lineNumber: 102,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("div", {
+                                            className: "theme-switch__spot"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                                            lineNumber: 103,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                                    lineNumber: 100,
+                                    columnNumber: 15
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                                lineNumber: 99,
+                                columnNumber: 13
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                            lineNumber: 98,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+                    lineNumber: 86,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+            lineNumber: 77,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx",
+        lineNumber: 73,
+        columnNumber: 5
+    }, this);
+};
+_s(DayNightSwitch, "2f8Zj/CKwlvIbyI5J7MA9dXuLcQ=");
+_c = DayNightSwitch;
+export default DayNightSwitch;
+var _c;
+$RefreshReg$(_c, "DayNightSwitch");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/ui/DayNightSwitch.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkRheU5pZ2h0U3dpdGNoLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHsgdXNlRWZmZWN0LCB1c2VTdGF0ZSB9IGZyb20gXCJyZWFjdFwiO1xuaW1wb3J0IHsgZ2V0VGhlbWUsIHNldFRoZW1lLCBhcHBseVRoZW1lIH0gZnJvbSBcIkAvdXRpbHMvdGhlbWVcIjtcbmltcG9ydCBcIi4vRGF5TmlnaHRTd2l0Y2guY3NzXCI7XG5cbmV4cG9ydCBpbnRlcmZhY2UgRGF5TmlnaHRTd2l0Y2hQcm9wcyB7XG4gIC8qKiBPcHRpb25hbCBjb250cm9sbGVkIGNoZWNrZWQgc3RhdGUgKHRydWUgPSBkYXJrIG1vZGUgLyBuaWdodCwgZmFsc2UgPSBsaWdodCBtb2RlIC8gZGF5KSAqL1xuICBjaGVja2VkPzogYm9vbGVhbjtcbiAgLyoqIE9wdGlvbmFsIGNhbGxiYWNrIGZpcmVkIHdoZW4gdGhlbWUgY2hhbmdlcyAqL1xuICBvbkNoYW5nZT86IChpc0Rhcms6IGJvb2xlYW4pID0+IHZvaWQ7XG4gIC8qKiBUb2dnbGUgc2l6ZSBpbiBwaXhlbHMgb3IgQ1NTIHVuaXRzIChkZWZhdWx0OiAyNnB4KSAqL1xuICBzaXplPzogbnVtYmVyIHwgc3RyaW5nO1xuICAvKiogRXh0cmEgQ1NTIGNsYXNzZXMgKi9cbiAgY2xhc3NOYW1lPzogc3RyaW5nO1xuICAvKiogQWNjZXNzaWJsZSBsYWJlbCAqL1xuICBhcmlhTGFiZWw/OiBzdHJpbmc7XG4gIC8qKiBVbmlxdWUgaW5wdXQgSUQgKi9cbiAgaWQ/OiBzdHJpbmc7XG59XG5cbi8qKlxuICog2LLYsSDYp9mE2KrYqNiv2YrZhCDYp9mE2YHYp9iu2LEg2KjZitmGINin2YTZiNi22Lkg2KfZhNmG2YfYp9ix2Yog2YjYp9mE2YTZitmE2YogKERheSAvIE5pZ2h0IFN1biAmIE1vb24gU3dpdGNoKVxuICog2LHYs9mI2YUg2YXYqtit2LHZg9ipINmF2KrZgtmG2Kk6INiz2K3YqNiMINmG2KzZiNmF2Iwg2LTZhdiz2Iwg2YjZgtmF2LEg2YXYuSDZgdmI2YfYp9iqINmI2KrZiNmH2Kwg2YTYt9mK2YEuXG4gKi9cbmV4cG9ydCBjb25zdCBEYXlOaWdodFN3aXRjaDogUmVhY3QuRkM8RGF5TmlnaHRTd2l0Y2hQcm9wcz4gPSAoe1xuICBjaGVja2VkOiBjb250cm9sbGVkQ2hlY2tlZCxcbiAgb25DaGFuZ2UsXG4gIHNpemUgPSAyNixcbiAgY2xhc3NOYW1lID0gXCJcIixcbiAgYXJpYUxhYmVsID0gXCLYp9mE2KrYqNiv2YrZhCDYqNmK2YYg2KfZhNmI2LbYuSDYp9mE2YbZh9in2LHZiiDZiNin2YTZhNmK2YTZilwiLFxuICBpZCA9IFwiZGF5LW5pZ2h0LXRoZW1lLXN3aXRjaFwiLFxufSkgPT4ge1xuICBjb25zdCBbaW50ZXJuYWxEYXJrLCBzZXRJbnRlcm5hbERhcmtdID0gdXNlU3RhdGU8Ym9vbGVhbj4oKCkgPT4gZ2V0VGhlbWUoKSA9PT0gXCJkYXJrXCIpO1xuXG4gIGNvbnN0IGlzQ29udHJvbGxlZCA9IGNvbnRyb2xsZWRDaGVja2VkICE9PSB1bmRlZmluZWQ7XG4gIGNvbnN0IGlzRGFyayA9IGlzQ29udHJvbGxlZCA/IGNvbnRyb2xsZWRDaGVja2VkIDogaW50ZXJuYWxEYXJrO1xuXG4gIC8vINin2YTYp9iz2KrZhdin2Lkg2YTYqti62YrZitix2KfYqiDYp9mE2KvZitmFINmF2YYg2KPZiiDZhdmD2KfZhiDZgdmKINin2YTYqti32KjZitmCXG4gIHVzZUVmZmVjdCgoKSA9PiB7XG4gICAgaWYgKGlzQ29udHJvbGxlZCkgcmV0dXJuO1xuXG4gICAgY29uc3QgaGFuZGxlVGhlbWVDaGFuZ2UgPSAoZTogRXZlbnQpID0+IHtcbiAgICAgIGNvbnN0IGN1c3RvbUV2ZW50ID0gZSBhcyBDdXN0b21FdmVudDxcImRhcmtcIiB8IFwibGlnaHRcIj47XG4gICAgICBpZiAoY3VzdG9tRXZlbnQuZGV0YWlsKSB7XG4gICAgICAgIHNldEludGVybmFsRGFyayhjdXN0b21FdmVudC5kZXRhaWwgPT09IFwiZGFya1wiKTtcbiAgICAgIH0gZWxzZSB7XG4gICAgICAgIHNldEludGVybmFsRGFyayhnZXRUaGVtZSgpID09PSBcImRhcmtcIik7XG4gICAgICB9XG4gICAgfTtcblxuICAgIHdpbmRvdy5hZGRFdmVudExpc3RlbmVyKFwibXVzaGFmOnRoZW1lXCIsIGhhbmRsZVRoZW1lQ2hhbmdlKTtcbiAgICB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcihcInN0b3JhZ2VcIiwgaGFuZGxlVGhlbWVDaGFuZ2UpO1xuICAgIHJldHVybiAoKSA9PiB7XG4gICAgICB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcihcIm11c2hhZjp0aGVtZVwiLCBoYW5kbGVUaGVtZUNoYW5nZSk7XG4gICAgICB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcihcInN0b3JhZ2VcIiwgaGFuZGxlVGhlbWVDaGFuZ2UpO1xuICAgIH07XG4gIH0sIFtpc0NvbnRyb2xsZWRdKTtcblxuICBjb25zdCBoYW5kbGVUb2dnbGUgPSAoZTogUmVhY3QuQ2hhbmdlRXZlbnQ8SFRNTElucHV0RWxlbWVudD4pID0+IHtcbiAgICBjb25zdCBuZXh0RGFyayA9IGUudGFyZ2V0LmNoZWNrZWQ7XG4gICAgaWYgKCFpc0NvbnRyb2xsZWQpIHtcbiAgICAgIHNldEludGVybmFsRGFyayhuZXh0RGFyayk7XG4gICAgICBjb25zdCBuZXh0VGhlbWUgPSBuZXh0RGFyayA/IFwiZGFya1wiIDogXCJsaWdodFwiO1xuICAgICAgc2V0VGhlbWUobmV4dFRoZW1lKTtcbiAgICB9XG4gICAgaWYgKG9uQ2hhbmdlKSB7XG4gICAgICBvbkNoYW5nZShuZXh0RGFyayk7XG4gICAgfVxuICB9O1xuXG4gIGNvbnN0IHRvZ2dsZVNpemVWYWx1ZSA9IHR5cGVvZiBzaXplID09PSBcIm51bWJlclwiID8gYCR7c2l6ZX1weGAgOiBzaXplO1xuXG4gIHJldHVybiAoXG4gICAgPGRpdlxuICAgICAgY2xhc3NOYW1lPXtgZGF5LW5pZ2h0LXN3aXRjaC13cmFwcGVyIGlubGluZS1mbGV4IGl0ZW1zLWNlbnRlciBzZWxlY3Qtbm9uZSAke2NsYXNzTmFtZX1gfVxuICAgICAgc3R5bGU9e3sgXCItLXRvZ2dsZS1zaXplXCI6IHRvZ2dsZVNpemVWYWx1ZSB9IGFzIFJlYWN0LkNTU1Byb3BlcnRpZXN9XG4gICAgPlxuICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cInRoZW1lLXN3aXRjaFwiIGh0bWxGb3I9e2lkfSB0aXRsZT17aXNEYXJrID8gXCLYqtmB2LnZitmEINin2YTZiNi22Lkg2KfZhNmG2YfYp9ix2YpcIiA6IFwi2KrZgdi52YrZhCDYp9mE2YjYtti5INin2YTZhNmK2YTZilwifT5cbiAgICAgICAgPGlucHV0XG4gICAgICAgICAgaWQ9e2lkfVxuICAgICAgICAgIHR5cGU9XCJjaGVja2JveFwiXG4gICAgICAgICAgY2xhc3NOYW1lPVwidGhlbWUtc3dpdGNoX19jaGVja2JveFwiXG4gICAgICAgICAgY2hlY2tlZD17aXNEYXJrfVxuICAgICAgICAgIG9uQ2hhbmdlPXtoYW5kbGVUb2dnbGV9XG4gICAgICAgICAgYXJpYS1sYWJlbD17YXJpYUxhYmVsfVxuICAgICAgICAvPlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInRoZW1lLXN3aXRjaF9fY29udGFpbmVyXCI+XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ0aGVtZS1zd2l0Y2hfX2Nsb3Vkc1wiIC8+XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ0aGVtZS1zd2l0Y2hfX3N0YXJzLWNvbnRhaW5lclwiPlxuICAgICAgICAgICAgPHN2ZyB4bWxucz1cImh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnXCIgdmlld0JveD1cIjAgMCAxNDQgNTVcIiBmaWxsPVwibm9uZVwiPlxuICAgICAgICAgICAgICA8cGF0aFxuICAgICAgICAgICAgICAgIGZpbGxSdWxlPVwiZXZlbm9kZFwiXG4gICAgICAgICAgICAgICAgY2xpcFJ1bGU9XCJldmVub2RkXCJcbiAgICAgICAgICAgICAgICBkPVwiTTEzNS44MzEgMy4wMDY4OEMxMzUuMDU1IDMuODUwMjcgMTM0LjExMSA0LjI5OTQ2IDEzMyA0LjM1NDQ3QzEzNC4xMTEgNC40MDk0NyAxMzUuMDU1IDQuODU4NjcgMTM1LjgzMSA1LjcxMTIzQzEzNi42MDcgNi41NTQ2MiAxMzYuOTk2IDcuNTYzMDMgMTM2Ljk5NiA4LjcyNzI3QzEzNi45OTYgNy45NTcyMiAxMzcuMTcyIDcuMjUxMzQgMTM3LjUyNSA2LjU5MTI5QzEzNy44ODYgNS45MzEyNCAxMzguMzcyIDUuMzk5NTQgMTM4Ljk4IDUuMDA1MzVDMTM5LjU5OCA0LjYwMTk5IDE0MC4yNjggNC4zOTExNCAxNDEgNC4zNTQ0N0MxMzkuODggNC4yOTAzIDEzOC45MzYgMy44NTAyNyAxMzguMTYgMy4wMDY4OEMxMzcuMzg0IDIuMTYzNDggMTM2Ljk5NiAxLjE2NDI1IDEzNi45OTYgMEMxMzYuOTk2IDEuMTY0MjUgMTM2LjYwNyAyLjE2MzQ4IDEzNS44MzEgMy4wMDY4OFpNMzEgMjMuMzU0NUMzMi4xMTE0IDIzLjI5OTUgMzMuMDU1MSAyMi44NTAzIDMzLjgzMTMgMjIuMDA2OUMzNC42MDc1IDIxLjE2MzUgMzQuOTk1NiAyMC4xNjQyIDM0Ljk5NTYgMTlDMzQuOTk1NiAyMC4xNjQyIDM1LjM4MzcgMjEuMTYzNSAzNi4xNTk5IDIyLjAwNjlDMzYuOTM2MSAyMi44NTAzIDM3Ljg3OTggMjMuMjkwMyAzOSAyMy4zNTQ1QzM4LjI2NzkgMjMuMzkxMSAzNy41OTc2IDIzLjYwMiAzNi45ODAyIDI0LjAwNTNDMzYuMzcxNiAyNC4zOTk1IDM1Ljg4NjQgMjQuOTMxMiAzNS41MjQ4IDI1LjU5MTNDMzUuMTcyIDI2LjI1MTMgMzQuOTk1NiAyNi45NTcyIDM0Ljk5NTYgMjcuNzI3M0MzNC45OTU2IDI2LjU2MyAzNC42MDc1IDI1LjU1NDYgMzMuODMxMyAyNC43MTEyQzMzLjA1NTEgMjMuODU4NyAzMi4xMTE0IDIzLjQwOTUgMzEgMjMuMzU0NVpNMCAzNi4zNTQ1QzEuMTExMzYgMzYuMjk5NSAyLjA1NTEzIDM1Ljg1MDMgMi44MzEzMSAzNS4wMDY5QzMuNjA3NSAzNC4xNjM1IDMuOTk1NTkgMzMuMTY0MiAzLjk5NTU5IDMyQzMuOTk1NTkgMzMuMTY0MiA0LjM4MzY4IDM0LjE2MzUgNS4xNTk4NyAzNS4wMDY5QzUuOTM2MDUgMzUuODUwMyA2Ljg3OTgyIDM2LjI5MDMgOCAzNi4zNTQ1QzcuMjY3OTIgMzYuMzkxMSA2LjU5NzU3IDM2LjYwMiA1Ljk4MDE1IDM3LjAwNTNDNS4zNzE1NSAzNy4zOTk1IDQuODg2NDQgMzcuOTMxMiA0LjUyNDgxIDM4LjU5MTNDNC4xNzIgMzkuMjUxMyAzLjk5NTU5IDM5Ljk1NzIgMy45OTU1OSA0MC43MjczQzMuOTk1NTkgMzkuNTYzIDMuNjA3NSAzOC41NTQ2IDIuODMxMzEgMzcuNzExMkMyLjA1NTEzIDM2Ljg1ODcgMS4xMTEzNiAzNi40MDk1IDAgMzYuMzU0NVpNNTYuODMxMyAyNC4wMDY5QzU2LjA1NTEgMjQuODUwMyA1NS4xMTE0IDI1LjI5OTUgNTQgMjUuMzU0NUM1NS4xMTE0IDI1LjQwOTUgNTYuMDU1MSAyNS44NTg3IDU2LjgzMTMgMjYuNzExMkM1Ny42MDc1IDI3LjU1NDYgNTcuOTk1NiAyOC41NjMgNTcuOTk1NiAyOS43MjczQzU3Ljk5NTYgMjguOTU3MiA1OC4xNzIgMjguMjUxMyA1OC41MjQ4IDI3LjU5MTNDNTguODg2NCAyNi45MzEyIDU5LjM3MTYgMjYuMzk5NSA1OS45ODAyIDI2LjAwNTNDNjAuNTk3NiAyNS42MDIgNjEuMjY3OSAyNS4zOTExIDYyIDI1LjM1NDVDNjAuODc5OCAyNS4yOTAzIDU5LjkzNjEgMjQuODUwMyA1OS4xNTk5IDI0LjAwNjlDNTguMzgzNyAyMy4xNjM1IDU3Ljk5NTYgMjIuMTY0MiA1Ny45OTU2IDIxQzU3Ljk5NTYgMjIuMTY0MiA1Ny42MDc1IDIzLjE2MzUgNTYuODMxMyAyNC4wMDY5Wk04MSAyNS4zNTQ1QzgyLjExMTQgMjUuMjk5NSA4My4wNTUxIDI0Ljg1MDMgODMuODMxMyAyNC4wMDY5Qzg0LjYwNzUgMjMuMTYzNSA4NC45OTU2IDIyLjE2NDIgODQuOTk1NiAyMUM4NC45OTU2IDIyLjE2NDIgODUuMzgzNyAyMy4xNjM1IDg2LjE1OTkgMjQuMDA2OUM4Ni45MzYxIDI0Ljg1MDMgODcuODc5OCAyNS4yOTAzIDg5IDI1LjM1NDVDODguMjY3OSAyNS4zOTExIDg3LjU5NzYgMjUuNjAyIDg2Ljk4MDIgMjYuMDA1M0M4Ni4zNzE2IDI2LjM5OTUgODUuODg2NCAyNi45MzEyIDg1LjUyNDggMjcuNTkxM0M4NS4xNzIgMjguMjUxMyA4NC45OTU2IDI4Ljk1NzIgODQuOTk1NiAyOS43MjczQzg0Ljk5NTYgMjguNTYzIDg0LjYwNzUgMjcuNTU0NiA4My44MzEzIDI2LjcxMTJDODMuMDU1MSAyNS44NTg3IDgyLjExMTQgMjUuNDA5NSA4MSAyNS4zNTQ1Wk0xMzYgMzYuMzU0NUMxMzcuMTExIDM2LjI5OTUgMTM4LjA1NSAzNS44NTAzIDEzOC44MzEgMzUuMDA2OUMxMzkuNjA3IDM0LjE2MzUgMTM5Ljk5NiAzMy4xNjQyIDEzOS45OTYgMzJDMTM5Ljk5NiAzMy4xNjQyIDE0MC4zODQgMzQuMTYzNSAxNDEuMTYgMzUuMDA2OUMxNDEuOTM2IDM1Ljg1MDMgMTQyLjg4IDM2LjI5MDMgMTQ0IDM2LjM1NDVDMTQzLjI2OCAzNi4zOTExIDE0Mi41OTggMzYuNjAyIDE0MS45OCAzNy4wMDUzQzE0MS4zNzIgMzcuMzk5NSAxNDAuODg2IDM3LjkzMTIgMTQwLjUyNSAzOC41OTEzQzE0MC4xNzIgMzkuMjUxMyAxMzkuOTk2IDM5Ljk1NzIgMTM5Ljk5NiA0MC43MjczQzEzOS45OTYgMzkuNTYzIDEzOS42MDcgMzguNTU0NiAxMzguODMxIDM3LjcxMTJDMTM4LjA1NSAzNi44NTg3IDEzNy4xMTEgMzYuNDA5NSAxMzYgMzYuMzU0NVpNMTAxLjgzMSA0OS4wMDY5QzEwMS4wNTUgNDkuODUwMyAxMDAuMTExIDUwLjI5OTUgOTkgNTAuMzU0NUMxMDAuMTExIDUwLjQwOTUgMTAxLjA1NSA1MC44NTg3IDEwMS44MzEgNTEuNzExMkMxMDIuNjA3IDUyLjU1NDYgMTAyLjk5NiA1My41NjMgMTAyLjk5NiA1NC43MjczQzEwMi45OTYgNTMuOTU3MiAxMDMuMTcyIDUzLjI1MTMgMTAzLjUyNSA1Mi41OTEzQzEwMy44ODYgNTEuOTMxMiAxMDQuMzcyIDUxLjM5OTUgMTA0Ljk4IDUxLjAwNTNDMTA1LjU5OCA1MC42MDIgMTA2LjI2OCA1MC4zOTExIDEwNyA1MC4zNTQ1QzEwNS44OCA1MC4yOTAzIDEwNC45MzYgNDkuODUwMyAxMDQuMTYgNDkuMDA2OUMxMDMuMzg0IDQ4LjE2MzUgMTAyLjk5NiA0Ny4xNjQyIDEwMi45OTYgNDZDMTAyLjk5NiA0Ny4xNjQyIDEwMi42MDcgNDguMTYzNSAxMDEuODMxIDQ5LjAwNjlaXCJcbiAgICAgICAgICAgICAgICBmaWxsPVwiY3VycmVudENvbG9yXCJcbiAgICAgICAgICAgICAgLz5cbiAgICAgICAgICAgIDwvc3ZnPlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGhlbWUtc3dpdGNoX19jaXJjbGUtY29udGFpbmVyXCI+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInRoZW1lLXN3aXRjaF9fc3VuLW1vb24tY29udGFpbmVyXCI+XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGhlbWUtc3dpdGNoX19tb29uXCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ0aGVtZS1zd2l0Y2hfX3Nwb3RcIiAvPlxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGhlbWUtc3dpdGNoX19zcG90XCIgLz5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInRoZW1lLXN3aXRjaF9fc3BvdFwiIC8+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9sYWJlbD5cbiAgICA8L2Rpdj5cbiAgKTtcbn07XG5cbmV4cG9ydCBkZWZhdWx0IERheU5pZ2h0U3dpdGNoO1xuIl0sIm5hbWVzIjpbIlJlYWN0IiwidXNlRWZmZWN0IiwidXNlU3RhdGUiLCJnZXRUaGVtZSIsInNldFRoZW1lIiwiRGF5TmlnaHRTd2l0Y2giLCJjaGVja2VkIiwiY29udHJvbGxlZENoZWNrZWQiLCJvbkNoYW5nZSIsInNpemUiLCJjbGFzc05hbWUiLCJhcmlhTGFiZWwiLCJpZCIsImludGVybmFsRGFyayIsInNldEludGVybmFsRGFyayIsImlzQ29udHJvbGxlZCIsInVuZGVmaW5lZCIsImlzRGFyayIsImhhbmRsZVRoZW1lQ2hhbmdlIiwiZSIsImN1c3RvbUV2ZW50IiwiZGV0YWlsIiwid2luZG93IiwiYWRkRXZlbnRMaXN0ZW5lciIsInJlbW92ZUV2ZW50TGlzdGVuZXIiLCJoYW5kbGVUb2dnbGUiLCJuZXh0RGFyayIsInRhcmdldCIsIm5leHRUaGVtZSIsInRvZ2dsZVNpemVWYWx1ZSIsImRpdiIsInN0eWxlIiwibGFiZWwiLCJodG1sRm9yIiwidGl0bGUiLCJpbnB1dCIsInR5cGUiLCJhcmlhLWxhYmVsIiwic3ZnIiwieG1sbnMiLCJ2aWV3Qm94IiwiZmlsbCIsInBhdGgiLCJmaWxsUnVsZSIsImNsaXBSdWxlIiwiZCJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsT0FBT0EsU0FBU0MsU0FBUyxFQUFFQyxRQUFRLFFBQVEsUUFBUTtBQUNuRCxTQUFTQyxRQUFRLEVBQUVDLFFBQVEsUUFBb0IsZ0JBQWdCO0FBQy9ELE9BQU8sdUJBQXVCO0FBaUI5Qjs7O0NBR0MsR0FDRCxPQUFPLE1BQU1DLGlCQUFnRCxDQUFDLEVBQzVEQyxTQUFTQyxpQkFBaUIsRUFDMUJDLFFBQVEsRUFDUkMsT0FBTyxFQUFFLEVBQ1RDLFlBQVksRUFBRSxFQUNkQyxZQUFZLG1DQUFtQyxFQUMvQ0MsS0FBSyx3QkFBd0IsRUFDOUI7O0lBQ0MsTUFBTSxDQUFDQyxjQUFjQyxnQkFBZ0IsR0FBR1osU0FBa0IsSUFBTUMsZUFBZTtJQUUvRSxNQUFNWSxlQUFlUixzQkFBc0JTO0lBQzNDLE1BQU1DLFNBQVNGLGVBQWVSLG9CQUFvQk07SUFFbEQsZ0RBQWdEO0lBQ2hEWixVQUFVO1FBQ1IsSUFBSWMsY0FBYztRQUVsQixNQUFNRyxvQkFBb0IsQ0FBQ0M7WUFDekIsTUFBTUMsY0FBY0Q7WUFDcEIsSUFBSUMsWUFBWUMsTUFBTSxFQUFFO2dCQUN0QlAsZ0JBQWdCTSxZQUFZQyxNQUFNLEtBQUs7WUFDekMsT0FBTztnQkFDTFAsZ0JBQWdCWCxlQUFlO1lBQ2pDO1FBQ0Y7UUFFQW1CLE9BQU9DLGdCQUFnQixDQUFDLGdCQUFnQkw7UUFDeENJLE9BQU9DLGdCQUFnQixDQUFDLFdBQVdMO1FBQ25DLE9BQU87WUFDTEksT0FBT0UsbUJBQW1CLENBQUMsZ0JBQWdCTjtZQUMzQ0ksT0FBT0UsbUJBQW1CLENBQUMsV0FBV047UUFDeEM7SUFDRixHQUFHO1FBQUNIO0tBQWE7SUFFakIsTUFBTVUsZUFBZSxDQUFDTjtRQUNwQixNQUFNTyxXQUFXUCxFQUFFUSxNQUFNLENBQUNyQixPQUFPO1FBQ2pDLElBQUksQ0FBQ1MsY0FBYztZQUNqQkQsZ0JBQWdCWTtZQUNoQixNQUFNRSxZQUFZRixXQUFXLFNBQVM7WUFDdEN0QixTQUFTd0I7UUFDWDtRQUNBLElBQUlwQixVQUFVO1lBQ1pBLFNBQVNrQjtRQUNYO0lBQ0Y7SUFFQSxNQUFNRyxrQkFBa0IsT0FBT3BCLFNBQVMsV0FBVyxHQUFHQSxLQUFLLEVBQUUsQ0FBQyxHQUFHQTtJQUVqRSxxQkFDRSxRQUFDcUI7UUFDQ3BCLFdBQVcsQ0FBQyw4REFBOEQsRUFBRUEsV0FBVztRQUN2RnFCLE9BQU87WUFBRSxpQkFBaUJGO1FBQWdCO2tCQUUxQyxjQUFBLFFBQUNHO1lBQU10QixXQUFVO1lBQWV1QixTQUFTckI7WUFBSXNCLE9BQU9qQixTQUFTLHdCQUF3Qjs7OEJBQ25GLFFBQUNrQjtvQkFDQ3ZCLElBQUlBO29CQUNKd0IsTUFBSztvQkFDTDFCLFdBQVU7b0JBQ1ZKLFNBQVNXO29CQUNUVCxVQUFVaUI7b0JBQ1ZZLGNBQVkxQjs7Ozs7OzhCQUVkLFFBQUNtQjtvQkFBSXBCLFdBQVU7O3NDQUNiLFFBQUNvQjs0QkFBSXBCLFdBQVU7Ozs7OztzQ0FDZixRQUFDb0I7NEJBQUlwQixXQUFVO3NDQUNiLGNBQUEsUUFBQzRCO2dDQUFJQyxPQUFNO2dDQUE2QkMsU0FBUTtnQ0FBYUMsTUFBSzswQ0FDaEUsY0FBQSxRQUFDQztvQ0FDQ0MsVUFBUztvQ0FDVEMsVUFBUztvQ0FDVEMsR0FBRTtvQ0FDRkosTUFBSzs7Ozs7Ozs7Ozs7Ozs7OztzQ0FJWCxRQUFDWDs0QkFBSXBCLFdBQVU7c0NBQ2IsY0FBQSxRQUFDb0I7Z0NBQUlwQixXQUFVOzBDQUNiLGNBQUEsUUFBQ29CO29DQUFJcEIsV0FBVTs7c0RBQ2IsUUFBQ29COzRDQUFJcEIsV0FBVTs7Ozs7O3NEQUNmLFFBQUNvQjs0Q0FBSXBCLFdBQVU7Ozs7OztzREFDZixRQUFDb0I7NENBQUlwQixXQUFVOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFRL0IsRUFBRTtHQXZGV0w7S0FBQUE7QUF5RmIsZUFBZUEsZUFBZSJ9

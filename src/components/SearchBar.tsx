@@ -15,7 +15,7 @@ const SearchBar = ({ value, onChange, className = "" }: Props) => {
         placeholder="ابحث عن سورة..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-white/90 dark:bg-card/90 border border-amber-400/40 rounded-xl pr-9 sm:pr-10 pl-4 py-2 sm:py-2.5 text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-amiri text-base sm:text-lg shadow-xs transition-colors"
+        className="w-full bg-white/90 dark:bg-card/90 backdrop-blur-sm border border-amber-400/50 rounded-full pr-10 sm:pr-11 pl-4 py-2 sm:py-2.5 text-stone-900 dark:text-stone-100 placeholder:text-stone-500/70 dark:placeholder:text-stone-400/70 focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-amiri text-base sm:text-lg shadow-xs transition-colors"
       />
     </div>
   );

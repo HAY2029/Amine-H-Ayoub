@@ -12,6 +12,7 @@ import {
   type SurahText, type SearchHit,
 } from "../data/quranText";
 import { toast } from "../hooks/use-toast";
+import AppLoader from "@/components/ui/app-loader";
 
 const now = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
 const fmt = (sec: number) => {
@@ -380,7 +381,7 @@ function CoachTool() {
 
   const pickAyah = (s: number, a: number) => { setSi(s); setAi(a); setTranscript(""); setResult(null); };
 
-  if (loading) return <div className="py-10 text-center text-muted-foreground"><Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" /> جارٍ تحميل النصّ…</div>;
+  if (loading) return <AppLoader size="sm" label="جارٍ تحميل النصّ القرآني…" className="py-10" />;
   if (err) return <p className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-xl p-3 flex items-center gap-2"><AlertTriangle className="w-4 h-4 shrink-0" /> {err}</p>;
   if (!surah || !ayah) return null;
 

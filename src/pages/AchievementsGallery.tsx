@@ -166,7 +166,7 @@ export default function AchievementsGallery() {
         {/* Gallery Grid */}
         {loading ? (
           <div className="flex justify-center p-12">
-            <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+            <div className="step-loader sm" />
           </div>
         ) : achievements.length === 0 ? (
           <div className="text-center py-12 px-4 bg-white rounded-3xl border border-dashed border-border shadow-sm">

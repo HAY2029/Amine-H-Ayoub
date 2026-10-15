@@ -36,6 +36,7 @@ import { showLocalNotification } from "../utils/notifications";
 import { playGameVoice, stopGameVoice, precacheGameVoice } from "../utils/gameVoice";
 import { focusFirst } from "../utils/controllerNavigation";
 
+
 async function enterKioskMode() {
   // تم إيقاف تكبير الشاشة التلقائي بناءً على طلب المستخدم
 }
@@ -916,13 +917,13 @@ function NextAyahPlay({ corpus, def, minSurah }: { corpus: SurahText[], def: Gam
     <div className="space-y-4 text-center">
       <SessionBar q={qNum} />
       <p className="text-muted-foreground text-sm">من سورة <b className="text-accent">{q.s.name}</b> — ما الآية التالية؟</p>
-      <div className="p-4 rounded-2xl bg-accent/10 border border-accent/40 font-amiri text-xl leading-loose text-foreground">{q.prompt.text}</div>
+      <div className="p-4 rounded-2xl bg-accent/10 border border-accent/40 font-amiri text-xl leading-loose text-foreground game-content">{q.prompt.text}</div>
       <div className="grid gap-2">
         {q.opts.map((a, i) => {
           const cls = reveal && a.text === q.answer.text ? "bg-success/20 border-success/60 text-success"
             : reveal && a.text === chosen ? "bg-destructive/20 border-destructive/60 text-destructive"
             : "bg-secondary border-border hover:border-accent/50 text-secondary-foreground";
-          return <button key={i} onClick={() => answerTap(a.text)} className={`p-3 rounded-xl border text-right font-amiri text-lg leading-relaxed active:scale-[0.98] transition-colors ${cls}`}>{a.text}</button>;
+          return <button key={i} onClick={() => answerTap(a.text)} className={`p-3 rounded-xl border text-right font-amiri text-lg leading-relaxed active:scale-[0.98] transition-colors game-option ${cls}`}>{a.text}</button>;
         })}
       </div>
       <GameHud g={g} />
@@ -1009,13 +1010,13 @@ function PrevAyahPlay({ corpus, def, minSurah }: { corpus: SurahText[], def: Gam
     <div className="space-y-4 text-center">
       <SessionBar q={qNum} />
       <p className="text-muted-foreground text-sm">من سورة <b className="text-accent">{q.s.name}</b> — ما الآية السابقة؟</p>
-      <div className="p-4 rounded-2xl bg-accent/10 border border-accent/40 font-amiri text-xl leading-loose text-foreground">{q.prompt.text}</div>
+      <div className="p-4 rounded-2xl bg-accent/10 border border-accent/40 font-amiri text-xl leading-loose text-foreground game-content">{q.prompt.text}</div>
       <div className="grid gap-2">
         {q.opts.map((a, i) => {
           const cls = reveal && a.text === q.answer.text ? "bg-success/20 border-success/60 text-success"
             : reveal && a.text === chosen ? "bg-destructive/20 border-destructive/60 text-destructive"
             : "bg-secondary border-border hover:border-accent/50 text-secondary-foreground";
-          return <button key={i} onClick={() => answerTap(a.text)} className={`p-3 rounded-xl border text-right font-amiri text-lg leading-relaxed active:scale-[0.98] transition-colors ${cls}`}>{a.text}</button>;
+          return <button key={i} onClick={() => answerTap(a.text)} className={`p-3 rounded-xl border text-right font-amiri text-lg leading-relaxed active:scale-[0.98] transition-colors game-option ${cls}`}>{a.text}</button>;
         })}
       </div>
       <GameHud g={g} />
@@ -1086,7 +1087,7 @@ function WhichSurahPlay({ corpus, def, minSurah }: { corpus: SurahText[], def: G
     <div className="space-y-3 sm:space-y-4 text-center">
       <SessionBar q={qNum} />
       <p className="text-muted-foreground text-sm sm:text-base font-bold">من أيّ سورة هذه الآية الكريمة؟</p>
-      <div className="p-4 rounded-2xl bg-accent/10 border border-accent/40 font-amiri text-lg sm:text-2xl leading-loose text-foreground">{q.text}</div>
+      <div className="p-4 rounded-2xl bg-accent/10 border border-accent/40 font-amiri text-lg sm:text-2xl leading-loose text-foreground game-content">{q.text}</div>
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         {q.opts.map(s => {
           const cls = reveal && s.app === q.answer.app ? "bg-success/20 border-success/60 text-success"
@@ -1912,6 +1913,9 @@ const iconFor = (key: string) => ICONS[key] || Gamepad2;
 export default function KidsGames() {
   const navigate = useNavigate();
   const [active, setActive] = useState<string | null>(null);
+
+
+
   const [profile, setProfile] = useState(getProfile);
   const [progress, setProgress] = useState(getProgress);
   const [coins, setCoins] = useState(getCoins);
@@ -2810,7 +2814,7 @@ export default function KidsGames() {
         try {
           await navigator.share({
             title: milestoneData.title,
-            text: `${milestoneData.message} — ${milestoneData.days} يوماً متتالية في حفظ وتلاوة كتاب الله الكريم مع تطبيق المصحف المرتل برواية ورش (القارئ الشيخ حاج أيوب أمين) 🌟`,
+            text: `${milestoneData.message} — ${milestoneData.days} يوماً متتالية في حفظ وتلاوة كتاب الله الكريم مع تطبيق المصحف المرتل برواية ورش 🌟`,
             files: [file],
           });
           toast({ title: "تمت المشاركة بنجاح!", description: "بارك الله في همتك القرآنية" });
@@ -2898,6 +2902,7 @@ export default function KidsGames() {
           )}
 
           <div className="flex items-center gap-1.5 shrink-0">
+
             <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 text-accent font-extrabold text-xs sm:text-sm px-2.5 sm:px-3 h-9 sm:h-10 shrink-0 shadow-sm">
               <Star className="w-4 h-4 shrink-0 fill-current" /> <span>{formatCoins(coins)} نجمة</span>
             </span>
@@ -3014,6 +3019,8 @@ export default function KidsGames() {
                   </div>
                 </div>
               </div>
+
+
               {!unlocked ? (
                 <div className="p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 space-y-3 animate-fade-in">
                   <div className="flex items-center justify-between">
@@ -3346,11 +3353,41 @@ export default function KidsGames() {
               </div>
 
               <div className="flex flex-col gap-2 pt-2">
-                <button onClick={() => { shareMilestone(); }} className="w-full p-3 rounded-xl bg-gradient-to-l from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg">
-                  <Camera className="w-5 h-5" /> احفظ/شارك صورة الاحتفال
-                </button>
-                <button onClick={() => { generateCertificate(); setShowMilestone(false); }} className="w-full p-2.5 rounded-xl bg-white/10 text-amber-200 font-bold active:scale-95 transition-all hover:bg-white/20 flex items-center justify-center gap-2">
-                  <Award className="w-4 h-4" /> شهادة التقدير
+                <button onClick={async () => {
+                  try {
+                    const { downloadLegendaryCertificate } = await import("../utils/certificateGenerator");
+                    
+                    let totalAyahs = 0;
+                    let surahsCompleted = 0;
+                    const pAny = profile as any;
+                    if (pAny?.stats?.history) {
+                      const uniqueAyahs = new Set<string>();
+                      const surahCounts: Record<number, number> = {};
+                      Object.values(pAny.stats.history).forEach((day: any) => {
+                        day?.ayahs?.forEach((a: string) => {
+                          uniqueAyahs.add(a);
+                          const surahNum = parseInt(a.split(':')[0]);
+                          surahCounts[surahNum] = (surahCounts[surahNum] || 0) + 1;
+                        });
+                      });
+                      totalAyahs = uniqueAyahs.size;
+                      surahsCompleted = Object.values(surahCounts).filter(count => count >= 3).length;
+                    }
+
+                    await downloadLegendaryCertificate({
+                      studentName: profile.name,
+                      avatarName: profile.avatar,
+                      totalAyahs,
+                      surahsCompleted,
+                      coins: getCoins(),
+                      streakDays: streakDays || 1
+                    });
+                    toast({ title: "🎉 تم تحميل الشهادة الأسطورية!" });
+                  } catch (e) {
+                    toast({ title: "حدث خطأ أثناء تحميل الشهادة", variant: "destructive" });
+                  }
+                }} className="w-full p-3 rounded-xl bg-gradient-to-l from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg">
+                  <Camera className="w-5 h-5" /> تحميل الشهادة الأسطورية 👑
                 </button>
                 <button onClick={() => setShowMilestone(false)} className="w-full p-2.5 rounded-xl bg-white/10 text-amber-200 font-bold active:scale-95 transition-all hover:bg-white/20">
                   متابعة اللعب
@@ -3370,6 +3407,8 @@ export default function KidsGames() {
 
       {/* بوابة السؤال اليومي (سؤال صعب → السورة التالية + لقب كل 5 أجزاء + شهادة + كود نقاط مجانية) */}
       <DailyGateModal />
+
+
 
       {/* كود HTML خارجي أسفل قسم الألعاب (يُدار من admin.html) */}
       <ExternalHtmlBlock />

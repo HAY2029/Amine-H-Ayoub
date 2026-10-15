@@ -128,14 +128,8 @@ function getKnownPageSrcs(): string[] {
     out.push(key);
   };
   try {
-    const hfRaw = localStorage.getItem("mushaf:hfImageSrcs:v1");
-    if (hfRaw) {
-      const hf = JSON.parse(hfRaw);
-      if (Array.isArray(hf)) hf.forEach(push);
-    }
     getCustomPages().forEach(p => push(p?.src));
   } catch { /* ignore */ }
-  push("/pages/fatiha.jpg");
   return sortPageSrcs(out);
 }
 

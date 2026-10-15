@@ -1,0 +1,6846 @@
+{
+  "/pages/0.jpg": [
+    {
+      "surah": 1,
+      "ayah": 0,
+      "x": 340,
+      "y": 516,
+      "width": 580,
+      "height": 95,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 1,
+      "x": 330,
+      "y": 660,
+      "width": 600,
+      "height": 95,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 2,
+      "x": 330,
+      "y": 800,
+      "width": 600,
+      "height": 95,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 3,
+      "x": 330,
+      "y": 940,
+      "width": 600,
+      "height": 95,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 4,
+      "x": 310,
+      "y": 1080,
+      "width": 640,
+      "height": 95,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 5,
+      "x": 310,
+      "y": 1220,
+      "width": 640,
+      "height": 95,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 6,
+      "x": 290,
+      "y": 1360,
+      "width": 680,
+      "height": 95,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 7,
+      "x": 250,
+      "y": 1500,
+      "width": 760,
+      "height": 95,
+      "label": "الآية 7",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/1.jpg": [
+    {
+      "surah": 1,
+      "ayah": 0,
+      "x": 340,
+      "y": 516,
+      "width": 580,
+      "height": 95,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 1,
+      "x": 330,
+      "y": 660,
+      "width": 600,
+      "height": 95,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 2,
+      "x": 330,
+      "y": 800,
+      "width": 600,
+      "height": 95,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 3,
+      "x": 330,
+      "y": 940,
+      "width": 600,
+      "height": 95,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 4,
+      "x": 310,
+      "y": 1080,
+      "width": 640,
+      "height": 95,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 5,
+      "x": 310,
+      "y": 1220,
+      "width": 640,
+      "height": 95,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 6,
+      "x": 290,
+      "y": 1360,
+      "width": 680,
+      "height": 95,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 7,
+      "x": 250,
+      "y": 1500,
+      "width": 760,
+      "height": 95,
+      "label": "الآية 7",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/581.jpg": [
+    {
+      "surah": 78,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 1,
+      "x": 802,
+      "y": 319,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 2,
+      "x": 472,
+      "y": 319,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 3,
+      "x": 142,
+      "y": 319,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 4,
+      "x": 802,
+      "y": 462,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 5,
+      "x": 472,
+      "y": 462,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 6,
+      "x": 142,
+      "y": 462,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 7,
+      "x": 802,
+      "y": 605,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 8,
+      "x": 472,
+      "y": 605,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 9,
+      "x": 142,
+      "y": 605,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 10,
+      "x": 802,
+      "y": 748,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 11,
+      "x": 472,
+      "y": 748,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 12,
+      "x": 142,
+      "y": 748,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 13,
+      "x": 802,
+      "y": 891,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 14,
+      "x": 472,
+      "y": 891,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 15,
+      "x": 142,
+      "y": 891,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 16,
+      "x": 802,
+      "y": 1034,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 17,
+      "x": 472,
+      "y": 1034,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 18,
+      "x": 142,
+      "y": 1034,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 19,
+      "x": 802,
+      "y": 1177,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 20,
+      "x": 472,
+      "y": 1177,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 21,
+      "x": 142,
+      "y": 1177,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 22,
+      "x": 802,
+      "y": 1320,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 23,
+      "x": 472,
+      "y": 1320,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 23",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 24,
+      "x": 142,
+      "y": 1320,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 24",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 25,
+      "x": 802,
+      "y": 1463,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 25",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 26,
+      "x": 472,
+      "y": 1463,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 26",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 27,
+      "x": 142,
+      "y": 1463,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 27",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 28,
+      "x": 802,
+      "y": 1606,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 28",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 29,
+      "x": 472,
+      "y": 1606,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 29",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 30,
+      "x": 142,
+      "y": 1606,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 30",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/582.jpg": [
+    {
+      "surah": 78,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 1,
+      "x": 802,
+      "y": 319,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 2,
+      "x": 472,
+      "y": 319,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 3,
+      "x": 142,
+      "y": 319,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 4,
+      "x": 802,
+      "y": 462,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 5,
+      "x": 472,
+      "y": 462,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 6,
+      "x": 142,
+      "y": 462,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 7,
+      "x": 802,
+      "y": 605,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 8,
+      "x": 472,
+      "y": 605,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 9,
+      "x": 142,
+      "y": 605,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 10,
+      "x": 802,
+      "y": 748,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 11,
+      "x": 472,
+      "y": 748,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 12,
+      "x": 142,
+      "y": 748,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 13,
+      "x": 802,
+      "y": 891,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 14,
+      "x": 472,
+      "y": 891,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 15,
+      "x": 142,
+      "y": 891,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 16,
+      "x": 802,
+      "y": 1034,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 17,
+      "x": 472,
+      "y": 1034,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 18,
+      "x": 142,
+      "y": 1034,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 19,
+      "x": 802,
+      "y": 1177,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 20,
+      "x": 472,
+      "y": 1177,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 21,
+      "x": 142,
+      "y": 1177,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 22,
+      "x": 802,
+      "y": 1320,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 23,
+      "x": 472,
+      "y": 1320,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 23",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 24,
+      "x": 142,
+      "y": 1320,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 24",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 25,
+      "x": 802,
+      "y": 1463,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 25",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 26,
+      "x": 472,
+      "y": 1463,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 26",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 27,
+      "x": 142,
+      "y": 1463,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 27",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 28,
+      "x": 802,
+      "y": 1606,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 28",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 29,
+      "x": 472,
+      "y": 1606,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 29",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 30,
+      "x": 142,
+      "y": 1606,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 30",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/583.jpg": [
+    {
+      "surah": 78,
+      "ayah": 31,
+      "x": 636,
+      "y": 222,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 31",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 32,
+      "x": 140,
+      "y": 222,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 32",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 33,
+      "x": 636,
+      "y": 333,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 33",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 34,
+      "x": 140,
+      "y": 333,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 34",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 35,
+      "x": 636,
+      "y": 444,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 35",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 36,
+      "x": 140,
+      "y": 444,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 36",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 37,
+      "x": 636,
+      "y": 555,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 37",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 38,
+      "x": 140,
+      "y": 555,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 38",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 39,
+      "x": 636,
+      "y": 666,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 39",
+      "color": "#eab308"
+    },
+    {
+      "surah": 78,
+      "ayah": 40,
+      "x": 140,
+      "y": 666,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 40",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 0,
+      "x": 240,
+      "y": 781,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 1,
+      "x": 636,
+      "y": 875,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 2,
+      "x": 140,
+      "y": 875,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 3,
+      "x": 636,
+      "y": 984,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 4,
+      "x": 140,
+      "y": 984,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 5,
+      "x": 636,
+      "y": 1093,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 6,
+      "x": 140,
+      "y": 1093,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 7,
+      "x": 636,
+      "y": 1202,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 8,
+      "x": 140,
+      "y": 1202,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 9,
+      "x": 636,
+      "y": 1311,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 10,
+      "x": 140,
+      "y": 1311,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 11,
+      "x": 636,
+      "y": 1420,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 12,
+      "x": 140,
+      "y": 1420,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 13,
+      "x": 636,
+      "y": 1529,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 14,
+      "x": 140,
+      "y": 1529,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 15,
+      "x": 140,
+      "y": 1638,
+      "width": 980,
+      "height": 105,
+      "label": "الآية 15",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/584.jpg": [
+    {
+      "surah": 79,
+      "ayah": 16,
+      "x": 802,
+      "y": 222,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 17,
+      "x": 472,
+      "y": 222,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 18,
+      "x": 142,
+      "y": 222,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 19,
+      "x": 802,
+      "y": 361,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 20,
+      "x": 472,
+      "y": 361,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 21,
+      "x": 142,
+      "y": 361,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 22,
+      "x": 802,
+      "y": 500,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 23,
+      "x": 472,
+      "y": 500,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 23",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 24,
+      "x": 142,
+      "y": 500,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 24",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 25,
+      "x": 802,
+      "y": 639,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 25",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 26,
+      "x": 472,
+      "y": 639,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 26",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 27,
+      "x": 142,
+      "y": 639,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 27",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 28,
+      "x": 802,
+      "y": 778,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 28",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 29,
+      "x": 472,
+      "y": 778,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 29",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 30,
+      "x": 142,
+      "y": 778,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 30",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 31,
+      "x": 802,
+      "y": 917,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 31",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 32,
+      "x": 472,
+      "y": 917,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 32",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 33,
+      "x": 142,
+      "y": 917,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 33",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 34,
+      "x": 802,
+      "y": 1056,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 34",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 35,
+      "x": 472,
+      "y": 1056,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 35",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 36,
+      "x": 142,
+      "y": 1056,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 36",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 37,
+      "x": 802,
+      "y": 1195,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 37",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 38,
+      "x": 472,
+      "y": 1195,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 38",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 39,
+      "x": 142,
+      "y": 1195,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 39",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 40,
+      "x": 802,
+      "y": 1334,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 40",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 41,
+      "x": 472,
+      "y": 1334,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 41",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 42,
+      "x": 142,
+      "y": 1334,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 42",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 43,
+      "x": 802,
+      "y": 1473,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 43",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 44,
+      "x": 472,
+      "y": 1473,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 44",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 45,
+      "x": 142,
+      "y": 1473,
+      "width": 318,
+      "height": 135,
+      "label": "الآية 45",
+      "color": "#eab308"
+    },
+    {
+      "surah": 79,
+      "ayah": 46,
+      "x": 140,
+      "y": 1612,
+      "width": 980,
+      "height": 135,
+      "label": "الآية 46",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/585.jpg": [
+    {
+      "surah": 80,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 1,
+      "x": 802,
+      "y": 319,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 2,
+      "x": 472,
+      "y": 319,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 3,
+      "x": 142,
+      "y": 319,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 4,
+      "x": 802,
+      "y": 421,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 5,
+      "x": 472,
+      "y": 421,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 6,
+      "x": 142,
+      "y": 421,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 7,
+      "x": 802,
+      "y": 523,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 8,
+      "x": 472,
+      "y": 523,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 9,
+      "x": 142,
+      "y": 523,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 10,
+      "x": 802,
+      "y": 625,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 11,
+      "x": 472,
+      "y": 625,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 12,
+      "x": 142,
+      "y": 625,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 13,
+      "x": 802,
+      "y": 727,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 14,
+      "x": 472,
+      "y": 727,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 15,
+      "x": 142,
+      "y": 727,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 16,
+      "x": 802,
+      "y": 829,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 17,
+      "x": 472,
+      "y": 829,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 18,
+      "x": 142,
+      "y": 829,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 19,
+      "x": 802,
+      "y": 931,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 20,
+      "x": 472,
+      "y": 931,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 21,
+      "x": 142,
+      "y": 931,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 22,
+      "x": 802,
+      "y": 1033,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 23,
+      "x": 472,
+      "y": 1033,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 23",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 24,
+      "x": 142,
+      "y": 1033,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 24",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 25,
+      "x": 802,
+      "y": 1135,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 25",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 26,
+      "x": 472,
+      "y": 1135,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 26",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 27,
+      "x": 142,
+      "y": 1135,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 27",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 28,
+      "x": 802,
+      "y": 1237,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 28",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 29,
+      "x": 472,
+      "y": 1237,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 29",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 30,
+      "x": 142,
+      "y": 1237,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 30",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 31,
+      "x": 802,
+      "y": 1339,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 31",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 32,
+      "x": 472,
+      "y": 1339,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 32",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 33,
+      "x": 142,
+      "y": 1339,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 33",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 34,
+      "x": 802,
+      "y": 1441,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 34",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 35,
+      "x": 472,
+      "y": 1441,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 35",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 36,
+      "x": 142,
+      "y": 1441,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 36",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 37,
+      "x": 802,
+      "y": 1543,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 37",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 38,
+      "x": 472,
+      "y": 1543,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 38",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 39,
+      "x": 142,
+      "y": 1543,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 39",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 40,
+      "x": 802,
+      "y": 1645,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 40",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 41,
+      "x": 472,
+      "y": 1645,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 41",
+      "color": "#eab308"
+    },
+    {
+      "surah": 80,
+      "ayah": 42,
+      "x": 142,
+      "y": 1645,
+      "width": 318,
+      "height": 98,
+      "label": "الآية 42",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/586.jpg": [
+    {
+      "surah": 81,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 1,
+      "x": 802,
+      "y": 319,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 2,
+      "x": 472,
+      "y": 319,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 3,
+      "x": 142,
+      "y": 319,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 4,
+      "x": 802,
+      "y": 432,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 5,
+      "x": 472,
+      "y": 432,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 6,
+      "x": 142,
+      "y": 432,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 7,
+      "x": 802,
+      "y": 545,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 8,
+      "x": 472,
+      "y": 545,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 9,
+      "x": 142,
+      "y": 545,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 10,
+      "x": 802,
+      "y": 658,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 11,
+      "x": 472,
+      "y": 658,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 12,
+      "x": 142,
+      "y": 658,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 13,
+      "x": 802,
+      "y": 771,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 14,
+      "x": 472,
+      "y": 771,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 15,
+      "x": 142,
+      "y": 771,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 16,
+      "x": 802,
+      "y": 884,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 17,
+      "x": 472,
+      "y": 884,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 18,
+      "x": 142,
+      "y": 884,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 19,
+      "x": 802,
+      "y": 997,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 20,
+      "x": 472,
+      "y": 997,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 21,
+      "x": 142,
+      "y": 997,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 22,
+      "x": 802,
+      "y": 1110,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 23,
+      "x": 472,
+      "y": 1110,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 23",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 24,
+      "x": 142,
+      "y": 1110,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 24",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 25,
+      "x": 802,
+      "y": 1223,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 25",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 26,
+      "x": 472,
+      "y": 1223,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 26",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 27,
+      "x": 142,
+      "y": 1223,
+      "width": 318,
+      "height": 109,
+      "label": "الآية 27",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 28,
+      "x": 636,
+      "y": 1336,
+      "width": 484,
+      "height": 109,
+      "label": "الآية 28",
+      "color": "#eab308"
+    },
+    {
+      "surah": 81,
+      "ayah": 29,
+      "x": 140,
+      "y": 1336,
+      "width": 484,
+      "height": 109,
+      "label": "الآية 29",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 0,
+      "x": 240,
+      "y": 1461,
+      "width": 780,
+      "height": 55,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 1,
+      "x": 636,
+      "y": 1525,
+      "width": 484,
+      "height": 71,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 2,
+      "x": 140,
+      "y": 1525,
+      "width": 484,
+      "height": 71,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 3,
+      "x": 636,
+      "y": 1600,
+      "width": 484,
+      "height": 71,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 4,
+      "x": 140,
+      "y": 1600,
+      "width": 484,
+      "height": 71,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 5,
+      "x": 140,
+      "y": 1675,
+      "width": 980,
+      "height": 71,
+      "label": "الآية 5",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/587.jpg": [
+    {
+      "surah": 82,
+      "ayah": 6,
+      "x": 636,
+      "y": 222,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 7,
+      "x": 140,
+      "y": 222,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 8,
+      "x": 636,
+      "y": 358,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 9,
+      "x": 140,
+      "y": 358,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 10,
+      "x": 636,
+      "y": 494,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 11,
+      "x": 140,
+      "y": 494,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 12,
+      "x": 636,
+      "y": 630,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 13,
+      "x": 140,
+      "y": 630,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 14,
+      "x": 636,
+      "y": 766,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 15,
+      "x": 140,
+      "y": 766,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 16,
+      "x": 636,
+      "y": 902,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 17,
+      "x": 140,
+      "y": 902,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 18,
+      "x": 636,
+      "y": 1038,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 82,
+      "ayah": 19,
+      "x": 140,
+      "y": 1038,
+      "width": 484,
+      "height": 132,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 0,
+      "x": 240,
+      "y": 1177,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 1,
+      "x": 636,
+      "y": 1271,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 2,
+      "x": 140,
+      "y": 1271,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 3,
+      "x": 636,
+      "y": 1431,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 4,
+      "x": 140,
+      "y": 1431,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 5,
+      "x": 636,
+      "y": 1591,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 6,
+      "x": 140,
+      "y": 1591,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 6",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/588.jpg": [
+    {
+      "surah": 83,
+      "ayah": 7,
+      "x": 802,
+      "y": 222,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 8,
+      "x": 472,
+      "y": 222,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 9,
+      "x": 142,
+      "y": 222,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 10,
+      "x": 802,
+      "y": 375,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 11,
+      "x": 472,
+      "y": 375,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 12,
+      "x": 142,
+      "y": 375,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 13,
+      "x": 802,
+      "y": 528,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 14,
+      "x": 472,
+      "y": 528,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 15,
+      "x": 142,
+      "y": 528,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 16,
+      "x": 802,
+      "y": 681,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 17,
+      "x": 472,
+      "y": 681,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 18,
+      "x": 142,
+      "y": 681,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 19,
+      "x": 802,
+      "y": 834,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 20,
+      "x": 472,
+      "y": 834,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 21,
+      "x": 142,
+      "y": 834,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 22,
+      "x": 802,
+      "y": 987,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 23,
+      "x": 472,
+      "y": 987,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 23",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 24,
+      "x": 142,
+      "y": 987,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 24",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 25,
+      "x": 802,
+      "y": 1140,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 25",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 26,
+      "x": 472,
+      "y": 1140,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 26",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 27,
+      "x": 142,
+      "y": 1140,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 27",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 28,
+      "x": 802,
+      "y": 1293,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 28",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 29,
+      "x": 472,
+      "y": 1293,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 29",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 30,
+      "x": 142,
+      "y": 1293,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 30",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 31,
+      "x": 802,
+      "y": 1446,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 31",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 32,
+      "x": 472,
+      "y": 1446,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 32",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 33,
+      "x": 142,
+      "y": 1446,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 33",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 34,
+      "x": 802,
+      "y": 1599,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 34",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 35,
+      "x": 472,
+      "y": 1599,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 35",
+      "color": "#eab308"
+    },
+    {
+      "surah": 83,
+      "ayah": 36,
+      "x": 142,
+      "y": 1599,
+      "width": 318,
+      "height": 149,
+      "label": "الآية 36",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/589.jpg": [
+    {
+      "surah": 84,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 1,
+      "x": 802,
+      "y": 319,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 2,
+      "x": 472,
+      "y": 319,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 3,
+      "x": 142,
+      "y": 319,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 4,
+      "x": 802,
+      "y": 478,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 5,
+      "x": 472,
+      "y": 478,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 6,
+      "x": 142,
+      "y": 478,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 7,
+      "x": 802,
+      "y": 637,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 8,
+      "x": 472,
+      "y": 637,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 9,
+      "x": 142,
+      "y": 637,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 10,
+      "x": 802,
+      "y": 796,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 11,
+      "x": 472,
+      "y": 796,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 12,
+      "x": 142,
+      "y": 796,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 13,
+      "x": 802,
+      "y": 955,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 14,
+      "x": 472,
+      "y": 955,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 15,
+      "x": 142,
+      "y": 955,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 16,
+      "x": 802,
+      "y": 1114,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 17,
+      "x": 472,
+      "y": 1114,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 18,
+      "x": 142,
+      "y": 1114,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 19,
+      "x": 802,
+      "y": 1273,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 20,
+      "x": 472,
+      "y": 1273,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 21,
+      "x": 142,
+      "y": 1273,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 22,
+      "x": 802,
+      "y": 1432,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 23,
+      "x": 472,
+      "y": 1432,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 23",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 24,
+      "x": 142,
+      "y": 1432,
+      "width": 318,
+      "height": 155,
+      "label": "الآية 24",
+      "color": "#eab308"
+    },
+    {
+      "surah": 84,
+      "ayah": 25,
+      "x": 140,
+      "y": 1591,
+      "width": 980,
+      "height": 155,
+      "label": "الآية 25",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/590.jpg": [
+    {
+      "surah": 85,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 1,
+      "x": 802,
+      "y": 319,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 2,
+      "x": 472,
+      "y": 319,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 3,
+      "x": 142,
+      "y": 319,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 4,
+      "x": 802,
+      "y": 453,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 5,
+      "x": 472,
+      "y": 453,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 6,
+      "x": 142,
+      "y": 453,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 7,
+      "x": 802,
+      "y": 587,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 8,
+      "x": 472,
+      "y": 587,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 9,
+      "x": 142,
+      "y": 587,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 10,
+      "x": 802,
+      "y": 721,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 11,
+      "x": 472,
+      "y": 721,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 12,
+      "x": 142,
+      "y": 721,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 13,
+      "x": 802,
+      "y": 855,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 14,
+      "x": 472,
+      "y": 855,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 15,
+      "x": 142,
+      "y": 855,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 16,
+      "x": 802,
+      "y": 989,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 17,
+      "x": 472,
+      "y": 989,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 18,
+      "x": 142,
+      "y": 989,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 19,
+      "x": 802,
+      "y": 1123,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 20,
+      "x": 472,
+      "y": 1123,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 21,
+      "x": 142,
+      "y": 1123,
+      "width": 318,
+      "height": 130,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 85,
+      "ayah": 22,
+      "x": 140,
+      "y": 1257,
+      "width": 980,
+      "height": 130,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 0,
+      "x": 240,
+      "y": 1396,
+      "width": 780,
+      "height": 55,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 1,
+      "x": 636,
+      "y": 1460,
+      "width": 484,
+      "height": 93,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 2,
+      "x": 140,
+      "y": 1460,
+      "width": 484,
+      "height": 93,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 3,
+      "x": 636,
+      "y": 1557,
+      "width": 484,
+      "height": 93,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 4,
+      "x": 140,
+      "y": 1557,
+      "width": 484,
+      "height": 93,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 5,
+      "x": 140,
+      "y": 1654,
+      "width": 980,
+      "height": 93,
+      "label": "الآية 5",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/591.jpg": [
+    {
+      "surah": 86,
+      "ayah": 6,
+      "x": 636,
+      "y": 222,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 7,
+      "x": 140,
+      "y": 222,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 8,
+      "x": 636,
+      "y": 325,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 9,
+      "x": 140,
+      "y": 325,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 10,
+      "x": 636,
+      "y": 428,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 11,
+      "x": 140,
+      "y": 428,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 12,
+      "x": 636,
+      "y": 531,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 13,
+      "x": 140,
+      "y": 531,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 14,
+      "x": 636,
+      "y": 634,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 15,
+      "x": 140,
+      "y": 634,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 16,
+      "x": 636,
+      "y": 737,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 86,
+      "ayah": 17,
+      "x": 140,
+      "y": 737,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 0,
+      "x": 240,
+      "y": 847,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 1,
+      "x": 636,
+      "y": 941,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 2,
+      "x": 140,
+      "y": 941,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 3,
+      "x": 636,
+      "y": 1042,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 4,
+      "x": 140,
+      "y": 1042,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 5,
+      "x": 636,
+      "y": 1143,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 6,
+      "x": 140,
+      "y": 1143,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 7,
+      "x": 636,
+      "y": 1244,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 8,
+      "x": 140,
+      "y": 1244,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 9,
+      "x": 636,
+      "y": 1345,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 10,
+      "x": 140,
+      "y": 1345,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 11,
+      "x": 636,
+      "y": 1446,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 12,
+      "x": 140,
+      "y": 1446,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 13,
+      "x": 636,
+      "y": 1547,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 14,
+      "x": 140,
+      "y": 1547,
+      "width": 484,
+      "height": 97,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 15,
+      "x": 140,
+      "y": 1648,
+      "width": 980,
+      "height": 97,
+      "label": "الآية 15",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/592.jpg": [
+    {
+      "surah": 87,
+      "ayah": 16,
+      "x": 140,
+      "y": 222,
+      "width": 980,
+      "height": 43,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 17,
+      "x": 140,
+      "y": 269,
+      "width": 980,
+      "height": 43,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 18,
+      "x": 140,
+      "y": 316,
+      "width": 980,
+      "height": 43,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 87,
+      "ayah": 19,
+      "x": 140,
+      "y": 363,
+      "width": 980,
+      "height": 43,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 0,
+      "x": 240,
+      "y": 413,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 1,
+      "x": 802,
+      "y": 507,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 2,
+      "x": 472,
+      "y": 507,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 3,
+      "x": 142,
+      "y": 507,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 4,
+      "x": 802,
+      "y": 645,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 5,
+      "x": 472,
+      "y": 645,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 6,
+      "x": 142,
+      "y": 645,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 7,
+      "x": 802,
+      "y": 783,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 8,
+      "x": 472,
+      "y": 783,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 9,
+      "x": 142,
+      "y": 783,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 10,
+      "x": 802,
+      "y": 921,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 11,
+      "x": 472,
+      "y": 921,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 12,
+      "x": 142,
+      "y": 921,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 13,
+      "x": 802,
+      "y": 1059,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 14,
+      "x": 472,
+      "y": 1059,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 15,
+      "x": 142,
+      "y": 1059,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 16,
+      "x": 802,
+      "y": 1197,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 17,
+      "x": 472,
+      "y": 1197,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 18,
+      "x": 142,
+      "y": 1197,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 19,
+      "x": 802,
+      "y": 1335,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 20,
+      "x": 472,
+      "y": 1335,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 21,
+      "x": 142,
+      "y": 1335,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 22,
+      "x": 802,
+      "y": 1473,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 23,
+      "x": 472,
+      "y": 1473,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 23",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 24,
+      "x": 142,
+      "y": 1473,
+      "width": 318,
+      "height": 134,
+      "label": "الآية 24",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 25,
+      "x": 636,
+      "y": 1611,
+      "width": 484,
+      "height": 134,
+      "label": "الآية 25",
+      "color": "#eab308"
+    },
+    {
+      "surah": 88,
+      "ayah": 26,
+      "x": 140,
+      "y": 1611,
+      "width": 484,
+      "height": 134,
+      "label": "الآية 26",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/593.jpg": [
+    {
+      "surah": 89,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 1,
+      "x": 802,
+      "y": 319,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 2,
+      "x": 472,
+      "y": 319,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 3,
+      "x": 142,
+      "y": 319,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 4,
+      "x": 802,
+      "y": 462,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 5,
+      "x": 472,
+      "y": 462,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 6,
+      "x": 142,
+      "y": 462,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 7,
+      "x": 802,
+      "y": 605,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 8,
+      "x": 472,
+      "y": 605,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 9,
+      "x": 142,
+      "y": 605,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 10,
+      "x": 802,
+      "y": 748,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 11,
+      "x": 472,
+      "y": 748,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 12,
+      "x": 142,
+      "y": 748,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 13,
+      "x": 802,
+      "y": 891,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 14,
+      "x": 472,
+      "y": 891,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 15,
+      "x": 142,
+      "y": 891,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 16,
+      "x": 802,
+      "y": 1034,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 17,
+      "x": 472,
+      "y": 1034,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 18,
+      "x": 142,
+      "y": 1034,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 19,
+      "x": 802,
+      "y": 1177,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 20,
+      "x": 472,
+      "y": 1177,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 21,
+      "x": 142,
+      "y": 1177,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 22,
+      "x": 802,
+      "y": 1320,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 22",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 23,
+      "x": 472,
+      "y": 1320,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 23",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 24,
+      "x": 142,
+      "y": 1320,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 24",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 25,
+      "x": 802,
+      "y": 1463,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 25",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 26,
+      "x": 472,
+      "y": 1463,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 26",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 27,
+      "x": 142,
+      "y": 1463,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 27",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 28,
+      "x": 802,
+      "y": 1606,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 28",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 29,
+      "x": 472,
+      "y": 1606,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 29",
+      "color": "#eab308"
+    },
+    {
+      "surah": 89,
+      "ayah": 30,
+      "x": 142,
+      "y": 1606,
+      "width": 318,
+      "height": 139,
+      "label": "الآية 30",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/594.jpg": [
+    {
+      "surah": 90,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 1,
+      "x": 802,
+      "y": 319,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 2,
+      "x": 472,
+      "y": 319,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 3,
+      "x": 142,
+      "y": 319,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 4,
+      "x": 802,
+      "y": 428,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 5,
+      "x": 472,
+      "y": 428,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 6,
+      "x": 142,
+      "y": 428,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 7,
+      "x": 802,
+      "y": 537,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 8,
+      "x": 472,
+      "y": 537,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 9,
+      "x": 142,
+      "y": 537,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 10,
+      "x": 802,
+      "y": 646,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 11,
+      "x": 472,
+      "y": 646,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 12,
+      "x": 142,
+      "y": 646,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 13,
+      "x": 802,
+      "y": 755,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 14,
+      "x": 472,
+      "y": 755,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 15,
+      "x": 142,
+      "y": 755,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 16,
+      "x": 802,
+      "y": 864,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 17,
+      "x": 472,
+      "y": 864,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 18,
+      "x": 142,
+      "y": 864,
+      "width": 318,
+      "height": 105,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 19,
+      "x": 636,
+      "y": 973,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 90,
+      "ayah": 20,
+      "x": 140,
+      "y": 973,
+      "width": 484,
+      "height": 105,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 0,
+      "x": 240,
+      "y": 1086,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 1,
+      "x": 636,
+      "y": 1180,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 2,
+      "x": 140,
+      "y": 1180,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 3,
+      "x": 636,
+      "y": 1251,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 4,
+      "x": 140,
+      "y": 1251,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 5,
+      "x": 636,
+      "y": 1322,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 6,
+      "x": 140,
+      "y": 1322,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 7,
+      "x": 636,
+      "y": 1393,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 8,
+      "x": 140,
+      "y": 1393,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 9,
+      "x": 636,
+      "y": 1464,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 10,
+      "x": 140,
+      "y": 1464,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 11,
+      "x": 636,
+      "y": 1535,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 12,
+      "x": 140,
+      "y": 1535,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 13,
+      "x": 636,
+      "y": 1606,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 14,
+      "x": 140,
+      "y": 1606,
+      "width": 484,
+      "height": 67,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 91,
+      "ayah": 15,
+      "x": 140,
+      "y": 1677,
+      "width": 980,
+      "height": 67,
+      "label": "الآية 15",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/595.jpg": [
+    {
+      "surah": 92,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 1,
+      "x": 802,
+      "y": 319,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 2,
+      "x": 472,
+      "y": 319,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 3,
+      "x": 142,
+      "y": 319,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 4,
+      "x": 802,
+      "y": 413,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 5,
+      "x": 472,
+      "y": 413,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 6,
+      "x": 142,
+      "y": 413,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 7,
+      "x": 802,
+      "y": 507,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 8,
+      "x": 472,
+      "y": 507,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 9,
+      "x": 142,
+      "y": 507,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 10,
+      "x": 802,
+      "y": 601,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 11,
+      "x": 472,
+      "y": 601,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 12,
+      "x": 142,
+      "y": 601,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 13,
+      "x": 802,
+      "y": 695,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 14,
+      "x": 472,
+      "y": 695,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 15,
+      "x": 142,
+      "y": 695,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 16,
+      "x": 802,
+      "y": 789,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 17,
+      "x": 472,
+      "y": 789,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 18,
+      "x": 142,
+      "y": 789,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 19,
+      "x": 802,
+      "y": 883,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 19",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 20,
+      "x": 472,
+      "y": 883,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 20",
+      "color": "#eab308"
+    },
+    {
+      "surah": 92,
+      "ayah": 21,
+      "x": 142,
+      "y": 883,
+      "width": 318,
+      "height": 90,
+      "label": "الآية 21",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 0,
+      "x": 240,
+      "y": 982,
+      "width": 780,
+      "height": 65,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 1,
+      "x": 636,
+      "y": 1056,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 2,
+      "x": 140,
+      "y": 1056,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 3,
+      "x": 636,
+      "y": 1115,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 4,
+      "x": 140,
+      "y": 1115,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 5,
+      "x": 636,
+      "y": 1174,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 6,
+      "x": 140,
+      "y": 1174,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 7,
+      "x": 636,
+      "y": 1233,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 8,
+      "x": 140,
+      "y": 1233,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 9,
+      "x": 636,
+      "y": 1292,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 10,
+      "x": 140,
+      "y": 1292,
+      "width": 484,
+      "height": 55,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 93,
+      "ayah": 11,
+      "x": 140,
+      "y": 1351,
+      "width": 980,
+      "height": 55,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 94,
+      "ayah": 0,
+      "x": 240,
+      "y": 1417,
+      "width": 780,
+      "height": 55,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 94,
+      "ayah": 1,
+      "x": 636,
+      "y": 1481,
+      "width": 484,
+      "height": 63,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 94,
+      "ayah": 2,
+      "x": 140,
+      "y": 1481,
+      "width": 484,
+      "height": 63,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 94,
+      "ayah": 3,
+      "x": 636,
+      "y": 1548,
+      "width": 484,
+      "height": 63,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 94,
+      "ayah": 4,
+      "x": 140,
+      "y": 1548,
+      "width": 484,
+      "height": 63,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 94,
+      "ayah": 5,
+      "x": 636,
+      "y": 1615,
+      "width": 484,
+      "height": 63,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 94,
+      "ayah": 6,
+      "x": 140,
+      "y": 1615,
+      "width": 484,
+      "height": 63,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 94,
+      "ayah": 7,
+      "x": 636,
+      "y": 1682,
+      "width": 484,
+      "height": 63,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 94,
+      "ayah": 8,
+      "x": 140,
+      "y": 1682,
+      "width": 484,
+      "height": 63,
+      "label": "الآية 8",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/596.jpg": [
+    {
+      "surah": 95,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 75,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 95,
+      "ayah": 1,
+      "x": 636,
+      "y": 309,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 95,
+      "ayah": 2,
+      "x": 140,
+      "y": 309,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 95,
+      "ayah": 3,
+      "x": 636,
+      "y": 412,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 95,
+      "ayah": 4,
+      "x": 140,
+      "y": 412,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 95,
+      "ayah": 5,
+      "x": 636,
+      "y": 515,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 95,
+      "ayah": 6,
+      "x": 140,
+      "y": 515,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 95,
+      "ayah": 7,
+      "x": 636,
+      "y": 618,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 95,
+      "ayah": 8,
+      "x": 140,
+      "y": 618,
+      "width": 484,
+      "height": 99,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 0,
+      "x": 240,
+      "y": 727,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 1,
+      "x": 802,
+      "y": 821,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 2,
+      "x": 472,
+      "y": 821,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 3,
+      "x": 142,
+      "y": 821,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 4,
+      "x": 802,
+      "y": 954,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 5,
+      "x": 472,
+      "y": 954,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 6,
+      "x": 142,
+      "y": 954,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 7,
+      "x": 802,
+      "y": 1087,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 8,
+      "x": 472,
+      "y": 1087,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 9,
+      "x": 142,
+      "y": 1087,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 10,
+      "x": 802,
+      "y": 1220,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 11,
+      "x": 472,
+      "y": 1220,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 12,
+      "x": 142,
+      "y": 1220,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 12",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 13,
+      "x": 802,
+      "y": 1353,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 13",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 14,
+      "x": 472,
+      "y": 1353,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 14",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 15,
+      "x": 142,
+      "y": 1353,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 15",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 16,
+      "x": 802,
+      "y": 1486,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 16",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 17,
+      "x": 472,
+      "y": 1486,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 17",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 18,
+      "x": 142,
+      "y": 1486,
+      "width": 318,
+      "height": 129,
+      "label": "الآية 18",
+      "color": "#eab308"
+    },
+    {
+      "surah": 96,
+      "ayah": 19,
+      "x": 140,
+      "y": 1619,
+      "width": 980,
+      "height": 129,
+      "label": "الآية 19",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/597.jpg": [
+    {
+      "surah": 97,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 97,
+      "ayah": 1,
+      "x": 636,
+      "y": 319,
+      "width": 484,
+      "height": 218,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 97,
+      "ayah": 2,
+      "x": 140,
+      "y": 319,
+      "width": 484,
+      "height": 218,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 97,
+      "ayah": 3,
+      "x": 636,
+      "y": 541,
+      "width": 484,
+      "height": 218,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 97,
+      "ayah": 4,
+      "x": 140,
+      "y": 541,
+      "width": 484,
+      "height": 218,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 97,
+      "ayah": 5,
+      "x": 140,
+      "y": 763,
+      "width": 980,
+      "height": 218,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 98,
+      "ayah": 0,
+      "x": 240,
+      "y": 990,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 98,
+      "ayah": 1,
+      "x": 636,
+      "y": 1084,
+      "width": 484,
+      "height": 218,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 98,
+      "ayah": 2,
+      "x": 140,
+      "y": 1084,
+      "width": 484,
+      "height": 218,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 98,
+      "ayah": 3,
+      "x": 636,
+      "y": 1306,
+      "width": 484,
+      "height": 218,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 98,
+      "ayah": 4,
+      "x": 140,
+      "y": 1306,
+      "width": 484,
+      "height": 218,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 98,
+      "ayah": 5,
+      "x": 140,
+      "y": 1528,
+      "width": 980,
+      "height": 218,
+      "label": "الآية 5",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/598.jpg": [
+    {
+      "surah": 98,
+      "ayah": 6,
+      "x": 140,
+      "y": 222,
+      "width": 980,
+      "height": 52,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 98,
+      "ayah": 7,
+      "x": 140,
+      "y": 278,
+      "width": 980,
+      "height": 52,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 98,
+      "ayah": 8,
+      "x": 140,
+      "y": 334,
+      "width": 980,
+      "height": 52,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 99,
+      "ayah": 0,
+      "x": 240,
+      "y": 395,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 99,
+      "ayah": 1,
+      "x": 636,
+      "y": 489,
+      "width": 484,
+      "height": 120,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 99,
+      "ayah": 2,
+      "x": 140,
+      "y": 489,
+      "width": 484,
+      "height": 120,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 99,
+      "ayah": 3,
+      "x": 636,
+      "y": 613,
+      "width": 484,
+      "height": 120,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 99,
+      "ayah": 4,
+      "x": 140,
+      "y": 613,
+      "width": 484,
+      "height": 120,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 99,
+      "ayah": 5,
+      "x": 636,
+      "y": 737,
+      "width": 484,
+      "height": 120,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 99,
+      "ayah": 6,
+      "x": 140,
+      "y": 737,
+      "width": 484,
+      "height": 120,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 99,
+      "ayah": 7,
+      "x": 636,
+      "y": 861,
+      "width": 484,
+      "height": 120,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 99,
+      "ayah": 8,
+      "x": 140,
+      "y": 861,
+      "width": 484,
+      "height": 120,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 0,
+      "x": 240,
+      "y": 990,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 1,
+      "x": 636,
+      "y": 1084,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 2,
+      "x": 140,
+      "y": 1084,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 3,
+      "x": 636,
+      "y": 1195,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 4,
+      "x": 140,
+      "y": 1195,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 5,
+      "x": 636,
+      "y": 1306,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 6,
+      "x": 140,
+      "y": 1306,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 7,
+      "x": 636,
+      "y": 1417,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 8,
+      "x": 140,
+      "y": 1417,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 9,
+      "x": 636,
+      "y": 1528,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 10,
+      "x": 140,
+      "y": 1528,
+      "width": 484,
+      "height": 107,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 100,
+      "ayah": 11,
+      "x": 140,
+      "y": 1639,
+      "width": 980,
+      "height": 107,
+      "label": "الآية 11",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/599.jpg": [
+    {
+      "surah": 101,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 1,
+      "x": 636,
+      "y": 319,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 2,
+      "x": 140,
+      "y": 319,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 3,
+      "x": 636,
+      "y": 419,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 4,
+      "x": 140,
+      "y": 419,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 5,
+      "x": 636,
+      "y": 519,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 6,
+      "x": 140,
+      "y": 519,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 7,
+      "x": 636,
+      "y": 619,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 8,
+      "x": 140,
+      "y": 619,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 9,
+      "x": 636,
+      "y": 719,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 10,
+      "x": 140,
+      "y": 719,
+      "width": 484,
+      "height": 96,
+      "label": "الآية 10",
+      "color": "#eab308"
+    },
+    {
+      "surah": 101,
+      "ayah": 11,
+      "x": 140,
+      "y": 819,
+      "width": 980,
+      "height": 96,
+      "label": "الآية 11",
+      "color": "#eab308"
+    },
+    {
+      "surah": 102,
+      "ayah": 0,
+      "x": 240,
+      "y": 925,
+      "width": 780,
+      "height": 82,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 102,
+      "ayah": 1,
+      "x": 636,
+      "y": 1016,
+      "width": 484,
+      "height": 108,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 102,
+      "ayah": 2,
+      "x": 140,
+      "y": 1016,
+      "width": 484,
+      "height": 108,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 102,
+      "ayah": 3,
+      "x": 636,
+      "y": 1128,
+      "width": 484,
+      "height": 108,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 102,
+      "ayah": 4,
+      "x": 140,
+      "y": 1128,
+      "width": 484,
+      "height": 108,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 102,
+      "ayah": 5,
+      "x": 636,
+      "y": 1240,
+      "width": 484,
+      "height": 108,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 102,
+      "ayah": 6,
+      "x": 140,
+      "y": 1240,
+      "width": 484,
+      "height": 108,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 102,
+      "ayah": 7,
+      "x": 636,
+      "y": 1352,
+      "width": 484,
+      "height": 108,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 102,
+      "ayah": 8,
+      "x": 140,
+      "y": 1352,
+      "width": 484,
+      "height": 108,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 103,
+      "ayah": 0,
+      "x": 240,
+      "y": 1470,
+      "width": 780,
+      "height": 55,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 103,
+      "ayah": 1,
+      "x": 140,
+      "y": 1534,
+      "width": 980,
+      "height": 68,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 103,
+      "ayah": 2,
+      "x": 140,
+      "y": 1606,
+      "width": 980,
+      "height": 68,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 103,
+      "ayah": 3,
+      "x": 140,
+      "y": 1678,
+      "width": 980,
+      "height": 68,
+      "label": "الآية 3",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/600.jpg": [
+    {
+      "surah": 104,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 104,
+      "ayah": 1,
+      "x": 636,
+      "y": 319,
+      "width": 484,
+      "height": 114,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 104,
+      "ayah": 2,
+      "x": 140,
+      "y": 319,
+      "width": 484,
+      "height": 114,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 104,
+      "ayah": 3,
+      "x": 636,
+      "y": 437,
+      "width": 484,
+      "height": 114,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 104,
+      "ayah": 4,
+      "x": 140,
+      "y": 437,
+      "width": 484,
+      "height": 114,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 104,
+      "ayah": 5,
+      "x": 636,
+      "y": 555,
+      "width": 484,
+      "height": 114,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 104,
+      "ayah": 6,
+      "x": 140,
+      "y": 555,
+      "width": 484,
+      "height": 114,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 104,
+      "ayah": 7,
+      "x": 636,
+      "y": 673,
+      "width": 484,
+      "height": 114,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 104,
+      "ayah": 8,
+      "x": 140,
+      "y": 673,
+      "width": 484,
+      "height": 114,
+      "label": "الآية 8",
+      "color": "#eab308"
+    },
+    {
+      "surah": 104,
+      "ayah": 9,
+      "x": 140,
+      "y": 791,
+      "width": 980,
+      "height": 114,
+      "label": "الآية 9",
+      "color": "#eab308"
+    },
+    {
+      "surah": 105,
+      "ayah": 0,
+      "x": 240,
+      "y": 915,
+      "width": 780,
+      "height": 68,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 105,
+      "ayah": 1,
+      "x": 636,
+      "y": 992,
+      "width": 484,
+      "height": 119,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 105,
+      "ayah": 2,
+      "x": 140,
+      "y": 992,
+      "width": 484,
+      "height": 119,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 105,
+      "ayah": 3,
+      "x": 636,
+      "y": 1115,
+      "width": 484,
+      "height": 119,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 105,
+      "ayah": 4,
+      "x": 140,
+      "y": 1115,
+      "width": 484,
+      "height": 119,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 105,
+      "ayah": 5,
+      "x": 140,
+      "y": 1238,
+      "width": 980,
+      "height": 119,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 106,
+      "ayah": 0,
+      "x": 240,
+      "y": 1365,
+      "width": 780,
+      "height": 59,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 106,
+      "ayah": 1,
+      "x": 140,
+      "y": 1433,
+      "width": 980,
+      "height": 75,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 106,
+      "ayah": 2,
+      "x": 140,
+      "y": 1512,
+      "width": 980,
+      "height": 75,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 106,
+      "ayah": 3,
+      "x": 140,
+      "y": 1591,
+      "width": 980,
+      "height": 75,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 106,
+      "ayah": 4,
+      "x": 140,
+      "y": 1670,
+      "width": 980,
+      "height": 75,
+      "label": "الآية 4",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/601.jpg": [
+    {
+      "surah": 107,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 107,
+      "ayah": 1,
+      "x": 636,
+      "y": 319,
+      "width": 484,
+      "height": 126,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 107,
+      "ayah": 2,
+      "x": 140,
+      "y": 319,
+      "width": 484,
+      "height": 126,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 107,
+      "ayah": 3,
+      "x": 636,
+      "y": 449,
+      "width": 484,
+      "height": 126,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 107,
+      "ayah": 4,
+      "x": 140,
+      "y": 449,
+      "width": 484,
+      "height": 126,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 107,
+      "ayah": 5,
+      "x": 636,
+      "y": 579,
+      "width": 484,
+      "height": 126,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 107,
+      "ayah": 6,
+      "x": 140,
+      "y": 579,
+      "width": 484,
+      "height": 126,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 107,
+      "ayah": 7,
+      "x": 140,
+      "y": 709,
+      "width": 980,
+      "height": 126,
+      "label": "الآية 7",
+      "color": "#eab308"
+    },
+    {
+      "surah": 108,
+      "ayah": 0,
+      "x": 240,
+      "y": 844,
+      "width": 780,
+      "height": 55,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 108,
+      "ayah": 1,
+      "x": 140,
+      "y": 908,
+      "width": 980,
+      "height": 93,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 108,
+      "ayah": 2,
+      "x": 140,
+      "y": 1005,
+      "width": 980,
+      "height": 93,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 108,
+      "ayah": 3,
+      "x": 140,
+      "y": 1102,
+      "width": 980,
+      "height": 93,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 109,
+      "ayah": 0,
+      "x": 240,
+      "y": 1202,
+      "width": 780,
+      "height": 83,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 109,
+      "ayah": 1,
+      "x": 636,
+      "y": 1294,
+      "width": 484,
+      "height": 148,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 109,
+      "ayah": 2,
+      "x": 140,
+      "y": 1294,
+      "width": 484,
+      "height": 148,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 109,
+      "ayah": 3,
+      "x": 636,
+      "y": 1446,
+      "width": 484,
+      "height": 148,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 109,
+      "ayah": 4,
+      "x": 140,
+      "y": 1446,
+      "width": 484,
+      "height": 148,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 109,
+      "ayah": 5,
+      "x": 636,
+      "y": 1598,
+      "width": 484,
+      "height": 148,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 109,
+      "ayah": 6,
+      "x": 140,
+      "y": 1598,
+      "width": 484,
+      "height": 148,
+      "label": "الآية 6",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/602.jpg": [
+    {
+      "surah": 110,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 65,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 110,
+      "ayah": 1,
+      "x": 140,
+      "y": 299,
+      "width": 980,
+      "height": 114,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 110,
+      "ayah": 2,
+      "x": 140,
+      "y": 417,
+      "width": 980,
+      "height": 114,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 110,
+      "ayah": 3,
+      "x": 140,
+      "y": 535,
+      "width": 980,
+      "height": 114,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 111,
+      "ayah": 0,
+      "x": 240,
+      "y": 657,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 111,
+      "ayah": 1,
+      "x": 636,
+      "y": 751,
+      "width": 484,
+      "height": 159,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 111,
+      "ayah": 2,
+      "x": 140,
+      "y": 751,
+      "width": 484,
+      "height": 159,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 111,
+      "ayah": 3,
+      "x": 636,
+      "y": 914,
+      "width": 484,
+      "height": 159,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 111,
+      "ayah": 4,
+      "x": 140,
+      "y": 914,
+      "width": 484,
+      "height": 159,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 111,
+      "ayah": 5,
+      "x": 140,
+      "y": 1077,
+      "width": 980,
+      "height": 159,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 0,
+      "x": 240,
+      "y": 1245,
+      "width": 780,
+      "height": 77,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 1,
+      "x": 140,
+      "y": 1331,
+      "width": 980,
+      "height": 101,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 2,
+      "x": 140,
+      "y": 1436,
+      "width": 980,
+      "height": 101,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 3,
+      "x": 140,
+      "y": 1541,
+      "width": 980,
+      "height": 101,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 4,
+      "x": 140,
+      "y": 1646,
+      "width": 980,
+      "height": 101,
+      "label": "الآية 4",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/603.jpg": [
+    {
+      "surah": 112,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 66,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 1,
+      "x": 140,
+      "y": 300,
+      "width": 980,
+      "height": 87,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 2,
+      "x": 140,
+      "y": 391,
+      "width": 980,
+      "height": 87,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 3,
+      "x": 140,
+      "y": 482,
+      "width": 980,
+      "height": 87,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 4,
+      "x": 140,
+      "y": 573,
+      "width": 980,
+      "height": 87,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 0,
+      "x": 240,
+      "y": 667,
+      "width": 780,
+      "height": 77,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 1,
+      "x": 636,
+      "y": 753,
+      "width": 484,
+      "height": 136,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 2,
+      "x": 140,
+      "y": 753,
+      "width": 484,
+      "height": 136,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 3,
+      "x": 636,
+      "y": 893,
+      "width": 484,
+      "height": 136,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 4,
+      "x": 140,
+      "y": 893,
+      "width": 484,
+      "height": 136,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 5,
+      "x": 140,
+      "y": 1033,
+      "width": 980,
+      "height": 136,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 0,
+      "x": 240,
+      "y": 1177,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 1,
+      "x": 636,
+      "y": 1271,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 2,
+      "x": 140,
+      "y": 1271,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 3,
+      "x": 636,
+      "y": 1431,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 4,
+      "x": 140,
+      "y": 1431,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 5,
+      "x": 636,
+      "y": 1591,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 6,
+      "x": 140,
+      "y": 1591,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 6",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/604.jpg": [
+    {
+      "surah": 112,
+      "ayah": 0,
+      "x": 240,
+      "y": 225,
+      "width": 780,
+      "height": 66,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 1,
+      "x": 140,
+      "y": 300,
+      "width": 980,
+      "height": 87,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 2,
+      "x": 140,
+      "y": 391,
+      "width": 980,
+      "height": 87,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 3,
+      "x": 140,
+      "y": 482,
+      "width": 980,
+      "height": 87,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 112,
+      "ayah": 4,
+      "x": 140,
+      "y": 573,
+      "width": 980,
+      "height": 87,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 0,
+      "x": 240,
+      "y": 667,
+      "width": 780,
+      "height": 77,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 1,
+      "x": 636,
+      "y": 753,
+      "width": 484,
+      "height": 136,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 2,
+      "x": 140,
+      "y": 753,
+      "width": 484,
+      "height": 136,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 3,
+      "x": 636,
+      "y": 893,
+      "width": 484,
+      "height": 136,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 4,
+      "x": 140,
+      "y": 893,
+      "width": 484,
+      "height": 136,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 113,
+      "ayah": 5,
+      "x": 140,
+      "y": 1033,
+      "width": 980,
+      "height": 136,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 0,
+      "x": 240,
+      "y": 1177,
+      "width": 780,
+      "height": 85,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 1,
+      "x": 636,
+      "y": 1271,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 2,
+      "x": 140,
+      "y": 1271,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 3,
+      "x": 636,
+      "y": 1431,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 4,
+      "x": 140,
+      "y": 1431,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 5,
+      "x": 636,
+      "y": 1591,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 114,
+      "ayah": 6,
+      "x": 140,
+      "y": 1591,
+      "width": 484,
+      "height": 156,
+      "label": "الآية 6",
+      "color": "#eab308"
+    }
+  ],
+  "/pages/fatiha.jpg": [
+    {
+      "surah": 1,
+      "ayah": 0,
+      "x": 340,
+      "y": 516,
+      "width": 580,
+      "height": 95,
+      "label": "البسملة",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 1,
+      "x": 330,
+      "y": 660,
+      "width": 600,
+      "height": 95,
+      "label": "الآية 1",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 2,
+      "x": 330,
+      "y": 800,
+      "width": 600,
+      "height": 95,
+      "label": "الآية 2",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 3,
+      "x": 330,
+      "y": 940,
+      "width": 600,
+      "height": 95,
+      "label": "الآية 3",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 4,
+      "x": 310,
+      "y": 1080,
+      "width": 640,
+      "height": 95,
+      "label": "الآية 4",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 5,
+      "x": 310,
+      "y": 1220,
+      "width": 640,
+      "height": 95,
+      "label": "الآية 5",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 6,
+      "x": 290,
+      "y": 1360,
+      "width": 680,
+      "height": 95,
+      "label": "الآية 6",
+      "color": "#eab308"
+    },
+    {
+      "surah": 1,
+      "ayah": 7,
+      "x": 250,
+      "y": 1500,
+      "width": 760,
+      "height": 95,
+      "label": "الآية 7",
+      "color": "#eab308"
+    }
+  ]
+}

@@ -8,11 +8,13 @@ import CustomPlayer, { CustomPlayerHandle } from "@/components/CustomPlayer";
 import ParentalGateModal from "@/components/ParentalGateModal";
 import NotificationsModal from "../components/NotificationsModal";
 import AppNav from "@/components/AppNav";
+import WifiLoader from "@/components/ui/wifi-loader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSurahData, SurahItem } from "@/hooks/useSurahData";
 import { useProgress } from "@/hooks/useProgress";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useTVNavigation } from "@/hooks/useTVNavigation";
+import { useAudioContext } from "@/contexts/audioContext";
 
 import { Shuffle, ListOrdered, Settings, Bell, Gamepad2, Lock } from "lucide-react";
 import { isKidsMode, setKidsLocked, hasKidsPin } from "@/data/kidsLock";
@@ -40,12 +42,10 @@ const Index = () => {
   const navigate = useNavigate();
   const { surahs, loading, error, retry } = useSurahData();
   const { points, recordAyah } = useProgress();
-  const [currentSurah, setCurrentSurah] = useState<SurahItem | null>(null);
-  const [resumeTime, setResumeTime] = useState(0);
+  const { currentTrack, setCurrentTrack, setPlayNextHandler, setPlayPrevHandler, globalAudioRef } = useAudioContext();
+  
   const [search, setSearch] = useState("");
-  const playerRef = useRef<CustomPlayerHandle>(null);
   const lastSavedRef = useRef(0);
-  const [autoNext, setAutoNext] = useState(true);
   const [isShuffled, setIsShuffled] = useState(false);
   const [shuffledSurahs, setShuffledSurahs] = useState<SurahItem[]>([]);
 
@@ -93,7 +93,24 @@ const Index = () => {
       window.removeEventListener("focus", h);
     };
   }, []);
+  // موضع شريط التنقل (داخل الإطار / أسفل الشاشة / أعلى الشاشة)
+  const [navPosition, setNavPosition] = useState<"inside" | "top" | "bottom">(() => {
+    return (localStorage.getItem("mushaf:navPosition") as "inside" | "top" | "bottom") || "inside";
+  });
 
+  const cycleNavPosition = () => {
+    setNavPosition((prev) => {
+      const next = prev === "inside" ? "bottom" : prev === "bottom" ? "top" : "inside";
+      localStorage.setItem("mushaf:navPosition", next);
+      const names = {
+        inside: "داخل الإطار (يحرر لافتة العنوان)",
+        bottom: "أسفل الشاشة (شريط عائم)",
+        top: "أعلى الشاشة (كلاسيكي)",
+      };
+      toast({ title: `تم تغيير موضع الشريط إلى: ${names[next]}` });
+      return next;
+    });
+  };
   // ── الإعدادات: محميّة برمز ولي الأمر فقط في وضع الأطفال ──
   const openSettings = () => { if (isKidsMode() && hasKidsPin()) setPinAction("settings"); else navigate("/settings"); };
 
@@ -229,24 +246,50 @@ const Index = () => {
     };
   }, [surahs, loading]);
 
-  // Restore last played surah once data arrives
+  // Restore last played surah once data arrives on initial load only
+  const hasRestoredOnce = useRef(false);
+
   useEffect(() => {
-    if (currentSurah || surahs.length === 0) return;
+    if (hasRestoredOnce.current) return;
+    if (surahs.length === 0) return;
+    
+    // Mark as restored so it never re-triggers when currentTrack becomes null (e.g. closing player)
+    hasRestoredOnce.current = true;
+
+    if (currentTrack) return;
+
     const savedNum = parseInt(localStorage.getItem(LAST_SURAH_KEY) || "0", 10);
     if (!savedNum) return;
     const found = surahs.find((s) => s.number === savedNum);
     if (found) {
       const t = parseFloat(localStorage.getItem(LAST_TIME_KEY) || "0");
-      setResumeTime(isNaN(t) ? 0 : t);
-      setCurrentSurah(found);
+      setCurrentTrack({
+        surahNumber: found.number,
+        surahName: found.name,
+        audioSrc: found.audioSrc,
+        isCustom: found.revelationType === "custom",
+        initialTime: isNaN(t) ? 0 : t,
+        source: "audio-list"
+      });
     }
-  }, [surahs, currentSurah]);
+  }, [surahs, currentTrack, setCurrentTrack]);
+
+  const [filterCategory, setFilterCategory] = useState<"all" | "juz_amma" | "meccan" | "medinan">("all");
 
   const displaySurahs = useMemo(() => {
-    const base = isShuffled ? shuffledSurahs : (combinedSurahs.length > 0 ? combinedSurahs : surahs);
-    if (!search.trim()) return base;
-    return base.filter((s) => s.name.includes(search.trim()));
-  }, [combinedSurahs, shuffledSurahs, isShuffled, search, surahs]);
+    let base = isShuffled ? shuffledSurahs : (combinedSurahs.length > 0 ? combinedSurahs : surahs);
+    if (search.trim()) {
+      base = base.filter((s) => s.name.includes(search.trim()));
+    }
+    if (filterCategory === "juz_amma") {
+      base = base.filter((s) => s.number >= 78 || s.revelationType === "custom");
+    } else if (filterCategory === "meccan") {
+      base = base.filter((s) => s.revelationType === "Meccan" || s.type === "مكية");
+    } else if (filterCategory === "medinan") {
+      base = base.filter((s) => s.revelationType === "Medinan" || s.type === "مدنية");
+    }
+    return base;
+  }, [combinedSurahs, shuffledSurahs, isShuffled, search, surahs, filterCategory]);
 
   const handleShuffle = useCallback(() => {
     if (isShuffled) {
@@ -259,98 +302,169 @@ const Index = () => {
   }, [isShuffled, combinedSurahs]);
 
   const handleSelect = (surah: SurahItem) => {
-    setResumeTime(0);
-    setCurrentSurah(surah);
+    setCurrentTrack({
+      surahNumber: surah.number,
+      surahName: surah.name,
+      audioSrc: surah.audioSrc,
+      isCustom: surah.revelationType === "custom",
+      initialTime: 0,
+      source: "audio-list"
+    });
     localStorage.setItem(LAST_SURAH_KEY, String(surah.number));
     localStorage.setItem(LAST_TIME_KEY, "0");
     recordAyah(surah.number, 1);
   };
 
-  const handleClose = () => {
-    setCurrentSurah(null);
-    localStorage.removeItem(LAST_SURAH_KEY);
-    localStorage.removeItem(LAST_TIME_KEY);
-  };
-
-  // Throttled save of currentTime
-  const handleTimeUpdate = (t: number) => {
-    if (Math.abs(t - lastSavedRef.current) >= 2) {
-      lastSavedRef.current = t;
-      localStorage.setItem(LAST_TIME_KEY, String(t));
+  useEffect(() => {
+    if (currentTrack === null) {
+      localStorage.removeItem(LAST_SURAH_KEY);
+      localStorage.removeItem(LAST_TIME_KEY);
     }
-  };
+  }, [currentTrack]);
+
+  // Listen to time updates from global audio element
+  useEffect(() => {
+    const audio = globalAudioRef?.current;
+    if (!audio) return;
+    
+    const handleTimeUpdate = () => {
+      const t = audio.currentTime;
+      if (Math.abs(t - lastSavedRef.current) >= 2) {
+        lastSavedRef.current = t;
+        localStorage.setItem(LAST_TIME_KEY, String(t));
+      }
+    };
+    
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    return () => audio.removeEventListener("timeupdate", handleTimeUpdate);
+  }, [globalAudioRef]);
 
   const activeSurahList = isShuffled ? shuffledSurahs : combinedSurahs;
 
-  const handlePlayNext = () => {
-    if (!currentSurah || activeSurahList.length === 0) return;
-    const idx = activeSurahList.findIndex(s => s.number === currentSurah.number);
+  const handlePlayNext = useCallback(() => {
+    if (!currentTrack || activeSurahList.length === 0) return;
+    const idx = activeSurahList.findIndex(s => s.number === currentTrack.surahNumber);
     const next = activeSurahList[idx + 1];
     if (next) {
-      setResumeTime(0);
-      setCurrentSurah(next);
-      localStorage.setItem(LAST_SURAH_KEY, String(next.number));
-      localStorage.setItem(LAST_TIME_KEY, "0");
+      handleSelect(next);
     }
-  };
+  }, [currentTrack, activeSurahList]);
 
-  const handlePlayPrev = () => {
-    if (!currentSurah || activeSurahList.length === 0) return;
-    const idx = activeSurahList.findIndex(s => s.number === currentSurah.number);
+  const handlePlayPrev = useCallback(() => {
+    if (!currentTrack || activeSurahList.length === 0) return;
+    const idx = activeSurahList.findIndex(s => s.number === currentTrack.surahNumber);
     const prev = activeSurahList[idx - 1];
     if (prev) {
-      setResumeTime(0);
-      setCurrentSurah(prev);
-      localStorage.setItem(LAST_SURAH_KEY, String(prev.number));
-      localStorage.setItem(LAST_TIME_KEY, "0");
+      handleSelect(prev);
     }
-  };
+  }, [currentTrack, activeSurahList]);
+
+  useEffect(() => {
+    setPlayNextHandler(handlePlayNext);
+    setPlayPrevHandler(handlePlayPrev);
+  }, [handlePlayNext, handlePlayPrev, setPlayNextHandler, setPlayPrevHandler]);
 
   // دعم جهاز التحكم عن بُعد والتلفاز الذكي (Android TV Remote & D-pad Navigation)
+  const toggleGlobalPlayPause = useCallback(() => {
+    const audio = globalAudioRef?.current;
+    if (!audio) return;
+    if (audio.paused) audio.play().catch(() => {});
+    else audio.pause();
+  }, [globalAudioRef]);
+
+  const closeCurrentTrack = useCallback(() => {
+    const audio = globalAudioRef?.current;
+    if (audio) { try { audio.pause(); audio.currentTime = 0; } catch { /* ignore */ } }
+    setCurrentTrack(null);
+  }, [globalAudioRef, setCurrentTrack]);
+
   useTVNavigation({
-    onPlayPause: () => {
-      if (playerRef.current) {
-        if (isAudioPlaying) playerRef.current.pause();
-        else playerRef.current.play();
-      }
-    },
+    onPlayPause: toggleGlobalPlayPause,
     onNext: handlePlayNext,
     onPrev: handlePlayPrev,
     onBack: () => {
-      if (currentSurah) handleClose();
+      if (currentTrack) closeCurrentTrack();
       else if (showNotifications) setShowNotifications(false);
     },
   });
 
   return (
     <div className="quran-kids-page">
-      {/* شريط التنقل الذكي مثبت في الأعلى */}
-      <div className="fixed top-0 left-0 right-0 z-40 px-2 pt-1 pointer-events-none">
-        <AppNav transparentBg={true} className="scale-90 sm:scale-95 origin-top" hideBottomNav={!!currentSurah} />
-      </div>
+      {/* شريط التنقل في الموضع العلوي (إن اختاره المستخدم) */}
+      {navPosition === "top" && (
+        <div className="fixed top-1 left-0 right-0 z-40 px-2 pointer-events-none">
+          <AppNav
+            transparentBg={true}
+            className="scale-90 sm:scale-95 origin-top pointer-events-auto"
+            hideBottomNav={!!currentTrack}
+            position={navPosition}
+            onCyclePosition={cycleNavPosition}
+          />
+        </div>
+      )}
+
+      {/* شريط التنقل في الموضع السفلي (إن اختاره المستخدم) */}
+      {navPosition === "bottom" && (
+        <div className={`fixed ${currentTrack ? "bottom-24" : "bottom-3"} left-0 right-0 z-40 px-2 pointer-events-none transition-all duration-300`}>
+          <AppNav
+            transparentBg={true}
+            className="scale-90 sm:scale-95 origin-bottom pointer-events-auto shadow-2xl"
+            hideBottomNav={true}
+            position={navPosition}
+            onCyclePosition={cycleNavPosition}
+          />
+        </div>
+      )}
 
       <div className="quran-kids-frame">
-        {/* الصورة الخلفية فائقة الدقة لإطار تعليم القرآن للأطفال */}
-        <img
-          src="/quran-kids-frame.jpg"
-          alt="تعليم القرآن للأطفال - القارئ أمين حاج أيوب"
-          className="quran-kids-frame-bg"
-        />
+        {/* الصورة الخلفية لإطار تعليم القرآن للأطفال - تتبدل تلقائياً للهاتف */}
+        <picture>
+          <source
+            media="(max-width: 768px), (max-aspect-ratio: 1.15/1)"
+            srcSet="/mobile-home-bg.jpg"
+          />
+          <img
+            src="/quran-kids-frame.jpg"
+            alt="تعليم القرآن للأطفال - القرآن الكريم"
+            className="quran-kids-frame-bg"
+          />
+        </picture>
 
-        {/* المكان الأبيض المخصص لقائمة السور */}
+        {/* طبقة بيضاء شفافة فوق الخلفية مباشرة */}
+        <div className="quran-kids-overlay" />
+
+        {/* المكان الأبيض الشفاف المخصص لقائمة السور */}
         <div className="quran-kids-white-area">
-          {/* شريط أدوات قائمة السور: بحث + ترتيب + نجوم */}
-          <div className="p-2 sm:p-2.5 pb-2 border-b border-amber-500/20 bg-white/50 dark:bg-card/50 backdrop-blur-xs flex flex-col gap-1.5 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 min-w-0">
+          {/* ═══════════════════════════════════════════════════════════════
+              التاج العلوي الأندلسي المقوّس (Curved Islamic Arch Canopy)
+              شريط علوي منحني دائري غير مستقيم يجمع التنقل والبحث والأدوات
+              ═══════════════════════════════════════════════════════════════ */}
+          <div className="relative shrink-0 z-20 bg-gradient-to-b from-white/95 via-amber-50/65 to-white/90 dark:from-stone-900/95 dark:to-stone-900/85 backdrop-blur-xl border-b-2 border-amber-400/35 shadow-[0_12px_28px_rgba(212,175,55,0.12)] rounded-b-[32px] sm:rounded-b-[40px] px-2.5 sm:px-4 pt-1.5 sm:pt-2.5 pb-3.5 space-y-2.5">
+            {/* شريط التنقل الذكي داخل التاج المقوّس */}
+            {navPosition === "inside" && (
+              <div className="w-full">
+                <AppNav
+                  transparentBg={true}
+                  className="w-full scale-95 sm:scale-100 origin-top"
+                  hideBottomNav={!!currentTrack}
+                  position={navPosition}
+                  onCyclePosition={cycleNavPosition}
+                />
+              </div>
+            )}
+
+            {/* شريط أدوات قائمة السور الدائري: بحث كبسولي + زر عشوائي دائري + نجوم */}
+            <div className="flex items-center gap-2 pt-0.5">
+              <div className="flex-1 min-w-0" data-color-target="cyan-search">
                 <SearchBar value={search} onChange={setSearch} />
               </div>
               <button
                 onClick={handleShuffle}
-                className={`shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 border ${
+                data-color-target="yellow-shuffle"
+                className={`shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-300 border ${
                   isShuffled
                     ? "bg-amber-500 text-white border-amber-600 shadow-md scale-105"
-                    : "bg-white/90 dark:bg-card/90 border-amber-400/40 text-stone-700 dark:text-stone-200 hover:border-amber-500 hover:shadow-xs"
+                    : "bg-amber-400 hover:bg-amber-500 text-amber-950 border-amber-500/70 shadow-sm hover:shadow active:scale-95"
                 }`}
                 title={isShuffled ? "العودة للترتيب الأصلي" : "ترتيب عشوائي"}
                 aria-label={isShuffled ? "العودة للترتيب الأصلي" : "ترتيب عشوائي"}
@@ -358,48 +472,101 @@ const Index = () => {
                 {isShuffled ? (
                   <ListOrdered className="w-5 h-5 text-white" />
                 ) : (
-                  <Shuffle className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+                  <Shuffle className="w-5 h-5 text-amber-950 font-black" />
                 )}
               </button>
               {kidsOn && !isPureMode() && (
-                <div className="shrink-0 hidden sm:block">
+                <div className="shrink-0 hidden sm:block" data-color-target="yellow-stars">
                   <PointsDisplay points={points} />
                 </div>
               )}
             </div>
 
-            {/* شريط معلومات عدد السور والحالة */}
-            <div className="flex items-center justify-between text-[11px] sm:text-xs text-amber-950/70 dark:text-amber-200/70 px-1 font-semibold">
-              <span>
+            {/* أزرار تصنيف السور كبسولية دائرية سريعة */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+              <button
+                onClick={() => setFilterCategory("all")}
+                data-color-target="yellow-filter"
+                className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
+                  filterCategory === "all"
+                    ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+                    : "bg-white/80 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 border-amber-400/25 hover:border-amber-400"
+                }`}
+              >
+                الكل
+              </button>
+              <button
+                onClick={() => setFilterCategory("juz_amma")}
+                data-color-target="gold-filter"
+                className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
+                  filterCategory === "juz_amma"
+                    ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+                    : "bg-white/80 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 border-amber-400/25 hover:border-amber-400"
+                }`}
+              >
+                ⭐ جزء عمّ (قصار السور)
+              </button>
+              <button
+                onClick={() => setFilterCategory("meccan")}
+                data-color-target="green-meccan"
+                className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
+                  filterCategory === "meccan"
+                    ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+                    : "bg-white/80 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 border-amber-400/25 hover:border-amber-400"
+                }`}
+              >
+                🕋 مكية
+              </button>
+              <button
+                onClick={() => setFilterCategory("medinan")}
+                data-color-target="blue-medinan"
+                className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
+                  filterCategory === "medinan"
+                    ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+                    : "bg-white/80 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 border-amber-400/25 hover:border-amber-400"
+                }`}
+              >
+                🕌 مدنية
+              </button>
+            </div>
+
+            {/* شريط معلومات عدد السور والحالة في كبسولات دائرية ناعمة */}
+            <div className="flex items-center justify-between text-[11px] sm:text-xs text-amber-950/80 dark:text-amber-200/80 px-1 font-semibold">
+              <span className="inline-flex items-center gap-1.5 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                 {displaySurahs.length === 114
                   ? "جميع سور القرآن الكريم (١١٤ سورة)"
                   : `السور المطابقة: ${displaySurahs.length}`}
               </span>
               {isShuffled && (
                 <div className="flex items-center gap-1.5">
-                  <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30">
+                  <span className="flex items-center gap-1 text-amber-800 dark:text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
                     <Shuffle className="w-3 h-3" /> الترتيب العشوائي
                   </span>
                   <button
                     onClick={handleShuffle}
-                    className="text-[10px] text-amber-800 underline hover:text-amber-950 font-bold"
+                    className="text-[10px] text-amber-800 underline hover:text-amber-950 font-bold px-1"
                   >
                     إلغاء
                   </button>
                 </div>
               )}
             </div>
+
+            {/* أيقونة القوس الأندلسي المركزية — حجر العقد الزخرفي */}
+            <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
+              <div className="w-10 h-3 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 rounded-b-full shadow-xs flex items-center justify-center border-b border-x border-amber-600/30">
+                <div className="w-1.5 h-1.5 rounded-full bg-white/90 shadow-xs" />
+              </div>
+            </div>
           </div>
 
-          {/* محتوى قائمة السور قابل للتمرير بسلاسة داخل الإطار الأبيض */}
-          <div className={`flex-1 overflow-y-auto quran-kids-scroll p-2 sm:p-2.5 ${currentSurah ? 'pb-[90px]' : ''}`}>
+          {/* محتوى قائمة السور قابل للتمرير بسلاسة داخل الإطار الأبيض الشفاف */}
+          <div className={`flex-1 overflow-y-auto quran-kids-scroll p-2 sm:p-2.5 ${currentTrack ? 'pb-[110px]' : ''}`}>
             {loading && (
-              <div className="space-y-3 py-6 text-center">
-                <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                <p className="text-amber-950 dark:text-amber-100 font-bold font-amiri text-sm">
-                  جاري جلب قائمة السور والتلاوات...
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className="py-8 my-4 flex flex-col items-center justify-center text-center">
+                <WifiLoader text="جاري جلب قائمة السور والتلاوات..." />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full mt-12">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-white/60 border border-amber-400/20">
                       <Skeleton className="w-10 h-10 rounded-xl" />
@@ -429,7 +596,7 @@ const Index = () => {
             {!loading && !error && (
               <SurahList
                 surahs={displaySurahs}
-                currentPlaying={currentSurah?.number ?? null}
+                currentPlaying={currentTrack?.surahNumber ?? null}
                 onSelect={handleSelect}
               />
             )}
@@ -437,23 +604,6 @@ const Index = () => {
         </div>
       </div>
 
-      {currentSurah && (
-        <CustomPlayer
-          ref={playerRef}
-          surahName={currentSurah.name}
-          surahNumber={currentSurah.number}
-          audioSrc={currentSurah.audioSrc}
-          isCustom={currentSurah.revelationType === "custom"}
-          initialTime={resumeTime}
-          onClose={handleClose}
-          onTimeUpdate={handleTimeUpdate}
-          onPlayNext={handlePlayNext}
-          onPlayPrev={handlePlayPrev}
-          autoNext={autoNext}
-          onToggleAutoNext={() => setAutoNext(v => !v)}
-          onPlayingChange={setIsAudioPlaying}
-        />
-      )}
 
       {/* رمز ولي الأمر للإعدادات أو فك القفل */}
       {pinAction && (

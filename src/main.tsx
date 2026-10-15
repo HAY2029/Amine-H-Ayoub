@@ -7,6 +7,7 @@ import { SupportErrorBoundary } from "./components/SupportErrorBoundary";
 // @ts-ignore - virtual:pwa-register is provided by vite-plugin-pwa at build time
 import { registerSW } from "virtual:pwa-register";
 import { initCloudAudioAvailability } from "./data/audioUrls";
+import { warmUpGameVoices } from "./utils/gameVoice";
 
 // PWA: Guard against iframe/preview contexts
 const isInIframe = (() => {
@@ -32,19 +33,33 @@ if ('serviceWorker' in navigator && !isPreviewHost && !isInIframe) {
   registerSW({ immediate: true });
 }
 
+/** تُنفّذ عمليات التهيئة الخلفية دون حجب العرض / الاستجابة للواجهة. */
+function runBackgroundWarmup() {
+  // صوت التشجيع في الخلفية من أول دخول — بهدوء وبلا أي رسالة خطأ
+  try { warmUpGameVoices(); } catch { /* ignore */ }
+
+  // جلب قائمة التلاوات المتوفرة من السيرفر يجري في الخلفية دون حجب فتح التطبيق
+  initCloudAudioAvailability().catch(() => { /* ignore */ });
+}
+
 async function bootstrap() {
-  // ⚡ الأداء: عرض التطبيق فوراً بدون أي انتظار —
-  // جلب قائمة التلاوات المتوفرة من السيرفر يجري في الخلفية بدون حجب فتح التطبيق
+  // ⚡ الأداء: عرض التطبيق فوراً بدون أي انتظار
   createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
       <SupportErrorBoundary>
         <App />
       </SupportErrorBoundary>
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 
-  // في الخلفية بعد فتح التطبيق (لا يعيق الإطلاق)
-  initCloudAudioAvailability().catch(() => { /* ignore */ });
+  // تنفيذ التسخين الخلفية في إطار تبديل الرسوم (idle) أو في الخلفية،
+  // دون حجب الإطلاق وإظهار شاشة فارغة للشاشة الأولى.
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback(runBackgroundWarmup, { timeout: 3000 });
+  } else {
+    // fallback: صغيرة لتجنّب تعليق الواجهة
+    setTimeout(runBackgroundWarmup, 0);
+  }
 }
 
 bootstrap();

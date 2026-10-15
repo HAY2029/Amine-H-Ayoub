@@ -1,0 +1,484 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/AdminGamesModal.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"]; const _Fragment = __vite__cjsImport2_react_jsxDevRuntime["Fragment"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const useState = __vite__cjsImport3_react["useState"];
+import { RefreshCw, Eye, EyeOff, Save, Download, Mic } from "/node_modules/.vite/deps/lucide-react.js?v=c05fb7b0";
+import { getRemoteGames, getRemoteGamesUrl, setRemoteGamesUrl, fetchRemoteGames, precacheRemoteGames } from "/src/data/remoteGames.ts";
+import { hideRemoteGame, showRemoteGame, getHiddenRemoteIds } from "/src/data/gameCatalog.ts";
+import { getSurahAudioUrl } from "/src/data/audioUrls.ts?t=1791822031272";
+import { toast } from "/src/hooks/use-toast.ts";
+/**
+ * لوحة أدمن الألعاب — تظهر في أدوات المالك فقط:
+ * تغيير رابط ملف الألعاب + تحديث فوري + إخفاء/إظهار ألعاب بعيدة + تحميل الأكواد للجهاز.
+ */ export default function AdminGamesModal({ onClose }) {
+    _s();
+    const [url, setUrl] = useState(getRemoteGamesUrl());
+    const [list, setList] = useState(getRemoteGames());
+    const [hidden, setHidden] = useState(getHiddenRemoteIds());
+    const [busy, setBusy] = useState(false);
+    const [audioStatus, setAudioStatus] = useState({});
+    const [checkingAudio, setCheckingAudio] = useState(false);
+    // فحص أرقام التلاوات الموجودة فعلياً على السيرفر (من 1 إلى 114) — الناقص يظهر أحمر ليعمل عليه
+    const checkAudio = async ()=>{
+        setCheckingAudio(true);
+        const st = {};
+        for(let n = 1; n <= 114; n++){
+            try {
+                const r = await fetch(getSurahAudioUrl(n), {
+                    method: "HEAD"
+                });
+                st[n] = r.ok;
+            } catch  {
+                st[n] = false;
+            }
+            if (n % 10 === 0) setAudioStatus({
+                ...st
+            }); // تحديث تدريجي كل 10 أرقام
+        }
+        setAudioStatus(st);
+        setCheckingAudio(false);
+        toast({
+            title: "تم فحص التلاوات — الناقص يظهر أحمر ✗"
+        });
+    };
+    const refresh = async ()=>{
+        setBusy(true);
+        await fetchRemoteGames();
+        setList(getRemoteGames());
+        setHidden(getHiddenRemoteIds());
+        setBusy(false);
+        toast({
+            title: "تم تحديث فهرس الألعاب من السيرفر"
+        });
+    };
+    const saveUrl = ()=>{
+        if (!/^https?:\/\//.test(url.trim())) {
+            toast({
+                title: "رابط غير صالح",
+                variant: "destructive"
+            });
+            return;
+        }
+        setRemoteGamesUrl(url);
+        toast({
+            title: "تم حفظ الرابط وجلب الألعاب"
+        });
+        setTimeout(refresh, 400);
+    };
+    const downloadAll = async ()=>{
+        setBusy(true);
+        const n = await precacheRemoteGames();
+        setBusy(false);
+        toast({
+            title: n > 0 ? `تم تحميل ${n} لعبة إلى الجهاز` : "كل الألعاب محمَّلة مسبقاً"
+        });
+    };
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: "fixed inset-0 z-[130] flex items-center justify-center bg-background/70 backdrop-blur-sm p-4",
+        onClick: onClose,
+        children: /*#__PURE__*/ _jsxDEV("div", {
+            className: "card-nour w-full max-w-lg p-5 space-y-4 animate-fade-up max-h-[85vh] overflow-y-auto",
+            onClick: (e)=>e.stopPropagation(),
+            children: [
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "flex items-center justify-between",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("h2", {
+                            className: "font-extrabold text-lg text-gradient-gold",
+                            children: "أدمن الألعاب"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                            lineNumber: 63,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("button", {
+                            onClick: onClose,
+                            className: "px-3 py-1 rounded-full bg-secondary text-sm font-bold",
+                            children: "إغلاق ✕"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                            lineNumber: 64,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                    lineNumber: 62,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "space-y-2",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("label", {
+                            className: "text-xs font-extrabold text-muted-foreground",
+                            children: "رابط ملف الألعاب (JSON على السيرفر)"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                            lineNumber: 68,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("input", {
+                            dir: "ltr",
+                            value: url,
+                            onChange: (e)=>setUrl(e.target.value),
+                            className: "w-full p-2.5 rounded-xl bg-secondary border border-border text-xs font-bold"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                            lineNumber: 69,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex gap-2",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: saveUrl,
+                                    className: "btn-gold flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(Save, {
+                                            className: "w-4 h-4"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                            lineNumber: 72,
+                                            columnNumber: 142
+                                        }, this),
+                                        " حفظ الرابط"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                    lineNumber: 72,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: refresh,
+                                    disabled: busy,
+                                    className: "flex-1 py-2.5 rounded-xl font-bold text-sm bg-secondary border border-border flex items-center justify-center gap-1",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(RefreshCw, {
+                                            className: "w-4 h-4"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                            lineNumber: 73,
+                                            columnNumber: 183
+                                        }, this),
+                                        " تحديث الآن"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                    lineNumber: 73,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                            lineNumber: 71,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                    lineNumber: 67,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "space-y-2",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex items-center justify-between",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("label", {
+                                    className: "text-xs font-extrabold text-muted-foreground flex items-center gap-1",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(Mic, {
+                                            className: "w-3.5 h-3.5"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                            lineNumber: 79,
+                                            columnNumber: 101
+                                        }, this),
+                                        " حالة التلاوات (١ → ١١٤)"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                    lineNumber: 79,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: checkAudio,
+                                    disabled: checkingAudio,
+                                    className: "text-xs font-bold text-accent flex items-center gap-1",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(RefreshCw, {
+                                            className: `w-3.5 h-3.5 ${checkingAudio ? "animate-spin" : ""}`
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                            lineNumber: 80,
+                                            columnNumber: 133
+                                        }, this),
+                                        " ",
+                                        checkingAudio ? "جارٍ الفحص..." : "فحص السيرفر"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                    lineNumber: 80,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                            lineNumber: 78,
+                            columnNumber: 11
+                        }, this),
+                        Object.keys(audioStatus).length > 0 && /*#__PURE__*/ _jsxDEV(_Fragment, {
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("div", {
+                                    className: "grid grid-cols-12 gap-1",
+                                    children: Array.from({
+                                        length: 114
+                                    }, (_, i)=>i + 1).map((n)=>{
+                                        const st = audioStatus[n];
+                                        return /*#__PURE__*/ _jsxDEV("span", {
+                                            title: `سورة رقم ${n}: ${st === undefined ? "لم يُفحص" : st ? "موجود ✓" : "ناقص ✗"}`,
+                                            className: `text-[10px] font-extrabold text-center rounded-md py-1 border ${st === undefined ? "bg-secondary border-border text-muted-foreground" : st ? "bg-success/15 border-success/40 text-success" : "bg-destructive/15 border-destructive/40 text-destructive"}`,
+                                            children: n
+                                        }, n, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                            lineNumber: 88,
+                                            columnNumber: 21
+                                        }, this);
+                                    })
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                    lineNumber: 84,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("p", {
+                                    className: "text-[11px] text-muted-foreground",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            className: "text-success font-bold",
+                                            children: "أخضر ✓ موجود"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                            lineNumber: 99,
+                                            columnNumber: 17
+                                        }, this),
+                                        " — ",
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            className: "text-destructive font-bold",
+                                            children: "أحمر ✗ ناقص"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                            lineNumber: 99,
+                                            columnNumber: 80
+                                        }, this),
+                                        " — ارفع الناقص بالسكربت ",
+                                        /*#__PURE__*/ _jsxDEV("b", {
+                                            children: "tools\\رفع-التلاوات.cmd"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                            lineNumber: 99,
+                                            columnNumber: 167
+                                        }, this),
+                                        " ثم أعد الفحص."
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                    lineNumber: 98,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                    lineNumber: 77,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "space-y-2",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex items-center justify-between",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("label", {
+                                    className: "text-xs font-extrabold text-muted-foreground",
+                                    children: [
+                                        "الألعاب البعيدة (",
+                                        list.length,
+                                        ")"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                    lineNumber: 107,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: downloadAll,
+                                    disabled: busy,
+                                    className: "text-xs font-bold text-accent flex items-center gap-1",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(Download, {
+                                            className: "w-3.5 h-3.5"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                            lineNumber: 108,
+                                            columnNumber: 125
+                                        }, this),
+                                        " تحميل الكل للجهاز"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                    lineNumber: 108,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                            lineNumber: 106,
+                            columnNumber: 11
+                        }, this),
+                        list.length === 0 && /*#__PURE__*/ _jsxDEV("p", {
+                            className: "text-xs text-muted-foreground p-3 bg-secondary rounded-xl",
+                            children: "لا توجد ألعاب بعد — تأكد من الرابط واضغط تحديث."
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                            lineNumber: 110,
+                            columnNumber: 33
+                        }, this),
+                        list.map((g)=>{
+                            const isHidden = hidden.includes(g.id);
+                            return /*#__PURE__*/ _jsxDEV("div", {
+                                className: "flex items-center justify-between p-2.5 rounded-xl bg-secondary border border-border",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "font-bold text-sm",
+                                        children: [
+                                            g.title,
+                                            " ",
+                                            /*#__PURE__*/ _jsxDEV("span", {
+                                                className: "text-muted-foreground text-xs",
+                                                children: [
+                                                    "(",
+                                                    g.cost ?? 20,
+                                                    " ⭐)"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                                lineNumber: 115,
+                                                columnNumber: 63
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                        lineNumber: 115,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("button", {
+                                        onClick: ()=>{
+                                            isHidden ? showRemoteGame(g.id) : hideRemoteGame(g.id);
+                                            setHidden(getHiddenRemoteIds());
+                                        },
+                                        className: `text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 ${isHidden ? "bg-destructive/15 text-destructive" : "bg-success/15 text-success"}`,
+                                        children: isHidden ? /*#__PURE__*/ _jsxDEV(_Fragment, {
+                                            children: [
+                                                /*#__PURE__*/ _jsxDEV(Eye, {
+                                                    className: "w-3.5 h-3.5"
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                                    lineNumber: 118,
+                                                    columnNumber: 33
+                                                }, this),
+                                                " مخفية — إظهار"
+                                            ]
+                                        }, void 0, true) : /*#__PURE__*/ _jsxDEV(_Fragment, {
+                                            children: [
+                                                /*#__PURE__*/ _jsxDEV(EyeOff, {
+                                                    className: "w-3.5 h-3.5"
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                                    lineNumber: 118,
+                                                    columnNumber: 86
+                                                }, this),
+                                                " ظاهرة — إخفاء"
+                                            ]
+                                        }, void 0, true)
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                        lineNumber: 116,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, g.id, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                                lineNumber: 114,
+                                columnNumber: 15
+                            }, this);
+                        })
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                    lineNumber: 105,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("p", {
+                    className: "text-[11px] text-muted-foreground leading-relaxed",
+                    children: "تُحمَّل أكواد الألعاب تلقائياً للجهاز في الخلفية عند فتح ركن الأطفال والاتصال متوفر، فتعمل لاحقاً دون إنترنت."
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+                    lineNumber: 124,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+            lineNumber: 61,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx",
+        lineNumber: 60,
+        columnNumber: 5
+    }, this);
+}
+_s(AdminGamesModal, "XO25jMTwWO9nR6oqPCbLOqjdD+Y=");
+_c = AdminGamesModal;
+var _c;
+$RefreshReg$(_c, "AdminGamesModal");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/AdminGamesModal.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkFkbWluR2FtZXNNb2RhbC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgdXNlRWZmZWN0LCB1c2VTdGF0ZSB9IGZyb20gXCJyZWFjdFwiO1xyXG5pbXBvcnQgeyBSZWZyZXNoQ3csIEV5ZSwgRXllT2ZmLCBTYXZlLCBEb3dubG9hZCwgTWljIH0gZnJvbSBcImx1Y2lkZS1yZWFjdFwiO1xyXG5pbXBvcnQgeyBnZXRSZW1vdGVHYW1lcywgZ2V0UmVtb3RlR2FtZXNVcmwsIHNldFJlbW90ZUdhbWVzVXJsLCBmZXRjaFJlbW90ZUdhbWVzLCBwcmVjYWNoZVJlbW90ZUdhbWVzIH0gZnJvbSBcIi4uL2RhdGEvcmVtb3RlR2FtZXNcIjtcclxuaW1wb3J0IHsgaGlkZVJlbW90ZUdhbWUsIHNob3dSZW1vdGVHYW1lLCBnZXRIaWRkZW5SZW1vdGVJZHMgfSBmcm9tIFwiLi4vZGF0YS9nYW1lQ2F0YWxvZ1wiO1xyXG5pbXBvcnQgeyBnZXRTdXJhaEF1ZGlvVXJsIH0gZnJvbSBcIi4uL2RhdGEvYXVkaW9VcmxzXCI7XHJcbmltcG9ydCB7IHRvYXN0IH0gZnJvbSBcIi4uL2hvb2tzL3VzZS10b2FzdFwiO1xyXG5cclxuLyoqXHJcbiAqINmE2YjYrdipINij2K/ZhdmGINin2YTYo9mE2LnYp9ioIOKAlCDYqti42YfYsSDZgdmKINij2K/ZiNin2Kog2KfZhNmF2KfZhNmDINmB2YLYtzpcclxuICog2KrYutmK2YrYsSDYsdin2KjYtyDZhdmE2YEg2KfZhNij2YTYudin2KggKyDYqtit2K/ZitirINmB2YjYsdmKICsg2KXYrtmB2KfYoS/Ypdi42YfYp9ixINij2YTYudin2Kgg2KjYudmK2K/YqSArINiq2K3ZhdmK2YQg2KfZhNij2YPZiNin2K8g2YTZhNis2YfYp9iyLlxyXG4gKi9cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gQWRtaW5HYW1lc01vZGFsKHsgb25DbG9zZSB9OiB7IG9uQ2xvc2U6ICgpID0+IHZvaWQgfSkge1xyXG4gIGNvbnN0IFt1cmwsIHNldFVybF0gPSB1c2VTdGF0ZShnZXRSZW1vdGVHYW1lc1VybCgpKTtcclxuICBjb25zdCBbbGlzdCwgc2V0TGlzdF0gPSB1c2VTdGF0ZShnZXRSZW1vdGVHYW1lcygpKTtcclxuICBjb25zdCBbaGlkZGVuLCBzZXRIaWRkZW5dID0gdXNlU3RhdGU8c3RyaW5nW10+KGdldEhpZGRlblJlbW90ZUlkcygpKTtcclxuICBjb25zdCBbYnVzeSwgc2V0QnVzeV0gPSB1c2VTdGF0ZShmYWxzZSk7XHJcbiAgY29uc3QgW2F1ZGlvU3RhdHVzLCBzZXRBdWRpb1N0YXR1c10gPSB1c2VTdGF0ZTxSZWNvcmQ8bnVtYmVyLCBib29sZWFuPj4oe30pO1xyXG4gIGNvbnN0IFtjaGVja2luZ0F1ZGlvLCBzZXRDaGVja2luZ0F1ZGlvXSA9IHVzZVN0YXRlKGZhbHNlKTtcclxuXHJcbiAgLy8g2YHYrdi1INij2LHZgtin2YUg2KfZhNiq2YTYp9mI2KfYqiDYp9mE2YXZiNis2YjYr9ipINmB2LnZhNmK2KfZiyDYudmE2Ykg2KfZhNiz2YrYsdmB2LEgKNmF2YYgMSDYpdmE2YkgMTE0KSDigJQg2KfZhNmG2KfZgti1INmK2LjZh9ixINij2K3ZhdixINmE2YrYudmF2YQg2LnZhNmK2YdcclxuICBjb25zdCBjaGVja0F1ZGlvID0gYXN5bmMgKCkgPT4ge1xyXG4gICAgc2V0Q2hlY2tpbmdBdWRpbyh0cnVlKTtcclxuICAgIGNvbnN0IHN0OiBSZWNvcmQ8bnVtYmVyLCBib29sZWFuPiA9IHt9O1xyXG4gICAgZm9yIChsZXQgbiA9IDE7IG4gPD0gMTE0OyBuKyspIHtcclxuICAgICAgdHJ5IHtcclxuICAgICAgICBjb25zdCByID0gYXdhaXQgZmV0Y2goZ2V0U3VyYWhBdWRpb1VybChuKSwgeyBtZXRob2Q6IFwiSEVBRFwiIH0pO1xyXG4gICAgICAgIHN0W25dID0gci5vaztcclxuICAgICAgfSBjYXRjaCB7IHN0W25dID0gZmFsc2U7IH1cclxuICAgICAgaWYgKG4gJSAxMCA9PT0gMCkgc2V0QXVkaW9TdGF0dXMoeyAuLi5zdCB9KTsgICAvLyDYqtit2K/ZitirINiq2K/YsdmK2KzZiiDZg9mEIDEwINij2LHZgtin2YVcclxuICAgIH1cclxuICAgIHNldEF1ZGlvU3RhdHVzKHN0KTtcclxuICAgIHNldENoZWNraW5nQXVkaW8oZmFsc2UpO1xyXG4gICAgdG9hc3QoeyB0aXRsZTogXCLYqtmFINmB2K3YtSDYp9mE2KrZhNin2YjYp9iqIOKAlCDYp9mE2YbYp9mC2LUg2YrYuNmH2LEg2KPYrdmF2LEg4pyXXCIgfSk7XHJcbiAgfTtcclxuXHJcbiAgY29uc3QgcmVmcmVzaCA9IGFzeW5jICgpID0+IHtcclxuICAgIHNldEJ1c3kodHJ1ZSk7XHJcbiAgICBhd2FpdCBmZXRjaFJlbW90ZUdhbWVzKCk7XHJcbiAgICBzZXRMaXN0KGdldFJlbW90ZUdhbWVzKCkpO1xyXG4gICAgc2V0SGlkZGVuKGdldEhpZGRlblJlbW90ZUlkcygpKTtcclxuICAgIHNldEJ1c3koZmFsc2UpO1xyXG4gICAgdG9hc3QoeyB0aXRsZTogXCLYqtmFINiq2K3Yr9mK2Ksg2YHZh9ix2LMg2KfZhNij2YTYudin2Kgg2YXZhiDYp9mE2LPZitix2YHYsVwiIH0pO1xyXG4gIH07XHJcblxyXG4gIGNvbnN0IHNhdmVVcmwgPSAoKSA9PiB7XHJcbiAgICBpZiAoIS9eaHR0cHM/OlxcL1xcLy8udGVzdCh1cmwudHJpbSgpKSkgeyB0b2FzdCh7IHRpdGxlOiBcItix2KfYqNi3INi62YrYsSDYtdin2YTYrVwiLCB2YXJpYW50OiBcImRlc3RydWN0aXZlXCIgfSk7IHJldHVybjsgfVxyXG4gICAgc2V0UmVtb3RlR2FtZXNVcmwodXJsKTtcclxuICAgIHRvYXN0KHsgdGl0bGU6IFwi2KrZhSDYrdmB2Lgg2KfZhNix2KfYqNi3INmI2KzZhNioINin2YTYo9mE2LnYp9ioXCIgfSk7XHJcbiAgICBzZXRUaW1lb3V0KHJlZnJlc2gsIDQwMCk7XHJcbiAgfTtcclxuXHJcbiAgY29uc3QgZG93bmxvYWRBbGwgPSBhc3luYyAoKSA9PiB7XHJcbiAgICBzZXRCdXN5KHRydWUpO1xyXG4gICAgY29uc3QgbiA9IGF3YWl0IHByZWNhY2hlUmVtb3RlR2FtZXMoKTtcclxuICAgIHNldEJ1c3koZmFsc2UpO1xyXG4gICAgdG9hc3QoeyB0aXRsZTogbiA+IDAgPyBg2KrZhSDYqtit2YXZitmEICR7bn0g2YTYudio2Kkg2KXZhNmJINin2YTYrNmH2KfYsmAgOiBcItmD2YQg2KfZhNij2YTYudin2Kgg2YXYrdmF2Y7ZkdmE2Kkg2YXYs9io2YLYp9mLXCIgfSk7XHJcbiAgfTtcclxuXHJcbiAgcmV0dXJuIChcclxuICAgIDxkaXYgY2xhc3NOYW1lPVwiZml4ZWQgaW5zZXQtMCB6LVsxMzBdIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGJnLWJhY2tncm91bmQvNzAgYmFja2Ryb3AtYmx1ci1zbSBwLTRcIiBvbkNsaWNrPXtvbkNsb3NlfT5cclxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJjYXJkLW5vdXIgdy1mdWxsIG1heC13LWxnIHAtNSBzcGFjZS15LTQgYW5pbWF0ZS1mYWRlLXVwIG1heC1oLVs4NXZoXSBvdmVyZmxvdy15LWF1dG9cIiBvbkNsaWNrPXtlID0+IGUuc3RvcFByb3BhZ2F0aW9uKCl9PlxyXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuXCI+XHJcbiAgICAgICAgICA8aDIgY2xhc3NOYW1lPVwiZm9udC1leHRyYWJvbGQgdGV4dC1sZyB0ZXh0LWdyYWRpZW50LWdvbGRcIj7Yo9iv2YXZhiDYp9mE2KPZhNi52KfYqDwvaDI+XHJcbiAgICAgICAgICA8YnV0dG9uIG9uQ2xpY2s9e29uQ2xvc2V9IGNsYXNzTmFtZT1cInB4LTMgcHktMSByb3VuZGVkLWZ1bGwgYmctc2Vjb25kYXJ5IHRleHQtc20gZm9udC1ib2xkXCI+2KXYutmE2KfZgiDinJU8L2J1dHRvbj5cclxuICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTJcIj5cclxuICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtZXh0cmFib2xkIHRleHQtbXV0ZWQtZm9yZWdyb3VuZFwiPtix2KfYqNi3INmF2YTZgSDYp9mE2KPZhNi52KfYqCAoSlNPTiDYudmE2Ykg2KfZhNiz2YrYsdmB2LEpPC9sYWJlbD5cclxuICAgICAgICAgIDxpbnB1dCBkaXI9XCJsdHJcIiB2YWx1ZT17dXJsfSBvbkNoYW5nZT17ZSA9PiBzZXRVcmwoZS50YXJnZXQudmFsdWUpfVxyXG4gICAgICAgICAgICBjbGFzc05hbWU9XCJ3LWZ1bGwgcC0yLjUgcm91bmRlZC14bCBiZy1zZWNvbmRhcnkgYm9yZGVyIGJvcmRlci1ib3JkZXIgdGV4dC14cyBmb250LWJvbGRcIiAvPlxyXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGdhcC0yXCI+XHJcbiAgICAgICAgICAgIDxidXR0b24gb25DbGljaz17c2F2ZVVybH0gY2xhc3NOYW1lPVwiYnRuLWdvbGQgZmxleC0xIHB5LTIuNSByb3VuZGVkLXhsIGZvbnQtYm9sZCB0ZXh0LXNtIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0xXCI+PFNhdmUgY2xhc3NOYW1lPVwidy00IGgtNFwiIC8+INit2YHYuCDYp9mE2LHYp9io2Lc8L2J1dHRvbj5cclxuICAgICAgICAgICAgPGJ1dHRvbiBvbkNsaWNrPXtyZWZyZXNofSBkaXNhYmxlZD17YnVzeX0gY2xhc3NOYW1lPVwiZmxleC0xIHB5LTIuNSByb3VuZGVkLXhsIGZvbnQtYm9sZCB0ZXh0LXNtIGJnLXNlY29uZGFyeSBib3JkZXIgYm9yZGVyLWJvcmRlciBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMVwiPjxSZWZyZXNoQ3cgY2xhc3NOYW1lPVwidy00IGgtNFwiIC8+INiq2K3Yr9mK2Ksg2KfZhNii2YY8L2J1dHRvbj5cclxuICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMlwiPlxyXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW5cIj5cclxuICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cInRleHQteHMgZm9udC1leHRyYWJvbGQgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIGZsZXggaXRlbXMtY2VudGVyIGdhcC0xXCI+PE1pYyBjbGFzc05hbWU9XCJ3LTMuNSBoLTMuNVwiIC8+INit2KfZhNipINin2YTYqtmE2KfZiNin2KogKNmhIOKGkiDZodmh2aQpPC9sYWJlbD5cclxuICAgICAgICAgICAgPGJ1dHRvbiBvbkNsaWNrPXtjaGVja0F1ZGlvfSBkaXNhYmxlZD17Y2hlY2tpbmdBdWRpb30gY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgdGV4dC1hY2NlbnQgZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTFcIj48UmVmcmVzaEN3IGNsYXNzTmFtZT17YHctMy41IGgtMy41ICR7Y2hlY2tpbmdBdWRpbyA/IFwiYW5pbWF0ZS1zcGluXCIgOiBcIlwifWB9IC8+IHtjaGVja2luZ0F1ZGlvID8gXCLYrNin2LHZjSDYp9mE2YHYrdi1Li4uXCIgOiBcItmB2K3YtSDYp9mE2LPZitix2YHYsVwifTwvYnV0dG9uPlxyXG4gICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICB7T2JqZWN0LmtleXMoYXVkaW9TdGF0dXMpLmxlbmd0aCA+IDAgJiYgKFxyXG4gICAgICAgICAgICA8PlxyXG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZ3JpZCBncmlkLWNvbHMtMTIgZ2FwLTFcIj5cclxuICAgICAgICAgICAgICAgIHtBcnJheS5mcm9tKHsgbGVuZ3RoOiAxMTQgfSwgKF8sIGkpID0+IGkgKyAxKS5tYXAobiA9PiB7XHJcbiAgICAgICAgICAgICAgICAgIGNvbnN0IHN0ID0gYXVkaW9TdGF0dXNbbl07XHJcbiAgICAgICAgICAgICAgICAgIHJldHVybiAoXHJcbiAgICAgICAgICAgICAgICAgICAgPHNwYW4ga2V5PXtufSB0aXRsZT17YNiz2YjYsdipINix2YLZhSAke259OiAke3N0ID09PSB1bmRlZmluZWQgPyBcItmE2YUg2YrZj9mB2K3YtVwiIDogc3QgPyBcItmF2YjYrNmI2K8g4pyTXCIgOiBcItmG2KfZgti1IOKcl1wifWB9XHJcbiAgICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9e2B0ZXh0LVsxMHB4XSBmb250LWV4dHJhYm9sZCB0ZXh0LWNlbnRlciByb3VuZGVkLW1kIHB5LTEgYm9yZGVyICR7XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHN0ID09PSB1bmRlZmluZWQgPyBcImJnLXNlY29uZGFyeSBib3JkZXItYm9yZGVyIHRleHQtbXV0ZWQtZm9yZWdyb3VuZFwiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDogc3QgPyBcImJnLXN1Y2Nlc3MvMTUgYm9yZGVyLXN1Y2Nlc3MvNDAgdGV4dC1zdWNjZXNzXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgOiBcImJnLWRlc3RydWN0aXZlLzE1IGJvcmRlci1kZXN0cnVjdGl2ZS80MCB0ZXh0LWRlc3RydWN0aXZlXCJ9YH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICB7bn1cclxuICAgICAgICAgICAgICAgICAgICA8L3NwYW4+XHJcbiAgICAgICAgICAgICAgICAgICk7XHJcbiAgICAgICAgICAgICAgICB9KX1cclxuICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LVsxMXB4XSB0ZXh0LW11dGVkLWZvcmVncm91bmRcIj5cclxuICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtc3VjY2VzcyBmb250LWJvbGRcIj7Yo9iu2LbYsSDinJMg2YXZiNis2YjYrzwvc3Bhbj4g4oCUIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtZGVzdHJ1Y3RpdmUgZm9udC1ib2xkXCI+2KPYrdmF2LEg4pyXINmG2KfZgti1PC9zcGFuPiDigJQg2KfYsdmB2Lkg2KfZhNmG2KfZgti1INio2KfZhNiz2YPYsdio2KogPGI+dG9vbHNcXNix2YHYuS3Yp9mE2KrZhNin2YjYp9iqLmNtZDwvYj4g2KvZhSDYo9i52K8g2KfZhNmB2K3YtS5cclxuICAgICAgICAgICAgICA8L3A+XHJcbiAgICAgICAgICAgIDwvPlxyXG4gICAgICAgICAgKX1cclxuICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTJcIj5cclxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuXCI+XHJcbiAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtZXh0cmFib2xkIHRleHQtbXV0ZWQtZm9yZWdyb3VuZFwiPtin2YTYo9mE2LnYp9ioINin2YTYqNi52YrYr9ipICh7bGlzdC5sZW5ndGh9KTwvbGFiZWw+XHJcbiAgICAgICAgICAgIDxidXR0b24gb25DbGljaz17ZG93bmxvYWRBbGx9IGRpc2FibGVkPXtidXN5fSBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LWFjY2VudCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMVwiPjxEb3dubG9hZCBjbGFzc05hbWU9XCJ3LTMuNSBoLTMuNVwiIC8+INiq2K3ZhdmK2YQg2KfZhNmD2YQg2YTZhNis2YfYp9iyPC9idXR0b24+XHJcbiAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgIHtsaXN0Lmxlbmd0aCA9PT0gMCAmJiA8cCBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBwLTMgYmctc2Vjb25kYXJ5IHJvdW5kZWQteGxcIj7ZhNinINiq2YjYrNivINij2YTYudin2Kgg2KjYudivIOKAlCDYqtij2YPYryDZhdmGINin2YTYsdin2KjYtyDZiNin2LbYuti3INiq2K3Yr9mK2KsuPC9wPn1cclxuICAgICAgICAgIHtsaXN0Lm1hcChnID0+IHtcclxuICAgICAgICAgICAgY29uc3QgaXNIaWRkZW4gPSBoaWRkZW4uaW5jbHVkZXMoZy5pZCk7XHJcbiAgICAgICAgICAgIHJldHVybiAoXHJcbiAgICAgICAgICAgICAgPGRpdiBrZXk9e2cuaWR9IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktYmV0d2VlbiBwLTIuNSByb3VuZGVkLXhsIGJnLXNlY29uZGFyeSBib3JkZXIgYm9yZGVyLWJvcmRlclwiPlxyXG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwiZm9udC1ib2xkIHRleHQtc21cIj57Zy50aXRsZX0gPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1tdXRlZC1mb3JlZ3JvdW5kIHRleHQteHNcIj4oe2cuY29zdCA/PyAyMH0g4q2QKTwvc3Bhbj48L3NwYW4+XHJcbiAgICAgICAgICAgICAgICA8YnV0dG9uIG9uQ2xpY2s9eygpID0+IHsgaXNIaWRkZW4gPyBzaG93UmVtb3RlR2FtZShnLmlkKSA6IGhpZGVSZW1vdGVHYW1lKGcuaWQpOyBzZXRIaWRkZW4oZ2V0SGlkZGVuUmVtb3RlSWRzKCkpOyB9fVxyXG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9e2B0ZXh0LXhzIGZvbnQtYm9sZCBweC0zIHB5LTEuNSByb3VuZGVkLWZ1bGwgZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEgJHtpc0hpZGRlbiA/IFwiYmctZGVzdHJ1Y3RpdmUvMTUgdGV4dC1kZXN0cnVjdGl2ZVwiIDogXCJiZy1zdWNjZXNzLzE1IHRleHQtc3VjY2Vzc1wifWB9PlxyXG4gICAgICAgICAgICAgICAgICB7aXNIaWRkZW4gPyA8PjxFeWUgY2xhc3NOYW1lPVwidy0zLjUgaC0zLjVcIiAvPiDZhdiu2YHZitipIOKAlCDYpdi42YfYp9ixPC8+IDogPD48RXllT2ZmIGNsYXNzTmFtZT1cInctMy41IGgtMy41XCIgLz4g2LjYp9mH2LHYqSDigJQg2KXYrtmB2KfYoTwvPn1cclxuICAgICAgICAgICAgICAgIDwvYnV0dG9uPlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICApO1xyXG4gICAgICAgICAgfSl9XHJcbiAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1bMTFweF0gdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIGxlYWRpbmctcmVsYXhlZFwiPtiq2Y/YrdmF2Y7ZkdmEINij2YPZiNin2K8g2KfZhNij2YTYudin2Kgg2KrZhNmC2KfYptmK2KfZiyDZhNmE2KzZh9in2LIg2YHZiiDYp9mE2K7ZhNmB2YrYqSDYudmG2K8g2YHYqtitINix2YPZhiDYp9mE2KPYt9mB2KfZhCDZiNin2YTYp9iq2LXYp9mEINmF2KrZiNmB2LHYjCDZgdiq2LnZhdmEINmE2KfYrdmC2KfZiyDYr9mI2YYg2KXZhtiq2LHZhtiqLjwvcD5cclxuICAgICAgPC9kaXY+XHJcbiAgICA8L2Rpdj5cclxuICApO1xyXG59XHJcbiJdLCJuYW1lcyI6WyJ1c2VTdGF0ZSIsIlJlZnJlc2hDdyIsIkV5ZSIsIkV5ZU9mZiIsIlNhdmUiLCJEb3dubG9hZCIsIk1pYyIsImdldFJlbW90ZUdhbWVzIiwiZ2V0UmVtb3RlR2FtZXNVcmwiLCJzZXRSZW1vdGVHYW1lc1VybCIsImZldGNoUmVtb3RlR2FtZXMiLCJwcmVjYWNoZVJlbW90ZUdhbWVzIiwiaGlkZVJlbW90ZUdhbWUiLCJzaG93UmVtb3RlR2FtZSIsImdldEhpZGRlblJlbW90ZUlkcyIsImdldFN1cmFoQXVkaW9VcmwiLCJ0b2FzdCIsIkFkbWluR2FtZXNNb2RhbCIsIm9uQ2xvc2UiLCJ1cmwiLCJzZXRVcmwiLCJsaXN0Iiwic2V0TGlzdCIsImhpZGRlbiIsInNldEhpZGRlbiIsImJ1c3kiLCJzZXRCdXN5IiwiYXVkaW9TdGF0dXMiLCJzZXRBdWRpb1N0YXR1cyIsImNoZWNraW5nQXVkaW8iLCJzZXRDaGVja2luZ0F1ZGlvIiwiY2hlY2tBdWRpbyIsInN0IiwibiIsInIiLCJmZXRjaCIsIm1ldGhvZCIsIm9rIiwidGl0bGUiLCJyZWZyZXNoIiwic2F2ZVVybCIsInRlc3QiLCJ0cmltIiwidmFyaWFudCIsInNldFRpbWVvdXQiLCJkb3dubG9hZEFsbCIsImRpdiIsImNsYXNzTmFtZSIsIm9uQ2xpY2siLCJlIiwic3RvcFByb3BhZ2F0aW9uIiwiaDIiLCJidXR0b24iLCJsYWJlbCIsImlucHV0IiwiZGlyIiwidmFsdWUiLCJvbkNoYW5nZSIsInRhcmdldCIsImRpc2FibGVkIiwiT2JqZWN0Iiwia2V5cyIsImxlbmd0aCIsIkFycmF5IiwiZnJvbSIsIl8iLCJpIiwibWFwIiwic3BhbiIsInVuZGVmaW5lZCIsInAiLCJiIiwiZyIsImlzSGlkZGVuIiwiaW5jbHVkZXMiLCJpZCIsImNvc3QiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQW9CQSxRQUFRLFFBQVEsUUFBUTtBQUM1QyxTQUFTQyxTQUFTLEVBQUVDLEdBQUcsRUFBRUMsTUFBTSxFQUFFQyxJQUFJLEVBQUVDLFFBQVEsRUFBRUMsR0FBRyxRQUFRLGVBQWU7QUFDM0UsU0FBU0MsY0FBYyxFQUFFQyxpQkFBaUIsRUFBRUMsaUJBQWlCLEVBQUVDLGdCQUFnQixFQUFFQyxtQkFBbUIsUUFBUSxzQkFBc0I7QUFDbEksU0FBU0MsY0FBYyxFQUFFQyxjQUFjLEVBQUVDLGtCQUFrQixRQUFRLHNCQUFzQjtBQUN6RixTQUFTQyxnQkFBZ0IsUUFBUSxvQkFBb0I7QUFDckQsU0FBU0MsS0FBSyxRQUFRLHFCQUFxQjtBQUUzQzs7O0NBR0MsR0FDRCxlQUFlLFNBQVNDLGdCQUFnQixFQUFFQyxPQUFPLEVBQTJCOztJQUMxRSxNQUFNLENBQUNDLEtBQUtDLE9BQU8sR0FBR3BCLFNBQVNRO0lBQy9CLE1BQU0sQ0FBQ2EsTUFBTUMsUUFBUSxHQUFHdEIsU0FBU087SUFDakMsTUFBTSxDQUFDZ0IsUUFBUUMsVUFBVSxHQUFHeEIsU0FBbUJjO0lBQy9DLE1BQU0sQ0FBQ1csTUFBTUMsUUFBUSxHQUFHMUIsU0FBUztJQUNqQyxNQUFNLENBQUMyQixhQUFhQyxlQUFlLEdBQUc1QixTQUFrQyxDQUFDO0lBQ3pFLE1BQU0sQ0FBQzZCLGVBQWVDLGlCQUFpQixHQUFHOUIsU0FBUztJQUVuRCw4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

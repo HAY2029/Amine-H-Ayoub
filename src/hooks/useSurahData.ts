@@ -81,15 +81,17 @@ const BASE_SURAHS: SurahItem[] = allSurahNames
 let LOCAL_SURAHS: SurahItem[] = BASE_SURAHS;
 
 const HF_CACHE_KEY = "mushaf:hf-surahs-cache-v5";
-const HF_CACHE_TTL = 1000 * 60 * 60; // ساعة واحدة
+const HF_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 ساعة لتقليل استهلاك الشبكة وتسريع البدء
 
 export function useSurahData() {
   const [surahs, setSurahs] = useState<SurahItem[]>(LOCAL_SURAHS);
-  const [loading, setLoading] = useState(true);
+  // ⚡ السرعة القصوى: السور الأساسية جاهزة ومحملة فوراً في الذاكرة دون حجب الواجهة
+  const [loading, setLoading] = useState<boolean>(() => LOCAL_SURAHS.length === 0);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSurahs = async () => {
-    setLoading(true);
+    // لا نحجب الواجهة إذا كانت السور معروضة بالفعل
+    if (surahs.length === 0) setLoading(true);
     setError(null);
     try {
       // التحقق من توفر السيرفر المحلي وتحديث الروابط
@@ -125,20 +127,22 @@ export function useSurahData() {
       } catch { /* ignore */ }
 
       if (!usedCache) {
-        // جلب قائمة الملفات من Hugging Face مباشرة
+        // جلب قائمة الملفات من Archive.org في الخلفية مع مهلة سريعة (4 ثوانٍ)
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
-        const response = await fetch("https://huggingface.co/api/datasets/hammoualiyoucef20/quran-audio/tree/main", { signal: controller.signal });
+        const timeout = setTimeout(() => controller.abort(), 4000);
+        const response = await fetch("https://archive.org/metadata/quran-audio-files-for-kids", { signal: controller.signal });
         clearTimeout(timeout);
-        if (!response.ok) throw new Error("فشل الاتصال بـ Hugging Face");
+        if (!response.ok) throw new Error("فشل الاتصال بـ Archive.org");
 
         const data = await response.json();
+        let filesArray: any[] = [];
+        if (data && data.files) filesArray = data.files;
 
-        // استخراج أرقام السور (ربع يس فقط)
-        serverSurahNumbers = (data as HuggingFaceFile[])
-          .filter((file) => file.path.endsWith('.mp3'))
-          .map((file) => {
-            const nameWithoutExt = file.path.replace(/\.[^/.]+$/, "");
+        // استخراج أرقام السور
+        serverSurahNumbers = filesArray
+          .filter((file: any) => file.name && file.name.endsWith('.mp3'))
+          .map((file: any) => {
+            const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
             const num = parseInt(nameWithoutExt, 10);
             return isNaN(num) ? null : num;
           })

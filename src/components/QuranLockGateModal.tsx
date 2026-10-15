@@ -126,8 +126,8 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
               <span>العداد التنازلي المتبقي لفتح الألعاب:</span>
             </span>
 
-            {/* أرقام العداد التنازلي الضخمة */}
-            <div className="flex items-center justify-center gap-2.5 py-1" dir="ltr">
+            {/* أرقام العداد التنازلي الضخمة (دقائق وثوانٍ) */}
+            <div className="flex items-center justify-center gap-3 py-1" dir="rtl">
               {/* الدقائق */}
               <div className="flex flex-col items-center">
                 <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-black/70 border-2 border-amber-500/60 flex items-center justify-center shadow-lg">
@@ -135,11 +135,11 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
                     {String(remMinutes).padStart(2, "0")}
                   </span>
                 </div>
-                <span className="text-[10px] font-extrabold text-muted-foreground mt-1">دقائق</span>
+                <span className="text-[11px] font-black text-muted-foreground mt-1">دقائق</span>
               </div>
 
               {/* نقطتا الفصل الوامضتان */}
-              <div className="text-3xl font-black text-amber-500 animate-pulse pb-3">:</div>
+              <div className="text-3xl font-black text-amber-500 animate-pulse pb-4">:</div>
 
               {/* الثواني */}
               <div className="flex flex-col items-center">
@@ -148,7 +148,7 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
                     {String(remSeconds).padStart(2, "0")}
                   </span>
                 </div>
-                <span className="text-[10px] font-extrabold text-muted-foreground mt-1">ثوانٍ</span>
+                <span className="text-[11px] font-black text-muted-foreground mt-1">ثوانٍ</span>
               </div>
             </div>
 

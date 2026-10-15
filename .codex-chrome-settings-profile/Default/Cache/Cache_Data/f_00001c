@@ -1,0 +1,231 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/Intro3DCarousel.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/Intro3DCarousel.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const React = __vite__cjsImport3_react.__esModule ? __vite__cjsImport3_react.default : __vite__cjsImport3_react; const useState = __vite__cjsImport3_react["useState"]; const useEffect = __vite__cjsImport3_react["useEffect"];
+import "/src/components/Intro3DCarousel.css";
+export const INTRO_SEEN_KEY = "app_intro_seen_v1";
+export const hasSeenIntro = ()=>{
+    try {
+        return localStorage.getItem(INTRO_SEEN_KEY) === "true";
+    } catch  {
+        return false;
+    }
+};
+export const markIntroSeen = ()=>{
+    try {
+        localStorage.setItem(INTRO_SEEN_KEY, "true");
+    } catch  {
+    /* ignore */ }
+};
+export const resetIntroSeen = ()=>{
+    try {
+        localStorage.removeItem(INTRO_SEEN_KEY);
+    } catch  {
+    /* ignore */ }
+};
+// البطاقات العشر بألوانها وإحداثيات طيران كل لون إلى مكانه في شاشة الترحيب والتطبيق
+// (مثلاً: اللون الأصفر يتجه مباشرة نحو الزر الأصفر الذهبي في الواجهة)
+const CARDS_DATA = [
+    {
+        index: 0,
+        colorCard: "142, 249, 252",
+        targetX: "-42vw",
+        targetY: "-38vh",
+        rot: "-15deg"
+    },
+    {
+        index: 1,
+        colorCard: "142, 252, 204",
+        targetX: "-16vw",
+        targetY: "-40vh",
+        rot: "-5deg"
+    },
+    {
+        index: 2,
+        colorCard: "142, 252, 157",
+        targetX: "14vw",
+        targetY: "-40vh",
+        rot: "5deg"
+    },
+    {
+        index: 3,
+        colorCard: "215, 252, 142",
+        targetX: "42vw",
+        targetY: "-35vh",
+        rot: "15deg"
+    },
+    // 🌟 اللون الأصفر يطير مباشرة إلى الزر الأصفر الذهبي في الواجهة!
+    {
+        index: 4,
+        colorCard: "252, 252, 142",
+        targetX: "-22vw",
+        targetY: "-42vh",
+        rot: "-8deg"
+    },
+    {
+        index: 5,
+        colorCard: "252, 208, 142",
+        targetX: "32vw",
+        targetY: "28vh",
+        rot: "12deg"
+    },
+    {
+        index: 6,
+        colorCard: "252, 142, 142",
+        targetX: "0vw",
+        targetY: "38vh",
+        rot: "0deg"
+    },
+    {
+        index: 7,
+        colorCard: "252, 142, 239",
+        targetX: "-35vw",
+        targetY: "26vh",
+        rot: "-18deg"
+    },
+    {
+        index: 8,
+        colorCard: "204, 142, 252",
+        targetX: "-42vw",
+        targetY: "-4vh",
+        rot: "-20deg"
+    },
+    {
+        index: 9,
+        colorCard: "142, 202, 252",
+        targetX: "42vw",
+        targetY: "-2vh",
+        rot: "20deg"
+    }
+];
+/**
+ * شاشة الدخول ثلاثية الأبعاد الدوارة:
+ * - الكود المطابق تماماً (.wrapper, .inner, .card, .img).
+ * - بدون أي كلمات أو أزرار إضافية.
+ * - عندما يكون التطبيق جاهزاً، يتطاير كل لون إلى مكانه المخصص في شاشة الترحيب ليراه المستخدم بوضوح.
+ */ export const Intro3DCarousel = ({ forceShow = false, onFinish })=>{
+    _s();
+    const [visible, setVisible] = useState(()=>{
+        if (forceShow) return true;
+        return !hasSeenIntro();
+    });
+    const [flying, setFlying] = useState(false);
+    const startFlight = ()=>{
+        if (flying) return;
+        setFlying(true);
+        markIntroSeen();
+        // إعطاء المستخدم 1.25 ثانية لمشاهدة الألوان وهي تطير وتحطّ على أزرار وواجهة التطبيق
+        setTimeout(()=>{
+            setVisible(false);
+            if (onFinish) onFinish();
+        }, 1250);
+    };
+    useEffect(()=>{
+        if (!visible) return;
+        // تدور الأسطوانة، وبمجرد جاهزية التطبيق (~2.5 ثانية) تنطلق الألوان لأماكنها
+        const readyTimer = setTimeout(()=>{
+            startFlight();
+        }, 2500);
+        return ()=>clearTimeout(readyTimer);
+    }, [
+        visible
+    ]);
+    if (!visible) return null;
+    return /*#__PURE__*/ _jsxDEV("div", {
+        onClick: startFlight,
+        className: `intro-3d-overlay cursor-pointer select-none ${flying ? "flying-out" : ""}`,
+        title: "انقر لتسريع الدخول",
+        children: /*#__PURE__*/ _jsxDEV("div", {
+            className: "intro-3d-container",
+            children: /*#__PURE__*/ _jsxDEV("div", {
+                className: "wrapper",
+                children: /*#__PURE__*/ _jsxDEV("div", {
+                    className: `inner ${flying ? "inner-paused" : ""}`,
+                    style: {
+                        "--quantity": 10
+                    },
+                    children: CARDS_DATA.map((card)=>/*#__PURE__*/ _jsxDEV("div", {
+                            className: `card ${flying ? "fly-to-target" : ""}`,
+                            style: {
+                                "--index": card.index,
+                                "--color-card": card.colorCard,
+                                "--target-x": card.targetX,
+                                "--target-y": card.targetY,
+                                "--target-rot": card.rot
+                            },
+                            children: /*#__PURE__*/ _jsxDEV("div", {
+                                className: "img"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/Intro3DCarousel.tsx",
+                                lineNumber: 114,
+                                columnNumber: 17
+                            }, this)
+                        }, card.index, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/Intro3DCarousel.tsx",
+                            lineNumber: 101,
+                            columnNumber: 15
+                        }, this))
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/Intro3DCarousel.tsx",
+                    lineNumber: 96,
+                    columnNumber: 11
+                }, this)
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/Intro3DCarousel.tsx",
+                lineNumber: 95,
+                columnNumber: 9
+            }, this)
+        }, void 0, false, {
+            fileName: "H:/Amine-H-Ayoub/src/components/Intro3DCarousel.tsx",
+            lineNumber: 94,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/Intro3DCarousel.tsx",
+        lineNumber: 87,
+        columnNumber: 5
+    }, this);
+};
+_s(Intro3DCarousel, "sWUdzI+AjwPM4iwDpCp+OgAf6Fo=");
+_c = Intro3DCarousel;
+export default Intro3DCarousel;
+var _c;
+$RefreshReg$(_c, "Intro3DCarousel");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/Intro3DCarousel.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/Intro3DCarousel.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkludHJvM0RDYXJvdXNlbC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7IHVzZVN0YXRlLCB1c2VFZmZlY3QgfSBmcm9tIFwicmVhY3RcIjtcbmltcG9ydCBcIi4vSW50cm8zRENhcm91c2VsLmNzc1wiO1xuXG5leHBvcnQgY29uc3QgSU5UUk9fU0VFTl9LRVkgPSBcImFwcF9pbnRyb19zZWVuX3YxXCI7XG5cbmV4cG9ydCBjb25zdCBoYXNTZWVuSW50cm8gPSAoKTogYm9vbGVhbiA9PiB7XG4gIHRyeSB7XG4gICAgcmV0dXJuIGxvY2FsU3RvcmFnZS5nZXRJdGVtKElOVFJPX1NFRU5fS0VZKSA9PT0gXCJ0cnVlXCI7XG4gIH0gY2F0Y2gge1xuICAgIHJldHVybiBmYWxzZTtcbiAgfVxufTtcblxuZXhwb3J0IGNvbnN0IG1hcmtJbnRyb1NlZW4gPSAoKSA9PiB7XG4gIHRyeSB7XG4gICAgbG9jYWxTdG9yYWdlLnNldEl0ZW0oSU5UUk9fU0VFTl9LRVksIFwidHJ1ZVwiKTtcbiAgfSBjYXRjaCB7XG4gICAgLyogaWdub3JlICovXG4gIH1cbn07XG5cbmV4cG9ydCBjb25zdCByZXNldEludHJvU2VlbiA9ICgpID0+IHtcbiAgdHJ5IHtcbiAgICBsb2NhbFN0b3JhZ2UucmVtb3ZlSXRlbShJTlRST19TRUVOX0tFWSk7XG4gIH0gY2F0Y2gge1xuICAgIC8qIGlnbm9yZSAqL1xuICB9XG59O1xuXG4vLyDYp9mE2KjYt9in2YLYp9iqINin2YTYudi02LEg2KjYo9mE2YjYp9mG2YfYpyDZiNil2K3Yr9in2KvZitin2Kog2LfZitix2KfZhiDZg9mEINmE2YjZhiDYpdmE2Ykg2YXZg9in2YbZhyDZgdmKINi02KfYtNipINin2YTYqtix2K3ZitioINmI2KfZhNiq2LfYqNmK2YJcbi8vICjZhdir2YTYp9mLOiDYp9mE2YTZiNmGINin2YTYo9i12YHYsSDZitiq2KzZhyDZhdio2KfYtNix2Kkg2YbYrdmIINin2YTYstixINin2YTYo9i12YHYsSDYp9mE2LDZh9io2Yog2YHZiiDYp9mE2YjYp9is2YfYqSlcbmNvbnN0IENBUkRTX0RBVEEgPSBbXG4gIHsgaW5kZXg6IDAsIGNvbG9yQ2FyZDogXCIxNDIsIDI0OSwgMjUyXCIsIHRhcmdldFg6IFwiLTQydndcIiwgdGFyZ2V0WTogXCItMzh2aFwiLCByb3Q6IFwiLTE1ZGVnXCIgfSxcbiAgeyBpbmRleDogMSwgY29sb3JDYXJkOiBcIjE0MiwgMjUyLCAyMDRcIiwgdGFyZ2V0WDogXCItMTZ2d1wiLCB0YXJnZXRZOiBcIi00MHZoXCIsIHJvdDogXCItNWRlZ1wiIH0sXG4gIHsgaW5kZXg6IDIsIGNvbG9yQ2FyZDogXCIxNDIsIDI1MiwgMTU3XCIsIHRhcmdldFg6IFwiMTR2d1wiLCB0YXJnZXRZOiBcIi00MHZoXCIsIHJvdDogXCI1ZGVnXCIgfSxcbiAgeyBpbmRleDogMywgY29sb3JDYXJkOiBcIjIxNSwgMjUyLCAxNDJcIiwgdGFyZ2V0WDogXCI0MnZ3XCIsIHRhcmdldFk6IFwiLTM1dmhcIiwgcm90OiBcIjE1ZGVnXCIgfSxcbiAgLy8g8J+MnyDYp9mE2YTZiNmGINin2YTYo9i12YHYsSDZiti32YrYsSDZhdio2KfYtNix2Kkg2KXZhNmJINin2YTYstixINin2YTYo9i12YHYsSDYp9mE2LDZh9io2Yog2YHZiiDYp9mE2YjYp9is2YfYqSFcbiAgeyBpbmRleDogNCwgY29sb3JDYXJkOiBcIjI1MiwgMjUyLCAxNDJcIiwgdGFyZ2V0WDogXCItMjJ2d1wiLCB0YXJnZXRZOiBcIi00MnZoXCIsIHJvdDogXCItOGRlZ1wiIH0sXG4gIHsgaW5kZXg6IDUsIGNvbG9yQ2FyZDogXCIyNTIsIDIwOCwgMTQyXCIsIHRhcmdldFg6IFwiMzJ2d1wiLCB0YXJnZXRZOiBcIjI4dmhcIiwgcm90OiBcIjEyZGVnXCIgfSxcbiAgeyBpbmRleDogNiwgY29sb3JDYXJkOiBcIjI1MiwgMTQyLCAxNDJcIiwgdGFyZ2V0WDogXCIwdndcIiwgdGFyZ2V0WTogXCIzOHZoXCIsIHJvdDogXCIwZGVnXCIgfSxcbiAgeyBpbmRleDogNywgY29sb3JDYXJkOiBcIjI1MiwgMTQyLCAyMzlcIiwgdGFyZ2V0WDogXCItMzV2d1wiLCB0YXJnZXRZOiBcIjI2dmhcIiwgcm90OiBcIi0xOGRlZ1wiIH0sXG4gIHsgaW5kZXg6IDgsIGNvbG9yQ2FyZDogXCIyMDQsIDE0MiwgMjUyXCIsIHRhcmdldFg6IFwiLTQydndcIiwgdGFyZ2V0WTogXCItNHZoXCIsIHJvdDogXCItMjBkZWdcIiB9LFxuICB7IGluZGV4OiA5LCBjb2xvckNhcmQ6IFwiMTQyLCAyMDIsIDI1MlwiLCB0YXJnZXRYOiBcIjQydndcIiwgdGFyZ2V0WTogXCItMnZoXCIsIHJvdDogXCIyMGRlZ1wiIH0sXG5dO1xuXG4vKipcbiAqINi02KfYtNipINin2YTYr9iu2YjZhCDYq9mE2KfYq9mK2Kkg2KfZhNij2KjYudin2K8g2KfZhNiv2YjYp9ix2Kk6XG4gKiAtINin2YTZg9mI2K8g2KfZhNmF2LfYp9io2YIg2KrZhdin2YXYp9mLICgud3JhcHBlciwgLmlubmVyLCAuY2FyZCwgLmltZykuXG4gKiAtINio2K/ZiNmGINij2Yog2YPZhNmF2KfYqiDYo9mIINij2LLYsdin2LEg2KXYttin2YHZitipLlxuICogLSDYudmG2K/ZhdinINmK2YPZiNmGINin2YTYqti32KjZitmCINis2KfZh9iy2KfZi9iMINmK2KrYt9in2YrYsSDZg9mEINmE2YjZhiDYpdmE2Ykg2YXZg9in2YbZhyDYp9mE2YXYrti12LUg2YHZiiDYtNin2LTYqSDYp9mE2KrYsdit2YrYqCDZhNmK2LHYp9mHINin2YTZhdiz2KrYrtiv2YUg2KjZiNi22YjYrS5cbiAqL1xuZXhwb3J0IGNvbnN0IEludHJvM0RDYXJvdXNlbDogUmVhY3QuRkM8e1xuICBmb3JjZVNob3c/OiBib29sZWFuO1xuICBvbkZpbmlzaD86ICgpID0+IHZvaWQ7XG59PiA9ICh7IGZvcmNlU2hvdyA9IGZhbHNlLCBvbkZpbmlzaCB9KSA9PiB7XG4gIGNvbnN0IFt2aXNpYmxlLCBzZXRWaXNpYmxlXSA9IHVzZVN0YXRlKCgpID0+IHtcbiAgICBpZiAoZm9yY2VTaG93KSByZXR1cm4gdHJ1ZTtcbiAgICByZXR1cm4gIWhhc1NlZW5JbnRybygpO1xuICB9KTtcbiAgY29uc3QgW2ZseWluZywgc2V0Rmx5aW5nXSA9IHVzZVN0YXRlKGZhbHNlKTtcblxuICBjb25zdCBzdGFydEZsaWdodCA9ICgpID0+IHtcbiAgICBpZiAoZmx5aW5nKSByZXR1cm47XG4gICAgc2V0Rmx5aW5nKHRydWUpO1xuICAgIG1hcmtJbnRyb1NlZW4oKTtcbiAgICAvLyDYpdi52LfYp9ihINin2YTZhdiz2KrYrtiv2YUgMS4yNSDYq9in2YbZitipINmE2YXYtNin2YfYr9ipINin2YTYo9mE2YjYp9mGINmI2YfZiiDYqti32YrYsSDZiNiq2K3Yt9mRINi52YTZiSDYo9iy2LHYp9ixINmI2YjYp9is2YfYqSDYp9mE2KrYt9io2YrZglxuICAgIHNldFRpbWVvdXQoKCkgPT4ge1xuICAgICAgc2V0VmlzaWJsZShmYWxzZSk7XG4gICAgICBpZiAob25GaW5pc2gpIG9uRmluaXNoKCk7XG4gICAgfSwgMTI1MCk7XG4gIH07XG5cbiAgdXNlRWZmZWN0KCgpID0+IHtcbiAgICBpZiAoIXZpc2libGUpIHJldHVybjtcblxuICAgIC8vINiq2K/ZiNixINin2YTYo9iz2LfZiNin2YbYqdiMINmI2KjZhdis2LHYryDYrNin2YfYstmK2Kkg2KfZhNiq2LfYqNmK2YIgKH4yLjUg2KvYp9mG2YrYqSkg2KrZhti32YTZgiDYp9mE2KPZhNmI2KfZhiDZhNij2YXYp9mD2YbZh9inXG4gICAgY29uc3QgcmVhZHlUaW1lciA9IHNldFRpbWVvdXQoKCkgPT4ge1xuICAgICAgc3RhcnRGbGlnaHQoKTtcbiAgICB9LCAyNTAwKTtcblxuICAgIHJldHVybiAoKSA9PiBjbGVhclRpbWVvdXQocmVhZHlUaW1lcik7XG4gIH0sIFt2aXNpYmxlXSk7XG5cbiAgaWYgKCF2aXNpYmxlKSByZXR1cm4gbnVsbDtcblxuICByZXR1cm4gKFxuICAgIDxkaXZcbiAgICAgIG9uQ2xpY2s9e3N0YXJ0RmxpZ2h0fVxuICAgICAgY2xhc3NOYW1lPXtgaW50cm8tM2Qtb3ZlcmxheSBjdXJzb3ItcG9pbnRlciBzZWxlY3Qtbm9uZSAke1xuICAgICAgICBmbHlpbmcgPyBcImZseWluZy1vdXRcIiA6IFwiXCJcbiAgICAgIH1gfVxuICAgICAgdGl0bGU9XCLYp9mG2YLYsSDZhNiq2LPYsdmK2Lkg2KfZhNiv2K7ZiNmEXCJcbiAgICA+XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cImludHJvLTNkLWNvbnRhaW5lclwiPlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cIndyYXBwZXJcIj5cbiAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICBjbGFzc05hbWU9e2Bpbm5lciAke2ZseWluZyA/IFwiaW5uZXItcGF1c2VkXCIgOiBcIlwifWB9XG4gICAgICAgICAgICBzdHlsZT17eyBcIi0tcXVhbnRpdHlcIjogMTAgfSBhcyBSZWFjdC5DU1NQcm9wZXJ0aWVzfVxuICAgICAgICAgID5cbiAgICAgICAgICAgIHtDQVJEU19EQVRBLm1hcCgoY2FyZCkgPT4gKFxuICAgICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgICAga2V5PXtjYXJkLmluZGV4fVxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YGNhcmQgJHtmbHlpbmcgPyBcImZseS10by10YXJnZXRcIiA6IFwiXCJ9YH1cbiAgICAgICAgICAgICAgICBzdHlsZT17XG4gICAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgIFwiLS1pbmRleFwiOiBjYXJkLmluZGV4LFxuICAgICAgICAgICAgICAgICAgICBcIi0tY29sb3ItY2FyZFwiOiBjYXJkLmNvbG9yQ2FyZCxcbiAgICAgICAgICAgICAgICAgICAgXCItLXRhcmdldC14XCI6IGNhcmQudGFyZ2V0WCxcbiAgICAgICAgICAgICAgICAgICAgXCItLXRhcmdldC15XCI6IGNhcmQudGFyZ2V0WSxcbiAgICAgICAgICAgICAgICAgICAgXCItLXRhcmdldC1yb3RcIjogY2FyZC5yb3QsXG4gICAgICAgICAgICAgICAgICB9IGFzIFJlYWN0LkNTU1Byb3BlcnRpZXNcbiAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImltZ1wiIC8+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgKSl9XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG4gICAgPC9kaXY+XG4gICk7XG59O1xuXG5leHBvcnQgZGVmYXVsdCBJbnRybzNEQ2Fyb3VzZWw7XG4iXSwibmFtZXMiOlsiUmVhY3QiLCJ1c2VTdGF0ZSIsInVzZUVmZmVjdCIsIklOVFJPX1NFRU5fS0VZIiwiaGFzU2VlbkludHJvIiwibG9jYWxTdG9yYWdlIiwiZ2V0SXRlbSIsIm1hcmtJbnRyb1NlZW4iLCJzZXRJdGVtIiwicmVzZXRJbnRyb1NlZW4iLCJyZW1vdmVJdGVtIiwiQ0FSRFNfREFUQSIsImluZGV4IiwiY29sb3JDYXJkIiwidGFyZ2V0WCIsInRhcmdldFkiLCJyb3QiLCJJbnRybzNEQ2Fyb3VzZWwiLCJmb3JjZVNob3ciLCJvbkZpbmlzaCIsInZpc2libGUiLCJzZXRWaXNpYmxlIiwiZmx5aW5nIiwic2V0Rmx5aW5nIiwic3RhcnRGbGlnaHQiLCJzZXRUaW1lb3V0IiwicmVhZHlUaW1lciIsImNsZWFyVGltZW91dCIsImRpdiIsIm9uQ2xpY2siLCJjbGFzc05hbWUiLCJ0aXRsZSIsInN0eWxlIiwibWFwIiwiY2FyZCJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsT0FBT0EsU0FBU0MsUUFBUSxFQUFFQyxTQUFTLFFBQVEsUUFBUTtBQUNuRCxPQUFPLHdCQUF3QjtBQUUvQixPQUFPLE1BQU1DLGlCQUFpQixvQkFBb0I7QUFFbEQsT0FBTyxNQUFNQyxlQUFlO0lBQzFCLElBQUk7UUFDRixPQUFPQyxhQUFhQyxPQUFPLENBQUNILG9CQUFvQjtJQUNsRCxFQUFFLE9BQU07UUFDTixPQUFPO0lBQ1Q7QUFDRixFQUFFO0FBRUYsT0FB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

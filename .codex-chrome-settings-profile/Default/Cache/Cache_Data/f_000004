@@ -1,0 +1,238 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/SupportErrorBoundary.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+import { ErrorBoundary } from "/node_modules/.vite/deps/react-error-boundary.js?v=c05fb7b0";
+import { RefreshCw, Trash2, HeartHandshake } from "/node_modules/.vite/deps/lucide-react.js?v=c05fb7b0";
+import { Button } from "/src/components/ui/button.tsx";
+import WhatsAppIcon from "/src/components/WhatsAppIcon.tsx";
+import { openWhatsAppSupport, SUPPORT_WHATSAPP_DISPLAY } from "/src/services/resendService.ts";
+import { getProfile } from "/src/data/kidsProfile.ts?t=1791820648188";
+import { CURRENT_VERSION } from "/src/utils/updateChecker.ts";
+function ErrorFallback({ error, resetErrorBoundary }) {
+    const handleWhatsAppContact = ()=>{
+        const activeProfile = getProfile();
+        const profileName = activeProfile?.name || "مستخدم التطبيق";
+        const errMsg = error ? error.message || String(error) : "توقف غير متوقع";
+        const msg = `السلام عليكم ورحمة الله وبركاته،\n` + `أحتاج مساعدة من الدعم الفني لتطبيق القرآن للأطفال:\n` + `• إصدار التطبيق: ${CURRENT_VERSION}\n` + `• وصف الخطأ: ${errMsg}\n` + `• واجهت توقفاً مؤقتاً في التطبيق وأرجو المساعدة.`;
+        void openWhatsAppSupport(msg);
+    };
+    const handleHardReset = ()=>{
+        try {
+            sessionStorage.clear();
+            // مسح الكاشات المؤقتة فقط
+            Object.keys(localStorage).forEach((key)=>{
+                if (key.includes("cache") || key.includes("temp")) {
+                    localStorage.removeItem(key);
+                }
+            });
+        } catch  {
+        /* ignore */ }
+        window.location.href = "/";
+    };
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: "min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50/50 via-slate-50 to-teal-50/50 p-4 font-quran text-right",
+        dir: "rtl",
+        children: /*#__PURE__*/ _jsxDEV("div", {
+            className: "max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-emerald-100/80 flex flex-col items-center text-center gap-6 animate-in zoom-in-95 duration-200",
+            children: [
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "w-20 h-20 bg-emerald-500/10 text-emerald-600 rounded-3xl flex items-center justify-center ring-8 ring-emerald-500/5 shadow-inner",
+                    children: /*#__PURE__*/ _jsxDEV(HeartHandshake, {
+                        className: "w-10 h-10"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                        lineNumber: 45,
+                        columnNumber: 11
+                    }, this)
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 44,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "space-y-2",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("h2", {
+                            className: "text-2xl font-black text-slate-800",
+                            children: "نعتذر منك، حدث توقف مؤقت بسيط 🌸"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 50,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("p", {
+                            className: "text-slate-600 text-sm leading-relaxed max-w-xs mx-auto font-medium",
+                            children: "لا تقلق، جميع محفوظاتك وبياناتك في أمان تام. نحن هنا لمساعدتك في أي وقت لحل المشكلة فوراً."
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 51,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 49,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "flex flex-col w-full gap-3",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("button", {
+                            type: "button",
+                            onClick: handleWhatsAppContact,
+                            className: "w-full h-14 text-base bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] transition-all rounded-2xl text-white font-extrabold shadow-lg shadow-[#25D366]/25 flex items-center justify-center gap-3 cursor-pointer",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(WhatsAppIcon, {
+                                    className: "w-6 h-6 text-white shrink-0"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 64,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: [
+                                        "تواصل مع الدعم الفني عبر واتساب (",
+                                        SUPPORT_WHATSAPP_DISPLAY,
+                                        ")"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 65,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 59,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV(Button, {
+                            onClick: resetErrorBoundary,
+                            className: "w-full h-12 text-sm bg-slate-800 hover:bg-slate-900 active:scale-[0.98] transition-all rounded-2xl text-white font-bold flex items-center justify-center gap-2 cursor-pointer shadow-sm",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(RefreshCw, {
+                                    className: "w-4 h-4"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 73,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: "إعادة تشغيل التطبيق"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 74,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 69,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV(Button, {
+                            onClick: handleHardReset,
+                            variant: "ghost",
+                            className: "w-full h-10 text-xs text-slate-500 hover:text-slate-800 hover:bg-slate-100/60 rounded-xl font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(Trash2, {
+                                    className: "w-3.5 h-3.5"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 83,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: "مسح الذاكرة المؤقتة والعودة للرئيسية"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 84,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 78,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 57,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("p", {
+                    className: "text-[11px] text-slate-400 font-medium",
+                    children: "الدعم الفني متاح دائماً لخدمتكم ومساعدتكم عبر واتساب"
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 88,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+            lineNumber: 41,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+        lineNumber: 40,
+        columnNumber: 5
+    }, this);
+}
+_c = ErrorFallback;
+export function SupportErrorBoundary({ children }) {
+    return /*#__PURE__*/ _jsxDEV(ErrorBoundary, {
+        FallbackComponent: ErrorFallback,
+        onReset: ()=>{
+            window.location.href = "/";
+        },
+        children: children
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+        lineNumber: 98,
+        columnNumber: 5
+    }, this);
+}
+_c1 = SupportErrorBoundary;
+var _c, _c1;
+$RefreshReg$(_c, "ErrorFallback");
+$RefreshReg$(_c1, "SupportErrorBoundary");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlN1cHBvcnRFcnJvckJvdW5kYXJ5LnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBFcnJvckJvdW5kYXJ5IH0gZnJvbSBcInJlYWN0LWVycm9yLWJvdW5kYXJ5XCI7XG5pbXBvcnQgeyBSZWZyZXNoQ3csIFRyYXNoMiwgSGVhcnRIYW5kc2hha2UgfSBmcm9tIFwibHVjaWRlLXJlYWN0XCI7XG5pbXBvcnQgeyBCdXR0b24gfSBmcm9tIFwiLi91aS9idXR0b25cIjtcbmltcG9ydCBXaGF0c0FwcEljb24gZnJvbSBcIi4vV2hhdHNBcHBJY29uXCI7XG5pbXBvcnQgeyBvcGVuV2hhdHNBcHBTdXBwb3J0LCBTVVBQT1JUX1dIQVRTQVBQX0RJU1BMQVkgfSBmcm9tIFwiQC9zZXJ2aWNlcy9yZXNlbmRTZXJ2aWNlXCI7XG5pbXBvcnQgeyBnZXRQcm9maWxlIH0gZnJvbSBcIkAvZGF0YS9raWRzUHJvZmlsZVwiO1xuaW1wb3J0IHsgQ1VSUkVOVF9WRVJTSU9OIH0gZnJvbSBcIkAvdXRpbHMvdXBkYXRlQ2hlY2tlclwiO1xuXG5mdW5jdGlvbiBFcnJvckZhbGxiYWNrKHsgZXJyb3IsIHJlc2V0RXJyb3JCb3VuZGFyeSB9OiB7IGVycm9yOiBFcnJvcjsgcmVzZXRFcnJvckJvdW5kYXJ5OiAoKSA9PiB2b2lkIH0pIHtcbiAgY29uc3QgaGFuZGxlV2hhdHNBcHBDb250YWN0ID0gKCkgPT4ge1xuICAgIGNvbnN0IGFjdGl2ZVByb2ZpbGUgPSBnZXRQcm9maWxlKCk7XG4gICAgY29uc3QgcHJvZmlsZU5hbWUgPSBhY3RpdmVQcm9maWxlPy5uYW1lIHx8IFwi2YXYs9iq2K7Yr9mFINin2YTYqti32KjZitmCXCI7XG4gICAgY29uc3QgZXJyTXNnID0gZXJyb3IgPyAoZXJyb3IubWVzc2FnZSB8fCBTdHJpbmcoZXJyb3IpKSA6IFwi2KrZiNmC2YEg2LrZitixINmF2KrZiNmC2LlcIjtcbiAgICBjb25zdCBtc2cgPVxuICAgICAgYNin2YTYs9mE2KfZhSDYudmE2YrZg9mFINmI2LHYrdmF2Kkg2KfZhNmE2Ycg2YjYqNix2YPYp9iq2YfYjFxcbmAgK1xuICAgICAgYNij2K3Yqtin2Kwg2YXYs9in2LnYr9ipINmF2YYg2KfZhNiv2LnZhSDYp9mE2YHZhtmKINmE2KrYt9io2YrZgiDYp9mE2YLYsdii2YYg2YTZhNij2LfZgdin2YQ6XFxuYCArXG4gICAgICBg4oCiINil2LXYr9in2LEg2KfZhNiq2LfYqNmK2YI6ICR7Q1VSUkVOVF9WRVJTSU9OfVxcbmAgK1xuICAgICAgYOKAoiDZiNi12YEg2KfZhNiu2LfYozogJHtlcnJNc2d9XFxuYCArXG4gICAgICBg4oCiINmI2KfYrNmH2Kog2KrZiNmC2YHYp9mLINmF2KTZgtiq2KfZiyDZgdmKINin2YTYqti32KjZitmCINmI2KPYsdis2Ygg2KfZhNmF2LPYp9i52K/YqS5gO1xuXG4gICAgdm9pZCBvcGVuV2hhdHNBcHBTdXBwb3J0KG1zZyk7XG4gIH07XG5cbiAgY29uc3QgaGFuZGxlSGFyZFJlc2V0ID0gKCkgPT4ge1xuICAgIHRyeSB7XG4gICAgICBzZXNzaW9uU3RvcmFnZS5jbGVhcigpO1xuICAgICAgLy8g2YXYs9itINin2YTZg9in2LTYp9iqINin2YTZhdik2YLYqtipINmB2YLYt1xuICAgICAgT2JqZWN0LmtleXMobG9jYWxTdG9yYWdlKS5mb3JFYWNoKChrZXkpID0+IHtcbiAgICAgICAgaWYgKGtleS5pbmNsdWRlcyhcImNhY2hlXCIpIHx8IGtleS5pbmNsdWRlcyhcInRlbXBcIikpIHtcbiAgICAgICAgICBsb2NhbFN0b3JhZ2UucmVtb3ZlSXRlbShrZXkpO1xuICAgICAgICB9XG4gICAgICB9KTtcbiAgICB9IGNhdGNoIHtcbiAgICAgIC8qIGlnbm9yZSAqL1xuICAgIH1cbiAgICB3aW5kb3cubG9jYXRpb24uaHJlZiA9IFwiL1wiO1xuICB9O1xuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9XCJtaW4taC1zY3JlZW4gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYmctZ3JhZGllbnQtdG8tYiBmcm9tLWVtZXJhbGQtNTAvNTAgdmlhLXNsYXRlLTUwIHRvLXRlYWwtNTAvNTAgcC00IGZvbnQtcXVyYW4gdGV4dC1yaWdodFwiIGRpcj1cInJ0bFwiPlxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJtYXgtdy1tZCB3LWZ1bGwgYmctd2hpdGUvOTUgYmFja2Ryb3AtYmx1ci1tZCByb3VuZGVkLTN4bCBwLTggc2hhZG93LTJ4bCBib3JkZXIgYm9yZGVyLWVtZXJhbGQtMTAwLzgwIGZsZXggZmxleC1jb2wgaXRlbXMtY2VudGVyIHRleHQtY2VudGVyIGdhcC02IGFuaW1hdGUtaW4gem9vbS1pbi05NSBkdXJhdGlvbi0yMDBcIj5cbiAgICAgICAgXG4gICAgICAgIHsvKiDYo9mK2YLZiNmG2Kkg2YjYr9mI2K/YqSDZiNmF2LfZhdim2YbYqSAqL31cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LTIwIGgtMjAgYmctZW1lcmFsZC01MDAvMTAgdGV4dC1lbWVyYWxkLTYwMCByb3VuZGVkLTN4bCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciByaW5nLTggcmluZy1lbWVyYWxkLTUwMC81IHNoYWRvdy1pbm5lclwiPlxuICAgICAgICAgIDxIZWFydEhhbmRzaGFrZSBjbGFzc05hbWU9XCJ3LTEwIGgtMTBcIiAvPlxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICB7Lyog2LHYs9in2YTYqSDZhNi32YrZgdipINio2K/ZiNmGINij2Yog2YbYtdmI2LUg2KPYrti32KfYoSDYqtmC2YbZitipICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMlwiPlxuICAgICAgICAgIDxoMiBjbGFzc05hbWU9XCJ0ZXh0LTJ4bCBmb250LWJsYWNrIHRleHQtc2xhdGUtODAwXCI+2YbYudiq2LDYsSDZhdmG2YPYjCDYrdiv2Ksg2KrZiNmC2YEg2YXYpNmC2Kog2KjYs9mK2Lcg8J+MuDwvaDI+XG4gICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1zbGF0ZS02MDAgdGV4dC1zbSBsZWFkaW5nLXJlbGF4ZWQgbWF4LXcteHMgbXgtYXV0byBmb250LW1lZGl1bVwiPlxuICAgICAgICAgICAg2YTYpyDYqtmC2YTZgtiMINis2YXZiti5INmF2K3ZgdmI2LjYp9iq2YMg2YjYqNmK2KfZhtin2KrZgyDZgdmKINij2YXYp9mGINiq2KfZhS4g2YbYrdmGINmH2YbYpyDZhNmF2LPYp9i52K/YqtmDINmB2Yog2KPZiiDZiNmC2Kog2YTYrdmEINin2YTZhdi02YPZhNipINmB2YjYsdin2YsuXG4gICAgICAgICAgPC9wPlxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICB7Lyog2KfZhNij2LLYsdin2LEg2YjYp9mE2KXYrNix2KfYodin2KogKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBmbGV4LWNvbCB3LWZ1bGwgZ2FwLTNcIj5cbiAgICAgICAgICB7Lyog2LLYsSDZiNin2KrYs9in2Kgg2KfZhNix2KbZitiz2Yog2KfZhNmF2KjYp9i02LEg2YTZhNix2YLZhSAwNjU4MTg4NjQ0ICovfVxuICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgIHR5cGU9XCJidXR0b25cIlxuICAgICAgICAgICAgb25DbGljaz17aGFuZGxlV2hhdHNBcHBDb250YWN0fVxuICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIGgtMTQgdGV4dC1iYXNlIGJnLVsjMjVEMzY2XSBob3ZlcjpiZy1bIzIwYmQ1YV0gYWN0aXZlOnNjYWxlLVswLjk4XSB0cmFuc2l0aW9uLWFsbCByb3VuZGVkLTJ4bCB0ZXh0LXdoaXRlIGZvbnQtZXh0cmFib2xkIHNoYWRvdy1sZyBzaGFkb3ctWyMyNUQzNjZdLzI1IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0zIGN1cnNvci1wb2ludGVyXCJcbiAgICAgICAgICA+XG4gICAgICAgICAgICA8V2hhdHNBcHBJY29uIGNsYXNzTmFtZT1cInctNiBoLTYgdGV4dC13aGl0ZSBzaHJpbmstMFwiIC8+XG4gICAgICAgICAgICA8c3Bhbj7YqtmI2KfYtdmEINmF2Lkg2KfZhNiv2LnZhSDYp9mE2YHZhtmKINi52KjYsSDZiNin2KrYs9in2KggKHtTVVBQT1JUX1dIQVRTQVBQX0RJU1BMQVl9KTwvc3Bhbj5cbiAgICAgICAgICA8L2J1dHRvbj5cblxuICAgICAgICAgIHsvKiDYstixINil2LnYp9iv2Kkg2KfZhNmF2K3Yp9mI2YTYqSAqL31cbiAgICAgICAgICA8QnV0dG9uXG4gICAgICAgICAgICBvbkNsaWNrPXtyZXNldEVycm9yQm91bmRhcnl9XG4gICAgICAgICAgICBjbGFzc05hbWU9XCJ3LWZ1bGwgaC0xMiB0ZXh0LXNtIGJnLXNsYXRlLTgwMCBob3ZlcjpiZy1zbGF0ZS05MDAgYWN0aXZlOnNjYWxlLVswLjk4XSB0cmFuc2l0aW9uLWFsbCByb3VuZGVkLTJ4bCB0ZXh0LXdoaXRlIGZvbnQtYm9sZCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMiBjdXJzb3ItcG9pbnRlciBzaGFkb3ctc21cIlxuICAgICAgICAgID5cbiAgICAgICAgICAgIDxSZWZyZXNoQ3cgY2xhc3NOYW1lPVwidy00IGgtNFwiIC8+XG4gICAgICAgICAgICA8c3Bhbj7Ypdi52KfYr9ipINiq2LTYutmK2YQg2KfZhNiq2LfYqNmK2YI8L3NwYW4+XG4gICAgICAgICAgPC9CdXR0b24+XG5cbiAgICAgICAgICB7Lyog2LLYsSDZhdiz2K0g2KfZhNiw2KfZg9ix2Kkg2KfZhNmF2KTZgtiq2Kkg2YjYp9mE2KjYr9ihINmF2YYg2KzYr9mK2K8gKi99XG4gICAgICAgICAgPEJ1dHRvblxuICAgICAgICAgICAgb25DbGljaz17aGFuZGxlSGFyZFJlc2V0fVxuICAgICAgICAgICAgdmFyaWFudD1cImdob3N0XCJcbiAgICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCBoLTEwIHRleHQteHMgdGV4dC1zbGF0ZS01MDAgaG92ZXI6dGV4dC1zbGF0ZS04MDAgaG92ZXI6Ymctc2xhdGUtMTAwLzYwIHJvdW5kZWQteGwgZm9udC1tZWRpdW0gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgZ2FwLTEuNSBjdXJzb3ItcG9pbnRlciB0cmFuc2l0aW9uLWNvbG9yc1wiXG4gICAgICAgICAgPlxuICAgICAgICAgICAgPFRyYXNoMiBjbGFzc05hbWU9XCJ3LTMuNSBoLTMuNVwiIC8+XG4gICAgICAgICAgICA8c3Bhbj7Zhdiz2K0g2KfZhNiw2KfZg9ix2Kkg2KfZhNmF2KTZgtiq2Kkg2YjYp9mE2LnZiNiv2Kkg2YTZhNix2KbZitiz2YrYqTwvc3Bhbj5cbiAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1bMTFweF0gdGV4dC1zbGF0ZS00MDAgZm9udC1tZWRpdW1cIj5cbiAgICAgICAgICDYp9mE2K/YudmFINin2YTZgdmG2Yog2YXYqtin2K0g2K/Yp9im2YXYp9mLINmE2K7Yr9mF2KrZg9mFINmI2YXYs9in2LnYr9iq2YPZhSDYudio2LEg2YjYp9iq2LPYp9ioXG4gICAgICAgIDwvcD5cbiAgICAgIDwvZGl2PlxuICAgIDwvZGl2PlxuICApO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gU3VwcG9ydEVycm9yQm91bmRhcnkoeyBjaGlsZHJlbiB9OiB7IGNoaWxkcmVuOiBSZWFjdC5SZWFjdE5vZGUgfSkge1xuICByZXR1cm4gKFxuICAgIDxFcnJvckJvdW5kYXJ5XG4gICAgICBGYWxsYmFja0NvbXBvbmVudD17RXJyb3JGYWxsYmFja31cbiAgICAgIG9uUmVzZXQ9eygpID0+IHtcbiAgICAgICAgd2luZG93LmxvY2F0aW9uLmhyZWYgPSBcIi9cIjtcbiAgICAgIH19XG4gICAgPlxuICAgICAge2NoaWxkcmVufVxuICAgIDwvRXJyb3JCb3VuZGFyeT5cbiAgKTtcbn1cbiJdLCJuYW1lcyI6WyJFcnJvckJvdW5kYXJ5IiwiUmVmcmVzaEN3IiwiVHJhc2gyIiwiSGVhcnRIYW5kc2hha2UiLCJCdXR0b24iLCJXaGF0c0FwcEljb24iLCJvcGVuV2hhdHNBcHBTdXBwb3J0IiwiU1VQUE9SVF9XSEFUU0FQUF9ESVNQTEFZIiwiZ2V0UHJvZmlsZSIsIkNVUlJFTlRfVkVSU0lPTiIsIkVycm9yRmFsbGJhY2siLCJlcnJvciIsInJlc2V0RXJyb3JCb3VuZGFyeSIsImhhbmRsZVdoYXRzQXBwQ29udGFjdCIsImFjdGl2ZVByb2ZpbGUiLCJwcm9maWxlTmFtZSIsIm5hbWUiLCJlcnJNc2ciLCJtZXNzYWdlIiwiU3RyaW5nIiwibXNnIiwiaGFuZGxlSGFyZFJlc2V0Iiwic2Vzc2lvblN0b3JhZ2UiLCJjbGVhciIsIk9iamVjdCIsImtleXMiLCJsb2NhbFN0b3JhZ2UiLCJmb3JFYWNoIiwia2V5IiwiaW5jbHVkZXMiLCJyZW1vdmVJdGVtIiwid2luZG93IiwibG9jYXRpb24iLCJocmVmIiwiZGl2IiwiY2xhc3NOYW1lIiwiZGlyIiwiaDIiLCJwIiwiYnV0dG9uIiwidHlwZSIsIm9uQ2xpY2siLCJzcGFuIiwidmFyaWFudCIsIlN1cHBvcnRFcnJvckJvdW5kYXJ5IiwiY2hpbGRyZW4iLCJGYWxsYmFja0NvbXBvbmVudCIsIm9uUmVzZXQiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsU0FBU0EsYUFBYSxRQUFRLHVCQUF1QjtBQUNyRCxTQUFTQyxTQUFTLEVBQUVDLE1BQU0sRUFBRUMsY0FBYyxRQUFRLGVBQWU7QUFDakUsU0FBU0MsTUFBTSxRQUFRLGNBQWM7QUFDckMsT0FBT0Msa0JBQWtCLGlCQUFpQjtBQUMxQyxTQUFTQyxtQkFBbUIsRUFBRUMsd0JBQXdCLFFBQVEsMkJBQTJCO0FBQ3pGLFNBQVNDLFVBQVUsUUFBUSxxQkFBcUI7QUFDaEQsU0FBU0MsZUFBZSxRQUFRLHdCQUF3QjtBQUV4RCxTQUFTQyxjQUFjLEVBQUVDLEtBQUssRUFBRUMsa0JBQWtCLEVBQW9EO0lBQ3BHLE1BQU1DLHdCQUF3QjtRQUM1QixNQUFNQyxnQkFBZ0JOO1FBQ3RCLE1BQU1PLGNBQWNELGVBQWVFLFFBQVE7UUFDM0MsTUFBTUMsU0FBU04sUUFBU0EsTUFBTU8sT0FBTyxJQUFJQyxPQUFPUixTQUFVO1FBQzFELE1BQU1TLE1BQ0osQ0FBQyxrQ0FBa0MsQ0FBQyxHQUNwQyxDQUFDLG9EQUFvRCxDQUFDLEdBQ3RELENBQUMsaUJBQWlCLEVBQUVYLGdCQUFnQixFQUFFLENBQUMsR0FDdkMsQ0FBQyxhQUFhLEVBQUVRLE9BQU8sRUFBRSxDQUFDLEdBQzFCLENBQUMsZ0RBQWdELENBQUM7UUFFcEQsS0FBS1gsb0JBQW9CYztJQUMzQjtJQUVBLE1BQU1DLGtCQUFrQjtRQUN0QixJQUFJO1lBQ0ZDLGVBQWVDLEtBQUs7WUFDcEIsMEJBQTBCO1lBQzFCQyxPQUFPQyxJQUFJLENBQUNDLGNBQWNDLE9BQU8sQ0FBQyxDQUFDQztnQkFDakMsSUFBSUEsSUFBSUMsUUFBUSxDQUFDLFlBQVlELElBQUlDLFFBQVEsQ0FBQyxTQUFTO29CQUNqREgsYUFBYUksVUFBVSxDQUFDRjtnQkFDMUI7WUFDRjtRQUNGLEVBQUUsT0FBTTtRQUNOLFVBQVUsR0FDWjtRQUNBRyxPQUFPQyxRQUFRLENBQUNDLElBQUksR0FBRztJQUN6QjtJQUVBLHFCQUNFLFFBQUNDO1FBQUlDLFdBQVU7UUFBeUlDLEtBQUk7a0JBQzFKLGNBQUEsUUFBQ0Y7WUFBSUMsV0FBVTs7OEJBR2IsUUFBQ0Q7b0JBQUlDLFdBQVU7OEJBQ2IsY0FBQSxRQUFDaEM7d0JBQWVnQyxXQUFVOzs7Ozs7Ozs7Ozs4QkFJNUIsUUFBQ0Q7b0JBQUlDLFdBQVU7O3NDQUNiLFFBQUNFOzRCQUFHRixXQUFVO3NDQUFxQzs7Ozs7O3NDQUNuRCxRQUFDRzs0QkFBRUgsV0FBVTtzQ0FBc0U7Ozs7Ozs7Ozs7Ozs4QkFNckYsUUFBQ0Q7b0JBQUlDLFdBQVU7O3NDQUViLFFBQUNJOzRCQUNDQyxNQUFLOzRCQUNMQyxTQUFTNUI7NEJBQ1RzQixXQUFVOzs4Q0FFVixRQUFDOUI7b0NBQWE4QixXQUFVOzs7Ozs7OENBQ3hCLFFBQUNPOzt3Q0FBSzt3Q0FBa0NuQzt3Q0FBeUI7Ozs7Ozs7Ozs7Ozs7c0NBSW5FLFFBQUNIOzRCQUNDcUMsU0FBUzdCOzRCQUNUdUIsV0FBVTs7OENBRVYsUUFBQ2xDO29DQUFVa0MsV0FBVTs7Ozs7OzhDQUNyQixRQUFDTzs4Q0FBSzs7Ozs7Ozs7Ozs7O3NDQUlSLFFBQUN0Qzs0QkFDQ3FDLFNBQVNwQjs0QkFDVHNCLFNBQVE7NEJBQ1JSLFdBQVU7OzhDQUVWLFFBQUNqQztvQ0FBT2lDLFdBQVU7Ozs7Ozs4Q0FDbEIsUUFBQ087OENBQUs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs4QkFJVixRQUFDSjtvQkFBRUgsV0FBVTs4QkFBeUM7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBTTlEO0tBckZTekI7QUF1RlQsT0FBTyxTQUFTa0MscUJBQXFCLEVBQUVDLFFBQVEsRUFBaUM7SUFDOUUscUJBQ0UsUUFBQzdDO1FBQ0M4QyxtQkFBbUJwQztRQUNuQnFDLFNBQVM7WUFDUGhCLE9BQU9DLFFBQVEsQ0FBQ0MsSUFBSSxHQUFHO1FBQ3pCO2tCQUVDWTs7Ozs7O0FBR1A7TUFYZ0JEIn0=

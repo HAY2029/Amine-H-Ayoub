@@ -1,0 +1,325 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/PinModal.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/PinModal.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"]; const _Fragment = __vite__cjsImport2_react_jsxDevRuntime["Fragment"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const useState = __vite__cjsImport3_react["useState"];
+import { Lock, Delete, ShieldCheck, Check } from "/node_modules/.vite/deps/lucide-react.js?v=c05fb7b0";
+import { getKidsPin, setKidsPin, setSecurityQuestion, DEFAULT_SECURITY_QUESTIONS } from "/src/data/kidsLock.ts";
+/** لوحة رمز رقمية (٤ أرقام). mode="set" لتعيين الرمز مع سؤال الأمان، "verify" للتحقق. */ export default function PinModal({ mode, title, onSuccess, onCancel }) {
+    _s();
+    const [step, setStep] = useState("pin");
+    const [pin, setPin] = useState("");
+    const [selectedQuestion, setSelectedQuestion] = useState(DEFAULT_SECURITY_QUESTIONS[0]);
+    const [securityAnswer, setSecurityAnswer] = useState("");
+    const [err, setErr] = useState(false);
+    const [errMsg, setErrMsg] = useState("");
+    const press = (d)=>{
+        if (pin.length >= 4) return;
+        const np = pin + d;
+        setPin(np);
+        setErr(false);
+        if (np.length === 4) {
+            window.setTimeout(()=>{
+                if (mode === "set") {
+                    setStep("security");
+                } else if (np === getKidsPin()) {
+                    onSuccess();
+                } else {
+                    setErr(true);
+                    setPin("");
+                }
+            }, 120);
+        }
+    };
+    const handleSaveSecurity = ()=>{
+        if (!securityAnswer.trim()) {
+            setErr(true);
+            setErrMsg("يرجى إدخال الإجابة السرية الاحتياطية");
+            return;
+        }
+        setKidsPin(pin);
+        setSecurityQuestion(selectedQuestion, securityAnswer.trim());
+        onSuccess();
+    };
+    const keys = [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "",
+        "0",
+        "back"
+    ];
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: "fixed inset-0 z-[120] flex items-center justify-center bg-background/70 backdrop-blur-sm p-4 animate-fade-in",
+        dir: "rtl",
+        children: /*#__PURE__*/ _jsxDEV("div", {
+            className: "relative w-full max-w-xs glass-nour shadow-soft p-6 space-y-4 text-center overflow-hidden animate-scale-up",
+            children: [
+                /*#__PURE__*/ _jsxDEV("div", {
+                    "aria-hidden": true,
+                    className: "pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-accent/20 blur-3xl"
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                    lineNumber: 55,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "relative mx-auto w-14 h-14 rounded-full bg-accent/15 text-accent flex items-center justify-center ring-1 ring-accent/30 animate-glow",
+                    children: step === "security" ? /*#__PURE__*/ _jsxDEV(ShieldCheck, {
+                        className: "w-7 h-7"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                        lineNumber: 58,
+                        columnNumber: 34
+                    }, this) : /*#__PURE__*/ _jsxDEV(Lock, {
+                        className: "w-7 h-7"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                        lineNumber: 58,
+                        columnNumber: 72
+                    }, this)
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                    lineNumber: 57,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("h3", {
+                    className: "relative font-extrabold text-lg text-gradient-gold",
+                    children: step === "security" ? "سؤال الأمان الاحتياطي" : title || (mode === "set" ? "اختر رمزاً من ٤ أرقام" : "أدخل رمز ولي الأمر")
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                    lineNumber: 61,
+                    columnNumber: 9
+                }, this),
+                step === "pin" ? /*#__PURE__*/ _jsxDEV(_Fragment, {
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: `relative flex justify-center gap-3 ${err ? "animate-pulse" : ""}`,
+                            children: [
+                                0,
+                                1,
+                                2,
+                                3
+                            ].map((i)=>/*#__PURE__*/ _jsxDEV("span", {
+                                    className: `w-3.5 h-3.5 rounded-full transition-all duration-200 ${err ? "bg-destructive scale-110" : i < pin.length ? "bg-accent scale-110 shadow-[0_0_10px_hsl(var(--gold)/0.6)]" : "bg-muted"}`
+                                }, i, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                    lineNumber: 71,
+                                    columnNumber: 17
+                                }, this))
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                            lineNumber: 69,
+                            columnNumber: 13
+                        }, this),
+                        err && /*#__PURE__*/ _jsxDEV("p", {
+                            className: "relative text-xs text-destructive font-medium",
+                            children: "رمز خاطئ، حاول مجدداً"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                            lineNumber: 80,
+                            columnNumber: 21
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "relative grid grid-cols-3 gap-2.5",
+                            children: keys.map((k, i)=>k === "" ? /*#__PURE__*/ _jsxDEV("span", {}, i, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                    lineNumber: 83,
+                                    columnNumber: 46
+                                }, this) : /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: ()=>k === "back" ? setPin((p)=>p.slice(0, -1)) : press(k),
+                                    className: "h-14 rounded-2xl bg-secondary border border-border text-secondary-foreground text-xl font-bold flex items-center justify-center transition-all active:scale-95 hover:border-accent/50 hover:text-accent",
+                                    children: k === "back" ? /*#__PURE__*/ _jsxDEV(Delete, {
+                                        className: "w-5 h-5"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                        lineNumber: 89,
+                                        columnNumber: 35
+                                    }, this) : k
+                                }, i, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                    lineNumber: 84,
+                                    columnNumber: 17
+                                }, this))
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                            lineNumber: 82,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true) : /*#__PURE__*/ _jsxDEV("div", {
+                    className: "relative space-y-3 text-right animate-fade-up",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("p", {
+                            className: "text-xs text-muted-foreground text-center",
+                            children: "حدد سؤال أمان لاستعادة الرمز في حال نسيانه"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                            lineNumber: 96,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "space-y-1",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("label", {
+                                    className: "text-xs font-bold text-foreground block",
+                                    children: "سؤال الأمان:"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                    lineNumber: 101,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("select", {
+                                    value: selectedQuestion,
+                                    onChange: (e)=>setSelectedQuestion(e.target.value),
+                                    className: "w-full text-xs p-2 rounded-xl bg-muted border border-border text-foreground focus:border-accent outline-none",
+                                    children: DEFAULT_SECURITY_QUESTIONS.map((q, i)=>/*#__PURE__*/ _jsxDEV("option", {
+                                            value: q,
+                                            children: q
+                                        }, i, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                            lineNumber: 108,
+                                            columnNumber: 19
+                                        }, this))
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                    lineNumber: 102,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                            lineNumber: 100,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "space-y-1",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("label", {
+                                    className: "text-xs font-bold text-foreground block",
+                                    children: "الإجابة السرية:"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                    lineNumber: 116,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("input", {
+                                    type: "text",
+                                    value: securityAnswer,
+                                    onChange: (e)=>{
+                                        setSecurityAnswer(e.target.value);
+                                        setErr(false);
+                                    },
+                                    placeholder: "اكتب الإجابة هنا...",
+                                    className: "w-full text-xs p-2.5 rounded-xl bg-muted border border-border text-foreground placeholder-muted-foreground focus:border-accent outline-none"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                    lineNumber: 117,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                            lineNumber: 115,
+                            columnNumber: 13
+                        }, this),
+                        err && /*#__PURE__*/ _jsxDEV("p", {
+                            className: "text-xs text-destructive font-medium",
+                            children: errMsg
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                            lineNumber: 129,
+                            columnNumber: 21
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("button", {
+                            onClick: handleSaveSecurity,
+                            className: "btn-gold w-full p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(Check, {
+                                    className: "w-4 h-4"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                                    lineNumber: 135,
+                                    columnNumber: 15
+                                }, this),
+                                " حفظ الرمز والأمان"
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                            lineNumber: 131,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                    lineNumber: 95,
+                    columnNumber: 11
+                }, this),
+                /*#__PURE__*/ _jsxDEV("button", {
+                    onClick: onCancel,
+                    className: "relative w-full p-2.5 rounded-2xl bg-secondary border border-border text-muted-foreground font-bold transition-all hover:brightness-95",
+                    children: "إلغاء"
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+                    lineNumber: 140,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+            lineNumber: 53,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/PinModal.tsx",
+        lineNumber: 52,
+        columnNumber: 5
+    }, this);
+}
+_s(PinModal, "nMGq9ZT3yIvjnbhPItaTSoS480I=");
+_c = PinModal;
+var _c;
+$RefreshReg$(_c, "PinModal");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/PinModal.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/PinModal.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlBpbk1vZGFsLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyB1c2VTdGF0ZSB9IGZyb20gXCJyZWFjdFwiO1xyXG5pbXBvcnQgeyBMb2NrLCBEZWxldGUsIFNoaWVsZENoZWNrLCBDaGVjayB9IGZyb20gXCJsdWNpZGUtcmVhY3RcIjtcclxuaW1wb3J0IHsgZ2V0S2lkc1Bpbiwgc2V0S2lkc1Bpbiwgc2V0U2VjdXJpdHlRdWVzdGlvbiwgREVGQVVMVF9TRUNVUklUWV9RVUVTVElPTlMgfSBmcm9tIFwiLi4vZGF0YS9raWRzTG9ja1wiO1xyXG5cclxuLyoqINmE2YjYrdipINix2YXYsiDYsdmC2YXZitipICjZpCDYo9ix2YLYp9mFKS4gbW9kZT1cInNldFwiINmE2KrYudmK2YrZhiDYp9mE2LHZhdiyINmF2Lkg2LPYpNin2YQg2KfZhNij2YXYp9mG2IwgXCJ2ZXJpZnlcIiDZhNmE2KrYrdmC2YIuICovXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIFBpbk1vZGFsKHsgbW9kZSwgdGl0bGUsIG9uU3VjY2Vzcywgb25DYW5jZWwgfToge1xyXG4gIG1vZGU6IFwic2V0XCIgfCBcInZlcmlmeVwiO1xyXG4gIHRpdGxlPzogc3RyaW5nO1xyXG4gIG9uU3VjY2VzczogKCkgPT4gdm9pZDtcclxuICBvbkNhbmNlbDogKCkgPT4gdm9pZDtcclxufSkge1xyXG4gIGNvbnN0IFtzdGVwLCBzZXRTdGVwXSA9IHVzZVN0YXRlPFwicGluXCIgfCBcInNlY3VyaXR5XCI+KFwicGluXCIpO1xyXG4gIGNvbnN0IFtwaW4sIHNldFBpbl0gPSB1c2VTdGF0ZShcIlwiKTtcclxuICBjb25zdCBbc2VsZWN0ZWRRdWVzdGlvbiwgc2V0U2VsZWN0ZWRRdWVzdGlvbl0gPSB1c2VTdGF0ZShERUZBVUxUX1NFQ1VSSVRZX1FVRVNUSU9OU1swXSk7XHJcbiAgY29uc3QgW3NlY3VyaXR5QW5zd2VyLCBzZXRTZWN1cml0eUFuc3dlcl0gPSB1c2VTdGF0ZShcIlwiKTtcclxuICBjb25zdCBbZXJyLCBzZXRFcnJdID0gdXNlU3RhdGUoZmFsc2UpO1xyXG4gIGNvbnN0IFtlcnJNc2csIHNldEVyck1zZ10gPSB1c2VTdGF0ZShcIlwiKTtcclxuXHJcbiAgY29uc3QgcHJlc3MgPSAoZDogc3RyaW5nKSA9PiB7XHJcbiAgICBpZiAocGluLmxlbmd0aCA+PSA0KSByZXR1cm47XHJcbiAgICBjb25zdCBucCA9IHBpbiArIGQ7XHJcbiAgICBzZXRQaW4obnApO1xyXG4gICAgc2V0RXJyKGZhbHNlKTtcclxuICAgIGlmIChucC5sZW5ndGggPT09IDQpIHtcclxuICAgICAgd2luZG93LnNldFRpbWVvdXQoKCkgPT4ge1xyXG4gICAgICAgIGlmIChtb2RlID09PSBcInNldFwiKSB7XHJcbiAgICAgICAgICBzZXRTdGVwKFwic2VjdXJpdHlcIik7XHJcbiAgICAgICAgfSBlbHNlIGlmIChucCA9PT0gZ2V0S2lkc1BpbigpKSB7XHJcbiAgICAgICAgICBvblN1Y2Nlc3MoKTtcclxuICAgICAgICB9IGVsc2Uge1xyXG4gICAgICAgICAgc2V0RXJyKHRydWUpO1xyXG4gICAgICAgICAgc2V0UGluKFwiXCIpO1xyXG4gICAgICAgIH1cclxuICAgICAgfSwgMTIwKTtcclxuICAgIH1cclxuICB9O1xyXG5cclxuICBjb25zdCBoYW5kbGVTYXZlU2VjdXJpdHkgPSAoKSA9PiB7XHJcbiAgICBpZiAoIXNlY3VyaXR5QW5zd2VyLnRyaW0oKSkge1xyXG4gICAgICBzZXRFcnIodHJ1ZSk7XHJcbiAgICAgIHNldEVyck1zZyhcItmK2LHYrNmJINil2K/Yrtin2YQg2KfZhNil2KzYp9io2Kkg2KfZhNiz2LHZitipINin2YTYp9it2KrZitin2LfZitipXCIpO1xyXG4gICAgICByZXR1cm47XHJcbiAgICB9XHJcbiAgICBzZXRLaWRzUGluKHBpbik7XHJcbiAgICBzZXRTZWN1cml0eVF1ZXN0aW9uKHNlbGVjdGVkUXVlc3Rpb24sIHNlY3VyaXR5QW5zd2VyLnRyaW0oKSk7XHJcbiAgICBvblN1Y2Nlc3MoKTtcclxuICB9O1xyXG5cclxuICBjb25zdCBrZXlzID0gW1wiMVwiLCBcIjJcIiwgXCIzXCIsIFwiNFwiLCBcIjVcIiwgXCI2XCIsIFwiN1wiLCBcIjhcIiwgXCI5XCIsIFwiXCIsIFwiMFwiLCBcImJhY2tcIl07XHJcblxyXG4gIHJldHVybiAoXHJcbiAgICA8ZGl2IGNsYXNzTmFtZT1cImZpeGVkIGluc2V0LTAgei1bMTIwXSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBiZy1iYWNrZ3JvdW5kLzcwIGJhY2tkcm9wLWJsdXItc20gcC00IGFuaW1hdGUtZmFkZS1pblwiIGRpcj1cInJ0bFwiPlxyXG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cInJlbGF0aXZlIHctZnVsbCBtYXgtdy14cyBnbGFzcy1ub3VyIHNoYWRvdy1zb2Z0IHAtNiBzcGFjZS15LTQgdGV4dC1jZW50ZXIgb3ZlcmZsb3ctaGlkZGVuIGFuaW1hdGUtc2NhbGUtdXBcIj5cclxuICAgICAgICB7Lyog2YjZh9isINiw2YfYqNmKINiy2K7YsdmB2Yog2K7ZhNmBINin2YTYqNi32KfZgtipICovfVxyXG4gICAgICAgIDxkaXYgYXJpYS1oaWRkZW4gY2xhc3NOYW1lPVwicG9pbnRlci1ldmVudHMtbm9uZSBhYnNvbHV0ZSAtdG9wLTE2IGxlZnQtMS8yIC10cmFuc2xhdGUteC0xLzIgdy00MCBoLTQwIHJvdW5kZWQtZnVsbCBiZy1hY2NlbnQvMjAgYmx1ci0zeGxcIiAvPlxyXG5cclxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJlbGF0aXZlIG14LWF1dG8gdy0xNCBoLTE0IHJvdW5kZWQtZnVsbCBiZy1hY2NlbnQvMTUgdGV4dC1hY2NlbnQgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgcmluZy0xIHJpbmctYWNjZW50LzMwIGFuaW1hdGUtZ2xvd1wiPlxyXG4gICAgICAgICAge3N0ZXAgPT09IFwic2VjdXJpdHlcIiA/IDxTaGllbGRDaGVjayBjbGFzc05hbWU9XCJ3LTcgaC03XCIgLz4gOiA8TG9jayBjbGFzc05hbWU9XCJ3LTcgaC03XCIgLz59XHJcbiAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgIDxoMyBjbGFzc05hbWU9XCJyZWxhdGl2ZSBmb250LWV4dHJhYm9sZCB0ZXh0LWxnIHRleHQtZ3JhZGllbnQtZ29sZFwiPlxyXG4gICAgICAgICAge3N0ZXAgPT09IFwic2VjdXJpdHlcIlxyXG4gICAgICAgICAgICA/IFwi2LPYpNin2YQg2KfZhNij2YXYp9mGINin2YTYp9it2KrZitin2LfZilwiXHJcbiAgICAgICAgICAgIDogdGl0bGUgfHwgKG1vZGUgPT09IFwic2V0XCIgPyBcItin2K7YqtixINix2YXYstin2Ysg2YXZhiDZpCDYo9ix2YLYp9mFXCIgOiBcItij2K/YrtmEINix2YXYsiDZiNmE2Yog2KfZhNij2YXYsVwiKX1cclxuICAgICAgICA8L2gzPlxyXG5cclxuICAgICAgICB7c3RlcCA9PT0gXCJwaW5cIiA/IChcclxuICAgICAgICAgIDw+XHJcbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgcmVsYXRpdmUgZmxleCBqdXN0aWZ5LWNlbnRlciBnYXAtMyAke2VyciA/IFwiYW5pbWF0ZS1wdWxzZVwiIDogXCJcIn1gfT5cclxuICAgICAgICAgICAgICB7WzAsIDEsIDIsIDNdLm1hcChpID0+IChcclxuICAgICAgICAgICAgICAgIDxzcGFuXHJcbiAgICAgICAgICAgICAgICAgIGtleT17aX1cclxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgdy0zLjUgaC0zLjUgcm91bmRlZC1mdWxsIHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTIwMCAke1xyXG4gICAgICAgICAgICAgICAgICAgIGVyciA/IFwiYmctZGVzdHJ1Y3RpdmUgc2NhbGUtMTEwXCIgOiBpIDwgcGluLmxlbmd0aCA/IFwiYmctYWNjZW50IHNjYWxlLTExMCBzaGFkb3ctWzBfMF8xMHB4X2hzbCh2YXIoLS1nb2xkKS8wLjYpXVwiIDogXCJiZy1tdXRlZFwiXHJcbiAgICAgICAgICAgICAgICAgIH1gfVxyXG4gICAgICAgICAgICAgICAgLz5cclxuICAgICAgICAgICAgICApKX1cclxuICAgICAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgICAgICB7ZXJyICYmIDxwIGNsYXNzTmFtZT1cInJlbGF0aXZlIHRleHQteHMgdGV4dC1kZXN0cnVjdGl2ZSBmb250LW1lZGl1bVwiPtix2YXYsiDYrtin2LfYptiMINit2KfZiNmEINmF2KzYr9iv2KfZizwvcD59XHJcblxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJlbGF0aXZlIGdyaWQgZ3JpZC1jb2xzLTMgZ2FwLTIuNVwiPlxyXG4gICAgICAgICAgICAgIHtrZXlzLm1hcCgoaywgaSkgPT4gayA9PT0gXCJcIiA/IDxzcGFuIGtleT17aX0gLz4gOiAoXHJcbiAgICAgICAgICAgICAgICA8YnV0dG9uXHJcbiAgICAgICAgICAgICAgICAgIGtleT17aX1cclxuICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gKGsgPT09IFwiYmFja1wiID8gc2V0UGluKHAgPT4gcC5zbGljZSgwLCAtMSkpIDogcHJlc3MoaykpfVxyXG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJoLTE0IHJvdW5kZWQtMnhsIGJnLXNlY29uZGFyeSBib3JkZXIgYm9yZGVyLWJvcmRlciB0ZXh0LXNlY29uZGFyeS1mb3JlZ3JvdW5kIHRleHQteGwgZm9udC1ib2xkIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRyYW5zaXRpb24tYWxsIGFjdGl2ZTpzY2FsZS05NSBob3Zlcjpib3JkZXItYWNjZW50LzUwIGhvdmVyOnRleHQtYWNjZW50XCJcclxuICAgICAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgICAge2sgPT09IFwiYmFja1wiID8gPERlbGV0ZSBjbGFzc05hbWU9XCJ3LTUgaC01XCIgLz4gOiBrfVxyXG4gICAgICAgICAgICAgICAgPC9idXR0b24+XHJcbiAgICAgICAgICAgICAgKSl9XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgPC8+XHJcbiAgICAgICAgKSA6IChcclxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmVsYXRpdmUgc3BhY2UteS0zIHRleHQtcmlnaHQgYW5pbWF0ZS1mYWRlLXVwXCI+XHJcbiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQteHMgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIHRleHQtY2VudGVyXCI+XHJcbiAgICAgICAgICAgICAg2K3Yr9ivINiz2KTYp9mEINij2YXYp9mGINmE2KfYs9iq2LnYp9iv2Kkg2KfZhNix2YXYsiDZgdmKINit2KfZhCDZhtiz2YrYp9mG2YdcclxuICAgICAgICAgICAgPC9wPlxyXG5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTFcIj5cclxuICAgICAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgdGV4dC1mb3JlZ3JvdW5kIGJsb2NrXCI+2LPYpNin2YQg2KfZhNij2YXYp9mGOjwvbGFiZWw+XHJcbiAgICAgICAgICAgICAgPHNlbGVjdFxyXG4gICAgICAgICAgICAgICAgdmFsdWU9e3NlbGVjdGVkUXVlc3Rpb259XHJcbiAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGUpID0+IHNldFNlbGVjdGVkUXVlc3Rpb24oZS50YXJnZXQudmFsdWUpfVxyXG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIHRleHQteHMgcC0yIHJvdW5kZWQteGwgYmctbXV0ZWQgYm9yZGVyIGJvcmRlci1ib3JkZXIgdGV4dC1mb3JlZ3JvdW5kIGZvY3VzOmJvcmRlci1hY2NlbnQgb3V0bGluZS1ub25lXCJcclxuICAgICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgICB7REVGQVVMVF9TRUNVUklUWV9RVUVTVElPTlMubWFwKChxLCBpKSA9PiAoXHJcbiAgICAgICAgICAgICAgICAgIDxvcHRpb24ga2V5PXtpfSB2YWx1ZT17cX0+XHJcbiAgICAgICAgICAgICAgICAgICAge3F9XHJcbiAgICAgICAgICAgICAgICAgIDwvb3B0aW9uPlxyXG4gICAgICAgICAgICAgICAgKSl9XHJcbiAgICAgICAgICAgICAgPC9zZWxlY3Q+XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTFcIj5cclxuICAgICAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgdGV4dC1mb3JlZ3JvdW5kIGJsb2NrXCI+2KfZhNil2KzYp9io2Kkg2KfZhNiz2LHZitipOjwvbGFiZWw+XHJcbiAgICAgICAgICAgICAgPGlucHV0XHJcbiAgICAgICAgICAgICAgICB0eXBlPVwidGV4dFwiXHJcbiAgICAgICAgICAgICAgICB2YWx1ZT17c2VjdXJpdHlBbnN3ZXJ9XHJcbiAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGUpID0+IHtcclxuICAgICAgICAgICAgICAgICAgc2V0U2VjdXJpdHlBbnN3ZXIoZS50YXJnZXQudmFsdWUpO1xyXG4gICAgICAgICAgICAgICAgICBzZXRFcnIoZmFsc2UpO1xyXG4gICAgICAgICAgICAgICAgfX1cclxuICAgICAgICAgICAgICAgIHBsYWNlaG9sZGVyPVwi2KfZg9iq2Kgg2KfZhNil2KzYp9io2Kkg2YfZhtinLi4uXCJcclxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCB0ZXh0LXhzIHAtMi41IHJvdW5kZWQteGwgYmctbXV0ZWQgYm9yZGVyIGJvcmRlci1ib3JkZXIgdGV4dC1mb3JlZ3JvdW5kIHBsYWNlaG9sZGVyLW11dGVkLWZvcmVncm91bmQgZm9jdXM6Ym9yZGVyLWFjY2VudCBvdXRsaW5lLW5vbmVcIlxyXG4gICAgICAgICAgICAgIC8+XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICAgICAge2VyciAmJiA8cCBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtZGVzdHJ1Y3RpdmUgZm9udC1tZWRpdW1cIj57ZXJyTXNnfTwvcD59XHJcblxyXG4gICAgICAgICAgICA8YnV0dG9uXHJcbiAgICAgICAgICAgICAgb25DbGljaz17aGFuZGxlU2F2ZVNlY3VyaXR5fVxyXG4gICAgICAgICAgICAgIGNsYXNzTmFtZT1cImJ0bi1nb2xkIHctZnVsbCBwLTIuNSByb3VuZGVkLXhsIHRleHQteHMgZm9udC1ib2xkIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0xLjUgYWN0aXZlOnNjYWxlLTk1XCJcclxuICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgIDxDaGVjayBjbGFzc05hbWU9XCJ3LTQgaC00XCIgLz4g2K3Zgdi4INin2YTYsdmF2LIg2YjYp9mE2KPZhdin2YZcclxuICAgICAgICAgICAgPC9idXR0b24+XHJcbiAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICApfVxyXG5cclxuICAgICAgICA8YnV0dG9uXHJcbiAgICAgICAgICBvbkNsaWNrPXtvbkNhbmNlbH1cclxuICAgICAgICAgIGNsYXNzTmFtZT1cInJlbGF0aXZlIHctZnVsbCBwLTIuNSByb3VuZGVkLTJ4bCBiZy1zZWNvbmRhcnkgYm9yZGVyIGJvcmRlci1ib3JkZXIgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIGZvbnQtYm9sZCB0cmFuc2l0aW9uLWFsbCBob3ZlcjpicmlnaHRuZXNzLTk1XCJcclxuICAgICAgICA+XHJcbiAgICAgICAgICDYpdmE2LrYp9ihXHJcbiAgICAgICAgPC9idXR0b24+XHJcbiAgICAgIDwvZGl2PlxyXG4gICAgPC9kaXY+XHJcbiAgKTtcclxufVxyXG4iXSwibmFtZXMiOlsidXNlU3RhdGUiLCJMb2NrIiwiRGVsZXRlIiwiU2hpZWxkQ2hlY2siLCJDaGVjayIsImdldEtpZHNQaW4iLCJzZXRLaWRzUGluIiwic2V0U2VjdXJpdHlRdWVzdGlvbiIsIkRFRkFVTFRfU0VDVVJJVFlfUVVFU1RJT05TIiwiUGluTW9kYWwiLCJtb2RlIiwidGl0bGUiLCJvblN1Y2Nlc3MiLCJvbkNhbmNlbCIsInN0ZXAiLCJzZXRTdGVwIiwicGluIiwic2V0UGluIiwic2VsZWN0ZWRRdWVzdGlvbiIsInNldFNlbGVjdGVkUXVlc3Rpb24iLCJzZWN1cml0eUFuc3dlciIsInNldFNlY3VyaXR5QW5zd2VyIiwiZXJyIiwic2V0RXJyIiwiZXJyTXNnIiwic2V0RXJyTXNnIiwicHJlc3MiLCJkIiwibGVuZ3RoIiwibnAiLCJ3aW5kb3ciLCJzZXRUaW1lb3V0IiwiaGFuZGxlU2F2ZVNlY3VyaXR5IiwidHJpbSIsImtleXMiLCJkaXYiLCJjbGFzc05hbWUiLCJkaXIiLCJhcmlhLWhpZGRlbiIsImgzIiwibWFwIiwiaSIsInNwYW4iLCJwIiwiayIsImJ1dHRvbiIsIm9uQ2xpY2siLCJzbGljZSIsImxhYmVsIiwic2VsZWN0IiwidmFsdWUiLCJvbkNoYW5nZSIsImUiLCJ0YXJnZXQiLCJxIiwib3B0aW9uIiwiaW5wdXQiLCJ0eXBlIiwicGxhY2Vob2xkZXIiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQVNBLFFBQVEsUUFBUSxRQUFRO0FBQ2pDLFNBQVNDLElBQUksRUFBRUMsTUFBTSxFQUFFQyxXQUFXLEVBQUVDLEtBQUssUUFBUSxlQUFlO0FBQ2hFLFNBQVNDLFVBQVUsRUFBRUMsVUFBVSxFQUFFQyxtQkFBbUIsRUFBRUMsMEJBQTBCLFFBQVEsbUJBQW1CO0FBRTNHLHVGQUF1RixHQUN2RixlQUFlLFNBQVNDLFNBQVMsRUFBRUMsSUFBSSxFQUFFQyxLQUFLLEVBQUVDLFNBQVMsRUFBRUMsUUFBUSxFQUtsRTs7SUFDQyxNQUFNLENBQUNDLE1BQU1DLFFBQVEsR0FBR2YsU0FBNkI7SUFDckQsTUFBTSxDQUFDZ0IsS0FBS0MsT0FBTyxHQUFHakIsU0FBUztJQUMvQixNQUFNLENBQUNrQixrQkFBa0JDLG9CQUFvQixHQUFHbkIsU0FBU1EsMEJBQTBCLENBQUMsRUFBRTtJQUN0RixNQUFNLENBQUNZLGdCQUFnQkMsa0JBQWtCLEdBQUdyQixTQUFTO0lBQ3JELE1BQU0sQ0FBQ3NCLEtBQUtDLE9BQU8sR0FBR3ZCLFNBQVM7SUFDL0IsTUFBTSxDQUFDd0IsUUFB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

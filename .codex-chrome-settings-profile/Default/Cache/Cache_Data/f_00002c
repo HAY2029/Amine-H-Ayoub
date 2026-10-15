@@ -1,0 +1,484 @@
+export const surahs = [
+    {
+        number: 1,
+        name: "الفاتحة",
+        ayahCount: 7,
+        type: "مكية"
+    },
+    {
+        number: 36,
+        name: "يس",
+        ayahCount: 83,
+        type: "مكية"
+    },
+    {
+        number: 37,
+        name: "الصافات",
+        ayahCount: 182,
+        type: "مكية"
+    },
+    {
+        number: 38,
+        name: "ص",
+        ayahCount: 88,
+        type: "مكية"
+    },
+    {
+        number: 39,
+        name: "الزمر",
+        ayahCount: 75,
+        type: "مكية"
+    },
+    {
+        number: 40,
+        name: "غافر",
+        ayahCount: 85,
+        type: "مكية"
+    },
+    {
+        number: 41,
+        name: "فصلت",
+        ayahCount: 54,
+        type: "مكية"
+    },
+    {
+        number: 42,
+        name: "الشورى",
+        ayahCount: 53,
+        type: "مكية"
+    },
+    {
+        number: 43,
+        name: "الزخرف",
+        ayahCount: 89,
+        type: "مكية"
+    },
+    {
+        number: 44,
+        name: "الدخان",
+        ayahCount: 59,
+        type: "مكية"
+    },
+    {
+        number: 45,
+        name: "الجاثية",
+        ayahCount: 37,
+        type: "مكية"
+    },
+    {
+        number: 46,
+        name: "الأحقاف",
+        ayahCount: 35,
+        type: "مكية"
+    },
+    {
+        number: 47,
+        name: "محمد",
+        ayahCount: 38,
+        type: "مدنية"
+    },
+    {
+        number: 48,
+        name: "الفتح",
+        ayahCount: 29,
+        type: "مدنية"
+    },
+    {
+        number: 49,
+        name: "الحجرات",
+        ayahCount: 18,
+        type: "مدنية"
+    },
+    {
+        number: 50,
+        name: "ق",
+        ayahCount: 45,
+        type: "مكية"
+    },
+    {
+        number: 51,
+        name: "الذاريات",
+        ayahCount: 60,
+        type: "مكية"
+    },
+    {
+        number: 52,
+        name: "الطور",
+        ayahCount: 49,
+        type: "مكية"
+    },
+    {
+        number: 53,
+        name: "النجم",
+        ayahCount: 62,
+        type: "مكية"
+    },
+    {
+        number: 54,
+        name: "القمر",
+        ayahCount: 55,
+        type: "مكية"
+    },
+    {
+        number: 55,
+        name: "الرحمن",
+        ayahCount: 78,
+        type: "مدنية"
+    },
+    {
+        number: 56,
+        name: "الواقعة",
+        ayahCount: 96,
+        type: "مكية"
+    },
+    {
+        number: 57,
+        name: "الحديد",
+        ayahCount: 29,
+        type: "مدنية"
+    },
+    {
+        number: 58,
+        name: "المجادلة",
+        ayahCount: 22,
+        type: "مدنية"
+    },
+    {
+        number: 59,
+        name: "الحشر",
+        ayahCount: 24,
+        type: "مدنية"
+    },
+    {
+        number: 60,
+        name: "الممتحنة",
+        ayahCount: 13,
+        type: "مدنية"
+    },
+    {
+        number: 61,
+        name: "الصف",
+        ayahCount: 14,
+        type: "مدنية"
+    },
+    {
+        number: 62,
+        name: "الجمعة",
+        ayahCount: 11,
+        type: "مدنية"
+    },
+    {
+        number: 63,
+        name: "المنافقون",
+        ayahCount: 11,
+        type: "مدنية"
+    },
+    {
+        number: 64,
+        name: "التغابن",
+        ayahCount: 18,
+        type: "مدنية"
+    },
+    {
+        number: 65,
+        name: "الطلاق",
+        ayahCount: 12,
+        type: "مدنية"
+    },
+    {
+        number: 66,
+        name: "التحريم",
+        ayahCount: 12,
+        type: "مدنية"
+    },
+    {
+        number: 67,
+        name: "الملك",
+        ayahCount: 30,
+        type: "مكية"
+    },
+    {
+        number: 68,
+        name: "القلم",
+        ayahCount: 52,
+        type: "مكية"
+    },
+    {
+        number: 69,
+        name: "الحاقة",
+        ayahCount: 52,
+        type: "مكية"
+    },
+    {
+        number: 70,
+        name: "المعارج",
+        ayahCount: 44,
+        type: "مكية"
+    },
+    {
+        number: 71,
+        name: "نوح",
+        ayahCount: 28,
+        type: "مكية"
+    },
+    {
+        number: 72,
+        name: "الجن",
+        ayahCount: 28,
+        type: "مكية"
+    },
+    {
+        number: 73,
+        name: "المزمل",
+        ayahCount: 20,
+        type: "مكية"
+    },
+    {
+        number: 74,
+        name: "المدثر",
+        ayahCount: 56,
+        type: "مكية"
+    },
+    {
+        number: 75,
+        name: "القيامة",
+        ayahCount: 40,
+        type: "مكية"
+    },
+    {
+        number: 76,
+        name: "الإنسان",
+        ayahCount: 31,
+        type: "مدنية"
+    },
+    {
+        number: 77,
+        name: "المرسلات",
+        ayahCount: 50,
+        type: "مكية"
+    },
+    {
+        number: 78,
+        name: "النبأ",
+        ayahCount: 40,
+        type: "مكية"
+    },
+    {
+        number: 79,
+        name: "النازعات",
+        ayahCount: 46,
+        type: "مكية"
+    },
+    {
+        number: 80,
+        name: "عبس",
+        ayahCount: 42,
+        type: "مكية"
+    },
+    {
+        number: 81,
+        name: "التكوير",
+        ayahCount: 29,
+        type: "مكية"
+    },
+    {
+        number: 82,
+        name: "الانفطار",
+        ayahCount: 19,
+        type: "مكية"
+    },
+    {
+        number: 83,
+        name: "المطففين",
+        ayahCount: 36,
+        type: "مكية"
+    },
+    {
+        number: 84,
+        name: "الانشقاق",
+        ayahCount: 25,
+        type: "مكية"
+    },
+    {
+        number: 85,
+        name: "البروج",
+        ayahCount: 22,
+        type: "مكية"
+    },
+    {
+        number: 86,
+        name: "الطارق",
+        ayahCount: 17,
+        type: "مكية"
+    },
+    {
+        number: 87,
+        name: "الأعلى",
+        ayahCount: 19,
+        type: "مكية"
+    },
+    {
+        number: 88,
+        name: "الغاشية",
+        ayahCount: 26,
+        type: "مكية"
+    },
+    {
+        number: 89,
+        name: "الفجر",
+        ayahCount: 30,
+        type: "مكية"
+    },
+    {
+        number: 90,
+        name: "البلد",
+        ayahCount: 20,
+        type: "مكية"
+    },
+    {
+        number: 91,
+        name: "الشمس",
+        ayahCount: 15,
+        type: "مكية"
+    },
+    {
+        number: 92,
+        name: "الليل",
+        ayahCount: 21,
+        type: "مكية"
+    },
+    {
+        number: 93,
+        name: "الضحى",
+        ayahCount: 11,
+        type: "مكية"
+    },
+    {
+        number: 94,
+        name: "الشرح",
+        ayahCount: 8,
+        type: "مكية"
+    },
+    {
+        number: 95,
+        name: "التين",
+        ayahCount: 8,
+        type: "مكية"
+    },
+    {
+        number: 96,
+        name: "العلق",
+        ayahCount: 19,
+        type: "مكية"
+    },
+    {
+        number: 97,
+        name: "القدر",
+        ayahCount: 5,
+        type: "مكية"
+    },
+    {
+        number: 98,
+        name: "البينة",
+        ayahCount: 8,
+        type: "مدنية"
+    },
+    {
+        number: 99,
+        name: "الزلزلة",
+        ayahCount: 8,
+        type: "مدنية"
+    },
+    {
+        number: 100,
+        name: "العاديات",
+        ayahCount: 11,
+        type: "مكية"
+    },
+    {
+        number: 101,
+        name: "القارعة",
+        ayahCount: 11,
+        type: "مكية"
+    },
+    {
+        number: 102,
+        name: "التكاثر",
+        ayahCount: 8,
+        type: "مكية"
+    },
+    {
+        number: 103,
+        name: "العصر",
+        ayahCount: 3,
+        type: "مكية"
+    },
+    {
+        number: 104,
+        name: "الهمزة",
+        ayahCount: 9,
+        type: "مكية"
+    },
+    {
+        number: 105,
+        name: "الفيل",
+        ayahCount: 5,
+        type: "مكية"
+    },
+    {
+        number: 106,
+        name: "قريش",
+        ayahCount: 4,
+        type: "مكية"
+    },
+    {
+        number: 107,
+        name: "الماعون",
+        ayahCount: 7,
+        type: "مكية"
+    },
+    {
+        number: 108,
+        name: "الكوثر",
+        ayahCount: 3,
+        type: "مكية"
+    },
+    {
+        number: 109,
+        name: "الكافرون",
+        ayahCount: 6,
+        type: "مكية"
+    },
+    {
+        number: 110,
+        name: "النصر",
+        ayahCount: 3,
+        type: "مدنية"
+    },
+    {
+        number: 111,
+        name: "المسد",
+        ayahCount: 5,
+        type: "مكية"
+    },
+    {
+        number: 112,
+        name: "الإخلاص",
+        ayahCount: 4,
+        type: "مكية"
+    },
+    {
+        number: 113,
+        name: "الفلق",
+        ayahCount: 5,
+        type: "مكية"
+    },
+    {
+        number: 114,
+        name: "الناس",
+        ayahCount: 6,
+        type: "مكية"
+    }
+];
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInN1cmFocy50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJleHBvcnQgaW50ZXJmYWNlIFN1cmFoIHtcclxuICBudW1iZXI6IG51bWJlcjtcclxuICBuYW1lOiBzdHJpbmc7XHJcbiAgYXlhaENvdW50OiBudW1iZXI7XHJcbiAgdHlwZTogXCLZhdmD2YrYqVwiIHwgXCLZhdiv2YbZitipXCI7XHJcbn1cclxuXHJcbmV4cG9ydCBjb25zdCBzdXJhaHM6IFN1cmFoW10gPSBbXHJcbiAgeyBudW1iZXI6IDEsIG5hbWU6IFwi2KfZhNmB2KfYqtit2KlcIiwgYXlhaENvdW50OiA3LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogMzYsIG5hbWU6IFwi2YrYs1wiLCBheWFoQ291bnQ6IDgzLCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogMzcsIG5hbWU6IFwi2KfZhNi12KfZgdin2KpcIiwgYXlhaENvdW50OiAxODIsIHR5cGU6IFwi2YXZg9mK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiAzOCwgbmFtZTogXCLYtVwiLCBheWFoQ291bnQ6IDg4LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogMzksIG5hbWU6IFwi2KfZhNiy2YXYsVwiLCBheWFoQ291bnQ6IDc1LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNDAsIG5hbWU6IFwi2LrYp9mB2LFcIiwgYXlhaENvdW50OiA4NSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDQxLCBuYW1lOiBcItmB2LXZhNiqXCIsIGF5YWhDb3VudDogNTQsIHR5cGU6IFwi2YXZg9mK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA0MiwgbmFtZTogXCLYp9mE2LTZiNix2YlcIiwgYXlhaENvdW50OiA1MywgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDQzLCBuYW1lOiBcItin2YTYstiu2LHZgVwiLCBheWFoQ291bnQ6IDg5LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNDQsIG5hbWU6IFwi2KfZhNiv2K7Yp9mGXCIsIGF5YWhDb3VudDogNTksIHR5cGU6IFwi2YXZg9mK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA0NSwgbmFtZTogXCLYp9mE2KzYp9ir2YrYqVwiLCBheWFoQ291bnQ6IDM3LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNDYsIG5hbWU6IFwi2KfZhNij2K3Zgtin2YFcIiwgYXlhaENvdW50OiAzNSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDQ3LCBuYW1lOiBcItmF2K3ZhdivXCIsIGF5YWhDb3VudDogMzgsIHR5cGU6IFwi2YXYr9mG2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDQ4LCBuYW1lOiBcItin2YTZgdiq2K1cIiwgYXlhaENvdW50OiAyOSwgdHlwZTogXCLZhdiv2YbZitipXCIgfSxcclxuICB7IG51bWJlcjogNDksIG5hbWU6IFwi2KfZhNit2KzYsdin2KpcIiwgYXlhaENvdW50OiAxOCwgdHlwZTogXCLZhdiv2YbZitipXCIgfSxcclxuICB7IG51bWJlcjogNTAsIG5hbWU6IFwi2YJcIiwgYXlhaENvdW50OiA0NSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDUxLCBuYW1lOiBcItin2YTYsNin2LHZitin2KpcIiwgYXlhaENvdW50OiA2MCwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDUyLCBuYW1lOiBcItin2YTYt9mI2LFcIiwgYXlhaENvdW50OiA0OSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDUzLCBuYW1lOiBcItin2YTZhtis2YVcIiwgYXlhaENvdW50OiA2MiwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDU0LCBuYW1lOiBcItin2YTZgtmF2LFcIiwgYXlhaENvdW50OiA1NSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDU1LCBuYW1lOiBcItin2YTYsdit2YXZhlwiLCBheWFoQ291bnQ6IDc4LCB0eXBlOiBcItmF2K/ZhtmK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA1NiwgbmFtZTogXCLYp9mE2YjYp9mC2LnYqVwiLCBheWFoQ291bnQ6IDk2LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNTcsIG5hbWU6IFwi2KfZhNit2K/ZitivXCIsIGF5YWhDb3VudDogMjksIHR5cGU6IFwi2YXYr9mG2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDU4LCBuYW1lOiBcItin2YTZhdis2KfYr9mE2KlcIiwgYXlhaENvdW50OiAyMiwgdHlwZTogXCLZhdiv2YbZitipXCIgfSxcclxuICB7IG51bWJlcjogNTksIG5hbWU6IFwi2KfZhNit2LTYsVwiLCBheWFoQ291bnQ6IDI0LCB0eXBlOiBcItmF2K/ZhtmK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA2MCwgbmFtZTogXCLYp9mE2YXZhdiq2K3ZhtipXCIsIGF5YWhDb3VudDogMTMsIHR5cGU6IFwi2YXYr9mG2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDYxLCBuYW1lOiBcItin2YTYtdmBXCIsIGF5YWhDb3VudDogMTQsIHR5cGU6IFwi2YXYr9mG2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDYyLCBuYW1lOiBcItin2YTYrNmF2LnYqVwiLCBheWFoQ291bnQ6IDExLCB0eXBlOiBcItmF2K/ZhtmK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA2MywgbmFtZTogXCLYp9mE2YXZhtin2YHZgtmI2YZcIiwgYXlhaENvdW50OiAxMSwgdHlwZTogXCLZhdiv2YbZitipXCIgfSxcclxuICB7IG51bWJlcjogNjQsIG5hbWU6IFwi2KfZhNiq2LrYp9io2YZcIiwgYXlhaENvdW50OiAxOCwgdHlwZTogXCLZhdiv2YbZitipXCIgfSxcclxuICB7IG51bWJlcjogNjUsIG5hbWU6IFwi2KfZhNi32YTYp9mCXCIsIGF5YWhDb3VudDogMTIsIHR5cGU6IFwi2YXYr9mG2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDY2LCBuYW1lOiBcItin2YTYqtit2LHZitmFXCIsIGF5YWhDb3VudDogMTIsIHR5cGU6IFwi2YXYr9mG2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDY3LCBuYW1lOiBcItin2YTZhdmE2YNcIiwgYXlhaENvdW50OiAzMCwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDY4LCBuYW1lOiBcItin2YTZgtmE2YVcIiwgYXlhaENvdW50OiA1MiwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDY5LCBuYW1lOiBcItin2YTYrdin2YLYqVwiLCBheWFoQ291bnQ6IDUyLCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNzAsIG5hbWU6IFwi2KfZhNmF2LnYp9ix2KxcIiwgYXlhaENvdW50OiA0NCwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDcxLCBuYW1lOiBcItmG2YjYrVwiLCBheWFoQ291bnQ6IDI4LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNzIsIG5hbWU6IFwi2KfZhNis2YZcIiwgYXlhaENvdW50OiAyOCwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDczLCBuYW1lOiBcItin2YTZhdiy2YXZhFwiLCBheWFoQ291bnQ6IDIwLCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNzQsIG5hbWU6IFwi2KfZhNmF2K/Yq9ixXCIsIGF5YWhDb3VudDogNTYsIHR5cGU6IFwi2YXZg9mK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA3NSwgbmFtZTogXCLYp9mE2YLZitin2YXYqVwiLCBheWFoQ291bnQ6IDQwLCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNzYsIG5hbWU6IFwi2KfZhNil2YbYs9in2YZcIiwgYXlhaENvdW50OiAzMSwgdHlwZTogXCLZhdiv2YbZitipXCIgfSxcclxuICB7IG51bWJlcjogNzcsIG5hbWU6IFwi2KfZhNmF2LHYs9mE2KfYqlwiLCBheWFoQ291bnQ6IDUwLCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNzgsIG5hbWU6IFwi2KfZhNmG2KjYo1wiLCBheWFoQ291bnQ6IDQwLCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogNzksIG5hbWU6IFwi2KfZhNmG2KfYsti52KfYqlwiLCBheWFoQ291bnQ6IDQ2LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogODAsIG5hbWU6IFwi2LnYqNizXCIsIGF5YWhDb3VudDogNDIsIHR5cGU6IFwi2YXZg9mK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA4MSwgbmFtZTogXCLYp9mE2KrZg9mI2YrYsVwiLCBheWFoQ291bnQ6IDI5LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogODIsIG5hbWU6IFwi2KfZhNin2YbZgdi32KfYsVwiLCBheWFoQ291bnQ6IDE5LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogODMsIG5hbWU6IFwi2KfZhNmF2LfZgdmB2YrZhlwiLCBheWFoQ291bnQ6IDM2LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogODQsIG5hbWU6IFwi2KfZhNin2YbYtNmC2KfZglwiLCBheWFoQ291bnQ6IDI1LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogODUsIG5hbWU6IFwi2KfZhNio2LHZiNisXCIsIGF5YWhDb3VudDogMjIsIHR5cGU6IFwi2YXZg9mK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA4NiwgbmFtZTogXCLYp9mE2LfYp9ix2YJcIiwgYXlhaENvdW50OiAxNywgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDg3LCBuYW1lOiBcItin2YTYo9i52YTZiVwiLCBheWFoQ291bnQ6IDE5LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogODgsIG5hbWU6IFwi2KfZhNi62KfYtNmK2KlcIiwgYXlhaENvdW50OiAyNiwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDg5LCBuYW1lOiBcItin2YTZgdis2LFcIiwgYXlhaENvdW50OiAzMCwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDkwLCBuYW1lOiBcItin2YTYqNmE2K9cIiwgYXlhaENvdW50OiAyMCwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDkxLCBuYW1lOiBcItin2YTYtNmF2LNcIiwgYXlhaENvdW50OiAxNSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDkyLCBuYW1lOiBcItin2YTZhNmK2YRcIiwgYXlhaENvdW50OiAyMSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDkzLCBuYW1lOiBcItin2YTYttit2YlcIiwgYXlhaENvdW50OiAxMSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDk0LCBuYW1lOiBcItin2YTYtNix2K1cIiwgYXlhaENvdW50OiA4LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogOTUsIG5hbWU6IFwi2KfZhNiq2YrZhlwiLCBheWFoQ291bnQ6IDgsIHR5cGU6IFwi2YXZg9mK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA5NiwgbmFtZTogXCLYp9mE2LnZhNmCXCIsIGF5YWhDb3VudDogMTksIHR5cGU6IFwi2YXZg9mK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiA5NywgbmFtZTogXCLYp9mE2YLYr9ixXCIsIGF5YWhDb3VudDogNSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDk4LCBuYW1lOiBcItin2YTYqNmK2YbYqVwiLCBheWFoQ291bnQ6IDgsIHR5cGU6IFwi2YXYr9mG2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDk5LCBuYW1lOiBcItin2YTYstmE2LLZhNipXCIsIGF5YWhDb3VudDogOCwgdHlwZTogXCLZhdiv2YbZitipXCIgfSxcclxuICB7IG51bWJlcjogMTAwLCBuYW1lOiBcItin2YTYudin2K/Zitin2KpcIiwgYXlhaENvdW50OiAxMSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDEwMSwgbmFtZTogXCLYp9mE2YLYp9ix2LnYqVwiLCBheWFoQ291bnQ6IDExLCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogMTAyLCBuYW1lOiBcItin2YTYqtmD2KfYq9ixXCIsIGF5YWhDb3VudDogOCwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDEwMywgbmFtZTogXCLYp9mE2LnYtdixXCIsIGF5YWhDb3VudDogMywgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDEwNCwgbmFtZTogXCLYp9mE2YfZhdiy2KlcIiwgYXlhaENvdW50OiA5LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogMTA1LCBuYW1lOiBcItin2YTZgdmK2YRcIiwgYXlhaENvdW50OiA1LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogMTA2LCBuYW1lOiBcItmC2LHZiti0XCIsIGF5YWhDb3VudDogNCwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDEwNywgbmFtZTogXCLYp9mE2YXYp9i52YjZhlwiLCBheWFoQ291bnQ6IDcsIHR5cGU6IFwi2YXZg9mK2KlcIiB9LFxyXG4gIHsgbnVtYmVyOiAxMDgsIG5hbWU6IFwi2KfZhNmD2YjYq9ixXCIsIGF5YWhDb3VudDogMywgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDEwOSwgbmFtZTogXCLYp9mE2YPYp9mB2LHZiNmGXCIsIGF5YWhDb3VudDogNiwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDExMCwgbmFtZTogXCLYp9mE2YbYtdixXCIsIGF5YWhDb3VudDogMywgdHlwZTogXCLZhdiv2YbZitipXCIgfSxcclxuICB7IG51bWJlcjogMTExLCBuYW1lOiBcItin2YTZhdiz2K9cIiwgYXlhaENvdW50OiA1LCB0eXBlOiBcItmF2YPZitipXCIgfSxcclxuICB7IG51bWJlcjogMTEyLCBuYW1lOiBcItin2YTYpdiu2YTYp9i1XCIsIGF5YWhDb3VudDogNCwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDExMywgbmFtZTogXCLYp9mE2YHZhNmCXCIsIGF5YWhDb3VudDogNSwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbiAgeyBudW1iZXI6IDExNCwgbmFtZTogXCLYp9mE2YbYp9izXCIsIGF5YWhDb3VudDogNiwgdHlwZTogXCLZhdmD2YrYqVwiIH0sXHJcbl07XHJcbiJdLCJuYW1lcyI6WyJzdXJhaHMiLCJudW1iZXIiLCJuYW1lIiwiYXlhaENvdW50IiwidHlwZSJdLCJtYXBwaW5ncyI6IkFBT0EsT0FBTyxNQUFNQSxTQUFrQjtJQUM3QjtRQUFFQyxRQUFRO1FBQUdDLE1BQU07UUFBV0MsV0FBVztRQUFHQyxNQUFNO0lBQU87SUFDekQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQU1DLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQ3REO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFXQyxXQUFXO1FBQUtDLE1BQU07SUFBTztJQUM1RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBS0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDckQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVNDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQ3pEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFRQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUN4RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBUUMsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDeEQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVVDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQzFEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFVQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUMxRDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBVUMsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDMUQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVdDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQzNEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFXQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUMzRDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBUUMsV0FBVztRQUFJQyxNQUFNO0lBQVE7SUFDekQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVNDLFdBQVc7UUFBSUMsTUFBTTtJQUFRO0lBQzFEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFXQyxXQUFXO1FBQUlDLE1BQU07SUFBUTtJQUM1RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBS0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDckQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVlDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQzVEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFTQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUN6RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBU0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDekQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVNDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQ3pEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFVQyxXQUFXO1FBQUlDLE1BQU07SUFBUTtJQUMzRDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBV0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDM0Q7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVVDLFdBQVc7UUFBSUMsTUFBTTtJQUFRO0lBQzNEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFZQyxXQUFXO1FBQUlDLE1BQU07SUFBUTtJQUM3RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBU0MsV0FBVztRQUFJQyxNQUFNO0lBQVE7SUFDMUQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVlDLFdBQVc7UUFBSUMsTUFBTTtJQUFRO0lBQzdEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFRQyxXQUFXO1FBQUlDLE1BQU07SUFBUTtJQUN6RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBVUMsV0FBVztRQUFJQyxNQUFNO0lBQVE7SUFDM0Q7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQWFDLFdBQVc7UUFBSUMsTUFBTTtJQUFRO0lBQzlEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFXQyxXQUFXO1FBQUlDLE1BQU07SUFBUTtJQUM1RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBVUMsV0FBVztRQUFJQyxNQUFNO0lBQVE7SUFDM0Q7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVdDLFdBQVc7UUFBSUMsTUFBTTtJQUFRO0lBQzVEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFTQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUN6RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBU0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDekQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVVDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQzFEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFXQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUMzRDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBT0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDdkQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVFDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQ3hEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFVQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUMxRDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBVUMsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDMUQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVdDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQzNEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFXQyxXQUFXO1FBQUlDLE1BQU07SUFBUTtJQUM1RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBWUMsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDNUQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVNDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQ3pEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFZQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUM1RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBT0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDdkQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVdDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQzNEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFZQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUM1RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBWUMsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDNUQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVlDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQzVEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFVQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUMxRDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBVUMsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDMUQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVVDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQzFEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFXQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUMzRDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBU0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDekQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVNDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQ3pEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFTQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUN6RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBU0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDekQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVNDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQ3pEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFTQyxXQUFXO1FBQUdDLE1BQU07SUFBTztJQUN4RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBU0MsV0FBVztRQUFHQyxNQUFNO0lBQU87SUFDeEQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVNDLFdBQVc7UUFBSUMsTUFBTTtJQUFPO0lBQ3pEO1FBQUVILFFBQVE7UUFBSUMsTUFBTTtRQUFTQyxXQUFXO1FBQUdDLE1BQU07SUFBTztJQUN4RDtRQUFFSCxRQUFRO1FBQUlDLE1BQU07UUFBVUMsV0FBVztRQUFHQyxNQUFNO0lBQVE7SUFDMUQ7UUFBRUgsUUFBUTtRQUFJQyxNQUFNO1FBQVdDLFdBQVc7UUFBR0MsTUFBTTtJQUFRO0lBQzNEO1FBQUVILFFBQVE7UUFBS0MsTUFBTTtRQUFZQyxXQUFXO1FBQUlDLE1BQU07SUFBTztJQUM3RDtRQUFFSCxRQUFRO1FBQUtDLE1BQU07UUFBV0MsV0FBVztRQUFJQyxNQUFNO0lBQU87SUFDNUQ7UUFBRUgsUUFBUTtRQUFLQyxNQUFNO1FBQVdDLFdBQVc7UUFBR0MsTUFBTTtJQUFPO0lBQzNEO1FBQUVILFFBQVE7UUFBS0MsTUFBTTtRQUFTQyxXQUFXO1FBQUdDLE1BQU07SUFBTztJQUN6RDtRQUFFSCxRQUFRO1FBQUtDLE1BQU07UUFBVUMsV0FBVztRQUFHQyxNQUFNO0lBQU87SUFDMUQ7UUFBRUgsUUFBUTtRQUFLQyxNQUFNO1FBQVNDLFdBQVc7UUFBR0MsTUFBTTtJQUFPO0lBQ3pEO1FBQUVILFFBQVE7UUFBS0MsTUFBTTtRQUFRQyxXQUFXO1FBQUdDLE1BQU07SUFBTztJQUN4RDtRQUFFSCxRQUFRO1FBQUtDLE1BQU07UUFBV0MsV0FBVztRQUFHQyxNQUFNO0lBQU87SUFDM0Q7UUFBRUgsUUFBUTtRQUFLQyxNQUFNO1FBQVVDLFdBQVc7UUFBR0MsTUFBTTtJQUFPO0lBQzFEO1FBQUVILFFBQVE7UUFBS0MsTUFBTTtRQUFZQyxXQUFXO1FBQUdDLE1BQU07SUFBTztJQUM1RDtRQUFFSCxRQUFRO1FBQUtDLE1BQU07UUFBU0MsV0FBVztRQUFHQyxNQUFNO0lBQVE7SUFDMUQ7UUFBRUgsUUFBUTtRQUFLQyxNQUFNO1FBQVNDLFdBQVc7UUFBR0MsTUFBTTtJQUFPO0lBQ3pEO1FBQUVILFFBQVE7UUFBS0MsTUFBTTtRQUFXQyxXQUFXO1FBQUdDLE1BQU07SUFBTztJQUMzRDtRQUFFSCxRQUFRO1FBQUtDLE1BQU07UUFBU0MsV0FBVztRQUFHQyxNQUFNO0lBQU87SUFDekQ7UUFBRUgsUUFBUTtRQUFLQyxNQUFNO1FBQVNDLFdBQVc7UUFBR0MsTUFBTTtJQUFPO0NBQzFELENBQUMifQ==

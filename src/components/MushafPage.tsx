@@ -964,9 +964,16 @@ const MushafPage = ({ onBack }: Props) => {
                 ))}
               </div>
 
-              <label className="flex items-center gap-2 text-sm font-bold cursor-pointer text-foreground/80">
-                <input type="checkbox" checked={continuousPlay} onChange={(e) => setContinuousPlay(e.target.checked)} className="accent-accent w-4 h-4" />
-                تشغيل متواصل للآية التالية
+              <label className="flex items-center gap-3 text-sm font-bold cursor-pointer text-foreground/80 select-none">
+                <span className="switch">
+                  <input
+                    type="checkbox"
+                    checked={continuousPlay}
+                    onChange={(e) => setContinuousPlay(e.target.checked)}
+                  />
+                  <span className="slider"></span>
+                </span>
+                <span>تشغيل متواصل للآية التالية</span>
               </label>
               <div className="flex items-center gap-2 text-sm font-bold text-foreground/80 mt-2">
                 <span>تكرار الآية:</span>

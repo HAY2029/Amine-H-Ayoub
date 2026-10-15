@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { X, Smartphone, Monitor, Apple, Download, CheckCircle2, Sparkles, ExternalLink } from "lucide-react";
 import { openExternalUrl } from "../utils/tauriUtils";
 

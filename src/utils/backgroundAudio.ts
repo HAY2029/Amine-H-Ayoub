@@ -60,7 +60,7 @@ export function updateMediaSession(opts: MediaSessionOptions): void {
 
     navigator.mediaSession.metadata = new MediaMetadata({
       title: opts.title || "تلاوة القرآن الكريم",
-      artist: opts.artist || "القارئ حاج أيوب أمين",
+      artist: opts.artist || "القرآن الكريم",
       album: opts.album || "المصحف المرتل برواية ورش",
       artwork: defaultArtwork,
     });

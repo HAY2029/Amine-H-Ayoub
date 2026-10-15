@@ -29,14 +29,18 @@ import { hasKidsPin, setKidsPin, removeKidsPin, setKidsLocked, isKidsMode } from
 import AppFooter from "../components/AppFooter";
 import AppNav from "../components/AppNav";
 import { isBackgroundAudioEnabled, setBackgroundAudioEnabled } from "../utils/backgroundAudio";
-import { applyTheme, getTheme } from "../utils/theme";
-const THEME_KEY = "mushaf:theme";
+import { applyTheme, getTheme, THEME_KEY } from "../utils/theme";
+import DayNightSwitch from "../components/ui/DayNightSwitch";
+import Intro3DCarousel from "../components/Intro3DCarousel";
 
 /** عنوان قسم صغير فوق مجموعة مرتّبة. */
-const Section = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <section className="space-y-1.5">
-    <h2 className="px-1.5 text-xs font-extrabold text-muted-foreground">{label}</h2>
-    <div className="card-nour overflow-hidden divide-y divide-border">{children}</div>
+const Section = ({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) => (
+  <section className={`min-w-0 space-y-2.5 ${className}`}>
+    <h2 className="flex items-center gap-2 px-1.5 text-xs font-extrabold tracking-wide text-muted-foreground">
+      <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_0_3px_hsl(var(--accent)/0.12)]" aria-hidden="true" />
+      {label}
+    </h2>
+    <div className="card-nour overflow-hidden rounded-2xl divide-y divide-border/70 transition-shadow duration-300 hover:shadow-[var(--shadow-soft)]">{children}</div>
   </section>
 );
 
@@ -55,9 +59,19 @@ const Item = ({ icon, title, desc, onClick, right }: { icon: React.ReactNode; ti
 export default function SettingsPage() {
   const navigate = useNavigate();
   const [theme, setTheme] = useState<"dark" | "light">(getTheme);
+  const [showIntroPreview, setShowIntroPreview] = useState(false);
   const [appMode, setMode] = useState<AppMode>(getAppMode);
   const [showPin, setShowPin] = useState(false);
   const [showGate, setShowGate] = useState(false);
+
+  useEffect(() => {
+    const handleThemeChange = (e: Event) => {
+      const custom = e as CustomEvent<"dark" | "light">;
+      setTheme(custom.detail || getTheme());
+    };
+    window.addEventListener("mushaf:theme", handleThemeChange);
+    return () => window.removeEventListener("mushaf:theme", handleThemeChange);
+  }, []);
 
   const [owner, setOwner] = useState(isMushafDevEnabled);
   const [showAdmin, setShowAdmin] = useState(false);
@@ -210,24 +224,44 @@ export default function SettingsPage() {
       {/* وهج ذهبي زخرفي علوي */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-accent/10 to-transparent" aria-hidden="true" />
 
-      <div className="relative mx-auto max-w-md px-4 py-5 space-y-5">
-        <header className="flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="flex h-10 items-center gap-1 rounded-full bg-secondary text-secondary-foreground px-4 text-sm font-bold border border-border hover:brightness-95 active:scale-95 transition-all shadow-soft">
+      <div className="settings-page-content page-with-bottom-nav relative mx-auto grid max-w-5xl grid-cols-1 gap-3 px-3 py-3 sm:gap-5 sm:px-6 sm:py-6 lg:grid-cols-2 lg:gap-6">
+        <header className="flex items-center justify-between lg:col-span-2">
+          <button type="button" onClick={() => navigate(-1)} className="group flex h-10 items-center gap-1 rounded-full border border-border/70 bg-card/80 px-4 text-sm font-bold text-secondary-foreground shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-soft active:scale-95">
             <ArrowRight className="h-4 w-4" /> رجوع
           </button>
-          <span className="w-16" />
+          <span className="rounded-full border border-border/60 bg-card/60 px-3 py-1.5 text-[11px] font-bold text-muted-foreground backdrop-blur">مساحة العائلة</span>
         </header>
 
         {/* بطاقة العنوان */}
-        <div className="card-nour relative overflow-hidden p-5 text-center animate-fade-up">
-          <div className="pointer-events-none absolute -top-10 -left-10 h-28 w-28 rounded-full bg-accent/10 blur-2xl" aria-hidden="true" />
-          <span className="mx-auto mb-2.5 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-accent shadow-soft"><SettingsIcon className="h-6 w-6" /></span>
-          <h1 className="font-extrabold text-2xl text-gradient-gold">الإعدادات</h1>
-          <p className="mt-1 text-xs text-muted-foreground">خصّص المظهر وأدوات الأهل</p>
+        <div className="card-nour relative isolate overflow-hidden p-4 sm:p-7 animate-fade-up lg:col-span-2">
+          <div className="pointer-events-none absolute -left-12 -top-16 -z-10 h-52 w-52 rounded-full bg-accent/15 blur-3xl" aria-hidden="true" />
+          <div className="pointer-events-none absolute -bottom-20 right-1/3 -z-10 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl" aria-hidden="true" />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/20 to-accent/5 text-accent shadow-soft sm:h-16 sm:w-16 sm:rounded-[1.35rem]">
+                <SettingsIcon className="h-6 w-6 sm:h-7 sm:w-7" />
+              </span>
+              <div>
+                <div className="mb-1 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-accent">
+                  <Sparkles className="h-3.5 w-3.5" /> إعداداتك، بطريقتك
+                </div>
+                <h1 className="font-extrabold text-2xl text-gradient-gold sm:text-4xl">الإعدادات</h1>
+                <p className="mt-0.5 text-xs text-muted-foreground sm:mt-1 sm:text-sm">خصص تجربة القرآن الكريم لتناسبك وعائلتك.</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5 sm:justify-end sm:gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/60 px-2.5 py-1.5 text-[11px] font-bold text-foreground shadow-sm sm:px-3 sm:py-2 sm:text-xs">
+                <span className="h-2 w-2 rounded-full bg-success shadow-[0_0_0_3px_hsl(var(--success)/0.14)]" />
+                {appMode === "kids" ? "وضع الأطفال" : isPureMode() || hideKids ? "تلاوات فقط" : "الوضع الشامل"}
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/60 px-2.5 py-1.5 text-[11px] font-bold text-muted-foreground shadow-sm sm:px-3 sm:py-2 sm:text-xs">
+                {theme === "dark" ? <Moon className="h-3.5 w-3.5 text-accent" /> : <Sun className="h-3.5 w-3.5 text-accent" />}
+                المظهر {theme === "dark" ? "الليلي" : "النهاري"}
+              </span>
+            </div>
+          </div>
         </div>
-
-        {/* ===== وضع الاستخدام — تصميم راقي ومنظم وبطاقات واضحة ===== */}
-        <Section label="وضع استخدام التطبيق">
+        <Section label="وضع استخدام التطبيق" className="lg:col-span-2">
           <div className="p-3 sm:p-4 space-y-2.5">
             {[
               {
@@ -344,12 +378,6 @@ export default function SettingsPage() {
             desc="اطّلع على تقدّم الأطفال وإعداداتهم." 
             onClick={() => navigate("/parent")}
           />
-          <Item
-            icon={<Mic className="w-5 h-5 text-fuchsia-500" />}
-            title="مصحح التلاوة الذكي (آخر إصدار - V3)"
-            desc="اختبار تقنية الذكاء الاصطناعي (Hugging Face) لتصحيح التلاوة."
-            onClick={() => window.open("/ai-test-3.html", "_blank")}
-          />
         </Section>
 
         <Section label="النجوم والمكافآت">
@@ -359,7 +387,9 @@ export default function SettingsPage() {
               <span className="text-lg font-black text-accent">{coins.toLocaleString("en-US")} ⭐</span>
             </div>
             <div className="space-y-2">
-              <p className="text-[11px] text-muted-foreground">أدخل كود المكافأة لإضافة النجوم مباشرة، دون طلب تفعيل التطبيق.</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                ⭐ <b>النزاهة التعليمية:</b> النجوم تُكسب حصرياً من تلاوة القرآن والاستماع للآيات؛ وهذا الحقل مخصص فقط لأكواد المكافآت الرسمية المعتمدة ولا يُسمح بإضافة نقاط عشوائية.
+              </p>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   value={rewardCode}
@@ -380,18 +410,24 @@ export default function SettingsPage() {
 
         {/* ===== المظهر ===== */}
         <Section label="المظهر">
-          <div className="flex items-center gap-3 p-3">
-            <span className="w-10 h-10 rounded-xl bg-secondary text-accent flex items-center justify-center">{theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}</span>
-            <span className="flex-1"><span className="block font-bold">المظهر</span><span className="block text-[11px] text-muted-foreground">ليل / نهار</span></span>
-            <div className="flex rounded-xl bg-secondary p-1">
-              <button onClick={() => setTheme("light")} className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${theme === "light" ? "bg-card text-accent shadow-soft" : "text-muted-foreground"}`}><Sun className="w-3.5 h-3.5" /> نهار</button>
-              <button onClick={() => setTheme("dark")} className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${theme === "dark" ? "bg-card text-accent shadow-soft" : "text-muted-foreground"}`}><Moon className="w-3.5 h-3.5" /> ليل</button>
+          <div className="flex items-center justify-between gap-3 p-3 sm:p-3.5">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="w-10 h-10 rounded-xl bg-secondary text-accent flex items-center justify-center shrink-0">
+                {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              </span>
+              <div className="min-w-0">
+                <span className="block font-bold text-foreground">المظهر</span>
+                <span className="block text-[11px] text-muted-foreground">ليل / نهار</span>
+              </div>
+            </div>
+            <div className="shrink-0">
+              <DayNightSwitch size={20} id="settings-single-day-night-switch" />
             </div>
           </div>
         </Section>
 
         {/* ===== مظهر تظليل الآيات (المعلّم والطفل) ===== */}
-        <Section label="مظهر تظليل الآيات (المعلّم والطفل)">
+        <Section label="مظهر تظليل الآيات (المعلّم والطفل)" className="lg:col-span-2">
           <Item
             icon={<Palette className="w-5 h-5 text-accent" />}
             title="إعدادات المظهر والتظليل"
@@ -949,7 +985,7 @@ export default function SettingsPage() {
 
 
 
-        <p className="text-[11px] text-muted-foreground text-center pt-1 leading-relaxed">العمل الكامل دون إنترنت قيد التوسعة تدريجياً.</p>
+        <p className="pt-1 text-center text-[11px] leading-relaxed text-muted-foreground lg:col-span-2">العمل الكامل دون إنترنت قيد التوسعة تدريجياً.</p>
       </div>
 
       {showGate && (
@@ -994,6 +1030,7 @@ export default function SettingsPage() {
 
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
       {showAdmin && <AdminGamesModal onClose={() => setShowAdmin(false)} />}
+      {showIntroPreview && <Intro3DCarousel forceShow onFinish={() => setShowIntroPreview(false)} />}
       <AppFooter />
     </div>
   );

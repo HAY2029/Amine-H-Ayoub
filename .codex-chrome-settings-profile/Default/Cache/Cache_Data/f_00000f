@@ -1,0 +1,720 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/ParentalGateModal.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const useState = __vite__cjsImport3_react["useState"];
+import { Lock, KeyRound, AlertCircle, X, ShieldCheck, HelpCircle, Check } from "/node_modules/.vite/deps/lucide-react.js?v=c05fb7b0";
+import { verifyKidsPin, hasCustomKidsPin, setKidsPin, getSecurityQuestion, setSecurityQuestion, verifySecurityAnswer, DEFAULT_SECURITY_QUESTIONS } from "/src/data/kidsLock.ts";
+export default function ParentalGateModal({ title = "منطقة الوالدين (حماية وضع الأطفال)", strictMode = false, onSuccess, onCancel }) {
+    _s();
+    const hasCustom = hasCustomKidsPin();
+    const [mode, setMode] = useState(hasCustom ? "pin" : "setup_pin");
+    const [pin, setPin] = useState("");
+    const [confirmPin, setConfirmPin] = useState("");
+    const [setupStep, setSetupStep] = useState("enter");
+    const [selectedQuestion, setSelectedQuestion] = useState(DEFAULT_SECURITY_QUESTIONS[0]);
+    const [customQuestion, setCustomQuestion] = useState("");
+    const [securityAnswer, setSecurityAnswer] = useState("");
+    const [recoveryAnswerInput, setRecoveryAnswerInput] = useState("");
+    const [error, setError] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
+    const handleKeyClick = (val)=>{
+        setError(false);
+        setErrorMsg("");
+        if (mode === "setup_pin") {
+            if (setupStep === "enter") {
+                if (val === "back") {
+                    setPin((p)=>p.slice(0, -1));
+                    return;
+                }
+                if (pin.length < 4) {
+                    const next = pin + val;
+                    setPin(next);
+                    if (next.length === 4) {
+                        setTimeout(()=>{
+                            setSetupStep("confirm");
+                        }, 150);
+                    }
+                }
+            } else if (setupStep === "confirm") {
+                if (val === "back") {
+                    setConfirmPin((p)=>p.slice(0, -1));
+                    return;
+                }
+                if (confirmPin.length < 4) {
+                    const next = confirmPin + val;
+                    setConfirmPin(next);
+                    if (next.length === 4) {
+                        if (next === pin) {
+                            setTimeout(()=>{
+                                setSetupStep("security");
+                            }, 150);
+                        } else {
+                            setError(true);
+                            setErrorMsg("الرمزان غير متطابقين، حاول مجدداً");
+                            setConfirmPin("");
+                            setSetupStep("enter");
+                            setPin("");
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        // Verify mode
+        if (val === "back") {
+            setPin((p)=>p.slice(0, -1));
+            return;
+        }
+        if (pin.length < 4) {
+            const next = pin + val;
+            setPin(next);
+            if (next.length === 4) {
+                if (verifyKidsPin(next)) {
+                    onSuccess();
+                } else {
+                    setError(true);
+                    setErrorMsg("كلمة المرور غير صحيحة، حاول مرة أخرى");
+                    setTimeout(()=>{
+                        setPin("");
+                    }, 350);
+                }
+            }
+        }
+    };
+    const handleManualSubmit = ()=>{
+        if (verifyKidsPin(pin)) {
+            onSuccess();
+        } else {
+            setError(true);
+            setErrorMsg("كلمة المرور غير صحيحة، حاول مرة أخرى");
+            setPin("");
+        }
+    };
+    const handleSaveSetup = ()=>{
+        const finalQuestion = customQuestion.trim() || selectedQuestion;
+        const finalAnswer = securityAnswer.trim();
+        if (!finalAnswer) {
+            setError(true);
+            setErrorMsg("يرجى إدخال إجابة سرية لسؤال الأمان الاحتياطي");
+            return;
+        }
+        setKidsPin(pin);
+        setSecurityQuestion(finalQuestion, finalAnswer);
+        onSuccess();
+    };
+    const handleRecoverySubmit = ()=>{
+        if (!recoveryAnswerInput.trim()) {
+            setError(true);
+            setErrorMsg("يرجى إدخال الإجابة");
+            return;
+        }
+        if (verifySecurityAnswer(recoveryAnswerInput)) {
+            onSuccess();
+        } else {
+            setError(true);
+            setErrorMsg("إجابة سؤال الأمان غير صحيحة، حاول مجدداً");
+        }
+    };
+    const keys = [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "",
+        "0",
+        "back"
+    ];
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: "fixed inset-0 z-[250] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200",
+        dir: "rtl",
+        children: /*#__PURE__*/ _jsxDEV("div", {
+            className: "relative w-full max-w-sm rounded-3xl bg-card border border-border shadow-2xl p-6 text-center space-y-4 overflow-hidden animate-in zoom-in-95 duration-200",
+            children: [
+                !strictMode && /*#__PURE__*/ _jsxDEV("button", {
+                    onClick: onCancel,
+                    className: "absolute top-4 left-4 p-2 rounded-full text-muted-foreground hover:bg-muted transition-colors",
+                    "aria-label": "إغلاق",
+                    children: /*#__PURE__*/ _jsxDEV(X, {
+                        className: "w-5 h-5"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                        lineNumber: 160,
+                        columnNumber: 13
+                    }, this)
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                    lineNumber: 155,
+                    columnNumber: 11
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "mx-auto w-14 h-14 rounded-2xl bg-accent/15 text-accent flex items-center justify-center ring-1 ring-accent/30 shadow-inner",
+                    children: mode === "setup_pin" ? /*#__PURE__*/ _jsxDEV(ShieldCheck, {
+                        className: "w-7 h-7"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                        lineNumber: 166,
+                        columnNumber: 13
+                    }, this) : mode === "pin" ? /*#__PURE__*/ _jsxDEV(Lock, {
+                        className: "w-7 h-7"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                        lineNumber: 168,
+                        columnNumber: 13
+                    }, this) : /*#__PURE__*/ _jsxDEV(HelpCircle, {
+                        className: "w-7 h-7"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                        lineNumber: 170,
+                        columnNumber: 13
+                    }, this)
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                    lineNumber: 164,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("h3", {
+                            className: "font-extrabold text-lg text-foreground",
+                            children: mode === "setup_pin" ? setupStep === "security" ? "سؤال الأمان الاحتياطي" : "إعداد رمز حماية وضع الأطفال" : mode === "pin" ? title : "استعادة الوصول عبر سؤال الأمان"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 175,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("p", {
+                            className: "text-xs text-muted-foreground mt-1 leading-relaxed",
+                            children: mode === "setup_pin" ? setupStep === "enter" ? "اختر رمز مرور مخصصاً من 4 أرقام لحماية وضع الأطفال" : setupStep === "confirm" ? "أعد إدخال الرمز للتأكيد" : "حدد سؤال أمان وإجابة سرية لاسترداد الرمز عند نسيانه" : mode === "pin" ? strictMode ? "أدخل رمز الوالدين للخروج من التطبيق" : "أدخل رمز الوالدين للخروج من ركن الأطفال أو الدخول للإعدادات" : "أجب عن سؤال الأمان الذي حددته مسبقاً للتحقق من أنك ولي الأمر"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 184,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                    lineNumber: 174,
+                    columnNumber: 9
+                }, this),
+                mode === "setup_pin" && setupStep !== "security" && /*#__PURE__*/ _jsxDEV("div", {
+                    className: "space-y-4",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex justify-center items-center gap-3 py-2",
+                            dir: "ltr",
+                            children: [
+                                0,
+                                1,
+                                2,
+                                3
+                            ].map((i)=>{
+                                const currentVal = setupStep === "enter" ? pin : confirmPin;
+                                return /*#__PURE__*/ _jsxDEV("div", {
+                                    className: `w-4 h-4 rounded-full transition-all duration-200 ${currentVal.length > i ? "bg-accent scale-110 shadow-md shadow-accent/40" : "bg-muted border border-border"}`
+                                }, i, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 206,
+                                    columnNumber: 19
+                                }, this);
+                            })
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 202,
+                            columnNumber: 13
+                        }, this),
+                        error && /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex items-center justify-center gap-1.5 text-xs text-destructive font-bold animate-bounce",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(AlertCircle, {
+                                    className: "w-4 h-4"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 220,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: errorMsg || "رمز المرور غير مطابق"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 221,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 219,
+                            columnNumber: 15
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "grid grid-cols-3 gap-2 pt-1",
+                            children: keys.map((k, i)=>k === "" ? /*#__PURE__*/ _jsxDEV("span", {}, i, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 228,
+                                    columnNumber: 19
+                                }, this) : /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: ()=>handleKeyClick(k),
+                                    className: "h-12 rounded-2xl bg-secondary hover:bg-secondary/80 text-foreground text-lg font-bold flex items-center justify-center active:scale-95 transition-transform select-none shadow-sm",
+                                    children: k === "back" ? "⌫" : k
+                                }, i, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 230,
+                                    columnNumber: 19
+                                }, this))
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 225,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                    lineNumber: 201,
+                    columnNumber: 11
+                }, this),
+                mode === "setup_pin" && setupStep === "security" && /*#__PURE__*/ _jsxDEV("div", {
+                    className: "space-y-3 text-right animate-fade-up",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "space-y-1",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("label", {
+                                    className: "text-xs font-bold text-foreground block",
+                                    children: "اختر سؤال الأمان:"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 247,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("select", {
+                                    value: selectedQuestion,
+                                    onChange: (e)=>setSelectedQuestion(e.target.value),
+                                    className: "w-full text-xs p-2.5 rounded-xl bg-muted border border-border text-foreground focus:border-accent outline-none",
+                                    children: DEFAULT_SECURITY_QUESTIONS.map((q, i)=>/*#__PURE__*/ _jsxDEV("option", {
+                                            value: q,
+                                            children: q
+                                        }, i, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                            lineNumber: 254,
+                                            columnNumber: 19
+                                        }, this))
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 248,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 246,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "space-y-1",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("label", {
+                                    className: "text-xs font-bold text-foreground block",
+                                    children: "الإجابة السرية الاحتياطية:"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 262,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("input", {
+                                    type: "text",
+                                    value: securityAnswer,
+                                    onChange: (e)=>{
+                                        setSecurityAnswer(e.target.value);
+                                        setError(false);
+                                    },
+                                    placeholder: "اكتب إجابتك السرية هنا...",
+                                    className: "w-full text-sm p-3 rounded-xl bg-muted border border-border text-foreground placeholder-muted-foreground focus:border-accent outline-none"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 263,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 261,
+                            columnNumber: 13
+                        }, this),
+                        error && /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex items-center gap-1.5 text-xs text-destructive font-bold",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(AlertCircle, {
+                                    className: "w-4 h-4"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 277,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: errorMsg
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 278,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 276,
+                            columnNumber: 15
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("button", {
+                            onClick: handleSaveSetup,
+                            className: "btn-gold w-full p-3 rounded-xl font-bold flex items-center justify-center gap-2 mt-2 shadow-md active:scale-95",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(Check, {
+                                    className: "w-5 h-5"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 286,
+                                    columnNumber: 15
+                                }, this),
+                                " حفظ وتفعيل الحماية"
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 282,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                    lineNumber: 245,
+                    columnNumber: 11
+                }, this),
+                mode === "pin" && /*#__PURE__*/ _jsxDEV("div", {
+                    className: "space-y-4",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex justify-center items-center gap-3 py-2",
+                            dir: "ltr",
+                            children: [
+                                0,
+                                1,
+                                2,
+                                3
+                            ].map((i)=>/*#__PURE__*/ _jsxDEV("div", {
+                                    className: `w-4 h-4 rounded-full transition-all duration-200 ${pin.length > i ? "bg-accent scale-110 shadow-md shadow-accent/40" : "bg-muted border border-border"}`
+                                }, i, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 296,
+                                    columnNumber: 17
+                                }, this))
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 294,
+                            columnNumber: 13
+                        }, this),
+                        error && /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex items-center justify-center gap-1.5 text-xs text-destructive font-bold animate-bounce",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(AlertCircle, {
+                                    className: "w-4 h-4"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 309,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: errorMsg || "رمز المرور غير صحيح، حاول مرة أخرى"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 310,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 308,
+                            columnNumber: 15
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "grid grid-cols-3 gap-2 pt-1",
+                            children: keys.map((k, i)=>k === "" ? /*#__PURE__*/ _jsxDEV("span", {}, i, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 317,
+                                    columnNumber: 19
+                                }, this) : /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: ()=>handleKeyClick(k),
+                                    className: "h-12 rounded-2xl bg-secondary hover:bg-secondary/80 text-foreground text-lg font-bold flex items-center justify-center active:scale-95 transition-transform select-none shadow-sm",
+                                    children: k === "back" ? "⌫" : k
+                                }, i, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 319,
+                                    columnNumber: 19
+                                }, this))
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 314,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "pt-2 flex items-center justify-between text-xs text-muted-foreground",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    type: "button",
+                                    onClick: ()=>{
+                                        setError(false);
+                                        setErrorMsg("");
+                                        setRecoveryAnswerInput("");
+                                        setMode("recovery");
+                                    },
+                                    className: "text-accent hover:underline flex items-center gap-1 font-bold",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(HelpCircle, {
+                                            className: "w-4 h-4"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                            lineNumber: 341,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            children: "نسيت الرمز؟ سؤال الأمان"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                            lineNumber: 342,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 331,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: handleManualSubmit,
+                                    disabled: pin.length < 4,
+                                    className: "text-accent font-bold disabled:opacity-40",
+                                    children: "تأكيد"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 345,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 330,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                    lineNumber: 293,
+                    columnNumber: 11
+                }, this),
+                mode === "recovery" && /*#__PURE__*/ _jsxDEV("div", {
+                    className: "space-y-4 text-right animate-fade-up",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "p-3.5 rounded-2xl bg-muted/60 border border-border space-y-1",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    className: "text-[11px] font-bold text-accent block",
+                                    children: "سؤال الأمان الاحتياطي:"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 360,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("p", {
+                                    className: "text-sm font-bold text-foreground leading-relaxed",
+                                    children: getSecurityQuestion()
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 361,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 359,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "space-y-1",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("label", {
+                                    className: "text-xs font-bold text-foreground block",
+                                    children: "أدخل الإجابة السرية:"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 367,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("input", {
+                                    type: "text",
+                                    value: recoveryAnswerInput,
+                                    onChange: (e)=>{
+                                        setRecoveryAnswerInput(e.target.value);
+                                        setError(false);
+                                    },
+                                    placeholder: "اكتب إجابتك هنا...",
+                                    className: "w-full text-sm p-3 rounded-xl bg-muted border border-border text-foreground placeholder-muted-foreground focus:border-accent outline-none"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 368,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 366,
+                            columnNumber: 13
+                        }, this),
+                        error && /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex items-center gap-1.5 text-xs text-destructive font-bold animate-bounce",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(AlertCircle, {
+                                    className: "w-4 h-4"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 382,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: errorMsg
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 383,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 381,
+                            columnNumber: 15
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex gap-2 pt-2",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    type: "button",
+                                    onClick: ()=>{
+                                        setError(false);
+                                        setErrorMsg("");
+                                        setPin("");
+                                        setMode("pin");
+                                    },
+                                    className: "flex-1 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-xs font-bold flex items-center justify-center gap-1",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(KeyRound, {
+                                            className: "w-4 h-4"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                            lineNumber: 398,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            children: "العودة للرمز"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                            lineNumber: 399,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 388,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    type: "button",
+                                    onClick: handleRecoverySubmit,
+                                    className: "btn-gold flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(Check, {
+                                            className: "w-4 h-4"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                            lineNumber: 406,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            children: "تأكيد الإجابة"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                            lineNumber: 407,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                                    lineNumber: 401,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                            lineNumber: 387,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+                    lineNumber: 358,
+                    columnNumber: 11
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+            lineNumber: 152,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx",
+        lineNumber: 148,
+        columnNumber: 5
+    }, this);
+}
+_s(ParentalGateModal, "LzzryWECTmsMlJiEiz4HLvBS+ZA=");
+_c = ParentalGateModal;
+var _c;
+$RefreshReg$(_c, "ParentalGateModal");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/ParentalGateModal.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlBhcmVudGFsR2F0ZU1vZGFsLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyB1c2VTdGF0ZSB9IGZyb20gXCJyZWFjdFwiO1xyXG5pbXBvcnQgeyBMb2NrLCBLZXlSb3VuZCwgQWxlcnRDaXJjbGUsIFgsIFNoaWVsZENoZWNrLCBIZWxwQ2lyY2xlLCBDaGVjayB9IGZyb20gXCJsdWNpZGUtcmVhY3RcIjtcclxuaW1wb3J0IHtcclxuICB2ZXJpZnlLaWRzUGluLFxyXG4gIGhhc0N1c3RvbUtpZHNQaW4sXHJcbiAgc2V0S2lkc1BpbixcclxuICBnZXRTZWN1cml0eVF1ZXN0aW9uLFxyXG4gIHNldFNlY3VyaXR5UXVlc3Rpb24sXHJcbiAgdmVyaWZ5U2VjdXJpdHlBbnN3ZXIsXHJcbiAgREVGQVVMVF9TRUNVUklUWV9RVUVTVElPTlMsXHJcbn0gZnJvbSBcIkAvZGF0YS9raWRzTG9ja1wiO1xyXG5cclxuaW50ZXJmYWNlIFByb3BzIHtcclxuICB0aXRsZT86IHN0cmluZztcclxuICAvKiog2LnZhtivIHRydWU6INmE2Kcg2YrZhdmD2YYg2KXYutmE2KfZgiDYp9mE2YbYp9mB2LDYqSDYqNiv2YjZhiDZg9mE2YXYqSDYp9mE2YXYsdmI2LEg4oCUINio2K/ZiNmGINiy2LEg4p2MICovXHJcbiAgc3RyaWN0TW9kZT86IGJvb2xlYW47XHJcbiAgb25TdWNjZXNzOiAoKSA9PiB2b2lkO1xyXG4gIG9uQ2FuY2VsOiAoKSA9PiB2b2lkO1xyXG59XHJcblxyXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBQYXJlbnRhbEdhdGVNb2RhbCh7XHJcbiAgdGl0bGUgPSBcItmF2YbYt9mC2Kkg2KfZhNmI2KfZhNiv2YrZhiAo2K3Zhdin2YrYqSDZiNi22Lkg2KfZhNij2LfZgdin2YQpXCIsXHJcbiAgc3RyaWN0TW9kZSA9IGZhbHNlLFxyXG4gIG9uU3VjY2VzcyxcclxuICBvbkNhbmNlbCxcclxufTogUHJvcHMpIHtcclxuICBjb25zdCBoYXNDdXN0b20gPSBoYXNDdXN0b21LaWRzUGluKCk7XHJcbiAgY29uc3QgW21vZGUsIHNldE1vZGVdID0gdXNlU3RhdGU8XCJwaW5cIiB8IFwicmVjb3ZlcnlcIiB8IFwic2V0dXBfcGluXCI+KFxyXG4gICAgaGFzQ3VzdG9tID8gXCJwaW5cIiA6IFwic2V0dXBfcGluXCJcclxuICApO1xyXG4gIGNvbnN0IFtwaW4sIHNldFBpbl0gPSB1c2VTdGF0ZShcIlwiKTtcclxuICBjb25zdCBbY29uZmlybVBpbiwgc2V0Q29uZmlybVBpbl0gPSB1c2VTdGF0ZShcIlwiKTtcclxuICBjb25zdCBbc2V0dXBTdGVwLCBzZXRTZXR1cFN0ZXBdID0gdXNlU3RhdGU8XCJlbnRlclwiIHwgXCJjb25maXJtXCIgfCBcInNlY3VyaXR5XCI+KFwiZW50ZXJcIik7XHJcbiAgY29uc3QgW3NlbGVjdGVkUXVlc3Rpb24sIHNldFNlbGVjdGVkUXVlc3Rpb25dID0gdXNlU3RhdGUoREVGQVVMVF9TRUNVUklUWV9RVUVTVElPTlNbMF0pO1xyXG4gIGNvbnN0IFtjdXN0b21RdWVzdGlvbiwgc2V0Q3VzdG9tUXVlc3Rpb25dID0gdXNlU3RhdGUoXCJcIik7XHJcbiAgY29uc3QgW3NlY3VyaXR5QW5zd2VyLCBzZXRTZWN1cml0eUFuc3dlcl0gPSB1c2VTdGF0ZShcIlwiKTtcclxuICBjb25zdCBbcmVjb3ZlcnlBbnN3ZXJJbnB1dCwgc2V0UmVjb3ZlcnlBbnN3ZXJJbnB1dF0gPSB1c2VTdGF0ZShcIlwiKTtcclxuICBjb25zdCBbZXJyb3IsIHNldEVycm9yXSA9IHVzZVN0YXRlKGZhbHNlKTtcclxuICBjb25zdCBbZXJyb3JNc2csIHNldEVycm9yTXNnXSA9IHVzZVN0YXRlKFwiXCIpO1xyXG5cclxuICBjb25zdCBoYW5kbGVLZXlDbGljayA9ICh2YWw6IHN0cmluZykgPT4ge1xyXG4gICAgc2V0RXJyb3IoZmFsc2UpO1xyXG4gICAgc2V0RXJyb3JNc2coXCJcIik7XHJcblxyXG4gICAgaWYgKG1vZGUgPT09IFwic2V0dXBfcGluXCIpIHtcclxuICAgICAgaWYgKHNldHVwU3RlcCA9PT0gXCJlbnRlclwiKSB7XHJcbiAgICAgICAgaWYgKHZhbCA9PT0gXCJiYWNrXCIpIHtcclxuICAgICAgICAgIHNldFBpbigocCkgPT4gcC5zbGljZSgwLCAtMSkpO1xyXG4gICAgICAgICAgcmV0dXJuO1xyXG4gICAgICAgIH1cclxuICAgICAgICBpZiAocGluLmxlbmd0aCA8IDQpIHtcclxuICAgICAgICAgIGNvbnN0IG5leHQgPSBwaW4gKyB2YWw7XHJcbiAgICAgICAgICBzZXRQaW4obmV4dCk7XHJcbiAgICAgICAgICBpZiAobmV4dC5sZW5ndGggPT09IDQpIHtcclxuICAgICAgICAgICAgc2V0VGltZW91dCgoKSA9PiB7XHJcbiAgICAgICAgICAgICAgc2V0U2V0dXBTdGVwKFwiY29uZmlybVwiKTtcclxuICAgICAgICAgICAgfSwgMTUwKTtcclxuICAgICAgICAgIH1cclxuICAgICAgICB9XHJcbiAgICAgIH0gZWxzZSBpZiAoc2V0dXBTdGVwID09PSBcImNvbmZpcm1cIikge1xyXG4gICAgICAgIGlmICh2YWwgPT09IFwiYmFja1wiKSB7XHJcbiAgICAgICAgICBzZXRDb25maXJtUGluKChwKSA9PiBwLnNsaWNlKDAsIC0xKSk7XHJcbiAgICAgICAgICByZXR1cm47XHJcbiAgICAgICAgfVxyXG4gICAgICAgIGlmIChjb25maXJtUGluLmxlbmd0aCA8IDQpIHtcclxuICAgICAgICAgIGNvbnN0IG5leHQgPSBjb25maXJtUGluICsgdmFsO1xyXG4gICAgICAgICAgc2V0Q29uZmlybVBpbihuZXh0KTtcclxuICAgICAgICAgIGlmIChuZXh0Lmxlbmd0aCA9PT0gNCkge1xyXG4gICAgICAgICAgICBpZiAobmV4dCA9PT0gcGluKSB7XHJcbiAgICAgICAgICAgICAgc2V0VGltZW91dCgoKSA9PiB7XHJcbiAgICAgICAgICAgICAgICBzZXRTZXR1cFN0ZXAoXCJzZWN1cml0eVwiKTtcclxuICAgICAgICAgICAgICB9LCAxNTApO1xyXG4gICAgICAgICAgICB9IGVsc2Uge1xyXG4gICAgICAgICAgICAgIHNldEVycm9yKHRydWUpO1xyXG4gICAgICAgICAgICAgIHNldEVycm9yTXNnKFwi2KfZhNix2YXYstin2YYg2LrZitixINmF2KrYt9in2KjZgtmK2YbYjCDYrdin2YjZhCDZhdis2K/Yr9in2YtcIik7XHJcbiAgICAgICAgICAgICAgc2V0Q29uZmlybVBpbihcIlwiKTtcclxuICAgICAgICAgICAgICBzZXRTZXR1cFN0ZXAoXCJlbnRlclwiKTtcclxuICAgICAgICAgICAgICBzZXRQaW4oXCJcIik7XHJcbiAgICAgICAgICAgIH1cclxuICAgICAgICAgIH1cclxuICAgICAgICB9XHJcbiAgICAgIH1cclxuICAgICAgcmV0dXJuO1xyXG4gICAgfVxyXG5cclxuICAgIC8vIFZlcmlmeSBtb2RlXHJcbiAgICBpZiAodmFsID09PSBcImJhY2tcIikge1xyXG4gICAgICBzZXRQaW4oKHApID0+IHAuc2xpY2UoMCwgLTEpKTtcclxuICAgICAgcmV0dXJuO1xyXG4gICAgfVxyXG4gICAgaWYgKHBpbi5sZW5ndGggPCA0KSB7XHJcbiAgICAgIGNvbnN0IG5leHQgPSBwaW4gKyB2YWw7XHJcbiAgICAgIHNldFBpbihuZXh0KTtcclxuICAgICAgaWYgKG5leHQubGVuZ3RoID09PSA0KSB7XHJcbiAgICAgICAgaWYgKHZlcmlmeUtpZHNQaW4obmV4dCkpIHtcclxuICAgICAgICAgIG9uU3VjY2VzcygpO1xyXG4gICAgICAgIH0gZWxzZSB7XHJcbiAgICAgICAgICBzZXRFcnJvcih0cnVlKTtcclxuICAgICAgICAgIHNldEVycm9yTXNnKFwi2YPZhNmF2Kkg2KfZhNmF2LHZiNixINi62YrYsSDYtdit2YrYrdip2Iwg2K3Yp9mI2YQg2YXYsdipINij2K7YsdmJXCIpO1xyXG4gICAgICAgICAgc2V0VGltZW91dCgoKSA9PiB7XHJcbiAgICAgICAgICAgIHNldFBpbihcIlwiKTtcclxuICAgICAgICAgIH0sIDM1MCk7XHJcbiAgICAgICAgfVxyXG4gICAgICB9XHJcbiAgICB9XHJcbiAgfTtcclxuXHJcbiAgY29uc3QgaGFuZGxlTWFudWFsU3VibWl0ID0gKCkgPT4ge1xyXG4gICAgaWYgKHZlcmlmeUtpZHNQaW4ocGluKSkge1xyXG4gICAgICBvblN1Y2Nlc3MoKTtcclxuICAgIH0gZWxzZSB7XHJcbiAgICAgIHNldEVycm9yKHRydWUpO1xyXG4gICAgICBzZXRFcnJvck1zZyhcItmD2YTZhdipINin2YTZhdix2YjYsSDYutmK2LEg2LXYrdmK2K3YqdiMINit2KfZiNmEINmF2LHYqSDYo9iu2LHZiVwiKTtcclxuICAgICAgc2V0UGluKFwiXCIpO1xyXG4gICAgfVxyXG4gIH07XHJcblxyXG4gIGNvbnN0IGhhbmRsZVNhdmVTZXR1cCA9ICgpID0+IHtcclxuICAgIGNvbnN0IGZpbmFsUXVlc3Rpb24gPSBjdXN0b21RdWVzdGlvbi50cmltKCkgfHwgc2VsZWN0ZWRRdWVzdGlvbjtcclxuICAgIGNvbnN0IGZpbmFsQW5zd2VyID0gc2VjdXJpdHlBbnN3ZXIudHJpbSgpO1xyXG4gICAgaWYgKCFmaW5hbEFuc3dlcikge1xyXG4gICAgICBzZXRFcnJvcih0cnVlKTtcclxuICAgICAgc2V0RXJyb3JNc2coXCLZitix2KzZiSDYpdiv2K7Yp9mEINil2KzYp9io2Kkg2LPYsdmK2Kkg2YTYs9ik2KfZhCDYp9mE2KPZhdin2YYg2KfZhNin2K3YqtmK2KfYt9mKXCIpO1xyXG4gICAgICByZXR1cm47XHJcbiAgICB9XHJcbiAgICBzZXRLaWRzUGluKHBpbik7XHJcbiAgICBzZXRTZWN1cml0eVF1ZXN0aW9uKGZpbmFsUXVlc3Rpb24sIGZpbmFsQW5zd2VyKTtcclxuICAgIG9uU3VjY2VzcygpO1xyXG4gIH07XHJcblxyXG4gIGNvbnN0IGhhbmRsZVJlY292ZXJ5U3VibWl0ID0gKCkgPT4ge1xyXG4gICAgaWYgKCFyZWNvdmVyeUFuc3dlcklucHV0LnRyaW0oKSkge1xyXG4gICAgICBzZXRFcnJvcih0cnVlKTtcclxuICAgICAgc2V0RXJyb3JNc2coXCLZitix2KzZiSDYpdiv2K7Yp9mEINin2YTYpdis2KfYqNipXCIpO1xyXG4gICAgICByZXR1cm47XHJcbiAgICB9XHJcbiAgICBpZiAodmVyaWZ5U2VjdXJpdHlBbnN3ZXIocmVjb3ZlcnlBbnN3ZXJJbnB1dCkpIHtcclxuICAgICAgb25TdWNjZXNzKCk7XHJcbiAgICB9IGVsc2Uge1xyXG4gICAgICBzZXRFcnJvcih0cnVlKTtcclxuICAgICAgc2V0RXJyb3JNc2coXCLYpdis2KfYqNipINiz2KTYp9mEINin2YTYo9mF2KfZhiDYutmK2LEg2LXYrdmK2K3YqdiMINit2KfZiNmEINmF2KzYr9iv2KfZi1wiKTtcclxuICAgIH1cclxuICB9O1xyXG5cclxuICBjb25zdCBrZXlzID0gW1wiMVwiLCBcIjJcIiwgXCIzXCIsIFwiNFwiLCBcIjVcIiwgXCI2XCIsIFwiN1wiLCBcIjhcIiwgXCI5XCIsIFwiXCIsIFwiMFwiLCBcImJhY2tcIl07XHJcblxyXG4gIHJldHVybiAoXHJcbiAgICA8ZGl2XHJcbiAgICAgIGNsYXNzTmFtZT1cImZpeGVkIGluc2V0LTAgei1bMjUwXSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBiZy1ibGFjay83NSBiYWNrZHJvcC1ibHVyLW1kIHAtNCBhbmltYXRlLWluIGZhZGUtaW4gZHVyYXRpb24tMjAwXCJcclxuICAgICAgZGlyPVwicnRsXCJcclxuICAgID5cclxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJyZWxhdGl2ZSB3LWZ1bGwgbWF4LXctc20gcm91bmRlZC0zeGwgYmctY2FyZCBib3JkZXIgYm9yZGVyLWJvcmRlciBzaGFkb3ctMnhsIHAtNiB0ZXh0LWNlbnRlciBzcGFjZS15LTQgb3ZlcmZsb3ctaGlkZGVuIGFuaW1hdGUtaW4gem9vbS1pbi05NSBkdXJhdGlvbi0yMDBcIj5cclxuICAgICAgICB7Lyog2LLYsSDYp9mE2KXYutmE2KfZgiDZhdiu2YHZiiDZgdmKINin2YTZiNi22Lkg2KfZhNi12KfYsdmFIOKAlCDZhNinINmF2K7YsdisINio2K/ZiNmGINmD2YTZhdipINin2YTZhdix2YjYsSDYo9mIINiz2KTYp9mEINin2YTYo9mF2KfZhiAqL31cclxuICAgICAgICB7IXN0cmljdE1vZGUgJiYgKFxyXG4gICAgICAgICAgPGJ1dHRvblxyXG4gICAgICAgICAgICBvbkNsaWNrPXtvbkNhbmNlbH1cclxuICAgICAgICAgICAgY2xhc3NOYW1lPVwiYWJzb2x1dGUgdG9wLTQgbGVmdC00IHAtMiByb3VuZGVkLWZ1bGwgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIGhvdmVyOmJnLW11dGVkIHRyYW5zaXRpb24tY29sb3JzXCJcclxuICAgICAgICAgICAgYXJpYS1sYWJlbD1cItil2LrZhNin2YJcIlxyXG4gICAgICAgICAgPlxyXG4gICAgICAgICAgICA8WCBjbGFzc05hbWU9XCJ3LTUgaC01XCIgLz5cclxuICAgICAgICAgIDwvYnV0dG9uPlxyXG4gICAgICAgICl9XHJcblxyXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXgtYXV0byB3LTE0IGgtMTQgcm91bmRlZC0yeGwgYmctYWNjZW50LzE1IHRleHQtYWNjZW50IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHJpbmctMSByaW5nLWFjY2VudC8zMCBzaGFkb3ctaW5uZXJcIj5cclxuICAgICAgICAgIHttb2RlID09PSBcInNldHVwX3BpblwiID8gKFxyXG4gICAgICAgICAgICA8U2hpZWxkQ2hlY2sgY2xhc3NOYW1lPVwidy03IGgtN1wiIC8+XHJcbiAgICAgICAgICApIDogbW9kZSA9PT0gXCJwaW5cIiA/IChcclxuICAgICAgICAgICAgPExvY2sgY2xhc3NOYW1lPVwidy03IGgtN1wiIC8+XHJcbiAgICAgICAgICApIDogKFxyXG4gICAgICAgICAgICA8SGVscENpcmNsZSBjbGFzc05hbWU9XCJ3LTcgaC03XCIgLz5cclxuICAgICAgICAgICl9XHJcbiAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgIDxkaXY+XHJcbiAgICAgICAgICA8aDMgY2xhc3NOYW1lPVwiZm9udC1leHRyYWJvbGQgdGV4dC1sZyB0ZXh0LWZvcmVncm91bmRcIj5cclxuICAgICAgICAgICAge21vZGUgPT09IFwic2V0dXBfcGluXCJcclxuICAgICAgICAgICAgICA/IHNldHVwU3RlcCA9PT0gXCJzZWN1cml0eVwiXHJcbiAgICAgICAgICAgICAgICA/IFwi2LPYpNin2YQg2KfZhNij2YXYp9mGINin2YTYp9it2KrZitin2LfZilwiXHJcbiAgICAgICAgICAgICAgICA6IFwi2KXYudiv2KfYryDYsdmF2LIg2K3Zhdin2YrYqSDZiNi22Lkg2KfZhNij2LfZgdin2YRcIlxyXG4gICAgICAgICAgICAgIDogbW9kZSA9PT0gXCJwaW5cIlxyXG4gICAgICAgICAgICAgID8gdGl0bGVcclxuICAgICAgICAgICAgICA6IFwi2KfYs9iq2LnYp9iv2Kkg2KfZhNmI2LXZiNmEINi52KjYsSDYs9ik2KfZhCDYp9mE2KPZhdin2YZcIn1cclxuICAgICAgICAgIDwvaDM+XHJcbiAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBtdC0xIGxlYWRpbmctcmVsYXhlZFwiPlxyXG4gICAgICAgICAgICB7bW9kZSA9PT0gXCJzZXR1cF9waW5cIlxyXG4gICAgICAgICAgICAgID8gc2V0dXBTdGVwID09PSBcImVudGVyXCJcclxuICAgICAgICAgICAgICAgID8gXCLYp9iu2KrYsSDYsdmF2LIg2YXYsdmI2LEg2YXYrti12LXYp9mLINmF2YYgNCDYo9ix2YLYp9mFINmE2K3Zhdin2YrYqSDZiNi22Lkg2KfZhNij2LfZgdin2YRcIlxyXG4gICAgICAgICAgICAgICAgOiBzZXR1cFN0ZXAgPT09IFwiY29uZmlybVwiXHJcbiAgICAgICAgICAgICAgICA/IFwi2KPYudivINil2K/Yrtin2YQg2KfZhNix2YXYsiDZhNmE2KrYo9mD2YrYr1wiXHJcbiAgICAgICAgICAgICAgICA6IFwi2K3Yr9ivINiz2KTYp9mEINij2YXYp9mGINmI2KXYrNin2KjYqSDYs9ix2YrYqSDZhNin2LPYqtix2K/Yp9ivINin2YTYsdmF2LIg2LnZhtivINmG2LPZitin2YbZh1wiXHJcbiAgICAgICAgICAgICAgOiBtb2RlID09PSBcInBpblwiXHJcbiAgICAgICAgICAgICAgPyBzdHJpY3RNb2RlXHJcbiAgICAgICAgICAgICAgICA/IFwi2KPYr9iu2YQg2LHZhdiyINin2YTZiNin2YTYr9mK2YYg2YTZhNiu2LHZiNisINmF2YYg2KfZhNiq2LfYqNmK2YJcIlxyXG4gICAgICAgICAgICAgICAgOiBcItij2K/YrtmEINix2YXYsiDYp9mE2YjYp9mE2K/ZitmGINmE2YTYrtix2YjYrCDZhdmGINix2YPZhiDYp9mE2KPYt9mB2KfZhCDYo9mIINin2YTYr9iu2YjZhCDZhNmE2KXYudiv2KfYr9in2KpcIlxyXG4gICAgICAgICAgICAgIDogXCLYo9is2Kgg2LnZhiDYs9ik2KfZhCDYp9mE2KPZhdin2YYg2KfZhNiw2Yog2K3Yr9iv2KrZhyDZhdiz2KjZgtin2Ysg2YTZhNiq2K3ZgtmCINmF2YYg2KPZhtmDINmI2YTZiiDYp9mE2KPZhdixXCJ9XHJcbiAgICAgICAgICA8L3A+XHJcbiAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgIHsvKiA9PT09PSDZhtmF2Lcg2KXYudiv2KfYryDYp9mE2LHZhdiyINmI2LPYpNin2YQg2KfZhNij2YXYp9mGINmE2KPZiNmEINmF2LHYqSA9PT09PSAqL31cclxuICAgICAgICB7bW9kZSA9PT0gXCJzZXR1cF9waW5cIiAmJiBzZXR1cFN0ZXAgIT09IFwic2VjdXJpdHlcIiAmJiAoXHJcbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktNFwiPlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXgganVzdGlmeS1jZW50ZXIgaXRlbXMtY2VudGVyIGdhcC0zIHB5LTJcIiBkaXI9XCJsdHJcIj5cclxuICAgICAgICAgICAgICB7WzAsIDEsIDIsIDNdLm1hcCgoaSkgPT4ge1xyXG4gICAgICAgICAgICAgICAgY29uc3QgY3VycmVudFZhbCA9IHNldHVwU3RlcCA9PT0gXCJlbnRlclwiID8gcGluIDogY29uZmlybVBpbjtcclxuICAgICAgICAgICAgICAgIHJldHVybiAoXHJcbiAgICAgICAgICAgICAgICAgIDxkaXZcclxuICAgICAgICAgICAgICAgICAgICBrZXk9e2l9XHJcbiAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgdy00IGgtNCByb3VuZGVkLWZ1bGwgdHJhbnNpdGlvbi1hbGwgZHVyYXRpb24tMjAwICR7XHJcbiAgICAgICAgICAgICAgICAgICAgICBjdXJyZW50VmFsLmxlbmd0aCA+IGlcclxuICAgICAgICAgICAgICAgICAgICAgICAgPyBcImJnLWFjY2VudCBzY2FsZS0xMTAgc2hhZG93LW1kIHNoYWRvdy1hY2NlbnQvNDBcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA6IFwiYmctbXV0ZWQgYm9yZGVyIGJvcmRlci1ib3JkZXJcIlxyXG4gICAgICAgICAgICAgICAgICAgIH1gfVxyXG4gICAgICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgICAgKTtcclxuICAgICAgICAgICAgICB9KX1cclxuICAgICAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgICAgICB7ZXJyb3IgJiYgKFxyXG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgZ2FwLTEuNSB0ZXh0LXhzIHRleHQtZGVzdHJ1Y3RpdmUgZm9udC1ib2xkIGFuaW1hdGUtYm91bmNlXCI+XHJcbiAgICAgICAgICAgICAgICA8QWxlcnRDaXJjbGUgY2xhc3NOYW1lPVwidy00IGgtNFwiIC8+XHJcbiAgICAgICAgICAgICAgICA8c3Bhbj57ZXJyb3JNc2cgfHwgXCLYsdmF2LIg2KfZhNmF2LHZiNixINi62YrYsSDZhdi32KfYqNmCXCJ9PC9zcGFuPlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICApfVxyXG5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJncmlkIGdyaWQtY29scy0zIGdhcC0yIHB0LTFcIj5cclxuICAgICAgICAgICAgICB7a2V5cy5tYXAoKGssIGkpID0+XHJcbiAgICAgICAgICAgICAgICBrID09PSBcIlwiID8gKFxyXG4gICAgICAgICAgICAgICAgICA8c3BhbiBrZXk9e2l9IC8+XHJcbiAgICAgICAgICAgICAgICApIDogKFxyXG4gICAgICAgICAgICAgICAgICA8YnV0dG9uXHJcbiAgICAgICAgICAgICAgICAgICAga2V5PXtpfVxyXG4gICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IGhhbmRsZUtleUNsaWNrKGspfVxyXG4gICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImgtMTIgcm91bmRlZC0yeGwgYmctc2Vjb25kYXJ5IGhvdmVyOmJnLXNlY29uZGFyeS84MCB0ZXh0LWZvcmVncm91bmQgdGV4dC1sZyBmb250LWJvbGQgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYWN0aXZlOnNjYWxlLTk1IHRyYW5zaXRpb24tdHJhbnNmb3JtIHNlbGVjdC1ub25lIHNoYWRvdy1zbVwiXHJcbiAgICAgICAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgICAgICB7ayA9PT0gXCJiYWNrXCIgPyBcIuKMq1wiIDoga31cclxuICAgICAgICAgICAgICAgICAgPC9idXR0b24+XHJcbiAgICAgICAgICAgICAgICApXHJcbiAgICAgICAgICAgICAgKX1cclxuICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICApfVxyXG5cclxuICAgICAgICB7LyogPT09PT0g2K7Yt9mI2Kkg2KrYrdiv2YrYryDYs9ik2KfZhCDYp9mE2KPZhdin2YYg2KfZhNin2K3YqtmK2KfYt9mKINmB2Yog2KfZhNil2LnYr9in2K8gPT09PT0gKi99XHJcbiAgICAgICAge21vZGUgPT09IFwic2V0dXBfcGluXCIgJiYgc2V0dXBTdGVwID09PSBcInNlY3VyaXR5XCIgJiYgKFxyXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTMgdGV4dC1yaWdodCBhbmltYXRlLWZhZGUtdXBcIj5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTFcIj5cclxuICAgICAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgdGV4dC1mb3JlZ3JvdW5kIGJsb2NrXCI+2KfYrtiq2LEg2LPYpNin2YQg2KfZhNij2YXYp9mGOjwvbGFiZWw+XHJcbiAgICAgICAgICAgICAgPHNlbGVjdFxyXG4gICAgICAgICAgICAgICAgdmFsdWU9e3NlbGVjdGVkUXVlc3Rpb259XHJcbiAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGUpID0+IHNldFNlbGVjdGVkUXVlc3Rpb24oZS50YXJnZXQudmFsdWUpfVxyXG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIHRleHQteHMgcC0yLjUgcm91bmRlZC14bCBiZy1tdXRlZCBib3JkZXIgYm9yZGVyLWJvcmRlciB0ZXh0LWZvcmVncm91bmQgZm9jdXM6Ym9yZGVyLWFjY2VudCBvdXRsaW5lLW5vbmVcIlxyXG4gICAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgIHtERUZBVUxUX1NFQ1VSSVRZX1FVRVNUSU9OUy5tYXAoKHEsIGkpID0+IChcclxuICAgICAgICAgICAgICAgICAgPG9wdGlvbiBrZXk9e2l9IHZhbHVlPXtxfT5cclxuICAgICAgICAgICAgICAgICAgICB7cX1cclxuICAgICAgICAgICAgICAgICAgPC9vcHRpb24+XHJcbiAgICAgICAgICAgICAgICApKX1cclxuICAgICAgICAgICAgICA8L3NlbGVjdD5cclxuICAgICAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMVwiPlxyXG4gICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LWZvcmVncm91bmQgYmxvY2tcIj7Yp9mE2KXYrNin2KjYqSDYp9mE2LPYsdmK2Kkg2KfZhNin2K3YqtmK2KfYt9mK2Kk6PC9sYWJlbD5cclxuICAgICAgICAgICAgICA8aW5wdXRcclxuICAgICAgICAgICAgICAgIHR5cGU9XCJ0ZXh0XCJcclxuICAgICAgICAgICAgICAgIHZhbHVlPXtzZWN1cml0eUFuc3dlcn1cclxuICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZSkgPT4ge1xyXG4gICAgICAgICAgICAgICAgICBzZXRTZWN1cml0eUFuc3dlcihlLnRhcmdldC52YWx1ZSk7XHJcbiAgICAgICAgICAgICAgICAgIHNldEVycm9yKGZhbHNlKTtcclxuICAgICAgICAgICAgICAgIH19XHJcbiAgICAgICAgICAgICAgICBwbGFjZWhvbGRlcj1cItin2YPYqtioINil2KzYp9io2KrZgyDYp9mE2LPYsdmK2Kkg2YfZhtinLi4uXCJcclxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCB0ZXh0LXNtIHAtMyByb3VuZGVkLXhsIGJnLW11dGVkIGJvcmRlciBib3JkZXItYm9yZGVyIHRleHQtZm9yZWdyb3VuZCBwbGFjZWhvbGRlci1tdXRlZC1mb3JlZ3JvdW5kIGZvY3VzOmJvcmRlci1hY2NlbnQgb3V0bGluZS1ub25lXCJcclxuICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgIHtlcnJvciAmJiAoXHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMS41IHRleHQteHMgdGV4dC1kZXN0cnVjdGl2ZSBmb250LWJvbGRcIj5cclxuICAgICAgICAgICAgICAgIDxBbGVydENpcmNsZSBjbGFzc05hbWU9XCJ3LTQgaC00XCIgLz5cclxuICAgICAgICAgICAgICAgIDxzcGFuPntlcnJvck1zZ308L3NwYW4+XHJcbiAgICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgICl9XHJcblxyXG4gICAgICAgICAgICA8YnV0dG9uXHJcbiAgICAgICAgICAgICAgb25DbGljaz17aGFuZGxlU2F2ZVNldHVwfVxyXG4gICAgICAgICAgICAgIGNsYXNzTmFtZT1cImJ0bi1nb2xkIHctZnVsbCBwLTMgcm91bmRlZC14bCBmb250LWJvbGQgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgZ2FwLTIgbXQtMiBzaGFkb3ctbWQgYWN0aXZlOnNjYWxlLTk1XCJcclxuICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgIDxDaGVjayBjbGFzc05hbWU9XCJ3LTUgaC01XCIgLz4g2K3Zgdi4INmI2KrZgdi52YrZhCDYp9mE2K3Zhdin2YrYqVxyXG4gICAgICAgICAgICA8L2J1dHRvbj5cclxuICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICl9XHJcblxyXG4gICAgICAgIHsvKiA9PT09PSDZhtmF2Lcg2KfZhNiq2K3ZgtmCINio2LHZhdiyINin2YTZgCBQSU4gPT09PT0gKi99XHJcbiAgICAgICAge21vZGUgPT09IFwicGluXCIgJiYgKFxyXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTRcIj5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGp1c3RpZnktY2VudGVyIGl0ZW1zLWNlbnRlciBnYXAtMyBweS0yXCIgZGlyPVwibHRyXCI+XHJcbiAgICAgICAgICAgICAge1swLCAxLCAyLCAzXS5tYXAoKGkpID0+IChcclxuICAgICAgICAgICAgICAgIDxkaXZcclxuICAgICAgICAgICAgICAgICAga2V5PXtpfVxyXG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9e2B3LTQgaC00IHJvdW5kZWQtZnVsbCB0cmFuc2l0aW9uLWFsbCBkdXJhdGlvbi0yMDAgJHtcclxuICAgICAgICAgICAgICAgICAgICBwaW4ubGVuZ3RoID4gaVxyXG4gICAgICAgICAgICAgICAgICAgICAgPyBcImJnLWFjY2VudCBzY2FsZS0xMTAgc2hhZG93LW1kIHNoYWRvdy1hY2NlbnQvNDBcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgOiBcImJnLW11dGVkIGJvcmRlciBib3JkZXItYm9yZGVyXCJcclxuICAgICAgICAgICAgICAgICAgfWB9XHJcbiAgICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgICkpfVxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgIHtlcnJvciAmJiAoXHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMS41IHRleHQteHMgdGV4dC1kZXN0cnVjdGl2ZSBmb250LWJvbGQgYW5pbWF0ZS1ib3VuY2VcIj5cclxuICAgICAgICAgICAgICAgIDxBbGVydENpcmNsZSBjbGFzc05hbWU9XCJ3LTQgaC00XCIgLz5cclxuICAgICAgICAgICAgICAgIDxzcGFuPntlcnJvck1zZyB8fCBcItix2YXYsiDYp9mE2YXYsdmI2LEg2LrZitixINi12K3Zitit2Iwg2K3Yp9mI2YQg2YXYsdipINij2K7YsdmJXCJ9PC9zcGFuPlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICApfVxyXG5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJncmlkIGdyaWQtY29scy0zIGdhcC0yIHB0LTFcIj5cclxuICAgICAgICAgICAgICB7a2V5cy5tYXAoKGssIGkpID0+XHJcbiAgICAgICAgICAgICAgICBrID09PSBcIlwiID8gKFxyXG4gICAgICAgICAgICAgICAgICA8c3BhbiBrZXk9e2l9IC8+XHJcbiAgICAgICAgICAgICAgICApIDogKFxyXG4gICAgICAgICAgICAgICAgICA8YnV0dG9uXHJcbiAgICAgICAgICAgICAgICAgICAga2V5PXtpfVxyXG4gICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IGhhbmRsZUtleUNsaWNrKGspfVxyXG4gICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImgtMTIgcm91bmRlZC0yeGwgYmctc2Vjb25kYXJ5IGhvdmVyOmJnLXNlY29uZGFyeS84MCB0ZXh0LWZvcmVncm91bmQgdGV4dC1sZyBmb250LWJvbGQgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYWN0aXZlOnNjYWxlLTk1IHRyYW5zaXRpb24tdHJhbnNmb3JtIHNlbGVjdC1ub25lIHNoYWRvdy1zbVwiXHJcbiAgICAgICAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgICAgICB7ayA9PT0gXCJiYWNrXCIgPyBcIuKMq1wiIDoga31cclxuICAgICAgICAgICAgICAgICAgPC9idXR0b24+XHJcbiAgICAgICAgICAgICAgICApXHJcbiAgICAgICAgICAgICAgKX1cclxuICAgICAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInB0LTIgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIHRleHQteHMgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kXCI+XHJcbiAgICAgICAgICAgICAgPGJ1dHRvblxyXG4gICAgICAgICAgICAgICAgdHlwZT1cImJ1dHRvblwiXHJcbiAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiB7XHJcbiAgICAgICAgICAgICAgICAgIHNldEVycm9yKGZhbHNlKTtcclxuICAgICAgICAgICAgICAgICAgc2V0RXJyb3JNc2coXCJcIik7XHJcbiAgICAgICAgICAgICAgICAgIHNldFJlY292ZXJ5QW5zd2VySW5wdXQoXCJcIik7XHJcbiAgICAgICAgICAgICAgICAgIHNldE1vZGUoXCJyZWNvdmVyeVwiKTtcclxuICAgICAgICAgICAgICAgIH19XHJcbiAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJ0ZXh0LWFjY2VudCBob3Zlcjp1bmRlcmxpbmUgZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEgZm9udC1ib2xkXCJcclxuICAgICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgICA8SGVscENpcmNsZSBjbGFzc05hbWU9XCJ3LTQgaC00XCIgLz5cclxuICAgICAgICAgICAgICAgIDxzcGFuPtmG2LPZitiqINin2YTYsdmF2LLYnyDYs9ik2KfZhCDYp9mE2KPZhdin2YY8L3NwYW4+XHJcbiAgICAgICAgICAgICAgPC9idXR0b24+XHJcblxyXG4gICAgICAgICAgICAgIDxidXR0b25cclxuICAgICAgICAgICAgICAgIG9uQ2xpY2s9e2hhbmRsZU1hbnVhbFN1Ym1pdH1cclxuICAgICAgICAgICAgICAgIGRpc2FibGVkPXtwaW4ubGVuZ3RoIDwgNH1cclxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInRleHQtYWNjZW50IGZvbnQtYm9sZCBkaXNhYmxlZDpvcGFjaXR5LTQwXCJcclxuICAgICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgICDYqtij2YPZitivXHJcbiAgICAgICAgICAgICAgPC9idXR0b24+XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgKX1cclxuXHJcbiAgICAgICAgey8qID09PT09INmG2YXYtyDYp9mE2KfYs9iq2LHYr9in2K8g2LnYqNixINiz2KTYp9mEINin2YTYo9mF2KfZhiDYp9mE2KfYrdiq2YrYp9i32YogKNio2K/ZiNmGINij2Yog2LnZhdmE2YrYqSDYrdiz2KfYqNmK2KkpID09PT09ICovfVxyXG4gICAgICAgIHttb2RlID09PSBcInJlY292ZXJ5XCIgJiYgKFxyXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTQgdGV4dC1yaWdodCBhbmltYXRlLWZhZGUtdXBcIj5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTMuNSByb3VuZGVkLTJ4bCBiZy1tdXRlZC82MCBib3JkZXIgYm9yZGVyLWJvcmRlciBzcGFjZS15LTFcIj5cclxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LVsxMXB4XSBmb250LWJvbGQgdGV4dC1hY2NlbnQgYmxvY2tcIj7Ys9ik2KfZhCDYp9mE2KPZhdin2YYg2KfZhNin2K3YqtmK2KfYt9mKOjwvc3Bhbj5cclxuICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXNtIGZvbnQtYm9sZCB0ZXh0LWZvcmVncm91bmQgbGVhZGluZy1yZWxheGVkXCI+XHJcbiAgICAgICAgICAgICAgICB7Z2V0U2VjdXJpdHlRdWVzdGlvbigpfVxyXG4gICAgICAgICAgICAgIDwvcD5cclxuICAgICAgICAgICAgPC9kaXY+XHJcblxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMVwiPlxyXG4gICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LWZvcmVncm91bmQgYmxvY2tcIj7Yo9iv2K7ZhCDYp9mE2KXYrNin2KjYqSDYp9mE2LPYsdmK2Kk6PC9sYWJlbD5cclxuICAgICAgICAgICAgICA8aW5wdXRcclxuICAgICAgICAgICAgICAgIHR5cGU9XCJ0ZXh0XCJcclxuICAgICAgICAgICAgICAgIHZhbHVlPXtyZWNvdmVyeUFuc3dlcklucHV0fVxyXG4gICAgICAgICAgICAgICAgb25DaGFuZ2U9eyhlKSA9PiB7XHJcbiAgICAgICAgICAgICAgICAgIHNldFJlY292ZXJ5QW5zd2VySW5wdXQoZS50YXJnZXQudmFsdWUpO1xyXG4gICAgICAgICAgICAgICAgICBzZXRFcnJvcihmYWxzZSk7XHJcbiAgICAgICAgICAgICAgICB9fVxyXG4gICAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9XCLYp9mD2KrYqCDYpdis2KfYqNiq2YMg2YfZhtinLi4uXCJcclxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCB0ZXh0LXNtIHAtMyByb3VuZGVkLXhsIGJnLW11dGVkIGJvcmRlciBib3JkZXItYm9yZGVyIHRleHQtZm9yZWdyb3VuZCBwbGFjZWhvbGRlci1tdXRlZC1mb3JlZ3JvdW5kIGZvY3VzOmJvcmRlci1hY2NlbnQgb3V0bGluZS1ub25lXCJcclxuICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgIHtlcnJvciAmJiAoXHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMS41IHRleHQteHMgdGV4dC1kZXN0cnVjdGl2ZSBmb250LWJvbGQgYW5pbWF0ZS1ib3VuY2VcIj5cclxuICAgICAgICAgICAgICAgIDxBbGVydENpcmNsZSBjbGFzc05hbWU9XCJ3LTQgaC00XCIgLz5cclxuICAgICAgICAgICAgICAgIDxzcGFuPntlcnJvck1zZ308L3NwYW4+XHJcbiAgICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgICl9XHJcblxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggZ2FwLTIgcHQtMlwiPlxyXG4gICAgICAgICAgICAgIDxidXR0b25cclxuICAgICAgICAgICAgICAgIHR5cGU9XCJidXR0b25cIlxyXG4gICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4ge1xyXG4gICAgICAgICAgICAgICAgICBzZXRFcnJvcihmYWxzZSk7XHJcbiAgICAgICAgICAgICAgICAgIHNldEVycm9yTXNnKFwiXCIpO1xyXG4gICAgICAgICAgICAgICAgICBzZXRQaW4oXCJcIik7XHJcbiAgICAgICAgICAgICAgICAgIHNldE1vZGUoXCJwaW5cIik7XHJcbiAgICAgICAgICAgICAgICB9fVxyXG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiZmxleC0xIHB5LTIuNSByb3VuZGVkLXhsIGJnLXNlY29uZGFyeSB0ZXh0LXNlY29uZGFyeS1mb3JlZ3JvdW5kIHRleHQteHMgZm9udC1ib2xkIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0xXCJcclxuICAgICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgICA8S2V5Um91bmQgY2xhc3NOYW1lPVwidy00IGgtNFwiIC8+XHJcbiAgICAgICAgICAgICAgICA8c3Bhbj7Yp9mE2LnZiNiv2Kkg2YTZhNix2YXYsjwvc3Bhbj5cclxuICAgICAgICAgICAgICA8L2J1dHRvbj5cclxuICAgICAgICAgICAgICA8YnV0dG9uXHJcbiAgICAgICAgICAgICAgICB0eXBlPVwiYnV0dG9uXCJcclxuICAgICAgICAgICAgICAgIG9uQ2xpY2s9e2hhbmRsZVJlY292ZXJ5U3VibWl0fVxyXG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiYnRuLWdvbGQgZmxleC0xIHB5LTIuNSByb3VuZGVkLXhsIHRleHQteHMgZm9udC1ib2xkIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0xXCJcclxuICAgICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgICA8Q2hlY2sgY2xhc3NOYW1lPVwidy00IGgtNFwiIC8+XHJcbiAgICAgICAgICAgICAgICA8c3Bhbj7Yqtij2YPZitivINin2YTYpdis2KfYqNipPC9zcGFuPlxyXG4gICAgICAgICAgICAgIDwvYnV0dG9uPlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICl9XHJcbiAgICAgIDwvZGl2PlxyXG4gICAgPC9kaXY+XHJcbiAgKTtcclxufVxyXG4iXSwibmFtZXMiOlsidXNlU3RhdGUiLCJMb2NrIiwiS2V5Um91bmQiLCJBbGVydENpcmNsZSIsIlgiLCJTaGllbGRDaGVjayIsIkhlbHBDaXJjbGUiLCJDaGVjayIsInZlcmlmeUtpZHNQaW4iLCJoYXNDdXN0b21LaWRzUGluIiwic2V0S2lkc1BpbiIsImdldFNlY3VyaXR5UXVlc3Rpb24iLCJzZXRTZWN1cml0eVF1ZXN0aW9uIiwidmVyaWZ5U2VjdXJpdHlBbnN3ZXIiLCJERUZBVUxUX1NFQ1VSSVRZX1FVRVNUSU9OUyIsIlBhcmVudGFsR2F0ZU1vZGFsIiwidGl0bGUiLCJzdHJpY3RNb2RlIiwib25TdWNjZXNzIiwib25DYW5jZWwiLCJoYXNDdXN0b20iLCJtb2RlIiwic2V0TW9kZSIsInBpbiIsInNldFBpbiIsImNvbmZpcm1QaW4iLCJzZXRDb25maXJtUGluIiwic2V0dXBTdGVwIiwic2V0U2V0dXBTdGVwIiwic2VsZWN0ZWRRdWVzdGlvbiIsInNldFNlbGVjdGVkUXVlc3Rpb24iLCJjdXN0b21RdWVzdGlvbiIsInNldEN1c3RvbVF1ZXN0aW9uIiwic2VjdXJpdHlBbnN3ZXIiLCJzZXRTZWN1cml0eUFuc3dlciIsInJlY292ZXJ5QW5zd2VySW5wdXQiLCJzZXRSZWNvdmVyeUFuc3dlcklucHV0IiwiZXJyb3IiLCJzZXRFcnJvciIsImVycm9yTXNnIiwic2V0RXJyb3JNc2ciLCJoYW5kbGVLZXlDbGljayIsInZhbCIsInAiLCJzbGljZSIsImxlbmd0aCIsIm5leHQiLCJzZXRUaW1lb3V0IiwiaGFuZGxlTWFudWFsU3VibWl0IiwiaGFuZGxlU2F2ZVNldHVwIiwiZmluYWxRdWVzdGlvbiIsInRyaW0iLCJmaW5hbEFuc3dlciIsImhhbmRsZVJlY292ZXJ5U3VibWl0Iiwia2V5cyIsImRpdiIsImNsYXNzTmFtZSIsImRpciIsImJ1dHRvbiIsIm9uQ2xpY2siLCJhcmlhLWxhYmVsIiwiaDMiLCJtYXAiLCJpIiwiY3VycmVudFZhbCIsInNwYW4iLCJrIiwibGFiZWwiLCJzZWxlY3QiLCJ2YWx1ZSIsIm9uQ2hhbmdlIiwiZSIsInRhcmdldCIsInEiLCJvcHRpb24iLCJpbnB1dCIsInR5cGUiLCJwbGFjZWhvbGRlciIsImRpc2FibGVkIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxTQUFTQSxRQUFRLFFBQVEsUUFBUTtBQUNqQyxTQUFTQyxJQUFJLEVBQUVDLFFBQVEsRUFBRUMsV0FBVyxFQUFFQyxDQUFDLEVBQUVDLFdBQVcsRUFBRUMsVUFBVSxFQUFFQyxLQUFLLFFBQVEsZUFBZTtBQUM5RixTQUNFQyxhQUFhLEVBQ2JDLGdCQUFnQixFQUNoQkMsVUFBVSxFQUNWQyxtQkFBbUIsRUFDbkJDLG1CQUFtQixFQUNuQkMsb0JBQW9CLEVBQ3BCQywwQkFBMEIsUUFDckIsa0JBQWtCO0FBVXpCLGVBQWUsU0FBU0Msa0JBQWtCLEVBQ3hDQyxRQUFRLG9DQUFvQyxFQUM1Q0MsYUFBYSxLQUFLLEVBQ2xCQyxTQUFTLEVBQ1RDLFFBQVEsRUFDRjs7SUFDTixNQUFNQyxZQUFZWDtJQUNsQixNQUFN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

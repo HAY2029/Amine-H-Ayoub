@@ -68,7 +68,7 @@ export default function AnnouncementsPage() {
 
         {loading ? (
           <div className="card-nour p-8 text-center space-y-3">
-            <Loader2 className="w-8 h-8 text-accent animate-spin mx-auto" />
+            <div className="step-loader sm my-2" />
             <p className="text-sm text-muted-foreground">جاري جلب الإعلانات...</p>
           </div>
         ) : announcements.length === 0 ? (

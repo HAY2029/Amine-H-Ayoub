@@ -289,3 +289,244 @@ export async function downloadStreakCertificate({
 
   await saveImageDataUrl(dataUrl, filename);
 }
+
+export async function downloadLegendaryCertificate({
+  studentName,
+  avatarName,
+  totalAyahs = 0,
+  surahsCompleted = 0,
+  coins = 0,
+  streakDays = 0,
+}: {
+  studentName: string;
+  avatarName?: string;
+  totalAyahs?: number;
+  surahsCompleted?: number;
+  coins?: number;
+  streakDays?: number;
+}): Promise<void> {
+  const canvas = document.createElement("canvas");
+  const canvasW = 1080;
+  const canvasH = 980;
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  // 1. تدرج الخلفية الملكية العاجية
+  const bg = ctx.createLinearGradient(0, 0, 0, canvasH);
+  bg.addColorStop(0, "#FFF9EB"); // amber-50
+  bg.addColorStop(0.5, "#FFFFFF"); // white
+  bg.addColorStop(1, "#FFF8E7"); // amber-50
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // إضاءة خفيفة
+  const glow = ctx.createRadialGradient(canvasW / 2, canvasH / 2, 100, canvasW / 2, canvasH / 2, 800);
+  glow.addColorStop(0, "rgba(245, 158, 11, 0.05)");
+  glow.addColorStop(1, "rgba(245, 158, 11, 0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // شبكة زخرفية إسلامية رقيقة في الخلفية
+  ctx.strokeStyle = "rgba(245, 158, 11, 0.06)";
+  ctx.lineWidth = 1.5;
+  for (let x = 40; x < canvasW; x += 60) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvasH);
+    ctx.stroke();
+  }
+  for (let y = 40; y < canvasH; y += 60) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvasW, y);
+    ctx.stroke();
+  }
+
+  // 2. إطار ذهبي مزدوج 
+  ctx.strokeStyle = "#F59E0B"; // amber-500
+  ctx.lineWidth = 10;
+  ctx.strokeRect(36, 36, canvasW - 72, canvasH - 72);
+
+  ctx.strokeStyle = "#D97706"; // amber-600
+  ctx.lineWidth = 3;
+  ctx.strokeRect(52, 52, canvasW - 104, canvasH - 104);
+
+  const drawCorner = (cx: number, cy: number, flipX: number, flipY: number) => {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(flipX, flipY);
+    ctx.strokeStyle = "#D4AF37";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(8, 48);
+    ctx.quadraticCurveTo(8, 8, 48, 8);
+    ctx.stroke();
+    drawCanvasStar(ctx, 28, 28, 9, "#E5C058");
+    ctx.restore();
+  };
+  drawCorner(48, 48, 1, 1);
+  drawCorner(canvasW - 48, 48, -1, 1);
+  drawCorner(48, canvasH - 48, 1, -1);
+  drawCorner(canvasW - 48, canvasH - 48, -1, -1);
+
+  // 3. التاج والبسملة في القمة
+  ctx.fillStyle = "#92400E"; // amber-800
+  ctx.font = "bold 48px 'Tahoma', 'Segoe UI Emoji', sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("👑", canvasW / 2, 110);
+
+  ctx.font = "bold 34px 'Traditional Arabic', 'Amiri', 'Cairo', serif";
+  ctx.fillText("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", canvasW / 2, 160);
+
+  // 4. شريط العنوان الذهبي الملكي
+  const ribbonW = 760;
+  const ribbonH = 76;
+  const ribbonX = (canvasW - ribbonW) / 2;
+  const ribbonY = 190;
+  const ribbon = ctx.createLinearGradient(ribbonX, ribbonY, ribbonX + ribbonW, ribbonY + ribbonH);
+  ribbon.addColorStop(0, "#F59E0B");
+  ribbon.addColorStop(0.5, "#FBBF24");
+  ribbon.addColorStop(1, "#F59E0B");
+  ctx.fillStyle = ribbon;
+  ctx.beginPath();
+  ctx.roundRect(ribbonX, ribbonY, ribbonW, ribbonH, 38);
+  ctx.fill();
+
+  // ظل أسفل الشريط
+  ctx.fillStyle = "rgba(0,0,0,0.15)";
+  ctx.beginPath();
+  ctx.roundRect(ribbonX + 4, ribbonY + 6, ribbonW, ribbonH, 38);
+  ctx.fill();
+  ctx.fillStyle = ribbon;
+  ctx.beginPath();
+  ctx.roundRect(ribbonX, ribbonY, ribbonW, ribbonH, 38);
+  ctx.fill();
+
+  ctx.fillStyle = "#1C1917";
+  ctx.font = "bold 40px 'Traditional Arabic', 'Amiri', 'Cairo', serif";
+  ctx.fillText("شَهَادَةُ فَخْرٍ وَإِتْقَانٍ قُرْآنِيّ", canvasW / 2, ribbonY + 52);
+
+  // نص الشهادة
+  ctx.fillStyle = "#44403C";
+  ctx.font = "bold 26px 'Cairo', 'Tahoma', 'Arial'";
+  ctx.fillText("تَشْهَدُ إِدَارَةُ رِعَايَةِ القُرْآنِ الكَرِيمِ لِلطِّفْلِ بِأَنَّ البَطَلَ المُبَارَكَ:", canvasW / 2, 320);
+
+  const displayName = (!studentName || studentName === "طفلي" || studentName === "الطفل 1") ? "بطل القرآن الكريم" : studentName;
+
+  ctx.fillStyle = "#B45309"; // amber-700
+  ctx.font = "bold 64px 'Traditional Arabic', 'Amiri', 'Cairo', serif";
+  ctx.fillText(displayName, canvasW / 2, 400);
+
+  // خط متعرج تحت الاسم
+  ctx.strokeStyle = "#FBBF24";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  const nameW = ctx.measureText(displayName).width;
+  ctx.moveTo(canvasW / 2 - nameW / 2, 420);
+  ctx.lineTo(canvasW / 2 + nameW / 2, 420);
+  ctx.stroke();
+
+  ctx.fillStyle = "#44403C";
+  ctx.font = "bold 22px 'Cairo', 'Tahoma', 'Arial'";
+  const text1 = "قَدْ تَمَيَّزَ بِحُسْنِ الاسْتِمَاعِ وَالمُوَاظَبَةِ عَلَى تِلَاوَةِ كِتَابِ اللَّهِ عَزَّ وَجَلَّ،";
+  const text2 = "وَأَنْجَزَ وِرْدَهُ اليَوْمِيَّ بِجِدٍّ وَنَشَاطٍ، فَنَالَ هَذِهِ الشَّهَادَةَ تَكْرِيمَاً لَهُ وَتَشْجِيعَاً.";
+  ctx.fillText(text1, canvasW / 2, 470);
+  ctx.fillText(text2, canvasW / 2, 510);
+
+  // 7. شبكة أرقام الإنجاز المطبوعة (4 بطاقات أفقية)
+  const statCards = [
+    { title: "الآيات المنجزة", value: `${totalAyahs} آية`, color: "#B45309", bg: "rgba(245, 158, 11, 0.1)", border: "rgba(245, 158, 11, 0.3)" },
+    { title: "السور المتقنة", value: `${surahsCompleted} سورة`, color: "#047857", bg: "rgba(16, 185, 129, 0.1)", border: "rgba(16, 185, 129, 0.3)" },
+    { title: "النجوم المكتسبة", value: `${(coins || 0).toLocaleString("en-US")} ⭐`, color: "#7E22CE", bg: "rgba(168, 85, 247, 0.1)", border: "rgba(168, 85, 247, 0.3)" },
+    { title: "الالتزام المتواصل", value: `${streakDays || 1} أيام`, color: "#C2410C", bg: "rgba(249, 115, 22, 0.1)", border: "rgba(249, 115, 22, 0.3)" },
+  ];
+
+  const cardW = 210;
+  const cardH = 100;
+  const startX = (canvasW - (cardW * 4 + 20 * 3)) / 2;
+  const cardY = 570;
+
+  statCards.forEach((st, idx) => {
+    const pos = { x: startX + idx * (cardW + 20), y: cardY, w: cardW, h: cardH };
+    
+    ctx.fillStyle = st.bg;
+    ctx.beginPath();
+    ctx.roundRect(pos.x, pos.y, pos.w, pos.h, 16);
+    ctx.fill();
+
+    ctx.strokeStyle = st.border;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#57534E"; // stone-500
+    ctx.font = "bold 15px 'Cairo', 'Tahoma', 'Arial'";
+    ctx.fillText(st.title, pos.x + pos.w / 2, pos.y + 35);
+
+    ctx.fillStyle = st.color;
+    ctx.font = "black 26px 'Cairo', 'Tahoma', 'Arial'";
+    ctx.fillText(st.value, pos.x + pos.w / 2, pos.y + 75);
+  });
+
+  // توقيع واعتماد
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#57534E";
+  ctx.font = "bold 15px 'Cairo', 'Tahoma', 'Arial'";
+  ctx.fillText("تاريخ المنح والتكريم:", canvasW - 250, 750);
+  
+  ctx.fillStyle = "#1C1917";
+  ctx.font = "bold 18px 'Cairo', 'Tahoma', 'Arial'";
+  const todayDate = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
+  ctx.fillText(todayDate, canvasW - 250, 780);
+
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#57534E";
+  ctx.font = "bold 15px 'Cairo', 'Tahoma', 'Arial'";
+  ctx.fillText("اعتماد وليّ الأمر:", 250, 750);
+
+  ctx.fillStyle = "#B45309";
+  ctx.font = "bold 22px 'Amiri', 'Cairo', serif";
+  ctx.fillText("✓ معتمد وموثق", 250, 780);
+
+  ctx.strokeStyle = "rgba(245, 158, 11, 0.3)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(150, 715);
+  ctx.lineTo(canvasW - 150, 715);
+  ctx.stroke();
+
+  // 8. لوحة الحديث الشريف المحفز
+  const hadithY = 812;
+  const hadithW = 780;
+  const hadithH = 78;
+  const hadithX = (canvasW - hadithW) / 2;
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+  ctx.beginPath();
+  ctx.roundRect(hadithX, hadithY, hadithW, hadithH, 22);
+  ctx.fill();
+  ctx.strokeStyle = "#D4AF37";
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  drawCanvasStar(ctx, hadithX + 32, hadithY + hadithH / 2, 11, "#E5C058");
+  drawCanvasStar(ctx, hadithX + hadithW - 32, hadithY + hadithH / 2, 11, "#E5C058");
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#8C6514";
+  ctx.font = "bold 29px 'Traditional Arabic', 'Amiri', 'Cairo', 'Tahoma', serif";
+  ctx.fillText("« خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ »", canvasW / 2, hadithY + 41);
+
+  ctx.fillStyle = "#6B7280";
+  ctx.font = "bold 16px 'Cairo', 'Tahoma', 'Arial'";
+  ctx.fillText("— قال رسول الله ﷺ —", canvasW / 2, hadithY + 66);
+
+  // تحميل الشهادة
+  const safeName = displayName.replace(/\s+/g, "-");
+  const filename = `الشهادة-الأسطورية-${safeName}-${new Date().toISOString().split("T")[0]}.png`;
+  const dataUrl = canvas.toDataURL("image/png");
+
+  await saveImageDataUrl(dataUrl, filename);
+}

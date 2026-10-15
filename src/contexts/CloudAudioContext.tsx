@@ -19,18 +19,19 @@ export function CloudAudioProvider({ children }: { children: ReactNode }) {
     
     const fetchAvailableAudio = async () => {
       try {
-        // استخدم ?t= لتجنب التخزين المؤقت (Cache) من المتصفح أو سيرفر Hugging Face
-        const res = await fetch(`https://huggingface.co/api/datasets/hammoualiyoucef20/quran-audio/tree/main?t=${Date.now()}`);
+        const res = await fetch("https://archive.org/metadata/quran-audio-files-for-kids");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         
         const available = new Set<number>();
-        data.forEach((item: any) => {
-          if (item.type === 'file' && item.path.endsWith('.mp3')) {
-            const num = parseInt(item.path.replace('.mp3', ''), 10);
-            if (!isNaN(num)) available.add(num);
-          }
-        });
+        if (data && data.files) {
+          data.files.forEach((item: any) => {
+            if (item.name && item.name.endsWith('.mp3')) {
+              const num = parseInt(item.name.replace('.mp3', ''), 10);
+              if (!isNaN(num)) available.add(num);
+            }
+          });
+        }
         
         if (isMounted) {
           setAvailableSurahs(available);

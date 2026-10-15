@@ -1,4 +1,4 @@
-import { isTauri, checkOfflineStatus as checkTauriOffline, getOfflineAudioUrl as getTauriOfflineUrl, downloadSurah as downloadTauriSurah } from "@/utils/tauriUtils";
+import { isTauri, checkOfflineStatus as checkTauriOffline, getOfflineAudioUrl as getTauriOfflineUrl } from "@/utils/tauriUtils";
 
 const CACHE_NAME = "quran-audio-cache-v1";
 const DB_NAME = "LearnQuranKids_OfflineAudio";
@@ -29,6 +29,7 @@ function getAudioIDB(): Promise<IDBDatabase> {
  * Save audio blob to Cache Storage and IndexedDB
  */
 export async function saveAudioToCache(url: string, surahNumber: number, blob: Blob): Promise<void> {
+  let persisted = false;
   // 1. Cache Storage (standard Web/PWA)
   if (typeof caches !== "undefined") {
     try {
@@ -40,6 +41,7 @@ export async function saveAudioToCache(url: string, surahNumber: number, blob: B
       });
       const response = new Response(blob, { status: 200, statusText: "OK", headers });
       await cache.put(url, response);
+      persisted = true;
     } catch (e) {
       console.warn("Failed saving to CacheStorage, falling back to IDB:", e);
     }
@@ -52,21 +54,15 @@ export async function saveAudioToCache(url: string, surahNumber: number, blob: B
       const tx = db.transaction(STORE_NAME, "readwrite");
       const store = tx.objectStore(STORE_NAME);
       const req = store.put({ key: `surah_${surahNumber}`, url, blob, updatedAt: Date.now() });
-      req.onsuccess = () => resolve();
+      req.onsuccess = () => { persisted = true; resolve(); };
       req.onerror = () => reject(req.error);
     });
   } catch (e) {
     console.warn("Failed saving to IndexedDB:", e);
   }
 
-  // 3. Tauri Disk File (if running under Tauri Desktop/Android)
-  if (isTauri()) {
-    try {
-      await downloadTauriSurah(url, surahNumber);
-    } catch (e) {
-      console.warn("Tauri downloadSurah fallback:", e);
-    }
-  }
+  if (!persisted) throw new Error("Browser storage could not save this audio for offline use");
+
 }
 
 /**

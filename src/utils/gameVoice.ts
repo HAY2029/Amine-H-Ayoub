@@ -41,31 +41,31 @@ export const PRAISE_AUDIO: Record<string, string | null> = {
   "قريب جداً! استمر": "qareeb-jiddan.mp3",    // ✅ موجود
 
   // ═══ عبارات الترتيب والنجاح في الألعاب ═══
-  "أحسنت، رتّبتها صحيحاً": null,                 // 🆕 ملف مقترح: ahsant-rattabtha.mp3
-  "ما شاء الله! إتقان ممتاز يا بطل": null,       // 🆕 ملف مقترح: itqan-mumtaz.mp3
+  "أحسنت، رتّبتها صحيحاً": "rattabt-ayat.mp3",     // ✅ نفس معنى «رتّبت الآيات بنجاح»
+  "ما شاء الله! إتقان ممتاز يا بطل": "mashaallah2.mp3", // ✅ صوت «ما شاء الله» الثاني
 
   // ═══ ⬇️ كلمات مفردة قصيرة بلا صوت — ضع اسم ملف الصوت مكان null عند صناعته ═══
   // ⚡ القاعدة: **كلمة واحدة فقط** لكل ملف — لا جمل ولا عبارات طويلة.
-  "ممتاز": null,                               // ممتاز    → mumtaz.mp3
-  "بطل": null,                                 // بطل      → batal.mp3
-  "واصل": null,                                // واصل     → wasel.mp3
-  "أكمل": null,                                // أكمل     → akmil.mp3
-  "استمر": null,                               // استمر    → istamir.mp3
-  "خطأ": null,                                 // خطأ      → khata.mp3
-  "صح": null,                                  // صح       → sah.mp3
-  "جميل": null,                                // جميل     → jameel.mp3
-  "مذهل": null,                                // مذهل     → muthil.mp3
-  "عبقري": null,                               // عبقري    → abqari.mp3
-  "أسطورة": null,                              // أسطورة   → ustura-word.mp3
-  "شكراً": null,                               // شكراً    → shukran.mp3
-  "ركّز": null,                                // ركّز     → rakkiz.mp3
-  "الأول": null,                               // الأول    → al-awwal.mp3
-  "بالتوفيق": null,                            // بالتوفيق → bittawfiq.mp3
-  "طيب": null,                                 // طيب      → tayyib.mp3
-  "سهل": null,                                 // سهل      → sahl.mp3
-  "جاهز": null,                                // جاهز     → jahiz.mp3
-  "الأفضل": null,                              // الأفضل   → al-afdal.mp3
-  "مبدع": null,                                // مبدع     → mubdi.mp3
+  "ممتاز": "mumtaz.mp3",                        // ممتاز    ✅
+  "بطل": "batal.mp3",                           // بطل      ✅
+  "واصل": "wasel.mp3",                          // واصل     ✅
+  "أكمل": "akmil.mp3",                          // أكمل     ✅
+  "استمر": "istamir.mp3",                       // استمر    ✅
+  "خطأ": "khata.mp3",                           // خطأ      ✅
+  "صح": "sah.mp3",                              // صح       ✅
+  "جميل": "jameel.mp3",                         // جميل     ✅
+  "مذهل": "muthil.mp3",                         // مذهل     ✅
+  "عبقري": "abqari.mp3",                        // عبقري    ✅
+  "أسطورة": "ustura-word.mp3",                  // أسطورة   ✅
+  "شكراً": "shukran.mp3",                       // شكراً    ✅
+  "ركّز": "rakkiz.mp3",                         // ركّز     ✅
+  "الأول": null,                                // الأول    → al-awwal.mp3 (لا يوجد صوت بعد)
+  "بالتوفيق": "bittawfiq.mp3",                  // بالتوفيق ✅
+  "طيب": "tayyib.mp3",                          // طيب      ✅
+  "سهل": "sahl.mp3",                            // سهل      ✅
+  "جاهز": null,                                // جاهز     → jahiz.mp3 (لا يوجد صوت بعد)
+  "الأفضل": "al-afdal.mp3",                     // الأفضل   ✅
+  "مبدع": "mubdi.mp3",                          // مبدع     ✅
 };
 
 /**
@@ -120,7 +120,8 @@ export type PraisePhrase = keyof typeof PRAISE_AUDIO;
 /** يزيل الرموز التعبيرية والعلامات و«يا بطل» الزائدة للوصول لجذر العبارة */
 const normalize = (text: string): string =>
   text
-    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, "")
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+    .replace(/\u{FE0F}/gu, "")
     .replace(/[!،.؟?]/g, "")
     .replace(/\s+/g, " ")
     .trim();
@@ -145,6 +146,12 @@ export const stopGameVoice = () => {
     current = null;
   }
 };
+
+// 🌐 تعريض دالة الإيقاف على window ليتّمكّن حارس التنقّل العام من إسكات الأصوات
+// عند مغادرة صفحة الألعاب (بلا أي اعتماد دائري على وحدات أخرى).
+if (typeof window !== "undefined") {
+  (window as unknown as { __stopGameVoice?: () => void }).__stopGameVoice = stopGameVoice;
+}
 
 const resolveFile = (text: string): string | null => {
   const clean = normalize(text);
@@ -174,6 +181,70 @@ const resolveFile = (text: string): string | null => {
 /** كل العبارات المعروفة في الموقع (سواء لها صوت أم لا). */
 export const listPraisePhrases = (): { phrase: string; file: string | null }[] =>
   Object.keys(PRAISE_AUDIO).map((phrase) => ({ phrase, file: PRAISE_AUDIO[phrase] }));
+
+/* ───────── احتياطي صوت الألعاب ─────────
+ * يُسجَّل اختياريًا من ركن الأطفال. يعمل فقط عندما لا يوجد ملف MP3 مطابق،
+ * فلا يغيّر سلوك النظام الحالي إطلاقًا (لا يُستبدل أي صوت موجود).
+ */
+type CharacterVoiceFallback = (text: string) => boolean | Promise<boolean>;
+let characterVoiceFallback: CharacterVoiceFallback | null = null;
+
+/** يسجّل دالة احتياطية لتشغيل صوت الشخصية عند غياب ملف الألعاب (أو يلغيها بـ null). */
+export const setCharacterVoiceFallback = (fn: CharacterVoiceFallback | null): void => {
+  characterVoiceFallback = fn;
+};
+
+/**
+ * يشغّل صوت تشجيع: يجرّب أولاً ملفات الألعاب الحالية (playGameVoice)،
+ * وإن لم يوجد ملف مطابق يستعمل احتياطي صوت الشخصية إن كان مسجّلاً.
+ * لا يرمي أبدًا.
+ */
+export const playGameVoiceWithCharacterFallback = (text: string): boolean => {
+  const played = playGameVoice(text);
+  if (played) return true;
+  if (characterVoiceFallback) {
+    try { void characterVoiceFallback(text); } catch { /* ignore */ }
+  }
+  return false;
+};
+
+/** مدة الصوت الحالي بالملي ثانية إن كان جاهزاً (بلا انتظار التحميل)، أو null. */
+export const getCurrentVoiceDurationMs = (): number | null => {
+  if (!current) return null;
+  const d = current.duration;
+  return Number.isFinite(d) && d > 0 ? Math.round(d * 1000) : null;
+};
+
+/**
+ * يجلب مدة صوت عبارة بعينها بالملي ثانية (يجعل المتصفح يحمّل الملف بهدوء).
+ * يعود بمدة مخزّنة سابقاً أو null إن تعذّر — لا يرمي أبداً.
+ */
+export const getVoiceDurationMs = async (text: string): Promise<number | null> => {
+  if (typeof window === "undefined") return null;
+  try {
+    const file = resolveFile(text);
+    if (!file) return null;
+    let el = buffer.get(file);
+    if (!el) {
+      el = new Audio(`${BASE}/${file}`);
+      el.preload = "auto";
+      el.onerror = () => { /* نتجاهل */ };
+      buffer.set(file, el);
+    }
+    const d = el.duration;
+    if (Number.isFinite(d) && d > 0) return Math.round(d * 1000);
+    await new Promise<void>((res) => {
+      const done = () => { el?.removeEventListener("loadedmetadata", done); res(); };
+      el?.addEventListener("loadedmetadata", done);
+      // أقصى انتظار 2 ثوانٍ ثم نكمل بأي حال (لا نعلّق الواجهة)
+      window.setTimeout(done, 2000);
+    });
+    const d2 = el.duration;
+    return Number.isFinite(d2) && d2 > 0 ? Math.round(d2 * 1000) : null;
+  } catch {
+    return null; // نتجاهل بهدوء
+  }
+};
 
 /** العبارات التي لم يُصنع صوتها بعد — لتقرير ما ينقصك. */
 export const listMissingVoices = (): string[] =>
@@ -205,13 +276,35 @@ export const playGameVoice = (text: string): boolean => {
   }
 };
 
-/** يحمّل كل أصوات التشجيع المتوفرة مسبقاً لتعمل بلا تأخير ودون إنترنت */
+/**
+ * تسخين ذكي لأصوات التشجيع — لا نحمل كل الأصوات الـ 40 دفعة واحدة عند الإقلاع لتفادي إبطاء التشغيل
+ */
 export const precacheGameVoice = () => {
   if (typeof window === "undefined") return;
-  Object.values(PRAISE_AUDIO).forEach((file) => {
-    if (!file || buffer.has(file)) return;   // المداخل بلا صوت تُتخطّى
-    const el = new Audio(`${BASE}/${file}`);
-    el.preload = "auto";
-    buffer.set(file, el);
-  });
+  try {
+    // تجهيز الأصوات الأساسية الأكثر تكراراً فقط، مع إبقاء الباقي عند الطلب
+    const topFiles = ["ahsant.mp3", "mumtaz-jiddan.mp3", "mashaallah.mp3"];
+    topFiles.forEach((file) => {
+      if (buffer.has(file)) return;
+      try {
+        const el = new Audio(`${BASE}/${file}`);
+        el.preload = "none";
+        el.onerror = () => { /* ignore */ };
+        buffer.set(file, el);
+      } catch { /* ignore */ }
+    });
+  } catch { /* ignore */ }
+};
+
+/**
+ * تسخين آمن في وقت الخمول فقط — لا يستنزف الباندويث عند فتح التطبيق
+ */
+export const warmUpGameVoices = () => {
+  if (typeof window === "undefined") return;
+  if ("requestIdleCallback" in window) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).requestIdleCallback(() => precacheGameVoice(), { timeout: 8000 });
+  } else {
+    setTimeout(precacheGameVoice, 6000);
+  }
 };

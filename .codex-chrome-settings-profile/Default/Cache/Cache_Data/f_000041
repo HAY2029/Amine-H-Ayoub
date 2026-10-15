@@ -1,0 +1,479 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/QuranLockGateModal.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"]; const _Fragment = __vite__cjsImport2_react_jsxDevRuntime["Fragment"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const useEffect = __vite__cjsImport3_react["useEffect"]; const useState = __vite__cjsImport3_react["useState"];
+import { useNavigate } from "/node_modules/.vite/deps/react-router-dom.js?v=c05fb7b0";
+import { Lock, Headphones, X, Clock, Star, Timer } from "/node_modules/.vite/deps/lucide-react.js?v=c05fb7b0";
+import { getProgress, getProfile, unlockToday } from "/src/data/kidsProfile.ts?t=1791820648188";
+import { toast } from "/src/hooks/use-toast.ts";
+export default function QuranLockGateModal({ isOpen, onClose, targetName = "الألعاب" }) {
+    _s();
+    const navigate = useNavigate();
+    const [progress, setProgress] = useState(getProgress);
+    const [profile, setProfile] = useState(getProfile);
+    const [showPin, setShowPin] = useState(false);
+    const [ticker, setTicker] = useState(0);
+    useEffect(()=>{
+        if (!isOpen) return;
+        const sync = ()=>{
+            setProgress(getProgress());
+            setProfile(getProfile());
+        };
+        sync();
+        // تحديث العداد دورياً
+        const timer = setInterval(()=>{
+            sync();
+            setTicker((t)=>t + 1);
+        }, 1000);
+        window.addEventListener("mushaf:reading_progress", sync);
+        window.addEventListener("mushaf:activeprofile", sync);
+        window.addEventListener("focus", sync);
+        return ()=>{
+            clearInterval(timer);
+            window.removeEventListener("mushaf:reading_progress", sync);
+            window.removeEventListener("mushaf:activeprofile", sync);
+            window.removeEventListener("focus", sync);
+        };
+    }, [
+        isOpen
+    ]);
+    if (!isOpen) return null;
+    // هدف القراءة (افتراضياً 5 دقائق إن لم يحدد)
+    const goal = typeof profile.goalMinutes === "number" && profile.goalMinutes > 0 ? profile.goalMinutes : 5;
+    const minutesRead = progress.minutes || 0;
+    const isPlayExpired = progress.playExpired;
+    // حساب الثواني المتبقية بدقة للعد التنازلي الحي
+    const totalRemainingSeconds = Math.max(0, Math.round((goal - minutesRead) * 60));
+    const remMinutes = Math.floor(totalRemainingSeconds / 60);
+    const remSeconds = totalRemainingSeconds % 60;
+    const isCompleted = totalRemainingSeconds <= 0 && !isPlayExpired;
+    const pct = Math.min(100, Math.round(minutesRead / Math.max(1, goal) * 100));
+    const handleStartReading = ()=>{
+        onClose();
+        navigate("/audio");
+    };
+    // رسائل ذكية عند انتهاء وقت اللعب
+    const isTimeUp = !!progress.playExpired;
+    const handleParentUnlock = ()=>{
+        unlockToday();
+        setShowPin(false);
+        toast({
+            title: isTimeUp ? "🎉 شكراً يا ولي الأمر! 🌟 تم منح وقت لعب إضافي للطفل الآن." : "🎉 فُتحت الألعاب بنجاح لهذا اليوم بإذن ولي الأمر!"
+        });
+        onClose();
+        navigate("/games");
+    };
+    return /*#__PURE__*/ _jsxDEV(_Fragment, {
+        children: /*#__PURE__*/ _jsxDEV("div", {
+            className: "fixed inset-0 z-[250] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in",
+            onClick: onClose,
+            dir: "rtl",
+            children: /*#__PURE__*/ _jsxDEV("div", {
+                className: "relative w-full max-w-sm bg-card rounded-3xl shadow-2xl border-2 border-amber-500/50 p-5 sm:p-6 text-center space-y-4 animate-fade-up overflow-hidden",
+                onClick: (e)=>e.stopPropagation(),
+                children: [
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "absolute -top-12 -right-12 w-32 h-32 bg-amber-500/15 rounded-full blur-2xl pointer-events-none"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                        lineNumber: 92,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "absolute -bottom-12 -left-12 w-32 h-32 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                        lineNumber: 93,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("button", {
+                        onClick: onClose,
+                        className: "absolute top-4 left-4 p-1.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors",
+                        title: "إغلاق",
+                        children: /*#__PURE__*/ _jsxDEV(X, {
+                            className: "w-4 h-4"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                            lineNumber: 100,
+                            columnNumber: 13
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                        lineNumber: 95,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500/25 via-amber-500/15 to-transparent border border-amber-500/40 flex items-center justify-center text-amber-500 shadow-inner",
+                        children: /*#__PURE__*/ _jsxDEV(Lock, {
+                            className: "w-8 h-8 animate-pulse text-amber-500"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                            lineNumber: 105,
+                            columnNumber: 13
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                        lineNumber: 104,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "space-y-1",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("span", {
+                                className: "inline-flex items-center gap-1 text-[11px] font-black bg-amber-500/15 text-amber-600 dark:text-amber-400 px-3 py-0.5 rounded-full border border-amber-500/30",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(Timer, {
+                                        className: "w-3.5 h-3.5"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 110,
+                                        columnNumber: 15
+                                    }, this),
+                                    " وقت مدارسة القرآن الكريم"
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                lineNumber: 109,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("h3", {
+                                className: "text-xl font-black text-foreground",
+                                children: [
+                                    targetName,
+                                    " مقفلة حتى تكمل وردك"
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                lineNumber: 112,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("p", {
+                                className: "text-xs text-muted-foreground font-bold",
+                                children: isPlayExpired ? "انتهى وقت اللعب لليوم، حان وقت تلاوة كتاب الله" : "أنت في وقت مدارسة القرآن! أكمل الوقت لفتح الألعاب تلقائياً"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                lineNumber: 115,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                        lineNumber: 108,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "p-4 rounded-2xl bg-gradient-to-b from-secondary/80 to-secondary/40 border border-border/80 shadow-inner space-y-3",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("span", {
+                                className: "text-[11px] font-bold text-muted-foreground flex items-center justify-center gap-1.5",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(Clock, {
+                                        className: "w-3.5 h-3.5 text-accent animate-pulse"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 125,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        children: "العداد التنازلي المتبقي لفتح الألعاب:"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 126,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                lineNumber: 124,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                className: "flex items-center justify-center gap-2.5 py-1",
+                                dir: "ltr",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        className: "flex flex-col items-center",
+                                        children: [
+                                            /*#__PURE__*/ _jsxDEV("div", {
+                                                className: "w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-black/70 border-2 border-amber-500/60 flex items-center justify-center shadow-lg",
+                                                children: /*#__PURE__*/ _jsxDEV("span", {
+                                                    className: "font-mono text-3xl sm:text-4xl font-black text-amber-400 tracking-wider",
+                                                    children: String(remMinutes).padStart(2, "0")
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                    lineNumber: 134,
+                                                    columnNumber: 19
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                lineNumber: 133,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ _jsxDEV("span", {
+                                                className: "text-[10px] font-extrabold text-muted-foreground mt-1",
+                                                children: "دقائق"
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                lineNumber: 138,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 132,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        className: "text-3xl font-black text-amber-500 animate-pulse pb-3",
+                                        children: ":"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 142,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        className: "flex flex-col items-center",
+                                        children: [
+                                            /*#__PURE__*/ _jsxDEV("div", {
+                                                className: "w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-black/70 border-2 border-amber-500/60 flex items-center justify-center shadow-lg",
+                                                children: /*#__PURE__*/ _jsxDEV("span", {
+                                                    className: "font-mono text-3xl sm:text-4xl font-black text-amber-400 tracking-wider",
+                                                    children: String(remSeconds).padStart(2, "0")
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                    lineNumber: 147,
+                                                    columnNumber: 19
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                lineNumber: 146,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ _jsxDEV("span", {
+                                                className: "text-[10px] font-extrabold text-muted-foreground mt-1",
+                                                children: "ثوانٍ"
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                lineNumber: 151,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 145,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                lineNumber: 130,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                className: "space-y-1 pt-1",
+                                dir: "rtl",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        className: "h-2.5 rounded-full bg-card border border-border/50 overflow-hidden p-0.5",
+                                        children: /*#__PURE__*/ _jsxDEV("div", {
+                                            className: "h-full rounded-full bg-gradient-to-l from-emerald-500 to-teal-400 transition-all duration-500 shadow-sm",
+                                            style: {
+                                                width: `${pct}%`
+                                            }
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                            lineNumber: 158,
+                                            columnNumber: 17
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 157,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        className: "flex justify-between text-[11px] font-bold text-muted-foreground px-1",
+                                        children: [
+                                            /*#__PURE__*/ _jsxDEV("span", {
+                                                children: [
+                                                    "استمعت: ",
+                                                    /*#__PURE__*/ _jsxDEV("b", {
+                                                        className: "text-emerald-500 font-black",
+                                                        children: minutesRead
+                                                    }, void 0, false, {
+                                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                        lineNumber: 164,
+                                                        columnNumber: 31
+                                                    }, this),
+                                                    " د"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                lineNumber: 164,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ _jsxDEV("span", {
+                                                children: [
+                                                    "الهدف: ",
+                                                    /*#__PURE__*/ _jsxDEV("b", {
+                                                        className: "text-foreground font-black",
+                                                        children: goal
+                                                    }, void 0, false, {
+                                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                        lineNumber: 165,
+                                                        columnNumber: 30
+                                                    }, this),
+                                                    " د"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                                lineNumber: 165,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 163,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                lineNumber: 156,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                className: "pt-0.5 flex items-center justify-center gap-1 text-[11px] text-amber-500 font-bold",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(Star, {
+                                        className: "w-3.5 h-3.5 fill-amber-500"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 170,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        children: "تربح 2 نجمة عن كل دقيقة استماع للقرآن ⭐"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 171,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                lineNumber: 169,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                        lineNumber: 123,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "flex flex-col gap-2 pt-1",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("button", {
+                                onClick: handleStartReading,
+                                className: "w-full p-3.5 rounded-2xl bg-gradient-to-l from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(Headphones, {
+                                        className: "w-5 h-5"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 181,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        children: "استمع الآن للقرآن لتشغيل العداد 📖"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                        lineNumber: 182,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                lineNumber: 177,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("button", {
+                                onClick: onClose,
+                                className: "w-full p-2.5 rounded-xl bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 border border-border/60",
+                                children: /*#__PURE__*/ _jsxDEV("span", {
+                                    children: "متابعة التصفح"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                    lineNumber: 189,
+                                    columnNumber: 15
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                                lineNumber: 185,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                        lineNumber: 176,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+                lineNumber: 87,
+                columnNumber: 9
+            }, this)
+        }, void 0, false, {
+            fileName: "H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx",
+            lineNumber: 82,
+            columnNumber: 7
+        }, this)
+    }, void 0, false);
+}
+_s(QuranLockGateModal, "NnLeL9JjF5vxpKIC2PS2iXfr2MU=", false, function() {
+    return [
+        useNavigate
+    ];
+});
+_c = QuranLockGateModal;
+var _c;
+$RefreshReg$(_c, "QuranLockGateModal");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/QuranLockGateModal.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlF1cmFuTG9ja0dhdGVNb2RhbC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgdXNlRWZmZWN0LCB1c2VTdGF0ZSB9IGZyb20gXCJyZWFjdFwiO1xuaW1wb3J0IHsgdXNlTmF2aWdhdGUgfSBmcm9tIFwicmVhY3Qtcm91dGVyLWRvbVwiO1xuaW1wb3J0IHsgTG9jaywgSGVhZHBob25lcywgQm9va09wZW4sIEtleVJvdW5kLCBYLCBDbG9jaywgU3BhcmtsZXMsIFN0YXIsIFBsYXksIFRpbWVyIH0gZnJvbSBcImx1Y2lkZS1yZWFjdFwiO1xuaW1wb3J0IHsgZ2V0UHJvZ3Jlc3MsIGdldFByb2ZpbGUsIHVubG9ja1RvZGF5LCBmb3JtYXRDb2lucywgZ2V0Q29pbnMgfSBmcm9tIFwiQC9kYXRhL2tpZHNQcm9maWxlXCI7XG5pbXBvcnQgeyBoYXNLaWRzUGluIH0gZnJvbSBcIkAvZGF0YS9raWRzTG9ja1wiO1xuaW1wb3J0IFBhcmVudGFsR2F0ZU1vZGFsIGZyb20gXCIuL1BhcmVudGFsR2F0ZU1vZGFsXCI7XG5pbXBvcnQgeyB0b2FzdCB9IGZyb20gXCJAL2hvb2tzL3VzZS10b2FzdFwiO1xuXG5pbnRlcmZhY2UgUHJvcHMge1xuICBpc09wZW46IGJvb2xlYW47XG4gIG9uQ2xvc2U6ICgpID0+IHZvaWQ7XG4gIHRhcmdldE5hbWU/OiBzdHJpbmc7IC8vIFwi2KfZhNij2YTYudin2KhcIiDYo9mIIFwi2KfZhNmF2KrYrNixXCJcbn1cblxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gUXVyYW5Mb2NrR2F0ZU1vZGFsKHsgaXNPcGVuLCBvbkNsb3NlLCB0YXJnZXROYW1lID0gXCLYp9mE2KPZhNi52KfYqFwiIH06IFByb3BzKSB7XG4gIGNvbnN0IG5hdmlnYXRlID0gdXNlTmF2aWdhdGUoKTtcbiAgY29uc3QgW3Byb2dyZXNzLCBzZXRQcm9ncmVzc10gPSB1c2VTdGF0ZShnZXRQcm9ncmVzcyk7XG4gIGNvbnN0IFtwcm9maWxlLCBzZXRQcm9maWxlXSA9IHVzZVN0YXRlKGdldFByb2ZpbGUpO1xuICBjb25zdCBbc2hvd1Bpbiwgc2V0U2hvd1Bpbl0gPSB1c2VTdGF0ZShmYWxzZSk7XG4gIGNvbnN0IFt0aWNrZXIsIHNldFRpY2tlcl0gPSB1c2VTdGF0ZSgwKTtcblxuICB1c2VFZmZlY3QoKCkgPT4ge1xuICAgIGlmICghaXNPcGVuKSByZXR1cm47XG4gICAgY29uc3Qgc3luYyA9ICgpID0+IHtcbiAgICAgIHNldFByb2dyZXNzKGdldFByb2dyZXNzKCkpO1xuICAgICAgc2V0UHJvZmlsZShnZXRQcm9maWxlKCkpO1xuICAgIH07XG4gICAgc3luYygpO1xuXG4gICAgLy8g2KrYrdiv2YrYqyDYp9mE2LnYr9in2K8g2K/ZiNix2YrYp9mLXG4gICAgY29uc3QgdGltZXIgPSBzZXRJbnRlcnZhbCgoKSA9PiB7XG4gICAgICBzeW5jKCk7XG4gICAgICBzZXRUaWNrZXIoKHQpID0+IHQgKyAxKTtcbiAgICB9LCAxMDAwKTtcblxuICAgIHdpbmRvdy5hZGRFdmVudExpc3RlbmVyKFwibXVzaGFmOnJlYWRpbmdfcHJvZ3Jlc3NcIiwgc3luYyk7XG4gICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoXCJtdXNoYWY6YWN0aXZlcHJvZmlsZVwiLCBzeW5jKTtcbiAgICB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcihcImZvY3VzXCIsIHN5bmMpO1xuICAgIHJldHVybiAoKSA9PiB7XG4gICAgICBjbGVhckludGVydmFsKHRpbWVyKTtcbiAgICAgIHdpbmRvdy5yZW1vdmVFdmVudExpc3RlbmVyKFwibXVzaGFmOnJlYWRpbmdfcHJvZ3Jlc3NcIiwgc3luYyk7XG4gICAgICB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcihcIm11c2hhZjphY3RpdmVwcm9maWxlXCIsIHN5bmMpO1xuICAgICAgd2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoXCJmb2N1c1wiLCBzeW5jKTtcbiAgICB9O1xuICB9LCBbaXNPcGVuXSk7XG5cbiAgaWYgKCFpc09wZW4pIHJldHVybiBudWxsO1xuXG4gIC8vINmH2K/ZgSDYp9mE2YLYsdin2KHYqSAo2KfZgdiq2LHYp9i22YrYp9mLIDUg2K/Zgtin2KbZgiDYpdmGINmE2YUg2YrYrdiv2K8pXG4gIGNvbnN0IGdvYWwgPSB0eXBlb2YgcHJvZmlsZS5nb2FsTWludXRlcyA9PT0gXCJudW1iZXJcIiAmJiBwcm9maWxlLmdvYWxNaW51dGVzID4gMCA/IHByb2ZpbGUuZ29hbE1pbnV0ZXMgOiA1O1xuICBjb25zdCBtaW51dGVzUmVhZCA9IHByb2dyZXNzLm1pbnV0ZXMgfHwgMDtcbiAgY29uc3QgaXNQbGF5RXhwaXJlZCA9IHByb2dyZXNzLnBsYXlFeHBpcmVkO1xuXG4gIC8vINit2LPYp9ioINin2YTYq9mI2KfZhtmKINin2YTZhdiq2KjZgtmK2Kkg2KjYr9mC2Kkg2YTZhNi52K8g2KfZhNiq2YbYp9iy2YTZiiDYp9mE2K3ZilxuICBjb25zdCB0b3RhbFJlbWFpbmluZ1NlY29uZHMgPSBNYXRoLm1heCgwLCBNYXRoLnJvdW5kKChnb2FsIC0gbWludXRlc1JlYWQpICogNjApKTtcbiAgY29uc3QgcmVtTWludXRlcyA9IE1hdGguZmxvb3IodG90YWxSZW1haW5pbmdTZWNvbmRzIC8gNjApO1xuICBjb25zdCByZW1TZWNvbmRzID0gdG90YWxSZW1haW5pbmdTZWNvbmRzICUgNjA7XG4gIGNvbnN0IGlzQ29tcGxldGVkID0gdG90YWxSZW1haW5pbmdTZWNvbmRzIDw9IDAgJiYgIWlzUGxheUV4cGlyZWQ7XG4gIGNvbnN0IHBjdCA9IE1hdGgubWluKDEwMCwgTWF0aC5yb3VuZCgobWludXRlc1JlYWQgLyBNYXRoLm1heCgxLCBnb2FsKSkgKiAxMDApKTtcblxuICBjb25zdCBoYW5kbGVTdGFydFJlYWRpbmcgPSAoKSA9PiB7XG4gICAgb25DbG9zZSgpO1xuICAgIG5hdmlnYXRlKFwiL2F1ZGlvXCIpO1xuICB9O1xuXG4gICAgLy8g2LHYs9in2KbZhCDYsNmD2YrYqSDYudmG2K8g2KfZhtiq2YfYp9ihINmI2YLYqiDYp9mE2YTYudioXG4gIGNvbnN0IGlzVGltZVVwID0gISFwcm9ncmVzcy5wbGF5RXhwaXJlZDtcbiAgY29uc3QgaGFuZGxlUGFyZW50VW5sb2NrID0gKCkgPT4ge1xuICAgIHVubG9ja1RvZGF5KCk7XG4gICAgc2V0U2hvd1BpbihmYWxzZSk7XG4gICAgdG9hc3Qoe1xuICAgICAgdGl0bGU6IGlzVGltZVVwXG4gICAgICAgID8gXCLwn46JINi02YPYsdin2Ysg2YrYpyDZiNmE2Yog2KfZhNij2YXYsSEg8J+MnyDYqtmFINmF2YbYrSDZiNmC2Kog2YTYudioINil2LbYp9mB2Yog2YTZhNi32YHZhCDYp9mE2KLZhi5cIlxuICAgICAgICA6IFwi8J+OiSDZgdmP2KrYrdiqINin2YTYo9mE2LnYp9ioINio2YbYrNin2K0g2YTZh9iw2Kcg2KfZhNmK2YjZhSDYqNil2LDZhiDZiNmE2Yog2KfZhNij2YXYsSFcIixcbiAgICB9KTtcbiAgICBvbkNsb3NlKCk7XG4gICAgbmF2aWdhdGUoXCIvZ2FtZXNcIik7XG4gIH07XG5cbiAgcmV0dXJuIChcbiAgICA8PlxuICAgICAgPGRpdiBcbiAgICAgICAgY2xhc3NOYW1lPVwiZml4ZWQgaW5zZXQtMCB6LVsyNTBdIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGJnLWJsYWNrLzgwIGJhY2tkcm9wLWJsdXItbWQgcC00IGFuaW1hdGUtZmFkZS1pblwiXG4gICAgICAgIG9uQ2xpY2s9e29uQ2xvc2V9XG4gICAgICAgIGRpcj1cInJ0bFwiXG4gICAgICA+XG4gICAgICAgIDxkaXYgXG4gICAgICAgICAgY2xhc3NOYW1lPVwicmVsYXRpdmUgdy1mdWxsIG1heC13LXNtIGJnLWNhcmQgcm91bmRlZC0zeGwgc2hhZG93LTJ4bCBib3JkZXItMiBib3JkZXItYW1iZXItNTAwLzUwIHAtNSBzbTpwLTYgdGV4dC1jZW50ZXIgc3BhY2UteS00IGFuaW1hdGUtZmFkZS11cCBvdmVyZmxvdy1oaWRkZW5cIlxuICAgICAgICAgIG9uQ2xpY2s9eyhlKSA9PiBlLnN0b3BQcm9wYWdhdGlvbigpfVxuICAgICAgICA+XG4gICAgICAgICAgey8qINmH2KfZhNin2Kog2K7ZhNmB2YrYqSDYsNmH2KjZitipINiu2YHZitmB2KkgKi99XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJhYnNvbHV0ZSAtdG9wLTEyIC1yaWdodC0xMiB3LTMyIGgtMzIgYmctYW1iZXItNTAwLzE1IHJvdW5kZWQtZnVsbCBibHVyLTJ4bCBwb2ludGVyLWV2ZW50cy1ub25lXCIgLz5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImFic29sdXRlIC1ib3R0b20tMTIgLWxlZnQtMTIgdy0zMiBoLTMyIGJnLWVtZXJhbGQtNTAwLzE1IHJvdW5kZWQtZnVsbCBibHVyLTJ4bCBwb2ludGVyLWV2ZW50cy1ub25lXCIgLz5cblxuICAgICAgICAgIDxidXR0b24gXG4gICAgICAgICAgICBvbkNsaWNrPXtvbkNsb3NlfVxuICAgICAgICAgICAgY2xhc3NOYW1lPVwiYWJzb2x1dGUgdG9wLTQgbGVmdC00IHAtMS41IHJvdW5kZWQtZnVsbCBiZy1zZWNvbmRhcnkgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIGhvdmVyOnRleHQtZm9yZWdyb3VuZCB0cmFuc2l0aW9uLWNvbG9yc1wiXG4gICAgICAgICAgICB0aXRsZT1cItil2LrZhNin2YJcIlxuICAgICAgICAgID5cbiAgICAgICAgICAgIDxYIGNsYXNzTmFtZT1cInctNCBoLTRcIiAvPlxuICAgICAgICAgIDwvYnV0dG9uPlxuXG4gICAgICAgICAgey8qINi02KfYsdipINin2YTZgtmB2YQg2KfZhNiw2YfYqNmK2Kkg2KfZhNmF2KrZiNmH2KzYqSAqL31cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cIm14LWF1dG8gdy0xNiBoLTE2IHJvdW5kZWQtMnhsIGJnLWdyYWRpZW50LXRvLXRyIGZyb20tYW1iZXItNTAwLzI1IHZpYS1hbWJlci01MDAvMTUgdG8tdHJhbnNwYXJlbnQgYm9yZGVyIGJvcmRlci1hbWJlci01MDAvNDAgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgdGV4dC1hbWJlci01MDAgc2hhZG93LWlubmVyXCI+XG4gICAgICAgICAgICA8TG9jayBjbGFzc05hbWU9XCJ3LTggaC04IGFuaW1hdGUtcHVsc2UgdGV4dC1hbWJlci01MDBcIiAvPlxuICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTFcIj5cbiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImlubGluZS1mbGV4IGl0ZW1zLWNlbnRlciBnYXAtMSB0ZXh0LVsxMXB4XSBmb250LWJsYWNrIGJnLWFtYmVyLTUwMC8xNSB0ZXh0LWFtYmVyLTYwMCBkYXJrOnRleHQtYW1iZXItNDAwIHB4LTMgcHktMC41IHJvdW5kZWQtZnVsbCBib3JkZXIgYm9yZGVyLWFtYmVyLTUwMC8zMFwiPlxuICAgICAgICAgICAgICA8VGltZXIgY2xhc3NOYW1lPVwidy0zLjUgaC0zLjVcIiAvPiDZiNmC2Kog2YXYr9in2LHYs9ipINin2YTZgtix2KLZhiDYp9mE2YPYsdmK2YVcbiAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgIDxoMyBjbGFzc05hbWU9XCJ0ZXh0LXhsIGZvbnQtYmxhY2sgdGV4dC1mb3JlZ3JvdW5kXCI+XG4gICAgICAgICAgICAgIHt0YXJnZXROYW1lfSDZhdmC2YHZhNipINit2KrZiSDYqtmD2YXZhCDZiNix2K/Zg1xuICAgICAgICAgICAgPC9oMz5cbiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQteHMgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIGZvbnQtYm9sZFwiPlxuICAgICAgICAgICAgICB7aXNQbGF5RXhwaXJlZFxuICAgICAgICAgICAgICAgID8gXCLYp9mG2KrZh9mJINmI2YLYqiDYp9mE2YTYudioINmE2YTZitmI2YXYjCDYrdin2YYg2YjZgtiqINiq2YTYp9mI2Kkg2YPYqtin2Kgg2KfZhNmE2YdcIlxuICAgICAgICAgICAgICAgIDogXCLYo9mG2Kog2YHZiiDZiNmC2Kog2YXYr9in2LHYs9ipINin2YTZgtix2KLZhiEg2KPZg9mF2YQg2KfZhNmI2YLYqiDZhNmB2KrYrSDYp9mE2KPZhNi52KfYqCDYqtmE2YLYp9im2YrYp9mLXCJ9XG4gICAgICAgICAgICA8L3A+XG4gICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICB7Lyog4pSA4pSAINin2YTYudiv2KfYryDYp9mE2KrZhtin2LLZhNmKINin2YTYsdmC2YXZiiDYp9mE2K3ZiiAo2LPYp9i52Kkg2KXZhNmD2KrYsdmI2YbZitipINmB2K7ZhdipKSDilIDilIAgKi99XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTQgcm91bmRlZC0yeGwgYmctZ3JhZGllbnQtdG8tYiBmcm9tLXNlY29uZGFyeS84MCB0by1zZWNvbmRhcnkvNDAgYm9yZGVyIGJvcmRlci1ib3JkZXIvODAgc2hhZG93LWlubmVyIHNwYWNlLXktM1wiPlxuICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1bMTFweF0gZm9udC1ib2xkIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMS41XCI+XG4gICAgICAgICAgICAgIDxDbG9jayBjbGFzc05hbWU9XCJ3LTMuNSBoLTMuNSB0ZXh0LWFjY2VudCBhbmltYXRlLXB1bHNlXCIgLz5cbiAgICAgICAgICAgICAgPHNwYW4+2KfZhNi52K/Yp9ivINin2YTYqtmG2KfYstmE2Yog2KfZhNmF2KrYqNmC2Yog2YTZgdiq2K0g2KfZhNij2YTYudin2Kg6PC9zcGFuPlxuICAgICAgICAgICAgPC9zcGFuPlxuXG4gICAgICAgICAgICB7Lyog2KPYsdmC2KfZhSDYp9mE2LnYr9in2K8g2KfZhNiq2YbYp9iy2YTZiiDYp9mE2LbYrtmF2KkgKi99XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0yLjUgcHktMVwiIGRpcj1cImx0clwiPlxuICAgICAgICAgICAgICB7Lyog2KfZhNiv2YLYp9im2YIgKi99XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBmbGV4LWNvbCBpdGVtcy1jZW50ZXJcIj5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInctMTYgaC0xNiBzbTp3LTE4IHNtOmgtMTggcm91bmRlZC0yeGwgYmctYmxhY2svNzAgYm9yZGVyLTIgYm9yZGVyLWFtYmVyLTUwMC82MCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBzaGFkb3ctbGdcIj5cbiAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImZvbnQtbW9ubyB0ZXh0LTN4bCBzbTp0ZXh0LTR4bCBmb250LWJsYWNrIHRleHQtYW1iZXItNDAwIHRyYWNraW5nLXdpZGVyXCI+XG4gICAgICAgICAgICAgICAgICAgIHtTdHJpbmcocmVtTWludXRlcykucGFkU3RhcnQoMiwgXCIwXCIpfVxuICAgICAgICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtWzEwcHhdIGZvbnQtZXh0cmFib2xkIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBtdC0xXCI+2K/Zgtin2KbZgjwvc3Bhbj5cbiAgICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgICAgey8qINmG2YLYt9iq2Kcg2KfZhNmB2LXZhCDYp9mE2YjYp9mF2LbYqtin2YYgKi99XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGV4dC0zeGwgZm9udC1ibGFjayB0ZXh0LWFtYmVyLTUwMCBhbmltYXRlLXB1bHNlIHBiLTNcIj46PC9kaXY+XG5cbiAgICAgICAgICAgICAgey8qINin2YTYq9mI2KfZhtmKICovfVxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggZmxleC1jb2wgaXRlbXMtY2VudGVyXCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LTE2IGgtMTYgc206dy0xOCBzbTpoLTE4IHJvdW5kZWQtMnhsIGJnLWJsYWNrLzcwIGJvcmRlci0yIGJvcmRlci1hbWJlci01MDAvNjAgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgc2hhZG93LWxnXCI+XG4gICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJmb250LW1vbm8gdGV4dC0zeGwgc206dGV4dC00eGwgZm9udC1ibGFjayB0ZXh0LWFtYmVyLTQwMCB0cmFja2luZy13aWRlclwiPlxuICAgICAgICAgICAgICAgICAgICB7U3RyaW5nKHJlbVNlY29uZHMpLnBhZFN0YXJ0KDIsIFwiMFwiKX1cbiAgICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LVsxMHB4XSBmb250LWV4dHJhYm9sZCB0ZXh0LW11dGVkLWZvcmVncm91bmQgbXQtMVwiPtir2YjYp9mG2Y08L3NwYW4+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgIHsvKiDYtNix2YrYtyDYp9mE2KXZhtis2KfYsiAqL31cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0xIHB0LTFcIiBkaXI9XCJydGxcIj5cbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJoLTIuNSByb3VuZGVkLWZ1bGwgYmctY2FyZCBib3JkZXIgYm9yZGVyLWJvcmRlci81MCBvdmVyZmxvdy1oaWRkZW4gcC0wLjVcIj5cbiAgICAgICAgICAgICAgICA8ZGl2IFxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiaC1mdWxsIHJvdW5kZWQtZnVsbCBiZy1ncmFkaWVudC10by1sIGZyb20tZW1lcmFsZC01MDAgdG8tdGVhbC00MDAgdHJhbnNpdGlvbi1hbGwgZHVyYXRpb24tNTAwIHNoYWRvdy1zbVwiXG4gICAgICAgICAgICAgICAgICBzdHlsZT17eyB3aWR0aDogYCR7cGN0fSVgIH19XG4gICAgICAgICAgICAgICAgLz5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBqdXN0aWZ5LWJldHdlZW4gdGV4dC1bMTFweF0gZm9udC1ib2xkIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBweC0xXCI+XG4gICAgICAgICAgICAgICAgPHNwYW4+2KfYs9iq2YXYudiqOiA8YiBjbGFzc05hbWU9XCJ0ZXh0LWVtZXJhbGQtNTAwIGZvbnQtYmxhY2tcIj57bWludXRlc1JlYWR9PC9iPiDYrzwvc3Bhbj5cbiAgICAgICAgICAgICAgICA8c3Bhbj7Yp9mE2YfYr9mBOiA8YiBjbGFzc05hbWU9XCJ0ZXh0LWZvcmVncm91bmQgZm9udC1ibGFja1wiPntnb2FsfTwvYj4g2K88L3NwYW4+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicHQtMC41IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0xIHRleHQtWzExcHhdIHRleHQtYW1iZXItNTAwIGZvbnQtYm9sZFwiPlxuICAgICAgICAgICAgICA8U3RhciBjbGFzc05hbWU9XCJ3LTMuNSBoLTMuNSBmaWxsLWFtYmVyLTUwMFwiIC8+XG4gICAgICAgICAgICAgIDxzcGFuPtiq2LHYqNitIDIg2YbYrNmF2Kkg2LnZhiDZg9mEINiv2YLZitmC2Kkg2KfYs9iq2YXYp9i5INmE2YTZgtix2KLZhiDirZA8L3NwYW4+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgIHsvKiDYp9mE2KPYstix2KfYsSDZiNin2YTYpdis2LHYp9ih2KfYqiAqL31cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggZmxleC1jb2wgZ2FwLTIgcHQtMVwiPlxuICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICBvbkNsaWNrPXtoYW5kbGVTdGFydFJlYWRpbmd9XG4gICAgICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCBwLTMuNSByb3VuZGVkLTJ4bCBiZy1ncmFkaWVudC10by1sIGZyb20tZW1lcmFsZC02MDAgdG8tZW1lcmFsZC03MDAgaG92ZXI6ZnJvbS1lbWVyYWxkLTcwMCBob3Zlcjp0by1lbWVyYWxkLTgwMCB0ZXh0LXdoaXRlIGZvbnQtYmxhY2sgdGV4dC1zbSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMiBhY3RpdmU6c2NhbGUtOTUgdHJhbnNpdGlvbi1hbGwgc2hhZG93LWxnXCJcbiAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgPEhlYWRwaG9uZXMgY2xhc3NOYW1lPVwidy01IGgtNVwiIC8+XG4gICAgICAgICAgICAgIDxzcGFuPtin2LPYqtmF2Lkg2KfZhNii2YYg2YTZhNmC2LHYotmGINmE2KrYtNi62YrZhCDYp9mE2LnYr9in2K8g8J+Tljwvc3Bhbj5cbiAgICAgICAgICAgIDwvYnV0dG9uPlxuXG4gICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgIG9uQ2xpY2s9e29uQ2xvc2V9XG4gICAgICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCBwLTIuNSByb3VuZGVkLXhsIGJnLXNlY29uZGFyeS84MCBob3ZlcjpiZy1zZWNvbmRhcnkgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIGhvdmVyOnRleHQtZm9yZWdyb3VuZCBmb250LWJvbGQgdGV4dC14cyBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMS41IHRyYW5zaXRpb24tYWxsIGFjdGl2ZTpzY2FsZS05NSBib3JkZXIgYm9yZGVyLWJvcmRlci82MFwiXG4gICAgICAgICAgICA+XG4gICAgICAgICAgICAgIDxzcGFuPtmF2KrYp9io2LnYqSDYp9mE2KrYtdmB2K08L3NwYW4+XG4gICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cbiAgICA8Lz5cbiAgKTtcbn1cbiJdLCJuYW1lcyI6WyJ1c2VFZmZlY3QiLCJ1c2VTdGF0ZSIsInVzZU5hdmlnYXRlIiwiTG9jayIsIkhlYWRwaG9uZXMiLCJYIiwiQ2xvY2siLCJTdGFyIiwiVGltZXIiLCJnZXRQcm9ncmVzcyIsImdldFByb2ZpbGUiLCJ1bmxvY2tUb2RheSIsInRvYXN0IiwiUXVyYW5Mb2NrR2F0ZU1vZGFsIiwiaXNPcGVuIiwib25DbG9zZSIsInRhcmdldE5hbWUiLCJuYXZpZ2F0ZSIsInByb2dyZXNzIiwic2V0UHJvZ3Jlc3MiLCJwcm9maWxlIiwic2V0UHJvZmlsZSIsInNob3dQaW4iLCJzZXRTaG93UGluIiwidGlja2VyIiwic2V0VGlja2VyIiwic3luYyIsInRpbWVyIiwic2V0SW50ZXJ2YWwiLCJ0Iiwid2luZG93IiwiYWRkRXZlbnRMaXN0ZW5lciIsImNsZWFySW50ZXJ2YWwiLCJyZW1vdmVFdmVudExpc3RlbmVyIiwiZ29hbCIsImdvYWxNaW51dGVzIiwibWludXRlc1JlYWQiLCJtaW51dGVzIiwiaXNQbGF5RXhwaXJlZCIsInBsYXlFeHBpcmVkIiwidG90YWxSZW1haW5pbmdTZWNvbmRzIiwiTWF0aCIsIm1heCIsInJvdW5kIiwicmVtTWludXRlcyIsImZsb29yIiwicmVtU2Vjb25kcyIsImlzQ29tcGxldGVkIiwicGN0IiwibWluIiwiaGFuZGxlU3RhcnRSZWFkaW5nIiwiaXNUaW1lVXAiLCJoYW5kbGVQYXJlbnRVbmxvY2siLCJ0aXRsZSIsImRpdiIsImNsYXNzTmFtZSIsIm9uQ2xpY2siLCJkaXIiLCJlIiwic3RvcFByb3BhZ2F0aW9uIiwiYnV0dG9uIiwic3BhbiIsImgzIiwicCIsIlN0cmluZyIsInBhZFN0YXJ0Iiwic3R5bGUiLCJ3aWR0aCIsImIiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQVNBLFNBQVMsRUFBRUMsUUFBUSxRQUFRLFFBQVE7QUFDNUMsU0FBU0MsV0FBVyxRQUFRLG1CQUFtQjtBQUMvQyxTQUFTQyxJQUFJLEVBQUVDLFVBQVUsRUFBc0JDLENBQUMsRUFBRUMsS0FBSyxFQUFZQyxJQUFJLEVBQVFD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

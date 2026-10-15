@@ -1,23 +1,174 @@
-// روابط الملفات الصوتية — المصدر الوحيد هو سيرفر Hugging Face الخاص بالتطبيق:
-// https://huggingface.co/datasets/hammoualiyoucef20/quran-audio
-// الترقيم قياسي (سورة يس = 36.mp3، الفاتحة = 1.mp3، الناس = 114.mp3 ... إلخ)
-const BASE = "https://huggingface.co/datasets/hammoualiyoucef20/quran-audio/resolve/main";
+// Public audio delivery: Hugging Face first, with Internet Archive as a resilient fallback.
+const HF_BASE = "https://huggingface.co/datasets/hammoualiyoucef20/quran-audio/resolve/main";
+const DIRECT_STORAGE_BASE = "https://ia803201.us.archive.org/34/items/quran-audio-files-for-kids";
+const GENERAL_DOWNLOAD_BASE = "https://archive.org/download/quran-audio-files-for-kids";
+const RECOVERY_COOLDOWN_MS = 60_000;
+const MAX_RETRY_DELAY_MS = 10_000;
+
+type AudioProvider = "huggingface" | "archive";
+let activeProvider: AudioProvider = "huggingface";
+let nextHfProbeAt = 0;
+let recoveryBackoffMs = RECOVERY_COOLDOWN_MS;
+let recoveryProbe: Promise<void> | null = null;
+
+const archiveUrls = (number: number): string[] => [
+  `${DIRECT_STORAGE_BASE}/${number}.mp3`,
+  `${GENERAL_DOWNLOAD_BASE}/${number}.mp3`,
+];
+
+export const getHuggingFaceAudioUrl = (number: number): string => `${HF_BASE}/${number}.mp3`;
 
 /**
- * رابط الصوت الأساسي من سيرفر التطبيق على Hugging Face (قياسي مباشر).
- * كل الصوت يخرج من هذا السيرفر حصراً — لا من أي سيرفر خارجي.
+ * رابط الصوت الأساسي المباشر والسريع جداً من سيرفر التخزين.
  */
 export const getSurahAudioUrl = (number: number): string => {
-  return `${BASE}/${number}.mp3`;
+  if (activeProvider === "archive") return archiveUrls(number)[0];
+  return getHuggingFaceAudioUrl(number);
 };
 
 /**
- * رابط آمن إضافي — يعيد نفس السيرفر الأساسي (Hugging Face).
- * لا يستخدم السور من أي CDN خارجي إطلاقاً.
+ * رابط احتياطي عبر بوابة التحميل العامة.
  */
 export const getFallbackAudioUrl = (number: number): string => {
-  return `${BASE}/${number}.mp3`;
+  return archiveUrls(number)[0];
 };
+
+export const getArchiveGatewayAudioUrl = (number: number): string => archiveUrls(number)[1];
+
+/** URLs to try in order for a durable download; no credentials are required. */
+export function getSurahAudioCandidates(number: number): string[] {
+  const preferred = getSurahAudioUrl(number);
+  const candidates = activeProvider === "huggingface"
+    ? [preferred, ...archiveUrls(number)]
+    : [...archiveUrls(number), getHuggingFaceAudioUrl(number)];
+  return [...new Set(candidates)];
+}
+
+export const getAudioProvider = (): AudioProvider => activeProvider;
+
+const retryableStatus = (status: number) => status === 408 || status === 425 || status === 429 || status >= 500;
+
+function retryDelay(response: Response | undefined, attempt: number): number {
+  const retryAfter = response?.headers.get("Retry-After");
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    const dateDelay = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - Date.now();
+    if (Number.isFinite(dateDelay) && dateDelay >= 0) return Math.min(dateDelay, MAX_RETRY_DELAY_MS);
+  }
+  return Math.min(500 * 2 ** attempt, MAX_RETRY_DELAY_MS);
+}
+
+const wait = (ms: number, signal?: AbortSignal) => new Promise<void>((resolve, reject) => {
+  if (signal?.aborted) return reject(new DOMException("Aborted", "AbortError"));
+  const timer = setTimeout(resolve, ms);
+  signal?.addEventListener("abort", () => { clearTimeout(timer); reject(new DOMException("Aborted", "AbortError")); }, { once: true });
+});
+
+function scheduleHfRecovery(): void {
+  if (recoveryProbe || typeof fetch === "undefined") return;
+  if (!nextHfProbeAt) nextHfProbeAt = Date.now() + recoveryBackoffMs;
+  const probeAt = nextHfProbeAt;
+  recoveryProbe = (async () => {
+    await wait(Math.max(0, probeAt - Date.now())).catch(() => {});
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(getHuggingFaceAudioUrl(1), {
+        method: "HEAD", signal: controller.signal, cache: "no-store",
+      });
+      if (response.ok) {
+        // Only affects future URL resolutions; an active media element is never reloaded.
+        activeProvider = "huggingface";
+        recoveryBackoffMs = RECOVERY_COOLDOWN_MS;
+        nextHfProbeAt = 0;
+      } else {
+        recoveryBackoffMs = Math.min(recoveryBackoffMs * 2, 15 * 60_000);
+        nextHfProbeAt = Date.now() + recoveryBackoffMs;
+      }
+    } catch {
+      recoveryBackoffMs = Math.min(recoveryBackoffMs * 2, 15 * 60_000);
+      nextHfProbeAt = Date.now() + recoveryBackoffMs;
+    } finally {
+      clearTimeout(timeout);
+      recoveryProbe = null;
+      if (activeProvider === "archive" && nextHfProbeAt > Date.now()) scheduleHfRecovery();
+    }
+  })();
+}
+
+/** Media elements hide HTTP status; use this when an HF media source errors. */
+export function reportHuggingFaceFailure(): void {
+  if (activeProvider !== "archive") {
+    activeProvider = "archive";
+    recoveryBackoffMs = RECOVERY_COOLDOWN_MS;
+    nextHfProbeAt = 0;
+    scheduleHfRecovery();
+  }
+}
+
+async function fetchWithAttempts(url: string, signal?: AbortSignal, retries = 1): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    const controller = new AbortController();
+    const forwardAbort = () => controller.abort();
+    signal?.addEventListener("abort", forwardAbort, { once: true });
+    const timeout = setTimeout(() => controller.abort(), 20_000);
+    try {
+      const response = await fetch(url, { signal: controller.signal, cache: "default" });
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", forwardAbort);
+      if (response.ok || !retryableStatus(response.status) || attempt === retries) return response;
+      lastError = new Error(`Audio request failed: HTTP ${response.status}`);
+      await wait(retryDelay(response, attempt), signal);
+    } catch (error) {
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", forwardAbort);
+      if (signal?.aborted) throw error;
+      lastError = error;
+      if (attempt === retries) break;
+      await wait(retryDelay(undefined, attempt), signal);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Audio request failed");
+}
+
+/** Fetch a Surah from HF first, then Archive's direct and gateway endpoints. */
+export async function fetchSurahAudio(number: number, signal?: AbortSignal): Promise<{ response: Response; url: string }> {
+  const hfUrl = getHuggingFaceAudioUrl(number);
+  if (activeProvider === "archive" && Date.now() >= nextHfProbeAt) scheduleHfRecovery();
+
+  if (activeProvider === "huggingface") {
+    try {
+      const response = await fetchWithAttempts(hfUrl, signal, 1);
+      if (response.ok) return { response, url: hfUrl };
+      if (response.status !== 404 && !retryableStatus(response.status)) return { response, url: hfUrl };
+      // A 404 can mean this particular Surah is absent from the incomplete HF dataset.
+      if (response.status !== 404) reportHuggingFaceFailure();
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      reportHuggingFaceFailure();
+    }
+  }
+
+  let lastResponse: Response | undefined;
+  let lastUrl = "";
+  let lastError: unknown;
+  const urls = archiveUrls(number);
+  for (const url of urls) {
+    try {
+      const response = await fetchWithAttempts(url, signal, 1);
+      if (response.ok || (response.status !== 404 && !retryableStatus(response.status))) return { response, url };
+      lastResponse = response;
+      lastUrl = url;
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      lastError = error;
+    }
+  }
+  if (lastResponse) return { response: lastResponse, url: lastUrl };
+  throw lastError instanceof Error ? lastError : new Error("Audio unavailable from Hugging Face and Internet Archive");
+}
 
 /**
  * خريطة تحويل قديمة (جزء عم المعكوس) — أُبقيَت للتوافق مع كود سابق فقط،
@@ -40,42 +191,58 @@ export const isAudioAvailable = (number: number): boolean => {
   return number >= 1 && number <= 114;
 };
 
+const CLOUD_CACHE_KEY = "mushaf:cloud_surahs_cache_v1";
+const CLOUD_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 ساعة
+
 /**
- * جلب قائمة السور المتوفرة من سيرفر التطبيق على Hugging Face
- * هذا يجعل التطبيق يكتشف السور الجديدة تلقائياً بدون الحاجة لتحديث الكود.
+ * Archive metadata preserves the current supported coverage even when HF is incomplete.
+ * Uses localStorage cache to avoid repeated 2MB network requests on every startup.
  */
 export async function initCloudAudioAvailability() {
   try {
-    const res = await fetch(`https://huggingface.co/api/datasets/hammoualiyoucef20/quran-audio/tree/main?t=${Date.now()}`);
+    // 1. محاولة استرجاع السور من التخزين المحلي فوراً بدون طلب شبكة
+    if (typeof localStorage !== "undefined") {
+      try {
+        const cached = localStorage.getItem(CLOUD_CACHE_KEY);
+        if (cached) {
+          const { data, ts } = JSON.parse(cached);
+          if (Date.now() - ts < CLOUD_CACHE_TTL && Array.isArray(data) && data.length > 0) {
+            data.forEach((num: number) => CLOUD_AVAILABLE_SURAHS.add(num));
+            return;
+          }
+        }
+      } catch { /* ignore */ }
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch("https://archive.org/metadata/quran-audio-files-for-kids", { signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) return;
     const data = await res.json();
-    data.forEach((item: any) => {
-      if (item.type === 'file' && item.path.endsWith('.mp3')) {
-        const num = parseInt(item.path.replace('.mp3', ''), 10);
-        if (!isNaN(num)) CLOUD_AVAILABLE_SURAHS.add(num);
-      }
-    });
-    console.log(`[Cloud Audio] Loaded ${CLOUD_AVAILABLE_SURAHS.size} available surahs.`);
+    const list: number[] = [];
+    if (data && data.files) {
+      data.files.forEach((item: any) => {
+        if (item.name && item.name.endsWith('.mp3')) {
+          const num = parseInt(item.name.replace('.mp3', ''), 10);
+          if (!isNaN(num)) {
+            CLOUD_AVAILABLE_SURAHS.add(num);
+            list.push(num);
+          }
+        }
+      });
+    }
+    if (typeof localStorage !== "undefined" && list.length > 0) {
+      try {
+        localStorage.setItem(CLOUD_CACHE_KEY, JSON.stringify({ data: list, ts: Date.now() }));
+      } catch { /* ignore */ }
+    }
   } catch (err) {
-    console.error("Failed to fetch cloud audio tree:", err);
+    // نتجاهل بهدوء ولا نعطل التطبيق
   }
 }
 export async function fetchAudioWithRetry(url: string, signal?: AbortSignal, maxRetries = 3): Promise<Response> {
-  let attempt = 0;
-  while (attempt < maxRetries) {
-    try {
-      const response = await fetch(url, { signal, cache: "default" });
-      if (response.ok) return response;
-      if (response.status === 404) return response; // don't retry non-existent files
-    } catch (e) {
-      if (signal?.aborted) throw e;
-      attempt++;
-      if (attempt >= maxRetries) throw e;
-      // Wait with backoff: 500ms, 1000ms, 2000ms
-      await new Promise(res => setTimeout(res, 500 * Math.pow(2, attempt - 1)));
-    }
-  }
-  throw new Error(`Failed to fetch audio after ${maxRetries} attempts`);
+  return fetchWithAttempts(url, signal, Math.max(0, maxRetries - 1));
 }
 
 /**
@@ -103,5 +270,5 @@ export const setCustomAudioUrl = (number: number, url: string, speaker: "teacher
 export const getAudioPath = (number: number, speaker: "teacher" | "kids" = "teacher"): string => {
   const custom = getCustomAudioUrl(number, speaker);
   if (custom) return custom;
-  return hasCloudAudio(number) ? getSurahAudioUrl(number) : getFallbackAudioUrl(number);
+  return getSurahAudioUrl(number);
 };

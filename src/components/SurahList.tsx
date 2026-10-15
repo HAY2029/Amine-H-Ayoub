@@ -56,8 +56,8 @@ const SurahList = ({
             onClick={() => onSelect(surah)}
             className={`surah-card group relative flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 text-right focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:outline-none ${
               isActive
-                ? "bg-amber-100/90 dark:bg-amber-950/60 border-amber-500 shadow-lg ring-2 ring-amber-400/50 scale-[1.01]"
-                : "bg-white/80 dark:bg-card/85 backdrop-blur-xs border-amber-400/30 hover:border-amber-500 hover:shadow-lg hover:bg-white dark:hover:bg-card hover:scale-[1.02]"
+                ? "bg-amber-500/25 dark:bg-amber-950/60 border-amber-500 shadow-lg ring-2 ring-amber-400/50 scale-[1.01]"
+                : "bg-white/60 dark:bg-card/50 backdrop-blur-sm border-amber-500/30 hover:border-amber-500 hover:shadow-lg hover:bg-white/90 dark:hover:bg-card/80 hover:scale-[1.01]"
             }`}
             style={{
               opacity: isVisible ? 1 : 0,

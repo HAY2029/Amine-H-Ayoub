@@ -1,23 +1,18 @@
-import { useEffect, useImperativeHandle, useRef, useState, forwardRef, useCallback } from "react";
+import { useEffect, useImperativeHandle, useRef, useState, forwardRef, useCallback, useMemo } from "react";
 import {
-  X,
-  Play,
-  Pause,
-  Repeat,
-  SkipForward,
-  SkipBack,
-  Volume2,
-  Volume1,
-  VolumeX,
-  Gauge,
-  Clock,
-  ChevronUp,
-  ChevronDown,
-  RotateCcw,
+  X, Play, Pause, Repeat, SkipForward, SkipBack, Volume2, VolumeX,
+  RotateCcw, RotateCw, Gauge, Loader2, ChevronDown, ChevronUp, Moon, Sparkles,
+  Download, Check, AlertCircle
 } from "lucide-react";
-import { resolvePlayableAudioUrl, cacheAudioInBackground } from "@/data/offlineAudioCache";
+import { isAudioCachedOffline, resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
+import { downloadSurahOffline, type SurahDownloadProgress } from "@/data/offlineDownload";
+import { isTauri, listenToDownloadProgress } from "@/utils/tauriUtils";
 import { useAudioContext } from "@/contexts/audioContext";
-import { updateMediaSession, setMediaPlaybackState, isBackgroundAudioEnabled } from "@/utils/backgroundAudio";
+import { updateMediaSession, setMediaPlaybackState } from "@/utils/backgroundAudio";
+import { getSurahByNumber } from "@/data/quranData";
+import { getArchiveGatewayAudioUrl, getFallbackAudioUrl, reportHuggingFaceFailure } from "@/data/audioUrls";
+import QuranLoading from "./QuranLoading";
+import SurahDownloadModal from "./SurahDownloadModal";
 
 interface Props {
   surahName: string;
@@ -32,6 +27,7 @@ interface Props {
   autoNext?: boolean;
   onToggleAutoNext?: () => void;
   onPlayingChange?: (playing: boolean) => void;
+  mode?: "mushaf" | "audio-list";
 }
 
 export interface CustomPlayerHandle {
@@ -47,16 +43,6 @@ const formatTime = (s: number) => {
   return `${m}:${sec.toString().padStart(2, "0")}`;
 };
 
-const SPEEDS = [0.75, 1, 1.25, 1.5];
-const SLEEP_OPTIONS = [
-  { label: "إيقاف", value: 0 },
-  { label: "10 د", value: 10 },
-  { label: "15 د", value: 15 },
-  { label: "30 د", value: 30 },
-  { label: "45 د", value: 45 },
-  { label: "60 د", value: 60 },
-];
-
 const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
   (
     {
@@ -66,41 +52,161 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
       isCustom = false,
       initialTime = 0,
       onClose,
-      onTimeUpdate,
+      onTimeUpdate: onTimeUpdateProp,
       onPlayNext,
       onPlayPrev,
       autoNext = false,
       onToggleAutoNext,
       onPlayingChange,
+      mode = "audio-list",
     },
     ref
   ) => {
-    const { requestPlay, notifyStop, registerAudio, unregisterAudio } = useAudioContext();
-    const audioRef = useRef<HTMLAudioElement>(null);
+    const { globalAudioRef, requestPlay, notifyStop, registerAudio, unregisterAudio } = useAudioContext();
+    const localAudioRef = useRef<HTMLAudioElement>(null);
+    const audioRef = (globalAudioRef?.current !== undefined ? globalAudioRef : localAudioRef) as React.MutableRefObject<HTMLAudioElement | null>;
+
+    // Surah metadata lookup
+    const surahInfo = useMemo(() => getSurahByNumber(surahNumber), [surahNumber]);
+
+    // Player UI States
     const [isPlaying, setIsPlaying] = useState(false);
     const [duration, setDuration] = useState(0);
     const [current, setCurrent] = useState(initialTime);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [loop, setLoop] = useState(false);
-    const [playbackRate, setPlaybackRate] = useState(1);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [showSpeedMenu, setShowSpeedMenu] = useState(false);
-    const [showSleepMenu, setShowSleepMenu] = useState(false);
+    const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+    const [playbackRate, setPlaybackRate] = useState(1);
+    const [isMinimized, setIsMinimized] = useState(false);
+    const [offlineSaved, setOfflineSaved] = useState(false);
+    const [downloadProgress, setDownloadProgress] = useState(0);
+    const [downloadError, setDownloadError] = useState("");
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadModalOpen, setDownloadModalOpen] = useState(false);
+    const [downloadProgressData, setDownloadProgressData] = useState<SurahDownloadProgress | undefined>(undefined);
+    const downloadAbortRef = useRef<AbortController | null>(null);
+
+    // Sleep Timer (مؤقت النوم)
     const [sleepTimerMinutes, setSleepTimerMinutes] = useState<number | null>(null);
     const [sleepRemainingSeconds, setSleepRemainingSeconds] = useState<number | null>(null);
-    const [fallbackToCloud, setFallbackToCloud] = useState(false);
-    const initialTimeApplied = useRef(false);
-    const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth < 768 : false);
 
-    // Track mobile vs desktop
+    // Interactive Dragging Progress State
+    const [isDraggingProgress, setIsDraggingProgress] = useState(false);
+    const [dragPreviewTime, setDragPreviewTime] = useState<number | null>(null);
+    const progressTrackRef = useRef<HTMLDivElement>(null);
+
+    const initialTimeApplied = useRef(false);
+    const currentLoadedSrcRef = useRef<string>("");
+    const fallbackAttemptRef = useRef(0);
+    const onPlayingChangeRef = useRef(onPlayingChange);
+
+    const verifyOfflineCopy = useCallback(async () => {
+      if (isCustom) {
+        setOfflineSaved(false);
+        return;
+      }
+      const saved = await isAudioCachedOffline(surahNumber, audioSrc);
+      setOfflineSaved(saved);
+    }, [audioSrc, isCustom, surahNumber]);
+
     useEffect(() => {
-      const handler = () => setIsMobile(window.innerWidth < 768);
-      window.addEventListener("resize", handler);
-      return () => window.removeEventListener("resize", handler);
+      void verifyOfflineCopy();
+    }, [verifyOfflineCopy]);
+
+    useEffect(() => {
+      if (!isTauri() || isCustom) return;
+      return listenToDownloadProgress((payload) => {
+        if (payload.surah_number !== surahNumber) return;
+        const rounded = Math.round(payload.progress);
+        setDownloadProgress(rounded);
+        setDownloadProgressData({
+          progress: rounded,
+          status: payload.status,
+          receivedBytes: payload.downloaded_bytes,
+          totalBytes: payload.total_bytes,
+        });
+        if (payload.status === "completed") {
+          setIsDownloading(false);
+          setOfflineSaved(true);
+          setDownloadError("");
+        } else if (payload.status === "error") {
+          setIsDownloading(false);
+          setDownloadError("فشل التنزيل؛ حاول مرة أخرى");
+        }
+      });
+    }, [isCustom, surahNumber]);
+
+    const handleOfflineDownload = useCallback(async () => {
+      if (offlineSaved || isCustom) return;
+      if (isDownloading) {
+        setDownloadModalOpen(true);
+        return;
+      }
+      const alreadySaved = await isAudioCachedOffline(surahNumber, audioSrc);
+      if (alreadySaved) {
+        setOfflineSaved(true);
+        setDownloadProgress(100);
+        setDownloadError("");
+        return;
+      }
+
+      setDownloadModalOpen(true);
+      setIsDownloading(true);
+      setDownloadProgress(0);
+      setDownloadError("");
+      setDownloadProgressData({ progress: 0, status: "downloading" });
+      downloadAbortRef.current = new AbortController();
+
+      try {
+        await downloadSurahOffline(
+          surahNumber,
+          audioSrc,
+          (progressInfo) => {
+            setDownloadProgress(progressInfo.progress);
+            setDownloadProgressData(progressInfo);
+            if (progressInfo.status === "completed") {
+              setOfflineSaved(true);
+              setIsDownloading(false);
+            }
+          },
+          downloadAbortRef.current.signal
+        );
+        await verifyOfflineCopy();
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : "تعذّر حفظ الصوت دون اتصال";
+        setDownloadError(msg);
+        setDownloadProgressData({ progress: 0, status: "error", error: msg });
+      } finally {
+        setIsDownloading(false);
+      }
+    }, [audioSrc, isCustom, isDownloading, offlineSaved, surahNumber, verifyOfflineCopy]);
+
+    useEffect(() => {
+      onPlayingChangeRef.current = onPlayingChange;
+    }, [onPlayingChange]);
+
+    useEffect(() => {
+      onPlayingChangeRef.current?.(isPlaying);
+    }, [isPlaying]);
+
+    useEffect(() => {
+      return () => {
+        onPlayingChangeRef.current?.(false);
+      };
     }, []);
+
+    // Global audio element inspection hook
+    useEffect(() => {
+      const el = audioRef.current;
+      if (el) (window as unknown as { __globalAudioEl?: HTMLAudioElement }).__globalAudioEl = el;
+      return () => {
+        const w = window as unknown as { __globalAudioEl?: HTMLAudioElement };
+        if (w.__globalAudioEl === el) delete w.__globalAudioEl;
+      };
+    }, [audioRef]);
 
     useImperativeHandle(ref, () => ({
       seekTo: (seconds: number) => {
@@ -110,106 +216,131 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
         setCurrent(seconds);
         a.play().catch(() => {});
       },
-      play: () => {
-        audioRef.current?.play().catch(() => {});
-      },
-      pause: () => {
-        audioRef.current?.pause();
-      },
+      play: () => audioRef.current?.play().catch(() => {}),
+      pause: () => audioRef.current?.pause(),
     }));
 
-    // Source resolution and autoplay
+    // Audio Source loader with instant direct streaming (prevents mid-playback cutoff)
     useEffect(() => {
       let active = true;
-      const getSrc = async () => {
-        setLoading(true);
-        setError(false);
-        setIsPlaying(false);
-        initialTimeApplied.current = false;
+      const a = audioRef.current;
+      if (!a || mode === "mushaf") return;
 
-        let finalSrc = audioSrc;
-        if (!audioSrc.startsWith("blob:") && !fallbackToCloud) {
+      // Avoid restarting or aborting if the same audio source is already active
+      if (currentLoadedSrcRef.current === audioSrc && a.src && (a.src === audioSrc || a.src.endsWith(audioSrc))) {
+        return;
+      }
+
+      currentLoadedSrcRef.current = audioSrc;
+      fallbackAttemptRef.current = 0;
+      setLoading(true);
+      setError(false);
+      initialTimeApplied.current = false;
+
+      const initAudio = async () => {
+        let streamUrl = audioSrc;
+        // If offline and not a blob, try loading from local offline cache
+        if (!navigator.onLine && !audioSrc.startsWith("blob:")) {
           try {
-            finalSrc = await resolvePlayableAudioUrl(surahNumber, audioSrc);
-          } catch (e) {
-            console.warn("Offline audio resolution fallback:", e);
+            const cached = await resolvePlayableAudioUrl(surahNumber, audioSrc);
+            if (cached) streamUrl = cached;
+          } catch {
+            /* ignore */
           }
         }
+        if (!active) return;
 
-        if (active && audioRef.current) {
-          audioRef.current.src = finalSrc;
-          audioRef.current.playbackRate = playbackRate;
-          audioRef.current.volume = isMuted ? 0 : volume;
-          audioRef.current.load();
-          setTimeout(() => {
-            if (active && audioRef.current) {
-              audioRef.current.play().catch(() => {});
-            }
-          }, 350);
-
-          if (!fallbackToCloud && finalSrc === audioSrc && !audioSrc.startsWith("blob:")) {
-            cacheAudioInBackground(surahNumber, audioSrc);
-          }
+        if (a.src !== streamUrl) {
+          a.src = streamUrl;
+          a.volume = isMuted ? 0 : volume;
+          a.playbackRate = playbackRate;
         }
+
+        requestPlay("audio-list", a);
+        a.play().catch((err) => {
+          console.debug("[CustomPlayer] Autoplay was deferred or prevented:", err);
+        });
       };
 
-      getSrc();
+      initAudio();
+
       return () => {
         active = false;
       };
-    }, [audioSrc, surahNumber, fallbackToCloud]);
+    }, [audioSrc, surahNumber, mode, audioRef, requestPlay, isMuted, volume, playbackRate]);
 
-    // Loop
+    // Apply audio properties reactively
     useEffect(() => {
       if (audioRef.current) audioRef.current.loop = loop;
-    }, [loop]);
+    }, [loop, audioRef]);
 
-    // Playback rate
-    useEffect(() => {
-      if (audioRef.current) audioRef.current.playbackRate = playbackRate;
-    }, [playbackRate]);
-
-    // Volume & Mute
     useEffect(() => {
       if (audioRef.current) {
         audioRef.current.volume = isMuted ? 0 : volume;
         audioRef.current.muted = isMuted;
       }
-    }, [volume, isMuted]);
+    }, [volume, isMuted, audioRef]);
 
-    // Notify playing state changes
     useEffect(() => {
-      onPlayingChange?.(isPlaying);
-    }, [isPlaying, onPlayingChange]);
-    useEffect(() => () => onPlayingChange?.(false), [onPlayingChange]);
+      if (audioRef.current) audioRef.current.playbackRate = playbackRate;
+    }, [playbackRate, audioRef]);
 
-    // Audio Context registration
+    // Register audio with coordinate context
     useEffect(() => {
       const a = audioRef.current;
-      if (a) {
-        registerAudio("audio-list", a);
-      }
-      return () => {
-        unregisterAudio("audio-list");
-      };
-    }, [registerAudio, unregisterAudio]);
+      if (a) registerAudio("audio-list", a);
+      return () => unregisterAudio("audio-list");
+    }, [registerAudio, unregisterAudio, audioRef]);
 
-    // Sleep Timer countdown
+    // MediaSession lock screen integration
     useEffect(() => {
-      if (!sleepTimerMinutes || sleepTimerMinutes <= 0) {
-        setSleepRemainingSeconds(null);
-        return;
-      }
+      const title = isCustom ? surahName : `سورة ${surahName}`;
+      const subtitle = surahInfo ? `${surahInfo.type} • ${surahInfo.ayahCount} آية` : "القرآن الكريم";
+      updateMediaSession({
+        title,
+        artist: "القرآن الكريم للأطفال",
+        album: subtitle,
+        onPlay: () => {
+          if (audioRef.current) {
+            requestPlay("audio-list", audioRef.current);
+            audioRef.current.play().catch(() => {});
+          }
+        },
+        onPause: () => {
+          if (audioRef.current) {
+            audioRef.current.pause();
+            notifyStop("audio-list");
+          }
+        },
+        onNext: onPlayNext,
+        onPrev: onPlayPrev,
+        onSeek: (seconds) => {
+          if (audioRef.current) {
+            audioRef.current.currentTime = seconds;
+            setCurrent(seconds);
+          }
+        },
+      });
+    }, [surahName, isCustom, surahInfo, onPlayNext, onPlayPrev, requestPlay, notifyStop, audioRef]);
 
-      setSleepRemainingSeconds(sleepTimerMinutes * 60);
+    // Sleep Timer Interval
+    const cycleSleepTimer = () => {
+      const options = [null, 15, 30, 45, 60];
+      const nextIdx = (options.indexOf(sleepTimerMinutes) + 1) % options.length;
+      const nextVal = options[nextIdx];
+      setSleepTimerMinutes(nextVal);
+      setSleepRemainingSeconds(nextVal ? nextVal * 60 : null);
+    };
 
+    useEffect(() => {
+      if (!sleepRemainingSeconds || sleepRemainingSeconds <= 0) return;
+      if (!isPlaying) return;
       const interval = setInterval(() => {
         setSleepRemainingSeconds((prev) => {
           if (prev === null || prev <= 1) {
-            clearInterval(interval);
             if (audioRef.current) {
               audioRef.current.pause();
-              setIsPlaying(false);
+              notifyStop(mode || "audio-list");
             }
             setSleepTimerMinutes(null);
             return null;
@@ -217,92 +348,54 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
           return prev - 1;
         });
       }, 1000);
-
       return () => clearInterval(interval);
-    }, [sleepTimerMinutes]);
+    }, [sleepRemainingSeconds, isPlaying, mode, notifyStop, audioRef]);
 
-    // Media Session
-    useEffect(() => {
-      if (isPlaying) {
-        updateMediaSession({
-          title: `سورة ${surahName}`,
-          artist: "القارئ حاج أيوب أمين",
-          album: "المصحف المرتل برواية ورش",
-          onPlay: () => {
-            audioRef.current?.play().catch(() => {});
-          },
-          onPause: () => {
-            audioRef.current?.pause();
-          },
-          onNext: onPlayNext,
-          onPrev: onPlayPrev,
-          onSeek: (t) => {
-            if (audioRef.current) audioRef.current.currentTime = t;
-          },
-        });
-        setMediaPlaybackState("playing");
-      } else {
-        setMediaPlaybackState("paused");
+    const handleAudioError = useCallback(() => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      // HTMLMediaElement hides HTTP status; use the bounded provider fallback path.
+      const failedUrl = audio.currentSrc || audio.src;
+      if (failedUrl.includes("huggingface.co")) reportHuggingFaceFailure();
+      const fallbacks = [getFallbackAudioUrl(surahNumber), getArchiveGatewayAudioUrl(surahNumber)];
+      if (failedUrl.includes("archive.org") || failedUrl.includes("ia803201.us.archive.org")) {
+        fallbackAttemptRef.current = 1;
       }
-    }, [isPlaying, surahName, onPlayNext, onPlayPrev]);
+      const fallbackUrl = fallbacks[fallbackAttemptRef.current++];
+      if (fallbackUrl && fallbackUrl !== failedUrl && fallbackAttemptRef.current <= fallbacks.length) {
+        console.warn(`[CustomPlayer] Audio source failed; trying fallback provider`);
+        currentLoadedSrcRef.current = fallbackUrl;
+        setLoading(true);
+        setError(false);
+        audio.src = fallbackUrl;
+        audio.load();
+        audio.play().catch(() => {
+          setError(true);
+          setLoading(false);
+          setIsPlaying(false);
+        });
+        return;
+      }
 
-    // Background audio visibility
-    useEffect(() => {
-      const handleVisibility = () => {
-        if (document.hidden && !isBackgroundAudioEnabled()) {
-          audioRef.current?.pause();
-        }
-      };
-      document.addEventListener("visibilitychange", handleVisibility);
-      return () => document.removeEventListener("visibilitychange", handleVisibility);
-    }, []);
+      setError(true);
+      setLoading(false);
+      setIsPlaying(false);
+    }, [surahNumber, audioRef]);
 
-    // Pause listener
-    useEffect(() => {
-      const a = audioRef.current;
-      if (!a) return;
-      const handlePause = () => {
-        if (isPlaying) setIsPlaying(false);
-      };
-      a.addEventListener("pause", handlePause);
-      return () => a.removeEventListener("pause", handlePause);
-    }, [isPlaying]);
-
-    // Keyboard controls
-    useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) return;
-
-        if (e.code === "Space") {
-          e.preventDefault();
-          togglePlay();
-        } else if (e.code === "ArrowRight") {
-          e.preventDefault();
-          skipForward();
-        } else if (e.code === "ArrowLeft") {
-          e.preventDefault();
-          skipBack();
-        } else if (e.key === "m" || e.key === "M") {
-          toggleMute();
-        }
-      };
-
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [isPlaying, isMuted, volume]);
-
+    // Playback control actions
     const retry = () => {
       const audio = audioRef.current;
       if (!audio) return;
       setError(false);
       setLoading(true);
-      setFallbackToCloud(true);
+      fallbackAttemptRef.current = 0;
+      currentLoadedSrcRef.current = audioSrc;
       audio.src = audioSrc;
       audio.load();
       requestPlay("audio-list", audio);
       audio.play().catch(() => {
-        setError(true);
-        setLoading(false);
+        handleAudioError();
       });
     };
 
@@ -314,222 +407,263 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
           audio.pause();
           notifyStop("audio-list");
         } else {
+          setError(false);
           requestPlay("audio-list", audio);
           await audio.play();
         }
       } catch (e) {
-        console.error("Audio play error:", e);
-        if (!fallbackToCloud) {
-          setFallbackToCloud(true);
-        } else {
-          setError(true);
-          setLoading(false);
-        }
+        handleAudioError();
       }
     };
 
-    const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-      const audio = audioRef.current;
-      if (!audio || !duration) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      // RTL: right edge is start
-      const clickX = e.clientX - rect.left;
-      const pct = 1 - (clickX / rect.width);
-      const t = pct * duration;
-      audio.currentTime = t;
-      setCurrent(t);
-    }, [duration]);
+    // Pointer-accurate Drag Scrubbing (works in RTL & LTR by using LTR bounding box)
+    const calculateProgressFromPointer = useCallback(
+      (clientX: number) => {
+        if (!progressTrackRef.current || !duration) return 0;
+        const rect = progressTrackRef.current.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        return pct * duration;
+      },
+      [duration]
+    );
 
-    const skipBack = () => {
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!duration) return;
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      setIsDraggingProgress(true);
+      const newTime = calculateProgressFromPointer(e.clientX);
+      setDragPreviewTime(newTime);
+    };
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingProgress || !duration) return;
+      const newTime = calculateProgressFromPointer(e.clientX);
+      setDragPreviewTime(newTime);
+    };
+
+    const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingProgress || !duration) return;
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      setIsDraggingProgress(false);
+      const newTime = calculateProgressFromPointer(e.clientX);
+      setDragPreviewTime(null);
       const a = audioRef.current;
-      if (!a) return;
-      a.currentTime = Math.max(0, a.currentTime - 10);
+      if (a) {
+        a.currentTime = newTime;
+        setCurrent(newTime);
+        onTimeUpdateProp?.(newTime);
+      }
     };
 
-    const skipForward = () => {
+    const skipBack10 = () => {
       const a = audioRef.current;
-      if (!a) return;
-      a.currentTime = Math.min(duration, a.currentTime + 10);
+      if (a) {
+        const nextTime = Math.max(0, a.currentTime - 10);
+        a.currentTime = nextTime;
+        setCurrent(nextTime);
+      }
     };
 
-    const toggleMute = () => {
-      setIsMuted((prev) => !prev);
+    const skipForward10 = () => {
+      const a = audioRef.current;
+      if (a) {
+        const nextTime = Math.min(duration, a.currentTime + 10);
+        a.currentTime = nextTime;
+        setCurrent(nextTime);
+      }
     };
 
-    const handleClosePlayer = () => {
+    const toggleMute = () => setIsMuted((prev) => !prev);
+
+    const cycleSpeed = () => {
+      const speeds = [0.75, 1, 1.25, 1.5, 2];
+      setPlaybackRate((r) => speeds[(speeds.indexOf(r) + 1) % speeds.length]);
+    };
+
+    const handleClosePlayer = (e?: React.MouseEvent) => {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      try {
+        localStorage.removeItem("audio:lastSurah");
+        localStorage.removeItem("audio:lastTime");
+      } catch {
+        /* ignore */
+      }
       if (audioRef.current) {
         audioRef.current.pause();
-        notifyStop("audio-list");
+        notifyStop(mode || "audio-list");
       }
       onClose();
     };
 
-    const progress = duration > 0 ? (current / duration) * 100 : 0;
+    // Calculate displayed time & progress percentage
+    const displayedCurrentTime = isDraggingProgress && dragPreviewTime !== null ? dragPreviewTime : current;
+    const progressPercent = duration > 0 ? (displayedCurrentTime / duration) * 100 : 0;
 
-    const audioElement = (
-      <audio ref={audioRef} preload="auto"
-        onLoadedMetadata={(e) => { const a = e.target as HTMLAudioElement; setDuration(a.duration); setLoading(false); if (!initialTimeApplied.current && initialTime > 0 && initialTime < a.duration) { a.currentTime = initialTime; setCurrent(initialTime); } initialTimeApplied.current = true; }}
-        onCanPlay={() => setLoading(false)}
-        onTimeUpdate={(e) => { const t = (e.target as HTMLAudioElement).currentTime; setCurrent(t); onTimeUpdate?.(t); }}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => { setIsPlaying(false); onTimeUpdate?.(0); if (!loop && autoNext && onPlayNext) onPlayNext(); }}
-        onError={() => { if (!fallbackToCloud) setFallbackToCloud(true); else { setError(true); setLoading(false); } }}
-      />
-    );
+    // Render underlying audio element (when not in mushaf mode)
+    const audioElement =
+      mode !== "mushaf" ? (
+        <audio
+          ref={audioRef}
+          preload="auto"
+          onLoadedMetadata={(e) => {
+            const a = e.target as HTMLAudioElement;
+            if (isFinite(a.duration) && a.duration > 0) {
+              setDuration(a.duration);
+            }
+            setLoading(false);
+            if (!initialTimeApplied.current && initialTime > 0 && initialTime < a.duration) {
+              a.currentTime = initialTime;
+              setCurrent(initialTime);
+            }
+            initialTimeApplied.current = true;
+          }}
+          onDurationChange={(e) => {
+            const d = (e.target as HTMLAudioElement).duration;
+            if (isFinite(d) && d > 0) setDuration(d);
+          }}
+          onCanPlay={() => setLoading(false)}
+          onWaiting={() => setLoading(true)}
+          onPlaying={() => {
+            setLoading(false);
+            setIsPlaying(true);
+            setMediaPlaybackState("playing");
+          }}
+          onTimeUpdate={(e) => {
+            const t = (e.target as HTMLAudioElement).currentTime;
+            if (!isDraggingProgress) {
+              setCurrent(t);
+            }
+            onTimeUpdateProp?.(t);
+          }}
+          onPlay={() => {
+            setIsPlaying(true);
+            setMediaPlaybackState("playing");
+          }}
+          onPause={() => {
+            setIsPlaying(false);
+            setMediaPlaybackState("paused");
+          }}
+          onEnded={() => {
+            setIsPlaying(false);
+            setMediaPlaybackState("none");
+            onTimeUpdateProp?.(0);
+            if (!loop && autoNext && onPlayNext) {
+              onPlayNext();
+            }
+          }}
+          onError={handleAudioError}
+        />
+      ) : null;
 
-    /* ======================= FULL PLAYER (Mobile expanded) ======================= */
-    if (isExpanded && isMobile) {
+    /* =========================================================================
+     *  MINIMIZED COMPACT VIEW (كبسولة أنيقة مصغرة)
+     * ========================================================================= */
+    if (isMinimized) {
       return (
-        <div className="fixed inset-0 z-50 player-full-enter" dir="rtl">
-          {/* Dark background */}
-          <div className="absolute inset-0 bg-[#1a1410]" />
-          <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-amber-900/30 via-amber-950/15 to-transparent pointer-events-none" />
+        <div
+          className="fixed bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-[540px] animate-fade-up"
+          dir="rtl"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <div className="bg-white/95 dark:bg-[#15130f]/95 backdrop-blur-2xl border border-amber-500/30 dark:border-amber-500/20 rounded-full px-4 py-2.5 shadow-[0_12px_40px_-8px_rgba(217,119,6,0.35),0_0_0_1px_rgba(245,158,11,0.12)] flex items-center justify-between gap-3 overflow-hidden relative">
+            {/* Top Micro Progress Bar */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500/15" dir="ltr">
+              <div
+                className="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-150"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
 
-          <div className="relative z-10 flex flex-col h-full p-5 safe-area-inset">
-            {/* Top Bar */}
-            <div className="flex items-center justify-between mb-8">
-              <button onClick={() => setIsExpanded(false)} className="w-10 h-10 rounded-full bg-stone-800/60 text-stone-400 hover:text-white flex items-center justify-center transition-all active:scale-90" aria-label="تصغير">
-                <ChevronDown className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-2">
-                {sleepRemainingSeconds !== null && (
-                  <span className="text-[10px] bg-amber-900/60 text-amber-300 border border-amber-700/50 px-2.5 py-1 rounded-full font-mono flex items-center gap-1.5">
-                    <Clock className="w-3 h-3 animate-spin" style={{ animationDuration: "3s" }} />
-                    {formatTime(sleepRemainingSeconds)}
-                  </span>
-                )}
-                <button onClick={handleClosePlayer} className="w-10 h-10 rounded-full bg-stone-800/60 hover:bg-red-900/70 text-stone-400 hover:text-red-400 flex items-center justify-center transition-all active:scale-90" aria-label="إغلاق">
-                  <X className="w-5 h-5" />
-                </button>
+            {/* Left Info: Badge & Name */}
+            <div
+              className="flex items-center gap-3 cursor-pointer min-w-0"
+              onClick={() => setIsMinimized(false)}
+              title="انقر لتكبير المشغل"
+            >
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-white font-bold text-sm shadow-md shrink-0 border border-amber-300/40 ${
+                  isPlaying ? "animate-pulse" : ""
+                }`}
+              >
+                {isCustom ? "🎤" : surahNumber}
+              </div>
+              <div className="flex flex-col min-w-0 text-right">
+                <span className="font-amiri font-bold text-base text-stone-900 dark:text-amber-100 truncate leading-tight">
+                  {isCustom ? surahName : `سورة ${surahName}`}
+                </span>
+                <span className="text-[11px] font-mono text-amber-600 dark:text-amber-400">
+                  {formatTime(displayedCurrentTime)} / {formatTime(duration)}
+                </span>
               </div>
             </div>
 
-            {/* Vinyl Disc */}
-            <div className="flex-1 flex items-center justify-center">
-              <div className="relative">
-                {isPlaying && (
-                  <div className="absolute inset-[-8px] rounded-full border-2 border-amber-500/20 animate-pulse" />
-                )}
-                <div className={`relative w-48 h-48 rounded-full ${isPlaying ? "player-disc-spin" : ""}`}>
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900 p-[3px] shadow-[0_0_40px_rgba(180,120,20,0.3)]">
-                    <div className="w-full h-full rounded-full bg-[#1a1410] p-1">
-                      <div className="w-full h-full rounded-full border-[3px] border-stone-800/50 flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute inset-4 rounded-full border border-stone-700/30" />
-                        <div className="absolute inset-8 rounded-full border border-stone-700/20" />
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 flex items-center justify-center p-[3px] shadow-inner">
-                          <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex flex-col items-center justify-center">
-                            <span className="text-white/90 font-black text-2xl tabular-nums">
-                              {isCustom ? "🎤" : surahNumber}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Info */}
-            <div className="text-center mb-4">
-              <h2 className="font-bold text-amber-100 font-amiri text-2xl leading-tight truncate">
-                {isCustom ? surahName : `سورة ${surahName}`}
-              </h2>
-              <p className="text-stone-500 text-xs mt-1">
-                {loading ? "جاري التحميل..." : error ? "تعذّر التحميل" : `القارئ أمين حاج أيوب — سورة رقم ${surahNumber}`}
-              </p>
-            </div>
-
-            {/* Progress */}
-            <div className="mb-4" dir="ltr">
-              <div className="player-progress-track" onClick={handleProgressClick}>
-                <div className="player-progress-fill" style={{ width: `${progress}%` }} />
-                <div className="player-progress-thumb" style={{ left: `calc(${progress}% - 7px)` }} />
-              </div>
-              <div className="flex justify-between text-[11px] text-stone-500 tabular-nums mt-1.5 font-mono" dir="rtl">
-                <span className="text-amber-400 font-bold">{formatTime(current)}</span>
-                <span>{formatTime(duration)}</span>
-              </div>
-            </div>
-
-            {/* Main Controls */}
-            <div className="flex items-center justify-center gap-5 mb-4">
-              {onPlayPrev && (
-                <button onClick={onPlayPrev} className="w-11 h-11 rounded-full bg-stone-800/60 text-stone-400 hover:text-white flex items-center justify-center transition-all active:scale-90" aria-label="السابقة">
-                  <SkipBack className="w-5 h-5" />
+            {/* Right Controls: Download, Play/Pause, Expand, Close */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {!isCustom && (
+                <button
+                  onClick={handleOfflineDownload}
+                  disabled={isDownloading || offlineSaved}
+                  aria-label={offlineSaved ? "الصوت محفوظ دون اتصال" : "تحميل الصوت إلى الجهاز"}
+                  title={downloadError || (offlineSaved ? "تم التحقق: الصوت محفوظ على الجهاز" : "تحميل السورة للاستخدام دون اتصال")}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-95 disabled:cursor-default ${offlineSaved ? "text-emerald-600 dark:text-emerald-400" : "text-stone-600 dark:text-stone-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"}`}
+                >
+                  {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : offlineSaved ? <Check className="w-4 h-4" /> : downloadError ? <AlertCircle className="w-4 h-4 text-red-500" /> : <Download className="w-4 h-4" />}
                 </button>
               )}
-              <button onClick={skipBack} className="w-10 h-10 rounded-full bg-stone-800/60 text-stone-400 hover:text-white flex items-center justify-center text-xs font-bold active:scale-90" aria-label="تأخير 10 ثوانٍ">-10</button>
+              {onPlayNext && (
+                <button
+                  onClick={onPlayNext}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-stone-600 dark:text-stone-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all active:scale-95"
+                  title="السورة التالية"
+                >
+                  <SkipForward className="w-4 h-4" />
+                </button>
+              )}
 
               <button
                 onClick={error ? retry : togglePlay}
                 disabled={loading}
-                className={`player-play-btn w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 text-[#1a1410] flex items-center justify-center shadow-[0_0_30px_rgba(180,120,20,0.4)] disabled:opacity-40 ${isPlaying ? "is-playing" : ""}`}
-                aria-label={error ? "إعادة المحاولة" : isPlaying ? "إيقاف" : "تشغيل"}
+                className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-white shadow-md active:scale-95 transition-all"
+                title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
               >
-                {error ? <RotateCcw className="w-7 h-7" /> : isPlaying ? <Pause className="w-7 h-7 fill-[#1a1410]" /> : <Play className="w-7 h-7 fill-[#1a1410] ml-[-2px]" />}
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : error ? (
+                  <RotateCcw className="w-4 h-4" />
+                ) : isPlaying ? (
+                  <Pause className="w-5 h-5" />
+                ) : (
+                  <Play className="w-5 h-5 ml-0.5" />
+                )}
               </button>
 
-              <button onClick={skipForward} className="w-10 h-10 rounded-full bg-stone-800/60 text-stone-400 hover:text-white flex items-center justify-center text-xs font-bold active:scale-90" aria-label="تقديم 10 ثوانٍ">+10</button>
-              {onPlayNext && (
-                <button onClick={onPlayNext} className="w-11 h-11 rounded-full bg-stone-800/60 text-stone-400 hover:text-white flex items-center justify-center transition-all active:scale-90" aria-label="التالية">
-                  <SkipForward className="w-5 h-5" />
-                </button>
-              )}
-            </div>
+              <button
+                onClick={() => setIsMinimized(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 dark:text-stone-400 hover:bg-amber-100 dark:hover:bg-stone-800 transition-colors"
+                title="تكبير المشغل"
+              >
+                <ChevronUp className="w-4 h-4" />
+              </button>
 
-            {/* Secondary Controls */}
-            <div className="flex items-center justify-between gap-2 px-1 pb-2">
-              <div className="flex items-center gap-2 relative">
-                {/* Speed */}
-                <div className="relative">
-                  <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); setShowSleepMenu(false); }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${playbackRate !== 1 ? "bg-amber-600 text-[#1a1410] border-amber-500 shadow-md" : "bg-stone-800/60 text-stone-400 border-stone-700/50 hover:text-stone-200"}`}
-                  >
-                    <Gauge className="w-3.5 h-3.5" /><span>{playbackRate}×</span>
-                  </button>
-                  {showSpeedMenu && (
-                    <div className="absolute bottom-full mb-2 right-0 z-30 bg-[#1a1410] border border-amber-700/50 rounded-2xl p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex gap-1 animate-scale-up">
-                      {SPEEDS.map((s) => (
-                        <button key={s} onClick={() => { setPlaybackRate(s); setShowSpeedMenu(false); }}
-                          className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${playbackRate === s ? "bg-amber-600 text-[#1a1410] font-black" : "text-stone-400 hover:bg-stone-800"}`}>{s}×</button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {/* Sleep */}
-                <div className="relative">
-                  <button onClick={() => { setShowSleepMenu(!showSleepMenu); setShowSpeedMenu(false); }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${sleepTimerMinutes ? "bg-amber-900/50 text-amber-300 border-amber-600/50" : "bg-stone-800/60 text-stone-400 border-stone-700/50 hover:text-stone-200"}`}
-                  >
-                    <Clock className="w-3.5 h-3.5" /><span>نوم</span>
-                  </button>
-                  {showSleepMenu && (
-                    <div className="absolute bottom-full mb-2 right-0 z-30 bg-[#1a1410] border border-amber-700/50 rounded-2xl p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex flex-wrap gap-1 w-44 animate-scale-up">
-                      {SLEEP_OPTIONS.map((opt) => (
-                        <button key={opt.value} onClick={() => { setSleepTimerMinutes(opt.value === 0 ? null : opt.value); setShowSleepMenu(false); }}
-                          className={`px-2 py-1.5 rounded-lg text-xs font-bold transition-all flex-1 text-center ${(opt.value === 0 && !sleepTimerMinutes) || sleepTimerMinutes === opt.value ? "bg-amber-600 text-[#1a1410] font-black" : "text-stone-400 hover:bg-stone-800"}`}>{opt.label}</button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button onClick={() => setLoop(!loop)}
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all relative ${loop ? "bg-amber-600 text-[#1a1410] shadow-md" : "bg-stone-800/60 text-stone-500 hover:text-stone-200"}`}
-                  aria-label="تكرار"
-                >
-                  <Repeat className="w-4 h-4" />
-                  {loop && <span className="absolute -top-1 -right-1 text-[8px] bg-[#1a1410] text-amber-400 rounded-full w-3.5 h-3.5 flex items-center justify-center font-black border border-amber-600/50">1</span>}
-                </button>
-                {onToggleAutoNext && (
-                  <button onClick={onToggleAutoNext}
-                    className={`px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-all border ${autoNext ? "bg-emerald-900/40 text-emerald-400 border-emerald-600/40" : "bg-stone-800/60 text-stone-500 border-stone-700/50 hover:text-stone-200"}`}
-                  >تلقائي</button>
-                )}
-              </div>
+              <button
+                onClick={handleClosePlayer}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                title="إغلاق المشغل"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
           {audioElement}
@@ -537,131 +671,389 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
       );
     }
 
-    /* ======================= BOTTOM BAR PLAYER (Desktop & Mobile Mini) ======================= */
+    const shouldShowFirstTimeDownloadOverlay = !isCustom && isDownloading && !offlineSaved;
+
+    /* =========================================================================
+     *  EXPANDED DELUXE VIEW (المشغل الكامل الحديث والفخم)
+     * ========================================================================= */
     return (
       <div
-        className="player-bottom-bar animate-fade-up"
+        className="fixed bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-[720px] animate-fade-up"
         dir="rtl"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
-        {/* Top progress bar — always visible */}
-        <div className="player-progress-track" onClick={handleProgressClick} dir="ltr" style={{ borderRadius: 0 }}>
-          <div className="player-progress-fill" style={{ width: `${progress}%` }} />
-        </div>
+        {shouldShowFirstTimeDownloadOverlay && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center rounded-[28px] bg-stone-950/50 backdrop-blur-sm">
+            <QuranLoading
+              fullScreen={false}
+              minimal
+              label="جارٍ حفظ السورة في الجهاز..."
+              description="يتم حفظ نسخة محلية للاستخدام دون اتصال"
+              sublabel={`${downloadProgress}%`}
+              colorVariant="gold"
+              className="!bg-transparent !border-0 !shadow-none"
+            />
+          </div>
+        )}
+        <div className="bg-white/95 dark:bg-[#15130f]/95 backdrop-blur-2xl border border-amber-500/25 dark:border-amber-500/20 rounded-[28px] sm:rounded-[32px] p-4 sm:p-5 shadow-[0_20px_60px_-15px_rgba(217,119,6,0.35),0_0_0_1px_rgba(245,158,11,0.12)] overflow-hidden relative group">
+          
+          {/* Subtle Ambient Golden Shimmer Background */}
+          {isPlaying && (
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-emerald-500/5 to-amber-500/5 pointer-events-none animate-pulse" />
+          )}
 
-        <div className="mx-auto max-w-5xl px-3 sm:px-5">
-          <div className="flex items-center gap-3 py-2.5 sm:py-3">
-            {/* Surah info + disc */}
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              {/* Mini disc */}
-              <div className={`relative w-10 h-10 sm:w-11 sm:h-11 shrink-0 ${isPlaying ? "player-disc-spin" : ""}`}>
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 p-[2px]">
-                  <div className="w-full h-full rounded-full bg-[#1a1410] flex items-center justify-center">
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-amber-500/40 to-amber-700/40 flex items-center justify-center p-[1px]">
-                      <div className="w-full h-full rounded-full bg-[#1a1410] flex items-center justify-center">
-                        <span className="text-amber-400 font-black text-[9px] sm:text-[10px]">{isCustom ? "🎤" : surahNumber}</span>
+          <div className="relative z-10 flex flex-col gap-3.5 sm:gap-4">
+            
+            {/* ================= HEADER ROW: Surah Details & Utility Badges ================= */}
+            <div className="flex items-center justify-between gap-2">
+              
+              {/* Surah Icon & Titles */}
+              <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+                <div
+                  className={`relative w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-white font-bold text-lg sm:text-xl shadow-[0_4px_16px_rgba(245,158,11,0.35)] border border-amber-300/40 shrink-0 ${
+                    isPlaying ? "shadow-amber-500/50" : ""
+                  }`}
+                >
+                  <span className="relative z-10">{isCustom ? "🎤" : surahNumber}</span>
+                  {isPlaying && (
+                    <div className="absolute inset-0 rounded-2xl border-2 border-white/40 animate-ping opacity-25 pointer-events-none" />
+                  )}
+                </div>
+
+                <div className="flex flex-col justify-center min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-xl sm:text-2xl font-amiri text-stone-900 dark:text-amber-100 leading-tight truncate">
+                      {isCustom ? surahName : `سورة ${surahName}`}
+                    </h3>
+
+                    {/* Animated Equalizer Sound Bars */}
+                    {isPlaying && (
+                      <div className="flex items-end gap-0.5 h-4 px-1" title="تلاوة نشطة">
+                        <span className="w-1 bg-amber-500 rounded-full h-2 animate-[soundbar_0.8s_ease-in-out_infinite]" style={{ animationDelay: "0ms" }} />
+                        <span className="w-1 bg-amber-500 rounded-full h-4 animate-[soundbar_0.8s_ease-in-out_infinite]" style={{ animationDelay: "200ms" }} />
+                        <span className="w-1 bg-amber-500 rounded-full h-3 animate-[soundbar_0.8s_ease-in-out_infinite]" style={{ animationDelay: "400ms" }} />
+                        <span className="w-1 bg-amber-500 rounded-full h-3.5 animate-[soundbar_0.8s_ease-in-out_infinite]" style={{ animationDelay: "100ms" }} />
                       </div>
-                    </div>
+                    )}
+                  </div>
+
+                  {/* Subtitle Badges: Makkiyah/Madaniyah & Ayah Count */}
+                  <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5 flex-wrap">
+                    {loading ? (
+                      <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin" /> جاري التحميل...
+                      </span>
+                    ) : error ? (
+                      <span className="text-red-500 font-bold">تعذّر تشغيل الملف • انقر لإعادة المحاولة</span>
+                    ) : (
+                      <>
+                        {surahInfo && (
+                          <span className="inline-flex items-center gap-1 bg-amber-500/10 dark:bg-amber-400/10 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full text-[11px] font-semibold border border-amber-500/20">
+                            {surahInfo.type === "مكية" ? "🕋 مكية" : "🕌 مدنية"}
+                          </span>
+                        )}
+                        {surahInfo?.ayahCount && (
+                          <span className="text-stone-600 dark:text-stone-300 text-[11px]">
+                            {surahInfo.ayahCount} آية
+                          </span>
+                        )}
+                        <span className="text-stone-400 text-[10px] hidden sm:inline">• برواية ورش</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-sm font-amiri text-amber-200 truncate leading-tight">
-                  {isCustom ? surahName : `سورة ${surahName}`}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] text-stone-500 tabular-nums font-mono">
-                    {formatTime(current)} / {formatTime(duration)}
-                  </span>
-                  {isPlaying && (
-                    <div className="flex items-center gap-[2px] h-3">
-                      {[0, 1, 2].map((i) => (
-                        <span key={i} className="w-[2px] bg-amber-400 rounded-full animate-wave" style={{ animationDelay: `${i * 0.12}s` }} />
-                      ))}
-                    </div>
-                  )}
-                  {!isPlaying && <span className="text-[10px] text-stone-600">القارئ أمين حاج أيوب</span>}
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                {!isCustom && (
+                  <button
+                    onClick={() => {
+                      if (isDownloading) {
+                        setDownloadModalOpen(true);
+                      } else {
+                        void handleOfflineDownload();
+                      }
+                    }}
+                    disabled={offlineSaved}
+                    aria-label={offlineSaved ? "الصوت محفوظ دون اتصال" : "تحميل الصوت إلى الجهاز"}
+                    title={downloadError || (offlineSaved ? "تم التحقق: الصوت محفوظ على الجهاز" : "تحميل السورة للاستخدام دون اتصال")}
+                    className={`h-9 px-2.5 sm:px-3 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all border disabled:cursor-default ${offlineSaved ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300" : downloadError ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/30 dark:border-red-900 dark:text-red-300" : "bg-stone-100/80 border-transparent text-stone-600 dark:bg-stone-800/50 dark:text-stone-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"}`}
+                  >
+                    {isDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : offlineSaved ? <Check className="w-3.5 h-3.5" /> : downloadError ? <AlertCircle className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                    <span>{isDownloading ? `${downloadProgress}%` : offlineSaved ? "محفوظ" : downloadError ? "إعادة" : "تحميل"}</span>
+                  </button>
+                )}
+                {/* Sleep Timer Button */}
+                <button
+                  onClick={cycleSleepTimer}
+                  className={`h-9 px-2.5 sm:px-3 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all border ${
+                    sleepTimerMinutes
+                      ? "bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/40 dark:border-indigo-800 dark:text-indigo-300 shadow-sm"
+                      : "bg-stone-100/80 border-transparent text-stone-600 dark:bg-stone-800/50 dark:text-stone-400 hover:bg-stone-200/80 dark:hover:bg-stone-700/60"
+                  }`}
+                  title={
+                    sleepTimerMinutes
+                      ? `مؤقت النوم مفعّل: متبقي ${Math.ceil((sleepRemainingSeconds || 0) / 60)} دقيقة`
+                      : "تفعيل مؤقت النوم"
+                  }
+                >
+                  <Moon className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">النوم:</span>
+                  <span>{sleepTimerMinutes ? `${Math.ceil((sleepRemainingSeconds || 0) / 60)}د` : "إيقاف"}</span>
+                </button>
+
+                {/* Auto-Next Toggle */}
+                {onToggleAutoNext && (
+                  <button
+                    onClick={onToggleAutoNext}
+                    className={`h-9 px-2.5 sm:px-3 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all border ${
+                      autoNext
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 shadow-sm"
+                        : "bg-stone-100/80 border-transparent text-stone-600 dark:bg-stone-800/50 dark:text-stone-400 hover:bg-stone-200/80 dark:hover:bg-stone-700/60"
+                    }`}
+                    title={autoNext ? "التشغيل التلقائي مفعل" : "تفعيل التشغيل التلقائي"}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">تلقائي</span>
+                  </button>
+                )}
+
+                {/* Minimize Button */}
+                <button
+                  onClick={() => setIsMinimized(true)}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center bg-stone-100/80 dark:bg-stone-800/50 text-stone-600 dark:text-stone-400 hover:bg-amber-100 dark:hover:bg-stone-700 transition-colors"
+                  title="تصغير المشغل"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+
+                {/* Close Button */}
+                <button
+                  onClick={handleClosePlayer}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center bg-stone-100/80 dark:bg-stone-800/50 text-stone-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                  title="إغلاق المشغل"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* ================= MIDDLE ROW: Interactive Pointer Scrubber ================= */}
+            <div className="flex items-center gap-3 px-1 select-none">
+              <span className="text-xs font-bold font-mono text-amber-600 dark:text-amber-400 w-11 text-center shrink-0">
+                {formatTime(displayedCurrentTime)}
+              </span>
+
+              {/* LTR Progress Bar Container: Prevents RTL mathematical inversion */}
+              <div
+                ref={progressTrackRef}
+                dir="ltr"
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                className="flex-1 h-3 sm:h-3.5 bg-stone-200/90 dark:bg-stone-800/90 rounded-full cursor-pointer relative overflow-visible group/bar touch-none transition-all hover:h-4"
+                title="اسحب أو انقر للانتقال"
+              >
+                {/* Filled Gradient Bar */}
+                <div
+                  className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 rounded-full relative pointer-events-none transition-all duration-75"
+                  style={{ width: `${progressPercent}%` }}
+                >
+                  {/* Glowing Thumb Handle */}
+                  <div
+                    className={`absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-amber-500 shadow-[0_2px_8px_rgba(245,158,11,0.6)] transition-transform ${
+                      isDraggingProgress ? "scale-125" : "scale-100 group-hover/bar:scale-110"
+                    }`}
+                  />
                 </div>
               </div>
+
+              <span className="text-xs font-bold font-mono text-stone-500 dark:text-stone-400 w-11 text-center shrink-0">
+                {formatTime(duration)}
+              </span>
             </div>
 
-            {/* Desktop Controls — hidden on mobile */}
-            <div className="hidden md:flex items-center gap-2">
-              {onPlayPrev && (
-                <button onClick={onPlayPrev} className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white flex items-center justify-center transition-colors" aria-label="السابقة">
-                  <SkipBack className="w-4 h-4" />
+            {/* ================= BOTTOM ROW: Control Buttons Grid ================= */}
+            <div className="flex items-center justify-between gap-2 pt-0.5 px-1">
+              
+              {/* Left Group: Speed, Loop, Volume */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {/* Speed Cycle */}
+                <button
+                  onClick={cycleSpeed}
+                  className={`h-10 px-2.5 sm:px-3 flex items-center justify-center text-xs font-bold rounded-xl transition-all border ${
+                    playbackRate !== 1
+                      ? "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700"
+                      : "bg-stone-100/80 text-stone-700 border-transparent dark:bg-stone-800/50 dark:text-stone-300 hover:bg-stone-200/80 dark:hover:bg-stone-700/60"
+                  }`}
+                  title="سرعة التلاوة"
+                >
+                  <Gauge className="w-3.5 h-3.5 ml-1" />
+                  <span>{playbackRate}x</span>
                 </button>
-              )}
-              <button onClick={skipBack} className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white flex items-center justify-center text-[10px] font-bold" aria-label="تأخير 10 ثوانٍ">-10</button>
 
-              <button onClick={error ? retry : togglePlay} disabled={loading}
-                className={`player-play-btn w-11 h-11 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-[#1a1410] flex items-center justify-center shadow-lg shadow-amber-600/30 disabled:opacity-40 ${isPlaying ? "is-playing" : ""}`}
-                aria-label={isPlaying ? "إيقاف" : "تشغيل"}
-              >
-                {error ? <RotateCcw className="w-5 h-5" /> : isPlaying ? <Pause className="w-5 h-5 fill-[#1a1410]" /> : <Play className="w-5 h-5 fill-[#1a1410] ml-[-1px]" />}
-              </button>
-
-              <button onClick={skipForward} className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white flex items-center justify-center text-[10px] font-bold" aria-label="تقديم 10 ثوانٍ">+10</button>
-              {onPlayNext && (
-                <button onClick={onPlayNext} className="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white flex items-center justify-center transition-colors" aria-label="التالية">
-                  <SkipForward className="w-4 h-4" />
+                {/* Repeat Loop */}
+                <button
+                  onClick={() => setLoop(!loop)}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all border ${
+                    loop
+                      ? "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700 shadow-sm"
+                      : "bg-stone-100/80 text-stone-700 border-transparent dark:bg-stone-800/50 dark:text-stone-300 hover:bg-stone-200/80 dark:hover:bg-stone-700/60"
+                  }`}
+                  title={loop ? "التكرار مفعّل للسورة" : "تكرار السورة"}
+                >
+                  <Repeat className="w-4 h-4" />
                 </button>
-              )}
-            </div>
 
-            {/* Desktop Secondary Controls */}
-            <div className="hidden md:flex items-center gap-2 shrink-0">
-              <button onClick={() => setLoop(!loop)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${loop ? "bg-amber-600 text-[#1a1410]" : "text-stone-500 hover:text-stone-200"}`}
-                title={loop ? "إيقاف التكرار" : "تكرار"} aria-label="تكرار"
-              >
-                <Repeat className="w-3.5 h-3.5" />
-              </button>
-              {onToggleAutoNext && (
-                <button onClick={onToggleAutoNext}
-                  className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${autoNext ? "bg-emerald-900/40 text-emerald-400" : "text-stone-500 hover:text-stone-200"}`}
-                >تلقائي</button>
-              )}
-              <button onClick={() => { setPlaybackRate(playbackRate === 1.5 ? 1 : SPEEDS[SPEEDS.indexOf(playbackRate) + 1] || 1); }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${playbackRate !== 1 ? "bg-amber-600 text-[#1a1410]" : "text-stone-500 hover:text-stone-200"}`}
-                title="سرعة التلاوة"
-              >{playbackRate}×</button>
+                {/* Volume Button with Popout/Slider */}
+                <div
+                  className="relative hidden sm:flex items-center"
+                  onMouseEnter={() => setShowVolumeSlider(true)}
+                  onMouseLeave={() => setShowVolumeSlider(false)}
+                >
+                  <button
+                    onClick={toggleMute}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center bg-stone-100/80 dark:bg-stone-800/50 text-stone-700 dark:text-stone-300 hover:bg-stone-200/80 dark:hover:bg-stone-700/60 transition-colors"
+                    title={isMuted ? "إلغاء كتم الصوت" : "كتم الصوت"}
+                  >
+                    {isMuted || volume === 0 ? (
+                      <VolumeX className="w-4 h-4 text-red-500" />
+                    ) : (
+                      <Volume2 className="w-4 h-4" />
+                    )}
+                  </button>
 
-              {/* Volume */}
-              <div className="flex items-center gap-1.5">
-                <button onClick={toggleMute} className="w-8 h-8 rounded-lg hover:bg-stone-800 text-stone-400 hover:text-white flex items-center justify-center transition-colors" aria-label="الصوت">
-                  {isMuted || volume === 0 ? <VolumeX className="w-4 h-4 text-red-400" /> : volume < 0.5 ? <Volume1 className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                </button>
-                <input type="range" min={0} max={1} step={0.05} value={isMuted ? 0 : volume}
-                  onChange={(e) => { const v = parseFloat(e.target.value); setVolume(v); if (isMuted && v > 0) setIsMuted(false); }}
-                  className="w-16 accent-amber-500 cursor-pointer h-1 bg-stone-700 rounded-lg" aria-label="مستوى الصوت" />
+                  {/* Volume Slider Popover */}
+                  {showVolumeSlider && (
+                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white dark:bg-stone-800 p-2 rounded-xl shadow-lg border border-amber-500/20 flex flex-col items-center gap-1 z-20">
+                      <span className="text-[10px] font-mono text-stone-500">
+                        {isMuted ? "0%" : `${Math.round(volume * 100)}%`}
+                      </span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={isMuted ? 0 : volume}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          setVolume(v);
+                          if (isMuted && v > 0) setIsMuted(false);
+                        }}
+                        className="w-20 accent-amber-500 cursor-pointer h-1.5"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Mobile Controls */}
-            <div className="flex md:hidden items-center gap-1.5 shrink-0">
-              <button onClick={error ? retry : togglePlay} disabled={loading}
-                className={`player-play-btn w-11 h-11 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-[#1a1410] flex items-center justify-center shadow-lg shadow-amber-600/30 disabled:opacity-40 ${isPlaying ? "is-playing" : ""}`}
-                aria-label={isPlaying ? "إيقاف" : "تشغيل"}
-              >
-                {error ? <RotateCcw className="w-5 h-5" /> : isPlaying ? <Pause className="w-5 h-5 fill-[#1a1410]" /> : <Play className="w-5 h-5 fill-[#1a1410] ml-[-1px]" />}
-              </button>
-              {onPlayNext && (
-                <button onClick={onPlayNext} className="w-8 h-8 rounded-full bg-stone-800 text-stone-300 flex items-center justify-center" aria-label="التالي">
-                  <SkipForward className="w-4 h-4" />
+              {/* Center Group: Navigation & Hero Play/Pause Button */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Previous Surah */}
+                {onPlayPrev && (
+                  <button
+                    onClick={onPlayPrev}
+                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center bg-stone-100/90 dark:bg-stone-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-stone-700 dark:text-stone-200 transition-all active:scale-95"
+                    title="السورة السابقة"
+                  >
+                    <SkipBack className="w-5 h-5" />
+                  </button>
+                )}
+
+                {/* Rewind 10 Seconds */}
+                <button
+                  onClick={skipBack10}
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center bg-stone-100/90 dark:bg-stone-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-stone-700 dark:text-stone-200 transition-all active:scale-95"
+                  title="رجوع 10 ثوانٍ"
+                >
+                  <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
-              )}
-              <button onClick={() => setIsExpanded(true)} className="w-8 h-8 rounded-full bg-stone-800 text-stone-300 flex items-center justify-center" aria-label="توسيع">
-                <ChevronUp className="w-4 h-4" />
-              </button>
-            </div>
 
-            {/* Close button */}
-            <button onClick={handleClosePlayer} className="w-8 h-8 rounded-full bg-stone-800 hover:bg-red-900/60 hover:text-red-400 text-stone-500 flex items-center justify-center transition-colors shrink-0" aria-label="إغلاق">
-              <X className="w-4 h-4" />
-            </button>
+                {/* HERO PLAY / PAUSE BUTTON */}
+                <button
+                  onClick={error ? retry : togglePlay}
+                  disabled={loading}
+                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-[0_8px_25px_rgba(245,158,11,0.45)] text-white transition-all active:scale-95 ${
+                    loading
+                      ? "bg-stone-400 animate-pulse"
+                      : error
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 hover:scale-105"
+                  }`}
+                  title={error ? "إعادة المحاولة" : isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+                >
+                  {loading ? (
+                    <Loader2 className="w-7 h-7 animate-spin" />
+                  ) : error ? (
+                    <RotateCcw className="w-7 h-7" />
+                  ) : isPlaying ? (
+                    <Pause className="w-7 h-7" />
+                  ) : (
+                    <Play className="w-7 h-7 ml-1" />
+                  )}
+                </button>
+
+                {/* Fast-Forward 10 Seconds */}
+                <button
+                  onClick={skipForward10}
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center bg-stone-100/90 dark:bg-stone-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-stone-700 dark:text-stone-200 transition-all active:scale-95"
+                  title="تقديم 10 ثوانٍ"
+                >
+                  <RotateCw className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+
+                {/* Next Surah */}
+                {onPlayNext && (
+                  <button
+                    onClick={onPlayNext}
+                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center bg-stone-100/90 dark:bg-stone-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-stone-700 dark:text-stone-200 transition-all active:scale-95"
+                    title="السورة التالية"
+                  >
+                    <SkipForward className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Right Group: Mobile Mute Toggle & Quick Jump Badges */}
+              <div className="flex items-center gap-1 sm:hidden">
+                <button
+                  onClick={toggleMute}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center bg-stone-100/80 dark:bg-stone-800/50 text-stone-700 dark:text-stone-300"
+                  title={isMuted ? "إلغاء الكتم" : "كتم"}
+                >
+                  {isMuted || volume === 0 ? (
+                    <VolumeX className="w-4 h-4 text-red-500" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+
+              {/* Desktop Place-keeper to balance layout */}
+              <div className="hidden sm:flex items-center gap-2 opacity-0 pointer-events-none w-[116px]">
+                <div className="w-10 h-10" />
+              </div>
+
+            </div>
           </div>
         </div>
+        <SurahDownloadModal
+          isOpen={downloadModalOpen}
+          onClose={() => setDownloadModalOpen(false)}
+          surahNumber={surahNumber}
+          surahName={surahName}
+          progressData={downloadProgressData}
+          onCancel={() => {
+            downloadAbortRef.current?.abort();
+            setIsDownloading(false);
+            setDownloadModalOpen(false);
+          }}
+          onRetry={() => {
+            void handleOfflineDownload();
+          }}
+        />
         {audioElement}
       </div>
     );

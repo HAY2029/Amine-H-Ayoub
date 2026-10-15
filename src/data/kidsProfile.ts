@@ -25,6 +25,8 @@ export interface KidsProfile {
   inventory: string[];   // معرّفات عناصر المتجر المملوكة
   currentSurah?: number; // السورة الحالية التي يحفظها الطفل (تُستخدم لتحديد نطاق الألعاب)
   gender?: "boy" | "girl"; // جنس الطفل (ولد أو بنت)
+  characterId?: string;
+
   verified?: boolean;   // توثيق المستخدم (يُدار من admin.html — مطلوب لاستبدال أكواد النقاط)
   blocked?: boolean;    // حظر المستخدم (يمنعه من منطقة الألعاب)
 }
@@ -298,6 +300,36 @@ export const getProfile = (): KidsProfile => {
   return profs.find(p => p.id === id) || profs[0] || DEFAULT_PROFILE;
 };
 
+/** يُنشئ ملف الطفل الافتراضي إن لم تكن هناك ملفات بعد.
+ *  يُستدعى مرّة واحدة عند فتح شاشة اختيار الملفات لأول مرة. */
+export const ensureDefaultProfiles = (): boolean => {
+  if (typeof window === "undefined") return false;
+  ensureMigrated();
+  const existing = getProfiles();
+  if (existing.length > 0) return false;
+  const child = normalize({
+    id: "default-child",
+    name: "طفلي",
+    gender: "boy",
+    avatar: KID_AVATARS_BOY[0],
+    goalMinutes: 5,
+    coins: 0,
+    age: 7,
+  }, 0);
+
+
+
+
+
+
+
+
+
+  persistProfiles([child]);
+  setActiveProfile(child.id);
+  return true;
+};
+
 /** يُنشئ ملف طفل جديداً ويُرجعه (ويجعله نشِطاً إن لم يكن هناك ملف نشِط). */
 export const addProfile = (partial: Partial<KidsProfile> = {}): KidsProfile => {
   const profs = getProfiles();
@@ -457,6 +489,16 @@ export const spendCoins = (n: number): boolean => {
 
 export const getInventory = (): string[] => getProfile().inventory || [];
 export const ownItem = (itemId: string): boolean => getInventory().includes(itemId);
+
+/** يتحقق إن كانت الشخصية الرمزية مملوكة للملف (مجانية أساسية، أو حالية، أو مشتراة في الحقيبة) */
+export const isAvatarOwnedByProfile = (avatarVal: string, p?: KidsProfile | null): boolean => {
+  if (KID_AVATARS.includes(avatarVal)) return true;
+  const target = p || getProfile();
+  if (!target) return false;
+  if (target.avatar === avatarVal) return true;
+  const inv = target.inventory || [];
+  return inv.includes(avatarVal) || inv.includes("av-" + avatarVal);
+};
 
 /** يفتح عنصراً بالمعرّف (زينة أو لعبة) إن لم يكن مملوكاً وتوفّرت نقاط كافية. */
 export const unlockItem = (itemId: string, cost: number): boolean => {

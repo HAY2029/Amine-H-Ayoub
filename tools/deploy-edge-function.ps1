@@ -5,7 +5,7 @@
 # متطلبات (مرة واحدة):
 #   npm i -g supabase          # أو استخدم npx supabase
 #   supabase login
-#   supabase link --project-ref gimdekpxutvnopovofmc
+#   supabase link --project-ref ktfxeccahsfsuhwdjjjn
 
 param(
   [Parameter(Mandatory = $false)]

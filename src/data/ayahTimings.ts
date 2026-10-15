@@ -106,7 +106,14 @@ export async function clearSavedSurahTimings(surahNumber: number) {
   }
 }
 
-/** Approximate ayah counts for surahs in this app. */
+import { surahs } from "./surahs";
+
+export function getSurahAyahTotal(surahNumber: number): number {
+  const s = surahs.find(item => item.number === surahNumber);
+  return s?.ayahCount || AYAH_COUNTS[surahNumber] || 7;
+}
+
+/** Approximate ayah counts for surahs in this app (legacy fallback). */
 export const AYAH_COUNTS: Record<number, number> = {
   1: 7,    // الفاتحة
   2: 6,    // الناس
@@ -173,7 +180,7 @@ export function getCurrentAyahAtTime(
   currentTime: number,
   audioDuration: number,
 ): { ayah: number; speaker: "teacher" | "kids" | null } {
-  const total = AYAH_COUNTS[surahNumber] ?? 1;
+  const total = getSurahAyahTotal(surahNumber);
   const t = resolveTimings(surahNumber);
 
   // Manual timings path
@@ -210,7 +217,7 @@ export function getAyahStartTime(
     const list = speaker === "kids" && t.kids ? t.kids : t.teacher;
     if (list[ayahIndex - 1] !== undefined) return list[ayahIndex - 1];
   }
-  const total = AYAH_COUNTS[surahNumber] ?? 1;
+  const total = getSurahAyahTotal(surahNumber);
   if (total <= 0 || !isFinite(audioDuration)) return 0;
   return (audioDuration / total) * (ayahIndex - 1);
 }

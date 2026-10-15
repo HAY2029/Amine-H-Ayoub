@@ -62,6 +62,20 @@ const KNOWN_PAGES = [...LOCAL_PAGES, ...SERVER_PAGES];
 // كاش خفيف لتفادي إعادة الجلب المتكرر
 let _cache: { at: number; imgs: HFImage[] } | null = null;
 const CACHE_TTL = 5 * 60 * 1000;
+const HF_CACHE_STORAGE_KEY = "mushaf:hfImagesCache:v2";
+
+/** قراءة فورية للكاش المحلي لضمان عدم تأخر فتح المصحف إطلاقاً */
+export function readCachedHFImages(): HFImage[] {
+  try {
+    const raw = localStorage.getItem(HF_CACHE_STORAGE_KEY);
+    if (raw) {
+      const v = JSON.parse(raw);
+      if (Array.isArray(v) && v.length > 0) return v;
+    }
+  } catch { /* ignore */ }
+  // بديل محلي فوري من الصفحات المدمجة مع التطبيق
+  return LOCAL_PAGES.map(n => toHFImage(`${HF_LIST_PATH}/${n}`, `/pages/${n}`, "local"));
+}
 
 // ─── حماية من إغراق الشبكة ───────────────
 // 1) قفل ضد الطلبات المتزامنة: لا يخرج أكثر من طلب واحد فعلي للشبكة في لحظة.
@@ -236,7 +250,8 @@ async function doFetchHuggingFaceImages(): Promise<HFImage[]> {
     const headers: Record<string, string> = authHeaders(token);
 
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 12000);
+    // مهلة سريعة لا تتجاوز 3.5 ثوانٍ حتى لا تتأخر الشاشة إطلاقاً
+    const timer = setTimeout(() => ctrl.abort(), 3500);
     const res = await fetch(`https://huggingface.co/api/datasets/${HF_IMAGES_REPO}/tree/main/${HF_LIST_PATH}?t=${Date.now()}`, {
       headers, signal: ctrl.signal,
     }).finally(() => clearTimeout(timer));
@@ -350,6 +365,9 @@ async function doFetchHuggingFaceImages(): Promise<HFImage[]> {
   const all = Array.from(merged.values());
   all.sort((a, b) => a.pageNumber - b.pageNumber);
   _cache = { at: Date.now(), imgs: all };
+  try {
+    localStorage.setItem(HF_CACHE_STORAGE_KEY, JSON.stringify(all));
+  } catch { /* ignore */ }
   return all;
 }
 

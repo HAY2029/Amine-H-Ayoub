@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, ChevronLeft, ChevronRight, Play, Pause, Maximize2, Minimize2, X, Shuffle, Pencil, Check, Settings, Bell, SplitSquareHorizontal, SplitSquareVertical, Volume2, VolumeX, Menu, Eye, EyeOff, List, Lock, Baby, Bookmark as BookmarkIcon, Trash2, Plus, Wrench, Headphones, Download, Mic, Repeat, Palette, LayoutGrid, GripVertical, SkipForward, SkipBack } from "lucide-react";
-import { getAudioPath as audioPath } from "@/data/audioUrls";
+import { getAudioPath as audioPath, getFallbackAudioUrl, getArchiveGatewayAudioUrl, reportHuggingFaceFailure } from "@/data/audioUrls";
 import { getPageAyahBoxes, PAGE_IMAGE_SIZE } from "@/data/ayahCoordinates";
 import AppFooter from "@/components/AppFooter";
+import AppNav from "@/components/AppNav";
+import QuranLoading from "@/components/QuranLoading";
 import { getSavedTimings, getSurahTimings } from "@/data/ayahTimings";
-import { getCustomPages, getAllPageImages, syncAllPageImagesFromServer, syncCustomPagesFromServer, getPageOrder, getPageOrderSrcs, savePageOrder, syncPageOrderFromServer, normalizeImageKey, isBogusSrc, sanitizePageOrder } from "@/data/customPages";
+import { getCustomPages, getAllPageImages, getPageOrder, getPageOrderSrcs, savePageOrder, normalizeImageKey, isBogusSrc, sanitizePageOrder } from "@/data/customPages";
 import { getPageSurahRegions } from "@/data/surahRegions";
 import { addReadingMinutes, addCoins, kidsEnabled as getKidsEnabled, getProgress, isPureMode, setAppMode } from "@/data/kidsProfile";
 import { recordTodayActivity } from "@/data/kidsBadges";
@@ -14,9 +16,7 @@ import { getBookmarks, addBookmark, removeBookmark, Bookmark } from "@/data/book
 import { isKidsMode, setKidsLocked, hasKidsPin } from "@/data/kidsLock";
 import ParentalGateModal from "@/components/ParentalGateModal";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
-import { fetchHuggingFaceImages, HFImage } from "@/services/huggingFaceService";
-import { syncImageOrderFromServer, saveImageOrder } from "@/services/imageOrderService";
+import { CODE_QURAN_PAGES } from "@/data/staticPages";
 import {
   getLocalShadingSettings,
   saveShadingToServer,
@@ -27,10 +27,12 @@ import {
   type ShadingSettings
 } from "@/services/shadingSyncService";
 import { isTauri, checkOfflineStatus, getOfflineAudioUrl, downloadSurah, listenToDownloadProgress } from "../utils/tauriUtils";
-import { resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
+import { isAudioCachedOffline, resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
+import { downloadSurahOffline, type SurahDownloadProgress } from "@/data/offlineDownload";
 import { useAudioContext } from "@/contexts/audioContext";
 import SplitViewPanel from "@/components/SplitViewPanel";
 import NotificationsModal from "@/components/NotificationsModal";
+import SurahDownloadModal from "@/components/SurahDownloadModal";
 import { updateMediaSession, setMediaPlaybackState, isBackgroundAudioEnabled } from "@/utils/backgroundAudio";
 
 // ألوان التظليل — الثيمات الجاهزة أدناه تحمل القيم (ذهبي/نعناعي/وردي)
@@ -124,27 +126,26 @@ const MUSHAF_LAST_TIME = "mushaf:lastTime";
 interface SurahAudio { name: string; number: number; src: string; ayahCount: number; }
 interface PageInfo { name: string; src: string; surahs: SurahAudio[]; }
 
-const BASE_PAGES: PageInfo[] = [
-  {
-    name: "الفاتحة", src: "/pages/fatiha.jpg", surahs: [
-      { name: "الفاتحة", number: 1, src: audioPath(1), ayahCount: 7 },
-    ]
-  },
-];
+// صفحات المصحف المدمجة داخل الكود محلياً لضمان جاهزية فورية (0ms) بلا أي اتصال بسيرفر
+const BASE_PAGES: PageInfo[] = CODE_QURAN_PAGES;
 
 const SPEAKER_LABELS: Record<Speaker, string> = { teacher: "المعلم", kids: "الأطفال" };
 
 export default function QuranReader() {
   const navigate = useNavigate();
-  const { requestPlay, notifyStop, registerAudio, unregisterAudio, simultaneousMode, setSimultaneousMode } = useAudioContext();
+  const { simultaneousMode, setSimultaneousMode } = useAudioContext();
 
   const [customPageList, setCustomPageList] = useState(() => getCustomPages());
-  const [customImgs, setCustomImgs] = useState<Record<string, string>>({});
+  const [customImgs, setCustomImgs] = useState<Record<string, string>>(() => {
+    try {
+      const raw = localStorage.getItem("mushaf:cachedCustomImgs:v1");
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
   const [orderVersion, setOrderVersion] = useState(0);
-  
-  const [hfImages, setHfImages] = useState<HFImage[]>([]);
-  const [hfOrder, setHfOrder] = useState<string[]>([]);
-  const [hfImagesMap, setHfImagesMap] = useState<Record<string, string>>({});
+  const [pageDataReady, setPageDataReady] = useState(true);
 
   // اختصار لوحة المفاتيح Z لفتح إعدادات التظليل
   useEffect(() => {
@@ -159,73 +160,37 @@ export default function QuranReader() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [navigate]);
 
-  // يُعيد القراءة عند العودة للقارئ / عند اكتمال المزامنة من السيرفر (بلا تحديث يدوي)
-  // خفض تكرار (throttle): لا نُعيد المزامنة الكاملة أكثر من مرة كل 45 ثانية — للسرعة
-  const _lastRefreshRef = useRef(0);
+  // تحديث محلي فوري عند التركيز بدون أي اتصال بسيرفر خارجي (0ms)
   useEffect(() => {
-    const REFRESH_MIN_MS = 45_000; // لا مزامنة كاملة أكثر من مرة كل 45 ثانية — للسرعة
-    const refresh = async (force = false) => { 
-      const now = Date.now();
-      if (!force && now - _lastRefreshRef.current < REFRESH_MIN_MS) return;
-      _lastRefreshRef.current = now;
-      // أولاً: مزامنة قائمة صفحات السيرفر (إن لم تكن قد وصلت بعد)
-      await syncCustomPagesFromServer().catch(() => {});
+    const refresh = () => { 
       setCustomPageList(getCustomPages()); 
-      // تحميل الصور من السيرفر (Supabase) ومن المحلي معاً
-      syncAllPageImagesFromServer().then(setCustomImgs).catch(() => {});
+      getAllPageImages().then(imgs => {
+        setCustomImgs(imgs);
+      }).catch(() => {});
       setBookmarks(getBookmarks()); 
-      
-      try {
-        const [images, order] = await Promise.all([
-          fetchHuggingFaceImages(),
-          syncImageOrderFromServer()
-        ]);
-        setHfImages(images);
-        setHfOrder(order || []);
-        
-        const map: Record<string, string> = {};
-        const srcList: string[] = [];
-        images.forEach(img => {
-          // img.name قد يكون "pages/600.jpg" — نوحّد المفتاح إلى "/pages/600.jpg"
-          const clean = img.name.replace(/^pages\//, "").replace(/^\/pages\//, "");
-          const src = `/pages/${clean}`;
-          map[src] = img.url;
-          srcList.push(src);
-        });
-        setHfImagesMap(map);
-        try { localStorage.setItem("mushaf:hfImageSrcs:v1", JSON.stringify(srcList)); } catch { /* ignore */ }
-      } catch (e) {
-        console.error(e);
-      }
-      
-      setOrderVersion(v => v + 1); 
+      setOrderVersion(v => v + 1);
+      setPageDataReady(true);
     };
-    refresh(true);
+    refresh();
     const onFocus = () => refresh();
     const onVis = () => refresh();
-    // ملاحظة: لا نستمع لحدث "mushaf:sync_complete" نهائياً — هذا الحدث يُطلق
-    // من عدة أماكن (shadingSyncService وغيره) أثناء دورات مزامنة ذاتية، والاستماع
-    // إليه يسبب سلسلة لا نهائية: مزامنة ← حدث ← مزامنة ← حدث... مع طلبات شبكة
-    // متكررة تملأ الكونسول بأخطاء 404/500. التحديث عند التركيز والرؤية يكفي.
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onVis);
-    return () => { window.removeEventListener("focus", onFocus); document.removeEventListener("visibilitychange", onVis); };
+    window.addEventListener("mushaf:sync_complete", refresh);
+    return () => { 
+      window.removeEventListener("focus", onFocus); 
+      document.removeEventListener("visibilitychange", onVis); 
+      window.removeEventListener("mushaf:sync_complete", refresh);
+    };
   }, []);
   
-  const imgSrcFor = (src: string) => customImgs[src] || hfImagesMap[src] || src;
+  // مسار الصورة المحلي المباشر من الكود / public/pages بدون اتصال بسيرفر
+  const imgSrcFor = (src: string) => {
+    if (customImgs[src] && customImgs[src].startsWith("data:")) return customImgs[src];
+    return src;
+  };
 
-  /**
-   * المصدر البديل عند فشل الصورة الأساسية.
-   * الصفحات المضمّنة موجودة فعلاً في public/pages — فإن فشل رابط السيرفر
-   * (انقطاع شبكة / رابط HuggingFace ميت) نعرض النسخة المحلية فوراً
-   * بدل ترك الصفحة فارغة (كانت تظهر علامة «صورة مكسورة»).
-   */
-  const imgFallbackFor = useCallback((src: string): string | null => {
-    const primary = customImgs[src] || hfImagesMap[src];
-    if (!primary) return null;
-    // الأساسي ليس المسار المحلي نفسه؟ جرّب المحلي كبديل
-    return primary === src ? null : src;
-  }, [customImgs, hfImagesMap]);
+  const imgFallbackFor = useCallback((_src: string): string | null => null, []);
 
   // تتبّع تحميل صور الصفحات: لا نُظهر التظليل إلا بعد ظهور الصورة (يمنع «تظليل فوق صفحة فارغة»)
   const [loadedImgs, setLoadedImgs] = useState<Set<string>>(() => new Set());
@@ -366,191 +331,22 @@ export default function QuranReader() {
   };
 
   const pages = useMemo<PageInfo[]>(() => {
-    const basePagesMap = new Map(BASE_PAGES.map(p => [p.src, p]));
-    
-    // فلترة صور HF الصحيحة (استبعاد الفارغة أو الخاطئة)
-    const validHfImages = hfImages.filter(img => img.url && img.url.length > 10);
-    
-    // 1. ترتيب صور HF الصحيحة حسب hfOrder
-    let orderedHfImages = [...validHfImages];
-    if (hfOrder && hfOrder.length > 0) {
-      const map = new Map<string, HFImage>();
-      const unordered: HFImage[] = [];
-      validHfImages.forEach(img => {
-        if (hfOrder.includes(img.name)) map.set(img.name, img);
-        else unordered.push(img);
-      });
-      const sorted: HFImage[] = [];
-      hfOrder.forEach(name => {
-        const img = map.get(name);
-        if (img) sorted.push(img);
-      });
-      orderedHfImages = [...sorted, ...unordered];
-    }
-
-    const hfPageInfos: PageInfo[] = orderedHfImages.map(img => {
-      // img.name قد يكون "pages/600.jpg" أو "600.jpg" — نوحّد إلى "/pages/XXX.jpg" بدون تكرار
-      const clean = img.name.replace(/^pages\//, "").replace(/^\/pages\//, "");
-      const src = `/pages/${clean}`;
-      const regions = getPageSurahRegions(src);
-      // جرّب أيضاً المفتاح الخام (للتوافق مع بيانات قديمة مخزنة بـ pages/...)
-      const boxes = [...getPageAyahBoxes(src), ...getPageAyahBoxes(`pages/${clean}`), ...getPageAyahBoxes(clean)];
-      const regionsAlt = [...regions, ...getPageSurahRegions(`pages/${clean}`)];
-      
-      let surahs: SurahAudio[] = [];
-      if (regionsAlt.length > 0) {
-        surahs = regionsAlt.filter(r => r.surah).map(r => ({
-          name: r.name || `سورة ${r.surah}`,
-          number: r.surah as number,
-          src: audioPath(r.surah as number),
-          ayahCount: boxes.filter(b => b.surah === r.surah).length || 0,
-        }));
-      } else if (basePagesMap.has(src)) {
-        surahs = basePagesMap.get(src)!.surahs;
-      }
-      
-      const defaultName = basePagesMap.has(src)
-        ? basePagesMap.get(src)!.name
-        : img.pageNumber > 0
-          ? `صفحة ${img.pageNumber}`
-          : img.name.replace(/\.jpe?g$/i, "").replace(/^pages\//, "");
-      return { name: defaultName, src, surahs };
-    });
-
-    const hfSrcs = new Set(hfPageInfos.map(p => p.src));
-    
-    // صور السيرفر (custom:xxx / /pages/xxx من bucket) المخزّنة في customImgs —
-    // ابنِ لها صفحات قارئ تلقائياً حتى تظهر كل الصور القادمة من السيرفر.
-    const coveredSrcs = new Set<string>([
-      ...hfPageInfos.map(p => p.src),
-      ...BASE_PAGES.map(p => p.src),
-      ...customPageList.map(p => p.src),
-    ]);
-    const serverOnlySrcs = Object.keys(customImgs).filter(
-      (src) => !coveredSrcs.has(src) && customImgs[src] && String(customImgs[src]).length > 10
-    );
-    const serverOnlyPages: PageInfo[] = serverOnlySrcs.map((src) => {
-      const regions = getPageSurahRegions(src);
-      const boxes = getPageAyahBoxes(src);
-      const surahs: SurahAudio[] = regions
-        .filter((r) => r.surah)
-        .map((r) => ({
-          name: r.name || `سورة ${r.surah}`,
-          number: r.surah as number,
-          src: audioPath(r.surah as number),
-          ayahCount: boxes.filter((b) => b.surah === r.surah).length || 0,
-        }));
-      const num = parseInt(src.replace(/\D/g, ""), 10);
-      return {
-        name: regions[0]?.name || (num ? `صفحة ${num}` : "صفحة من السيرفر"),
-        src,
-        surahs,
-      };
-    });
-
-    // 3. Add Custom Pages — فقط الصفحات التي لها صورة حقيقية موجودة فعلاً
-    // (من Supabase أو محلياً) — نستبعد أي صفحة وهمية حُذفت صورتها حتى لا تظهر فارغة
-    const extra: PageInfo[] = customPageList
-      .filter(cp => {
-        if (customImgs[cp.src]) return true;                       // صورة موجودة (سيرفر/محلي)
-        if (BASE_PAGES.some(bp => bp.src === cp.src)) return true; // صفحة أساسية محلية
-        if (hfSrcs.has(cp.src)) return true;                       // صورة من السيرفر
-        return false; // لا صورة → استبعاد النسخ المحلية الافتراضية
-      })
-      .map(cp => {
-      const regions = getPageSurahRegions(cp.src);
-      const boxes = getPageAyahBoxes(cp.src);
-      const surahs: SurahAudio[] = regions
-        .filter(r => r.surah)
-        .map(r => ({
-          name: r.name || `سورة ${r.surah}`,
-          number: r.surah as number,
-          src: audioPath(r.surah as number),
-          ayahCount: boxes.filter(b => b.surah === r.surah).length || 0,
-        }));
-      return { name: cp.name, src: cp.src, surahs };
-    });
-
-    // ─── الدمج النهائي: صور السيرفر فقط + إزالة أي تكرار ───
-    // المستخدم طلب: المصدر الوحيد هو السيرفر (Supabase) — لا صفحات محلية مكررة.
-    // نستخدم مفتاحاً موحّداً (normalizeImageKey) بحيث أي نسخة مكرّرة بنفس الرقم
-    // (بصيغ مختلفة: 600.jpg / pages/600.jpg / /pages/600.jpg) تُدمج في صفحة واحدة.
+    // بناءً على طلبك: نعتمد فقط على الصفحات الموجودة في مجلد `صفحة قران` ونلغي أي صفحات مضافة/مستعادة سابقاً
     const dedupeMap = new Map<string, PageInfo>();
-    const normKey = (p: PageInfo) => {
-      const n = normalizeImageKey(p.src);
-      return n || p.src;
-    };
-    [...BASE_PAGES, ...hfPageInfos, ...extra, ...serverOnlyPages].forEach(p => {
-      if (p && p.src) dedupeMap.set(normKey(p), p); // آخر نسخة تكسب
-    });
-    let allPages = Array.from(dedupeMap.values());
-
-    // ─── تنظيف نهائي: لا "0" خاطئة ولا مكررات ───
-    const byNum = new Map<number, PageInfo>();
-    const noNumPages: PageInfo[] = [];
-    const seenNoNum = new Set<string>();
+    const normKey = (p: PageInfo) => normalizeImageKey(p.src) || p.src;
     
-    const getPageNum = (p: PageInfo) => {
-      if (/fatiha/i.test(p.src) || p.name.includes("الفاتحة")) return 1;
-      const mName = p.name.match(/(\d+)/);
-      if (mName) return parseInt(mName[1], 10);
-      if (p.src.startsWith("custom:")) return -1;
-      const mSrc = p.src.match(/(\d+)/);
-      return mSrc ? parseInt(mSrc[1], 10) : -1;
-    };
-
-    for (const p of allPages) {
-      const num = getPageNum(p);
-      if (num === 0) continue; // "0.jpg" صفحة خاطئة — احذفها دائماً
-      
-      if (num === -1) {
-        const k = p.name && !p.name.includes("صفحة") ? p.name : normKey(p);
-        if (!seenNoNum.has(k)) { seenNoNum.add(k); noNumPages.push(p); }
-        continue;
-      }
-      
-      const existing = byNum.get(num);
-      if (existing) {
-        // نُفضل دائماً نسخة السيرفر (التي ليست في basePagesMap) على النسخة المحلية الافتراضية
-        const pIsServer = !basePagesMap.has(p.src);
-        const existingIsServer = !basePagesMap.has(existing.src);
-        
-        let better = p;
-        if (existingIsServer && !pIsServer) {
-          better = existing;
-        } else if (pIsServer && !existingIsServer) {
-          better = p;
-        } else {
-          // كلاهما سيرفر أو كلاهما محلي -> نُبقي صاحبة الاسم الوصفي
-          better = (!existing.name.startsWith("صفحة") && existing.name !== p.name) ? existing : p;
+    CODE_QURAN_PAGES.forEach(p => {
+      if (p && p.src) {
+        const k = normKey(p);
+        if (!dedupeMap.has(k)) {
+          dedupeMap.set(k, p);
         }
-        byNum.set(num, better);
-      } else {
-        byNum.set(num, p);
       }
-    }
-    allPages = [...noNumPages, ...Array.from(byNum.values())].filter(p => p.name !== "صفحة مستعادة");
-
-    // ─── الترتيب: الفاتحة (فاتحة/1) أولاً ثم 581→604 تصاعدياً ───
-    allPages.sort((a, b) => {
-      const numA = getPageNum(a) === -1 ? Number.MAX_SAFE_INTEGER : getPageNum(a);
-      const numB = getPageNum(b) === -1 ? Number.MAX_SAFE_INTEGER : getPageNum(b);
-      const d = numA - numB;
-      return d !== 0 ? d : a.src.localeCompare(b.src);
     });
-
-    // احتياط تام: إذا لم تصل أي صورة سيرفر إطلاقاً (شبكة مقطوعة + سيرفر فارغ)
-    // نعرض الصفحات الأساسية المحلية فقط حتى لا تبقى الشاشة فارغة.
-    if (allPages.length === 0) {
-      const fallback = new Map<string, PageInfo>();
-      [...BASE_PAGES, ...extra].forEach(p => {
-        if (p && p.src) fallback.set(normKey(p), p);
-      });
-      allPages = Array.from(fallback.values());
-    }
+    const allPages = Array.from(dedupeMap.values());
 
     return applyPageOrder(allPages);
-  }, [customPageList, customImgs, hfImages, hfOrder]);
+  }, [orderVersion]);
 
   // === حالة الصفحة: نحفظ src الصفحة (لا الفهرس) ليظل الموضع صحيحاً بعد تحميل صور السيرفر ===
   const [currentPage, setCurrentPage] = useState(() => {
@@ -577,7 +373,7 @@ export default function QuranReader() {
       im.src = src;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pages, customImgs, hfImagesMap]);
+  }, [currentPage, pages, customImgs]);
 
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : false);
   const [controlsOpen, setControlsOpen] = useState(false);
@@ -755,14 +551,11 @@ export default function QuranReader() {
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
-  // مزامنة ترتيب الصفحات من السيرفر
+  // قراءة ترتيب الصفحات محلياً
   useEffect(() => {
     if (!pageOrderOpen) return;
-    // مفتاح قديم مهجور — حذفه حتى لا يظل يفرض ترتيباً قديمًا (سبب تكرار/صفحة "0")
     try { localStorage.removeItem("mushaf:customPageOrder:v1"); } catch { /* ignore */ }
-    syncPageOrderFromServer().then(order => {
-      if (order.length > 0) setPageOrderSrcs(getPageOrderSrcs());
-    });
+    setPageOrderSrcs(getPageOrderSrcs());
   }, [pageOrderOpen]);
 
   const openReorder = useCallback(() => {
@@ -783,7 +576,6 @@ export default function QuranReader() {
         reorderedPages.map(p => pages.findIndex(x => x.src === p.src)).filter(i => i >= 0)
       );
     } else {
-      await saveImageOrder(newOrder);
       localStorage.setItem("mushaf:pageOrder:v1", JSON.stringify(newOrder));
       dispatchEvent(new CustomEvent("mushaf:order_changed", { detail: newOrder }));
     }
@@ -938,19 +730,24 @@ export default function QuranReader() {
   const [tempPageName, setTempPageName] = useState("");
   const [pageNamesVersion, setPageNamesVersion] = useState(0);
 
-  // Tauri Offline States
+  // Offline States
   const [offlineStatus, setOfflineStatus] = useState<Record<number, boolean>>({});
   const [downloadProgress, setDownloadProgress] = useState<Record<number, number>>({});
   const [isDownloading, setIsDownloading] = useState<Record<number, boolean>>({});
+  const [downloadErrors, setDownloadErrors] = useState<Record<number, string>>({});
+  const [activeDownloadSurah, setActiveDownloadSurah] = useState<{ number: number; name: string; src?: string } | null>(null);
+  const [activeDownloadProgressData, setActiveDownloadProgressData] = useState<SurahDownloadProgress | undefined>(undefined);
+  const downloadAbortRef = useRef<AbortController | null>(null);
 
   // Check offline status for all surahs on current page
   const checkCurrentPageOffline = useCallback(async () => {
-    if (!isTauri()) return;
     const page = pages[actualPage];
     if (!page) return;
     const status: Record<number, boolean> = {};
     for (const s of page.surahs) {
-      status[s.number] = await checkOfflineStatus(s.number);
+      status[s.number] = isTauri()
+        ? await checkOfflineStatus(s.number)
+        : await isAudioCachedOffline(s.number, s.src);
     }
     setOfflineStatus(prev => ({ ...prev, ...status }));
   }, [actualPage]);
@@ -964,8 +761,18 @@ export default function QuranReader() {
     if (!isTauri()) return;
     const unsub = listenToDownloadProgress((payload) => {
       const { surah_number, progress, status } = payload;
-      setDownloadProgress(prev => ({ ...prev, [surah_number]: Math.round(progress) }));
+      const rounded = Math.round(progress);
+      setDownloadProgress(prev => ({ ...prev, [surah_number]: rounded }));
       
+      if (activeDownloadSurah?.number === surah_number) {
+        setActiveDownloadProgressData({
+          progress: rounded,
+          status,
+          receivedBytes: payload.downloaded_bytes,
+          totalBytes: payload.total_bytes,
+        });
+      }
+
       if (status === "completed") {
         setIsDownloading(prev => ({ ...prev, [surah_number]: false }));
         setOfflineStatus(prev => ({ ...prev, [surah_number]: true }));
@@ -976,7 +783,43 @@ export default function QuranReader() {
       }
     });
     return () => unsub();
-  }, []);
+  }, [activeDownloadSurah]);
+
+  const handleSurahDownload = useCallback(async (surah: { number: number; name: string; src?: string }) => {
+    setActiveDownloadSurah(surah);
+    if (offlineStatus[surah.number]) {
+      setActiveDownloadProgressData({ progress: 100, status: "completed" });
+      return;
+    }
+    if (isDownloading[surah.number]) return;
+
+    setIsDownloading(prev => ({ ...prev, [surah.number]: true }));
+    setDownloadProgress(prev => ({ ...prev, [surah.number]: 0 }));
+    setDownloadErrors(prev => ({ ...prev, [surah.number]: "" }));
+    setActiveDownloadProgressData({ progress: 0, status: "downloading" });
+    downloadAbortRef.current = new AbortController();
+
+    try {
+      await downloadSurahOffline(
+        surah.number,
+        surah.src,
+        (progressInfo) => {
+          setDownloadProgress(prev => ({ ...prev, [surah.number]: progressInfo.progress }));
+          setActiveDownloadProgressData(progressInfo);
+          if (progressInfo.status === "completed") {
+            setIsDownloading(prev => ({ ...prev, [surah.number]: false }));
+            setOfflineStatus(prev => ({ ...prev, [surah.number]: true }));
+          }
+        },
+        downloadAbortRef.current.signal
+      );
+    } catch (error) {
+      setIsDownloading(prev => ({ ...prev, [surah.number]: false }));
+      const msg = error instanceof Error ? error.message : "تعذر تنزيل الصوت";
+      setDownloadErrors(prev => ({ ...prev, [surah.number]: msg }));
+      setActiveDownloadProgressData({ progress: 0, status: "error", error: msg });
+    }
+  }, [isDownloading, offlineStatus]);
 
   const resolveAudioSrc = useCallback(async (surah: SurahAudio, speaker: Speaker = "teacher") => {
     try {
@@ -992,7 +835,8 @@ export default function QuranReader() {
   }, []);
 
   // Refs for tracking without re-renders
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const { globalAudioRef, currentTrack, setCurrentTrack, setPlayNextHandler, setPlayPrevHandler, requestPlay } = useAudioContext();
+  const audioRef = globalAudioRef;
   const requestRef = useRef<number>();
   const lastSavedTimeRef = useRef(0);
   const stopAtRef = useRef<number | null>(null);
@@ -1008,33 +852,6 @@ export default function QuranReader() {
   const expectedStartTimeRef = useRef(0);
   const internalPauseRef = useRef(false); // guards against external pause listener firing on internal pauses
   const autoFollowRef = useRef(false); // true عندما يتغيّر الصفحة بسبب متابعة التشغيل لسورة ممتدّة على صفحتين (يمنع إيقاف الصوت)
-
-  // Register mushaf audio with central AudioContext
-  useEffect(() => {
-    const a = audioRef.current;
-    if (a) {
-      registerAudio("mushaf", a);
-    }
-    return () => { unregisterAudio("mushaf"); };
-  }, [registerAudio, unregisterAudio]);
-
-
-
-  // Listen for external pause only (from AudioContext mutual exclusion)
-  useEffect(() => {
-    const a = audioRef.current;
-    if (!a) return;
-    const handlePause = () => {
-      // Only react to external pauses (not internal segment-boundary pauses)
-      if (internalPauseRef.current) {
-        internalPauseRef.current = false;
-        return;
-      }
-      setIsPlaying(false);
-    };
-    a.addEventListener("pause", handlePause);
-    return () => a.removeEventListener("pause", handlePause);
-  }, []);
 
 
   // === التظليل عبر React state — لا DOM مباشر ===
@@ -1232,7 +1049,7 @@ export default function QuranReader() {
       const sp: Speaker = forceSpeaker ?? "teacher";
       currentSpeakerRef.current = sp;
 
-      const timings = getSavedTimings()[surah.number];
+      const timings = getSurahTimings(surah.number);
       const segments = timings?.segments || [];
 
       let startT = 0;
@@ -1295,6 +1112,13 @@ export default function QuranReader() {
                 nextT = nextTeacherStart;
               }
             }
+          } else {
+            // Linear estimation fallback when no manual timing exists
+            const total = surah.ayahCount || 1;
+            const dur = a.duration && isFinite(a.duration) ? a.duration : 60;
+            const ayahDur = dur / total;
+            startT = segIdx * ayahDur;
+            nextT = Math.min(dur, (segIdx + 1) * ayahDur);
           }
         }
       }
@@ -1303,12 +1127,19 @@ export default function QuranReader() {
       isSeekingRef.current = true;
       expectedStartTimeRef.current = startT;
       a.currentTime = startT;
-      requestPlay("mushaf", a);
+      
+      setCurrentTrack({
+        surahNumber: surah.number,
+        surahName: surah.name,
+        audioSrc: targetSrc,
+        source: "mushaf"
+      });
+      
       a.play().then(() => {
         setIsPlaying(true);
         updateMediaSession({
           title: `سورة ${surah.name} - آية ${ayahNum}`,
-          artist: "القارئ حاج أيوب أمين",
+          artist: "القرآن الكريم",
           album: "المصحف المرتل برواية ورش",
           onPlay: () => { const aud = audioRef.current; if (aud) aud.play().catch(() => {}); },
           onPause: () => { const aud = audioRef.current; if (aud) aud.pause(); },
@@ -1551,10 +1382,10 @@ export default function QuranReader() {
             if (list[i] <= a.currentTime + 0.05) idx = i;
             else break;
           }
-          const sortedBoxes = [...surahBoxes].sort((a, b) => a.ayah - b.ayah);
+          const ayahOnlyBoxes = surahBoxes.filter(b => b.ayah > 0).sort((a, b) => a.ayah - b.ayah);
           const actualCount = getActualAyahCount(activeSurah.number, activeSurah.ayahCount);
           const fallbackNumber = Math.min(idx + 1, actualCount);
-          const ayahNumber = sortedBoxes[idx]?.ayah ?? fallbackNumber;
+          const ayahNumber = ayahOnlyBoxes[idx]?.ayah ?? fallbackNumber;
           if (ayahNumber !== currentAyahRef.current || speaker !== currentSpeakerRef.current || currentBoxIndexRef.current !== -1) {
             currentAyahRef.current = ayahNumber;
             currentBoxIndexRef.current = -1;
@@ -1568,8 +1399,8 @@ export default function QuranReader() {
           if (total > 0 && a.duration > 0 && isFinite(a.duration)) {
             const ayahDur = a.duration / total;
             const idx = Math.min(Math.floor(a.currentTime / ayahDur), total - 1);
-            const sortedBoxes = [...surahBoxes].sort((a, b) => a.ayah - b.ayah);
-            const matchingBox = sortedBoxes[idx] || surahBoxes.find(b => b.ayah === idx + 1);
+            const ayahOnlyBoxes = surahBoxes.filter(b => b.ayah > 0).sort((a, b) => a.ayah - b.ayah);
+            const matchingBox = ayahOnlyBoxes[idx] || surahBoxes.find(b => b.ayah === idx + 1);
             if (matchingBox) {
               const ayahNumber = matchingBox.ayah;
               const globalIdx = pageBoxes.indexOf(matchingBox);
@@ -1657,6 +1488,11 @@ export default function QuranReader() {
 
   const step = isDesktop ? 2 : 1;
   const totalDisplayPages = isShuffled ? shuffledPageOrder.length : pages.length;
+  useEffect(() => {
+    if (!pageDataReady || totalDisplayPages === 0 || currentPage < totalDisplayPages) return;
+    setCurrentPage(totalDisplayPages - 1);
+  }, [currentPage, pageDataReady, totalDisplayPages]);
+
 
   // ── اتجاه قلب الصفحة: يُستخدم لتحريك المجموعة كلها (صفحة/صفحتين) معاً ──
   const [turnDir, setTurnDir] = useState<1 | -1>(1);
@@ -1675,20 +1511,15 @@ export default function QuranReader() {
     setCurrentPage(i);
   }, [totalDisplayPages]);
   
-  // === التنقّل مع مراعاة تخطي البسملة ===
   const goPrev = useCallback(() => {
     let prevPage = currentPage - step;
-    if (skipBismillah && prevPage === 1 && currentPage > 1) { prevPage = 0; }
-    else if (skipBismillah && currentPage === 0) { return; }
     goToPage(Math.max(0, prevPage));
-  }, [currentPage, goToPage, step, skipBismillah]);
+  }, [currentPage, goToPage, step]);
   
   const goNext = useCallback(() => {
     let nextPage = currentPage + step;
-    // إذا كان تخطي البسملة مفعّلاً ونحن في الصفحة 0 (البسملة)، الانتقال مباشرة للصفحة 2 (للحاسوب والجوال)
-    if (skipBismillah && currentPage === 0 && totalDisplayPages > 1) { nextPage = 1; }
     goToPage(Math.min(totalDisplayPages - 1, nextPage));
-  }, [currentPage, totalDisplayPages, goToPage, step, skipBismillah]);
+  }, [currentPage, totalDisplayPages, goToPage, step]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -1736,7 +1567,7 @@ export default function QuranReader() {
         const img = new Image();
         img.decoding = "async";
         try {
-          (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority =
+          (img as HTMLImageElement & { fetchpriority?: string }).fetchpriority =
             src === unique[0] ? "high" : "low";
         } catch { /* ignore */ }
         const done = () => { active -= 1; pump(); };
@@ -1748,18 +1579,22 @@ export default function QuranReader() {
     pump();
 
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, totalDisplayPages, getActualPageIndex, customImgs, hfImagesMap, pages, isDesktop]);
+  }, [currentPage, totalDisplayPages, getActualPageIndex, customImgs, pages, isDesktop]);
 
   const visiblePages = useMemo(() => {
-    const p1 = pages[getActualPageIndex(currentPage)];
+    // إذا كان الفهرس المحفوظ أعلى من الصفحات المحلية المتاحة حالياً، اعرض
+    // صفحة مؤقتة إلى أن تصل قائمة السيرفر، مع إبقاء currentPage لاستعادته لاحقاً.
+    const displayPage = pageDataReady
+      ? currentPage
+      : Math.min(currentPage, Math.max(0, (isShuffled ? shuffledPageOrder.length : pages.length) - 1));
+    const p1 = pages[getActualPageIndex(displayPage)];
     if (!isDesktop) return [p1].filter(Boolean) as PageInfo[];
     
     // في الحاسوب، نعرض صفحتين متجاورتين
-    const nextIdx = currentPage + 1;
+    const nextIdx = displayPage + 1;
     const p2 = nextIdx < totalDisplayPages ? pages[getActualPageIndex(nextIdx)] : null;
     return [p1, p2].filter(Boolean) as PageInfo[];
-  }, [currentPage, getActualPageIndex, isDesktop, pages, totalDisplayPages]);
+  }, [currentPage, getActualPageIndex, isDesktop, isShuffled, pageDataReady, pages, shuffledPageOrder.length, totalDisplayPages]);
 
   const currentPageSurahs = useMemo(() => {
     return visiblePages.flatMap(p => p.surahs);
@@ -1857,9 +1692,11 @@ export default function QuranReader() {
   }, [isShuffled, shuffledPageOrder, playAyah, playMode]);
 
   return (
-    <div className="fixed inset-0 w-screen h-screen z-50 bg-background overflow-hidden select-none">
+    <div className="fixed inset-0 z-50 h-[100dvh] w-[100dvw] bg-background overflow-hidden select-none">
       <audio
         ref={audioRef}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
         onEnded={() => {
           setIsPlaying(false);
           stopSimultaneous();
@@ -1876,16 +1713,28 @@ export default function QuranReader() {
           }
         }}
         onError={() => {
-          console.warn("QuranReader audio error, falling back to network stream...");
-          if (selectedSurah && audioRef.current && audioRef.current.src !== selectedSurah.src) {
-            audioRef.current.src = selectedSurah.src;
-            audioRef.current.load();
-            audioRef.current.play().catch(() => {});
-          }
+          const audio = audioRef.current;
+          if (!selectedSurah || !audio) return;
+          const failedUrl = audio.currentSrc || audio.src;
+          if (failedUrl.includes("huggingface.co")) reportHuggingFaceFailure();
+          const fallbacks = [getFallbackAudioUrl(selectedSurah.number), getArchiveGatewayAudioUrl(selectedSurah.number)];
+          const next = failedUrl.includes("huggingface.co")
+            ? fallbacks[0]
+            : failedUrl.includes("ia803201.us.archive.org")
+              ? fallbacks[1]
+              : undefined;
+          if (!next) return;
+          audio.src = next;
+          audio.load();
+          audio.play().catch(() => {});
         }}
       />
       {/* Second audio for simultaneous teacher+kids playback */}
-      <audio ref={audioRef2} />
+      <audio 
+        ref={audioRef2} 
+        onPlay={() => setIsSimultaneousPlaying(true)}
+        onPause={() => setIsSimultaneousPlaying(false)}
+      />
 
       {/* Main content area: mushaf + optional split panel */}
       <div className="flex h-full w-full" dir="rtl">
@@ -1908,6 +1757,11 @@ export default function QuranReader() {
                 aria-hidden="true"
                 className="mushaf-turn-glow absolute inset-0 z-20 bg-gradient-to-l from-transparent via-accent/40 to-transparent"
               />
+              {visiblePages.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-2xl font-bold text-gray-500 z-50 rounded-lg">
+                  لا يوجد صفحة
+                </div>
+              )}
           {visiblePages.map((page, idx) => (
             <div key={page.src} className={`relative h-full ${isDesktop ? '' : 'flex-1'} min-w-0 flex items-center justify-center bg-background overflow-hidden p-1`}>
               <div
@@ -1915,9 +1769,14 @@ export default function QuranReader() {
                 style={{ aspectRatio: `${PAGE_IMAGE_SIZE.width}/${PAGE_IMAGE_SIZE.height}`, height: '100%', maxWidth: '100%' }}
               >
                 <img src={imgSrcFor(page.src)} alt={page.name}
-                  fetchPriority={idx === 0 ? "high" : "auto"}
+                  fetchpriority={idx === 0 ? "high" : "auto"}
                   className={`absolute inset-0 w-full h-full select-none transition-opacity duration-200 ${loadedImgs.has(page.src) ? "opacity-100" : "opacity-0"}`}
                   draggable={false} decoding="async" referrerPolicy="no-referrer"
+                  ref={(el) => {
+                    if (el && el.complete && el.naturalWidth > 0 && !loadedImgs.has(page.src)) {
+                      markLoaded(page.src);
+                    }
+                  }}
                   onLoad={() => markLoaded(page.src)}
                   onError={(e) => {
                     // فشل رابط السيرفر → جرّب النسخة المحلية مرة واحدة قبل الاستسلام
@@ -1932,9 +1791,7 @@ export default function QuranReader() {
                   }} />
                 {/* هيكل تحميل لطيف حتى تظهر الصورة (لا تظليل فوق فراغ) */}
                 {!loadedImgs.has(page.src) && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-card">
-                    <div className="w-10 h-10 rounded-full border-[3px] border-accent/25 border-t-accent animate-spin" />
-                  </div>
+                  <QuranLoading label={`جارٍ تجهيز ${page.name}`} />
                 )}
                 {loadedImgs.has(page.src) && !hideShading && (
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${PAGE_IMAGE_SIZE.width} ${PAGE_IMAGE_SIZE.height}`} preserveAspectRatio="none">
@@ -1950,23 +1807,22 @@ export default function QuranReader() {
                   {getPageAyahBoxes(page.src).map((box, i) => {
                     const isAct = activeSurahNum === box.surah && activeAyahNum === box.ayah;
                     const isSelected = selectedSurah?.number === box.surah && selectedAyah === box.ayah && !isAct;
+                    if (!isAct && !isSelected) return null;
                     const currentColor = activeSpeaker === "kids"
                       ? (shadingSettings.kidsColor || "#0ea5e9")
                       : (shadingSettings.teacherColor || "#f59e0b");
                     const actStyle = getAyahShadingStyle(currentColor, shadingOpacity);
-                    const inactFill = hexToRgba(shadingSettings.teacherColor || "#f59e0b", 0.08);
-                    const inactStroke = hexToRgba(shadingSettings.teacherColor || "#f59e0b", 0.25);
-                    const selectedFill = hexToRgba(currentColor, 0.18);
-                    const selectedStroke = hexToRgba(currentColor, 0.55);
+                    const selectedFill = hexToRgba(currentColor, 0.22);
+                    const selectedStroke = hexToRgba(currentColor, 0.65);
                     return (
                       <rect
                         key={`ayah-rect-${box.surah}-${box.ayah}-${i}`}
                         className={`ayah-highlight-smooth ${isAct ? "ayah-current" : ""} ${isSelected ? "ayah-selected" : ""}`}
                         x={box.x} y={box.y} width={box.width} height={box.height} rx="20" ry="16"
-                        fill={isAct ? actStyle.fill : isSelected ? selectedFill : inactFill}
-                        stroke={isAct ? actStyle.stroke : isSelected ? selectedStroke : inactStroke}
-                        strokeWidth={isAct ? 3 : isSelected ? 2.5 : 1}
-                        opacity={isAct ? Math.min(1, shadingOpacity + 0.1) : shadingOpacity * 0.9}
+                        fill={isAct ? actStyle.fill : selectedFill}
+                        stroke={isAct ? actStyle.stroke : selectedStroke}
+                        strokeWidth={isAct ? 3.5 : 2.5}
+                        opacity={isAct ? Math.min(1, shadingOpacity + 0.15) : shadingOpacity}
                         filter={isAct ? "url(#ayah-glow-filter)" : "none"}
                         style={{
                           "--ayah-glow": actStyle.glow,
@@ -2327,28 +2183,43 @@ export default function QuranReader() {
                 </div>
               )}
               <div className="flex items-center gap-2">
-                {isTauri() && selectedSurah && (
+                {selectedSurah && (
                   <div className="mr-2">
                     {isDownloading[selectedSurah.number] ? (
-                      <div className="text-[10px] bg-amber-100/10 text-amber-500 border border-amber-500/20 font-bold px-2 py-1 rounded-full animate-pulse flex items-center gap-1">
-                        <Download className="w-3 h-3 animate-pulse" /><span>جاري التحميل {downloadProgress[selectedSurah.number] || 0}%</span>
-                      </div>
+                      <button
+                        onClick={() => {
+                          setActiveDownloadSurah({ number: selectedSurah.number, name: selectedSurah.name, src: selectedSurah.src });
+                        }}
+                        className="text-[10px] bg-amber-100/10 hover:bg-amber-100/20 text-amber-500 border border-amber-500/20 font-bold px-2.5 py-1 rounded-full animate-pulse flex items-center gap-1.5 transition-colors cursor-pointer"
+                        title="انقر لعرض تفاصيل التحميل الدقيقة"
+                      >
+                        <Download className="w-3 h-3 animate-pulse" />
+                        <span>جاري التحميل {downloadProgress[selectedSurah.number] || 0}%</span>
+                      </button>
                     ) : offlineStatus[selectedSurah.number] ? (
-                      <div className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <Check className="w-3 h-3" /><span>متوفر أوفلاين</span>
-                      </div>
+                      <button
+                        onClick={() => {
+                          setActiveDownloadSurah({ number: selectedSurah.number, name: selectedSurah.name, src: selectedSurah.src });
+                          setActiveDownloadProgressData({ progress: 100, status: "completed" });
+                        }}
+                        className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold px-2.5 py-1 rounded-full flex items-center gap-1 hover:bg-emerald-500/20 transition-colors"
+                        title="السورة محفوظة أوفلاين على الجهاز (انقر للتفاصيل)"
+                      >
+                        <Check className="w-3 h-3" />
+                        <span>متوفر أوفلاين</span>
+                      </button>
                     ) : (
                       <button
-                        onClick={async () => {
-                          const url = selectedSurah.src;
-                          setIsDownloading(prev => ({ ...prev, [selectedSurah.number]: true }));
-                          setDownloadProgress(prev => ({ ...prev, [selectedSurah.number]: 0 }));
-                          await downloadSurah(url, selectedSurah.number);
+                        onClick={() => {
+                          void handleSurahDownload(selectedSurah);
                         }}
-                        className="rounded-full bg-blue-600 hover:bg-blue-700 px-2 py-1 text-[10px] font-bold text-white shadow-sm flex items-center gap-1 transition-colors"
+                        className="rounded-full bg-blue-600 hover:bg-blue-700 px-2.5 py-1 text-[10px] font-bold text-white shadow-sm flex items-center gap-1 transition-colors"
                       >
-                        <Download className="w-3 h-3" /> تحميل أوفلاين
+                        <Download className="w-3 h-3" /> {downloadErrors[selectedSurah.number] ? "إعادة المحاولة" : "تحميل أوفلاين"}
                       </button>
+                    )}
+                    {downloadErrors[selectedSurah.number] && !isDownloading[selectedSurah.number] && (
+                      <p role="alert" className="mt-1 max-w-48 text-[10px] text-red-500">تعذر حفظ الصوت دون اتصال: {downloadErrors[selectedSurah.number]}</p>
                     )}
                   </div>
                 )}
@@ -2459,9 +2330,16 @@ export default function QuranReader() {
                 </div>
               )}
 
-              <label className="flex items-center gap-2 text-sm font-bold cursor-pointer text-foreground/80">
-                <input type="checkbox" checked={continuousPlay} onChange={(e) => setContinuousPlay(e.target.checked)} className="accent-accent w-4 h-4" />
-                تشغيل متواصل
+              <label className="flex items-center gap-3 text-sm font-bold cursor-pointer text-foreground/80 select-none">
+                <span className="switch">
+                  <input
+                    type="checkbox"
+                    checked={continuousPlay}
+                    onChange={(e) => setContinuousPlay(e.target.checked)}
+                  />
+                  <span className="slider"></span>
+                </span>
+                <span>تشغيل متواصل</span>
               </label>
 
               <div className="flex items-center gap-2 text-sm font-bold text-foreground/80 mt-2">
@@ -2557,6 +2435,8 @@ export default function QuranReader() {
                   displayName = p.name.replace("صفحة", "").trim();
                 } else if (p.name.includes("الفاتحة")) {
                   displayName = "1";
+                } else if (/افتراضي/.test(p.name)) {
+                  displayName = "افتراضي";
                 }
                 const isActive = currentPage === idx || (isDesktop && currentPage + 1 === idx);
                 return (
@@ -2568,7 +2448,7 @@ export default function QuranReader() {
                       // That's fine, we just update currentPage.
                       goToPage(idx);
                     }}
-                    className={`aspect-square rounded-2xl font-bold text-xl flex items-center justify-center transition-all ${
+                    className={`aspect-square min-w-0 overflow-hidden whitespace-nowrap text-ellipsis rounded-2xl px-1 font-bold text-base sm:text-xl flex items-center justify-center transition-all ${
                       isActive 
                         ? "bg-accent text-accent-foreground shadow-lg scale-105 border-2 border-accent/20 ring-4 ring-accent/30" 
                         : "bg-white/90 text-foreground/80 hover:bg-white hover:text-accent border border-border shadow-sm hover:scale-105 hover:shadow-md"
@@ -2582,6 +2462,26 @@ export default function QuranReader() {
             </div>
           </div>
         </div>
+      )}
+
+      {activeDownloadSurah && (
+        <SurahDownloadModal
+          isOpen={!!activeDownloadSurah}
+          onClose={() => setActiveDownloadSurah(null)}
+          surahNumber={activeDownloadSurah.number}
+          surahName={activeDownloadSurah.name}
+          progressData={activeDownloadProgressData}
+          onCancel={() => {
+            downloadAbortRef.current?.abort();
+            setIsDownloading(prev => ({ ...prev, [activeDownloadSurah.number]: false }));
+            setActiveDownloadSurah(null);
+          }}
+          onRetry={() => {
+            if (activeDownloadSurah) {
+              void handleSurahDownload(activeDownloadSurah);
+            }
+          }}
+        />
       )}
 
       <AppFooter />

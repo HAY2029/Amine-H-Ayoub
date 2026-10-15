@@ -6,6 +6,7 @@ import { getSurahTimings, saveSurahTimings, AYAH_COUNTS, type SurahTimings, type
 import { getPageAyahBoxes, savePageAyahBoxes, getAllPageSources } from "@/data/ayahCoordinates";
 import { getCustomPages } from "@/data/customPages";
 import { useToast } from "@/hooks/use-toast";
+import AppLoader from "@/components/ui/app-loader";
 
 /**
  * صفحة التظليل المزدوج (معلم 🧑‍🏫 / طفل 🧒)
@@ -282,11 +283,8 @@ export default function ShadingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
-        <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-          <span className="text-sm font-bold">جاري تحميل النص...</span>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4" dir="rtl">
+        <AppLoader label="جاري تحميل النص القرآني..." />
       </div>
     );
   }

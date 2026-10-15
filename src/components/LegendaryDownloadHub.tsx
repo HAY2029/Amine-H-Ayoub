@@ -28,7 +28,7 @@ export default function LegendaryDownloadHub() {
             المصحف المرتل برواية ورش
           </h1>
           <p className="text-2xl md:text-3xl text-foreground font-bold mt-2">
-            القارئ حاج أيوب أمين
+            القرآن الكريم
           </p>
           <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-gold/10 border border-gold/30 text-gold text-sm font-bold mt-6 shadow-lg shadow-gold/5">
             <span className="relative flex h-3 w-3">
@@ -86,8 +86,8 @@ export default function LegendaryDownloadHub() {
           >
             <div className={`absolute inset-0 bg-black/40 transition-colors z-10 ${isOpen ? 'bg-black/0' : 'group-hover:bg-black/20'}`} />
             <img
-              src="/my-photo.png"
-              alt="القارئ حاج أيوب أمين"
+              src="/assets/quran_icon.png"
+              alt="القرآن الكريم"
               className="w-full h-full object-cover"
               style={{ objectPosition: "center top" }}
             />

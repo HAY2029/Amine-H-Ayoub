@@ -1,5 +1,6 @@
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { isKidsMode, hasKidsPin } from "@/data/kidsLock";
 
 export const isTauri = (): boolean => {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -22,6 +23,8 @@ export interface DownloadProgressPayload {
   surah_number: number;
   progress: number;
   status: "downloading" | "completed" | "error";
+  downloaded_bytes?: number;
+  total_bytes?: number;
 }
 
 /**
@@ -100,7 +103,6 @@ export async function setupTauriCloseHandler(onRequestUnlock: () => void): Promi
         // Legitimate close confirmed by user/parent - do not intercept!
         return;
       }
-      const { isKidsMode, hasKidsPin } = await import("@/data/kidsLock");
       if (isKidsMode() && hasKidsPin()) {
         event.preventDefault();
         onRequestUnlock();

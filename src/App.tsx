@@ -56,6 +56,9 @@ import { logAppOpen } from "./utils/analytics.ts";
 import { useBackgroundNotifications, showLocalNotification } from "./utils/notifications.ts";
 import { claimDailyRewards, incrementStreak } from "./data/dailyRewards";
 import { setupRemoteControlListeners } from "./utils/controllerNavigation";
+import { GlobalPlayerWrapper } from "./GlobalPlayerWrapper";
+import QuranLoading from "./components/QuranLoading";
+import Intro3DCarousel from "./components/Intro3DCarousel";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +72,40 @@ const PageTransition = ({ children }: { children: ReactNode }) => {
       {children}
     </div>
   );
+};
+
+// 🔇 عند الانتقال بين الصفحات: يوقف أي صوت يعمل (المصحف/التلاوات/الألعاب)
+// حتى لا يستمرّ التشغيل في الخلفية عند مغادرة الصفحة، ويستثني الصفحات
+// التي يُفترض أن يستمرّ فيها الصوت (المصحف والتلاوات) عند التنقل بينهما.
+const AUDIO_PERSIST_ROUTES = ["/", "/audio", "/mushaf"];
+
+const NavigationAudioGuard = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const path = location.pathname;
+    const el = (window as unknown as { __globalAudioEl?: HTMLAudioElement }).__globalAudioEl;
+    // إيقاف المشغّل العام (المصحف/التلاوات) إن كنا خارج صفحات الاستمرار
+    if (el && !AUDIO_PERSIST_ROUTES.includes(path)) {
+      try { el.pause(); } catch { /* ignore */ }
+    }
+    // إيقاف أصوات التشجيع في الألعاب
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const gv = (window as any).__stopGameVoice;
+      if (typeof gv === "function") gv();
+    } catch { /* ignore */ }
+    // إيقاف النطق المحلي (Web Speech API) حتى لا يستمر الكلام في الخلفية
+    try {
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    } catch { /* ignore */ }
+    // إيقاف أي عنصر <audio> يعمل داخل الصفحة السابقة
+    try {
+      document.querySelectorAll("audio").forEach((a) => {
+        if (!a.paused) a.pause();
+      });
+    } catch { /* ignore */ }
+  }, [location.pathname]);
+  return null;
 };
 
 // المسار الرئيسي يفتح صفحة الصوت (التلاوات) — المصحف قيد التطوير
@@ -266,9 +303,12 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          {/* 🌟 شاشة الدخول ثلاثية الأبعاد الدوارة لمدة 5 ثوانٍ عند فتح التطبيق */}
+          <Intro3DCarousel />
           <HashRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <KidsModeGuard />
-            <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>}>
+            <NavigationAudioGuard />
+            <Suspense fallback={<QuranLoading fullScreen label="جارٍ فتح التطبيق" />}>
               <Routes>
                 {/* صفحة الصفحة/الانتقال: كل تغيير مسار يشغّل حركة دخول موحدة */}
                 <Route path="/" element={<PageTransition><HomeRoute /></PageTransition>} />
@@ -328,6 +368,7 @@ const App = () => {
                 }}
               />
             )}
+            <GlobalPlayerWrapper />
           </HashRouter>
         </TooltipProvider>
       </QueryClientProvider>

@@ -2,18 +2,8 @@ const AppHeader = () => {
   return (
     <header className="py-6">
       <div className="max-w-2xl mx-auto px-4 flex flex-col items-center gap-4">
-        <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gold shadow-lg">
-          <img
-            src="/my-photo.png"
-            alt="القارئ حاج أيوب أمين"
-            className="w-full h-full object-cover"
-            style={{ objectPosition: "center top" }}
-          />
-        </div>
         <h1 className="text-xl md:text-2xl font-bold text-gold text-center leading-relaxed">
           المصحف المرتل برواية ورش
-          <br />
-          القارئ حاج أيوب أمين
         </h1>
       </div>
     </header>

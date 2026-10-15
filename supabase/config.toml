@@ -1,7 +1,12 @@
-project_id = "gimdekpxutvnopovofmc"
+# مشروع Supabase الفعلي (يطابق VITE_SUPABASE_URL في .env)
+project_id = "ktfxeccahsfsuhwdjjjn"
 
 [functions.ai-split-audio]
 verify_jwt = false
 
 [functions.transcribe-audio]
+verify_jwt = false
+
+# صوت شخصيات الأطفال (عمران/راضية) — يقرأ ELEVENLABS_* من أسرار Supabase فقط
+[functions.kids-character-voice]
 verify_jwt = false

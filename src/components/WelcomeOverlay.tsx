@@ -118,14 +118,15 @@ export default function WelcomeOverlay({ onDone }: { onDone: () => void }) {
               <div className="relative mx-auto w-40 h-40">
                 <div className="absolute inset-0 rounded-full bg-accent/30 blur-2xl animate-breathe" />
                 <span aria-hidden className="absolute -inset-1.5 rounded-full bg-gradient-to-br from-gold-light to-gold opacity-80 blur-[2px]" />
-                <img src="/my-photo.png" alt="القارئ حاج أيوب أمين"
+                <img src="/assets/quran_icon.png" alt="القرآن الكريم"
                   className="relative w-40 h-40 rounded-full object-cover ring-4 ring-accent/80 shadow-gold"
                   style={{ objectPosition: "center top" }} loading="eager" />
               </div>
               <div className="space-y-1">
                 <h1 className="text-4xl font-extrabold text-gradient-gold leading-tight">مرحباً بك</h1>
-                <p className="text-accent text-sm font-bold">بصوت القارئ الشيخ حاج أيوب أمين</p>
+                <p className="text-accent text-sm font-bold">القرآن الكريم برواية ورش</p>
               </div>
+
 
               {/* وصف التطبيق */}
               <div className="w-full max-w-sm mx-auto space-y-3 p-4 rounded-2xl bg-card/60 border border-border/50 shadow-soft">
@@ -151,7 +152,7 @@ export default function WelcomeOverlay({ onDone }: { onDone: () => void }) {
                   </div>
                 </div>
                 <p className="text-muted-foreground text-sm leading-relaxed pt-1">
-                  {kidsOff ? "استمع إلى تلاوات القرآن الكريم برواية ورش بصوت الشيخ حاج أيوب أمين." : "استمع للتلاوات العطرة مع ألعاب تعليمية وركن أطفال آمن."}
+                  {kidsOff ? "استمع إلى تلاوات القرآن الكريم برواية ورش." : "استمع للتلاوات العطرة مع ألعاب تعليمية وركن أطفال آمن."}
                 </p>
               </div>
 
@@ -197,10 +198,13 @@ export default function WelcomeOverlay({ onDone }: { onDone: () => void }) {
                       <div className="flex-1 h-2 rounded bg-foreground/20" />
                       <div className="w-10 h-4 rounded-full bg-accent/20 flex items-center justify-center gap-0.5"><Star className="w-2.5 h-2.5 text-accent fill-accent" /><div className="w-3 h-1.5 rounded bg-accent/50" /></div>
                     </div>
-                    <div className="flex gap-2 flex-1 pb-1">
-                      <div className="flex-1 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center shadow-sm"><Gamepad2 className="w-5 h-5 text-blue-500" /></div>
-                      <div className="flex-1 rounded-xl bg-green-500/20 border border-green-500/30 flex items-center justify-center shadow-sm"><Puzzle className="w-5 h-5 text-green-500" /></div>
-                      <div className="flex-1 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shadow-sm"><Trophy className="w-5 h-5 text-purple-500" /></div>
+                    <div className="flex flex-1 items-center justify-center gap-3 pb-1">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600"><Gamepad2 className="h-6 w-6" /></div>
+                      <div className="space-y-1">
+                        <div className="h-2 w-24 rounded bg-foreground/20" />
+                        <div className="h-2 w-16 rounded bg-foreground/10" />
+                      </div>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-400/20"><Star className="h-4 w-4 fill-amber-400 text-amber-500" /></div>
                     </div>
                   </div>
                 </ModeCard>
@@ -210,8 +214,10 @@ export default function WelcomeOverlay({ onDone }: { onDone: () => void }) {
 
           {cur === "kids" && (
             <div className="space-y-3 animate-fade-up">
-              <h2 className="text-xl font-extrabold text-accent text-center">ملفّات الأطفال</h2>
-              <p className="text-muted-foreground text-sm text-center leading-relaxed">أنشئ ملفاً لكل طفل (الاسم، العمر، ووجه يحبّه) — كما في يوتيوب على التلفاز.</p>
+              <div className="text-center space-y-1">
+                  <h2 className="text-xl font-extrabold text-accent">ملفّات الأطفال</h2>
+                  <p className="text-muted-foreground text-sm leading-relaxed">أنشئ ملفاً لكل طفل (الاسم، العمر، ووجه يحبّه) — كما في يوتيوب على التلفاز.</p>
+              </div>
               <div className="space-y-3">
                 {kids.map((k, i) => (
                   <div key={i} className="card-nour p-3 space-y-3">
@@ -398,7 +404,7 @@ export default function WelcomeOverlay({ onDone }: { onDone: () => void }) {
             )
           ) : (
             <button onClick={finish}
-              className="btn-gold flex-1 px-5 py-3 disabled:opacity-40">
+              className="welcome-start-button btn-gold flex-1 px-5 py-3 disabled:opacity-40">
               <Check className="w-5 h-5" />
               {cur === "parent_style" ? "ابدأ التلاوة" : "ابدأ"}
             </button>

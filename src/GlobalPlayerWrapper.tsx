@@ -1,6 +1,7 @@
 import { useAudioContext } from "./contexts/audioContext";
 import CustomPlayer from "./components/CustomPlayer";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 export function GlobalPlayerWrapper() {
   const { 
@@ -12,6 +13,16 @@ export function GlobalPlayerWrapper() {
     playNext, 
     playPrev 
   } = useAudioContext();
+
+  const location = useLocation();
+
+  useEffect(() => {
+    // إخفاء المشغل وإيقاف الصوت تلقائياً عند الدخول لأي صفحة أخرى (مثل الألعاب أو الإعدادات)
+    const allowedPaths = ["/audio", "/"];
+    if (!allowedPaths.includes(location.pathname) && currentTrack) {
+      setCurrentTrack(null);
+    }
+  }, [location.pathname, currentTrack, setCurrentTrack]);
 
   if (!currentTrack) return null;
 
@@ -27,7 +38,13 @@ export function GlobalPlayerWrapper() {
       isCustom={currentTrack.isCustom}
       initialTime={currentTrack.initialTime}
       mode={currentTrack.source} // We need to add this prop to CustomPlayer
-      onClose={() => setCurrentTrack(null)}
+      onClose={() => {
+        try {
+          localStorage.removeItem("audio:lastSurah");
+          localStorage.removeItem("audio:lastTime");
+        } catch { /* ignore */ }
+        setCurrentTrack(null);
+      }}
       autoNext={autoNext}
       onToggleAutoNext={() => setAutoNext(!autoNext)}
       onPlayNext={playNext}

@@ -9,6 +9,9 @@ export interface GlobalTrack {
   source: "mushaf" | "audio-list";
 }
 
+/** مصادر الصوت المختلفة في التطبيق — mushaf: مشغل المصحف، audio-list: قائمة التلاوات */
+export type AudioSource = "mushaf" | "audio-list";
+
 interface AudioContextType {
   currentTrack: GlobalTrack | null;
   setCurrentTrack: (track: GlobalTrack | null) => void;
@@ -27,6 +30,18 @@ interface AudioContextType {
   
   simultaneousMode: boolean;
   setSimultaneousMode: (v: boolean) => void;
+
+  // ── تنسيق المصادر: يمنع تشغيل مصدرين معاً (المصحف وقائمة التلاوات) ──
+  /** يُستدعى عند بدء تشغيل مصدر — يوقف أي مصدر آخر يعمل حالياً. */
+  requestPlay: (source: AudioSource, audioElement: HTMLAudioElement) => void;
+  /** يُستدعى عند توقّف مصدر عن التشغيل. */
+  notifyStop: (source: AudioSource) => void;
+  /** تسجيل عنصر صوت لمصدر معيّن لإيقافه عن بُعد عند الحاجة. */
+  registerAudio: (source: AudioSource, audioElement: HTMLAudioElement) => void;
+  /** إلغاء تسجيل عنصر صوت. */
+  unregisterAudio: (source: AudioSource) => void;
+  /** المصدر النشط حالياً (أو null إن لا يوجد تشغيل). */
+  activeSource: AudioSource | null;
 }
 
 const AudioCtx = createContext<AudioContextType | null>(null);
@@ -49,7 +64,35 @@ export function AudioContextProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const playNext = useCallback(() => playNextHandler.current(), []);
+
   const playPrev = useCallback(() => playPrevHandler.current(), []);
+
+  // ── تنسيق المصادر: خريطة المشغلات المسجّلة (المصدر → عنصر الصوت) ──
+  const registeredAudios = useRef<Map<AudioSource, HTMLAudioElement>>(new Map());
+  const [activeSource, setActiveSource] = useState<AudioSource | null>(null);
+
+  const registerAudio = useCallback((source: AudioSource, audioElement: HTMLAudioElement) => {
+    registeredAudios.current.set(source, audioElement);
+  }, []);
+
+  const unregisterAudio = useCallback((source: AudioSource) => {
+    registeredAudios.current.delete(source);
+    setActiveSource((prev) => (prev === source ? null : prev));
+  }, []);
+
+  const requestPlay = useCallback((source: AudioSource, _audioElement: HTMLAudioElement) => {
+    // إيقاف أي مصدر آخر يعمل، حتى لا يتشغّل مصدران معاً (المصحف وقائمة التلاوات)
+    registeredAudios.current.forEach((audio, registeredSource) => {
+      if (registeredSource !== source && !audio.paused) {
+        try { audio.pause(); } catch { /* ignore */ }
+      }
+    });
+    setActiveSource(source);
+  }, []);
+
+  const notifyStop = useCallback((source: AudioSource) => {
+    setActiveSource((prev) => (prev === source ? null : prev));
+  }, []);
 
   return (
     <AudioCtx.Provider
@@ -65,6 +108,11 @@ export function AudioContextProvider({ children }: { children: ReactNode }) {
         setAutoNext,
         simultaneousMode,
         setSimultaneousMode,
+        requestPlay,
+        notifyStop,
+        registerAudio,
+        unregisterAudio,
+        activeSource,
       }}
     >
       {children}

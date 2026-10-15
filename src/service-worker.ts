@@ -17,7 +17,7 @@ _self.addEventListener('push', (event: any) => {
     // ignore malformed push payloads
   }
 
-  const title = (data.title as string) || 'حاج أيوب أمين';
+  const title = (data.title as string) || 'القرآن الكريم';
   const options = {
     body: (data.body as string) || '',
     icon: (data.icon as string) || '/assets/icons/icon-192.png',

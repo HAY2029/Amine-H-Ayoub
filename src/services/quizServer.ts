@@ -75,6 +75,12 @@ export async function syncQuestionsFromServer() {
     const answered = getAnsweredQuestions();
     const excludeParam = answered.length > 0 ? `?exclude=${answered.join(",")}` : "";
     
+    // Check if placeholder URL is still in use to prevent 404 errors
+    if (HUGGINGFACE_API_URL.includes("your-username-your-spacename")) {
+      const local = getLocalQuizPool();
+      return local.length > 0 ? local : FALLBACK_QUESTIONS;
+    }
+
     // جلب الأسئلة مع تجنب الكاش المؤقت لضمان أحدث نسخة
     const response = await fetch(`${HUGGINGFACE_API_URL}${excludeParam}`, {
       cache: "no-store",

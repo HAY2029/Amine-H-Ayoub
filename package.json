@@ -6,7 +6,7 @@
   "homepage": "https://learn-quran-kids.pages.dev",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node ./scripts/prune-dist.mjs",
     "build:sw-inject": "node ./scripts/inject-sw.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
@@ -21,7 +21,8 @@
     "upload:hf": "node ./scripts/upload-hf-assets.mjs",
     "sync:hf": "node ./scripts/sync-releases-to-hf.mjs",
     "deploy:safe": "powershell -ExecutionPolicy Bypass -File ./tools/deploy-safe.ps1",
-    "deploy:edge": "powershell -ExecutionPolicy Bypass -File ./tools/deploy-edge-function.ps1"
+    "deploy:edge": "powershell -ExecutionPolicy Bypass -File ./tools/deploy-edge-function.ps1",
+    "deploy:kids": "powershell -ExecutionPolicy Bypass -File ./tools/deploy-kids-voice.ps1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

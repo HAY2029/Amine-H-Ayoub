@@ -1,0 +1,596 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/SupportModal.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/SupportModal.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=c05fb7b0"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"]; const _Fragment = __vite__cjsImport2_react_jsxDevRuntime["Fragment"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=c05fb7b0"; const useState = __vite__cjsImport3_react["useState"];
+import { X, Loader2, CheckCircle2, Bug, Lightbulb, HelpCircle, Heart, AlertCircle, Mail } from "/node_modules/.vite/deps/lucide-react.js?v=c05fb7b0";
+import WhatsAppIcon from "/src/components/WhatsAppIcon.tsx";
+import { sendSupportReportEmail, createMailtoSupportLink, openWhatsAppSupport, SUPPORT_WHATSAPP_DISPLAY, saveSupportMessageLocally } from "/src/services/resendService.ts";
+import { getProfile } from "/src/data/kidsProfile.ts?t=1791820648188";
+import { CURRENT_VERSION } from "/src/utils/updateChecker.ts";
+import { toast } from "/src/hooks/use-toast.ts";
+const REPORT_TYPES = [
+    {
+        id: "bug",
+        label: "مشكلة تقنية",
+        icon: Bug
+    },
+    {
+        id: "suggestion",
+        label: "اقتراح فكرة",
+        icon: Lightbulb
+    },
+    {
+        id: "inquiry",
+        label: "استفسار",
+        icon: HelpCircle
+    },
+    {
+        id: "thanks",
+        label: "شكر وتقدير",
+        icon: Heart
+    }
+];
+export default function SupportModal({ onClose }) {
+    _s();
+    const activeProfile = getProfile();
+    const [type, setType] = useState("bug");
+    const [description, setDescription] = useState("");
+    const [senderEmail, setSenderEmail] = useState("");
+    const [sending, setSending] = useState(false);
+    const [sentSuccess, setSentSuccess] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const handleSendWhatsApp = async (e)=>{
+        if (e) e.preventDefault();
+        if (!description.trim()) {
+            setErrorMessage("يرجى كتابة نص الرسالة أو وصف المشكلة أولاً");
+            return;
+        }
+        setSending(true);
+        setErrorMessage("");
+        const typeItem = REPORT_TYPES.find((t)=>t.id === type);
+        const reportData = {
+            type,
+            typeLabel: typeItem ? typeItem.label : "رسالة عامة",
+            description: description.trim(),
+            senderEmail: senderEmail.trim() || undefined,
+            profileName: activeProfile?.name || "مستخدم التطبيق",
+            appVersion: CURRENT_VERSION,
+            platform: typeof navigator !== "undefined" ? navigator.userAgent : "Web",
+            timestamp: new Date().toLocaleString("ar-SA")
+        };
+        // حفظ محلي وإرسال تقرير خلفي للأرشفة
+        saveSupportMessageLocally(reportData);
+        void sendSupportReportEmail(reportData);
+        // فتح واتساب فوراً للرقم المحدد 0658188644
+        await openWhatsAppSupport(reportData);
+        setSending(false);
+        setSentSuccess(true);
+        toast({
+            title: "جاري فتح واتساب 💬",
+            description: `تم تجهيز رسالتك للإرسال إلى الدعم الفني (${SUPPORT_WHATSAPP_DISPLAY}).`
+        });
+    };
+    const handleDirectQuickWhatsApp = ()=>{
+        const msg = `السلام عليكم ورحمة الله وبركاته،\n` + `أحتاج مساعدة وتواصلاً مع الدعم الفني لتطبيق القرآن للأطفال:\n` + `• الإصدار: ${CURRENT_VERSION}` + (description.trim() ? `\n• الرسالة: ${description.trim()}` : "");
+        void openWhatsAppSupport(msg);
+    };
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: "fixed inset-0 z-[250] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200",
+        dir: "rtl",
+        children: /*#__PURE__*/ _jsxDEV("div", {
+            className: "relative w-full max-w-md rounded-3xl bg-card border border-border shadow-2xl p-6 space-y-4 max-h-[92vh] overflow-y-auto animate-in zoom-in-95 duration-200",
+            children: [
+                /*#__PURE__*/ _jsxDEV("button", {
+                    onClick: onClose,
+                    className: "absolute top-4 left-4 p-2 rounded-full text-muted-foreground hover:bg-muted transition-colors cursor-pointer",
+                    "aria-label": "إغلاق",
+                    children: /*#__PURE__*/ _jsxDEV(X, {
+                        className: "w-5 h-5"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                        lineNumber: 114,
+                        columnNumber: 11
+                    }, this)
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                    lineNumber: 109,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "text-center space-y-1 pt-1",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "mx-auto w-12 h-12 rounded-2xl bg-[#25D366]/15 text-[#25D366] flex items-center justify-center mb-1",
+                            children: /*#__PURE__*/ _jsxDEV(WhatsAppIcon, {
+                                className: "w-7 h-7"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                lineNumber: 120,
+                                columnNumber: 13
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 119,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("h3", {
+                            className: "font-extrabold text-xl text-foreground",
+                            children: "الدعم الفني المباشر"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 122,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("p", {
+                            className: "text-xs text-muted-foreground leading-relaxed",
+                            children: "تواصل سريع ومباشر مع فريق الدعم الفني عبر واتساب"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 123,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                    lineNumber: 118,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("button", {
+                    type: "button",
+                    onClick: handleDirectQuickWhatsApp,
+                    className: "w-full p-3 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366]/20 transition-all text-right flex items-center justify-between gap-3 group cursor-pointer shadow-sm",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex items-center gap-2.5",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("div", {
+                                    className: "w-9 h-9 rounded-xl bg-[#25D366] text-white flex items-center justify-center shrink-0 shadow-sm",
+                                    children: /*#__PURE__*/ _jsxDEV(WhatsAppIcon, {
+                                        className: "w-5 h-5 text-white"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                        lineNumber: 136,
+                                        columnNumber: 15
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 135,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("div", {
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV("b", {
+                                            className: "text-xs font-bold text-foreground block",
+                                            children: [
+                                                "محادثة واتساب مباشرة (",
+                                                SUPPORT_WHATSAPP_DISPLAY,
+                                                ")"
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                            lineNumber: 139,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            className: "text-[11px] text-muted-foreground",
+                                            children: "انقر هنا لفتح واتساب ومراسلة الدعم فوراً"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                            lineNumber: 140,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 138,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 134,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("span", {
+                            className: "text-xs font-bold text-[#25D366] group-hover:translate-x-[-2px] transition-transform",
+                            children: "فتح 💬"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 143,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                    lineNumber: 129,
+                    columnNumber: 9
+                }, this),
+                sentSuccess ? /*#__PURE__*/ _jsxDEV("div", {
+                    className: "py-6 text-center space-y-4 animate-in fade-in zoom-in duration-300",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "mx-auto w-16 h-16 rounded-full bg-[#25D366]/15 text-[#25D366] flex items-center justify-center ring-4 ring-[#25D366]/20",
+                            children: /*#__PURE__*/ _jsxDEV(CheckCircle2, {
+                                className: "w-10 h-10"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                lineNumber: 151,
+                                columnNumber: 15
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 150,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "space-y-1",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("h4", {
+                                    className: "font-extrabold text-lg text-foreground",
+                                    children: "تم توجيه رسالتك إلى واتساب!"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 154,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("p", {
+                                    className: "text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed",
+                                    children: [
+                                        "شكراً لتواصلك معنا على الرقم ",
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            className: "font-bold text-[#25D366]",
+                                            children: SUPPORT_WHATSAPP_DISPLAY
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                            lineNumber: 156,
+                                            columnNumber: 46
+                                        }, this),
+                                        "، وسنحرص على الرد عليك ومساعدتك بأسرع وقت إن شاء الله."
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 155,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 153,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex gap-2 justify-center",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    type: "button",
+                                    onClick: handleDirectQuickWhatsApp,
+                                    className: "px-5 py-2.5 rounded-xl bg-[#25D366] text-white font-bold text-xs flex items-center gap-1.5 shadow cursor-pointer active:scale-95 transition-all",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(WhatsAppIcon, {
+                                            className: "w-4 h-4 text-white"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                            lineNumber: 165,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            children: "إعادة فتح واتساب"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                            lineNumber: 166,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 160,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: onClose,
+                                    className: "btn-gold px-6 py-2.5 rounded-xl font-bold text-xs shadow-md active:scale-95 transition-transform cursor-pointer",
+                                    children: "إغلاق"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 168,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 159,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                    lineNumber: 149,
+                    columnNumber: 11
+                }, this) : /*#__PURE__*/ _jsxDEV("form", {
+                    onSubmit: handleSendWhatsApp,
+                    className: "space-y-3.5",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "space-y-1.5 text-right",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("label", {
+                                    className: "text-xs font-bold text-foreground block",
+                                    children: "نوع الموضوع"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 180,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("div", {
+                                    className: "grid grid-cols-2 sm:grid-cols-4 gap-1.5",
+                                    children: REPORT_TYPES.map((item)=>{
+                                        const Icon = item.icon;
+                                        const isSelected = type === item.id;
+                                        return /*#__PURE__*/ _jsxDEV("button", {
+                                            type: "button",
+                                            onClick: ()=>setType(item.id),
+                                            className: `h-16 rounded-2xl p-1.5 flex flex-col items-center justify-center gap-1 border transition-all text-xs font-bold cursor-pointer ${isSelected ? "border-[#25D366] bg-[#25D366]/10 text-emerald-700 dark:text-emerald-400 shadow-sm ring-1 ring-[#25D366]/30 scale-[1.02]" : "border-border bg-muted/50 text-muted-foreground hover:bg-muted"}`,
+                                            children: [
+                                                /*#__PURE__*/ _jsxDEV(Icon, {
+                                                    className: `w-4 h-4 ${isSelected ? "text-[#25D366]" : "text-muted-foreground"}`
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                                    lineNumber: 196,
+                                                    columnNumber: 23
+                                                }, this),
+                                                /*#__PURE__*/ _jsxDEV("span", {
+                                                    className: "text-[11px] truncate w-full text-center",
+                                                    children: item.label
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                                    lineNumber: 203,
+                                                    columnNumber: 23
+                                                }, this)
+                                            ]
+                                        }, item.id, true, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                            lineNumber: 186,
+                                            columnNumber: 21
+                                        }, this);
+                                    })
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 181,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 179,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "space-y-1 text-right",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("label", {
+                                    className: "text-xs font-bold text-foreground block",
+                                    children: [
+                                        "نص الرسالة أو الاستفسار ",
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            className: "text-destructive",
+                                            children: "*"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                            lineNumber: 214,
+                                            columnNumber: 41
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 213,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("div", {
+                                    className: "relative",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV("textarea", {
+                                            value: description,
+                                            onChange: (e)=>{
+                                                if (e.target.value.length <= 600) {
+                                                    setDescription(e.target.value);
+                                                    setErrorMessage("");
+                                                }
+                                            },
+                                            placeholder: "اكتب هنا ما تحتاجه أو المشكلة التي واجهتك وسيرد عليك الدعم الفني فوراً على واتساب...",
+                                            rows: 4,
+                                            className: "w-full text-xs p-3 rounded-2xl bg-muted/60 border border-border text-foreground placeholder-muted-foreground focus:border-accent outline-none transition-colors resize-none leading-relaxed"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                            lineNumber: 217,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("span", {
+                                            className: "absolute bottom-2 left-3 text-[10px] text-muted-foreground font-mono",
+                                            children: [
+                                                description.length,
+                                                "/600"
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                            lineNumber: 229,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 216,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 212,
+                            columnNumber: 13
+                        }, this),
+                        errorMessage && /*#__PURE__*/ _jsxDEV("div", {
+                            className: "flex items-center gap-1.5 text-xs text-destructive font-bold",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(AlertCircle, {
+                                    className: "w-4 h-4 shrink-0"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 238,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: errorMessage
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                    lineNumber: 239,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 237,
+                            columnNumber: 15
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("button", {
+                            type: "submit",
+                            disabled: sending || !description.trim(),
+                            className: "w-full h-13 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-[#25D366]/20 active:scale-95 disabled:opacity-50 transition-all cursor-pointer",
+                            children: sending ? /*#__PURE__*/ _jsxDEV(_Fragment, {
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(Loader2, {
+                                        className: "w-5 h-5 animate-spin"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                        lineNumber: 251,
+                                        columnNumber: 19
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        children: "جاري فتح واتساب..."
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                        lineNumber: 252,
+                                        columnNumber: 19
+                                    }, this)
+                                ]
+                            }, void 0, true) : /*#__PURE__*/ _jsxDEV(_Fragment, {
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(WhatsAppIcon, {
+                                        className: "w-5 h-5 text-white"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                        lineNumber: 256,
+                                        columnNumber: 19
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        children: [
+                                            "إرسال الرسالة عبر واتساب (",
+                                            SUPPORT_WHATSAPP_DISPLAY,
+                                            ")"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                        lineNumber: 257,
+                                        columnNumber: 19
+                                    }, this)
+                                ]
+                            }, void 0, true)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 244,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "pt-2 text-center border-t border-border/50 flex items-center justify-center gap-3 text-xs",
+                            children: /*#__PURE__*/ _jsxDEV("a", {
+                                href: createMailtoSupportLink({
+                                    typeLabel: REPORT_TYPES.find((t)=>t.id === type)?.label || "رسالة",
+                                    description: description.trim(),
+                                    profileName: activeProfile?.name || "مستخدم التطبيق",
+                                    appVersion: CURRENT_VERSION
+                                }),
+                                className: "text-muted-foreground hover:text-foreground flex items-center gap-1 text-[11px] font-medium transition-colors",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(Mail, {
+                                        className: "w-3.5 h-3.5"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                        lineNumber: 273,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        children: "أو الإرسال عبر البريد الإلكتروني"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                        lineNumber: 274,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                                lineNumber: 264,
+                                columnNumber: 15
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                            lineNumber: 263,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+                    lineNumber: 177,
+                    columnNumber: 11
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+            lineNumber: 107,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/SupportModal.tsx",
+        lineNumber: 103,
+        columnNumber: 5
+    }, this);
+}
+_s(SupportModal, "Yc/t4155cfW5mJ1s3a+bX2On6Xg=");
+_c = SupportModal;
+var _c;
+$RefreshReg$(_c, "SupportModal");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/SupportModal.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/SupportModal.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlN1cHBvcnRNb2RhbC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgdXNlU3RhdGUgfSBmcm9tIFwicmVhY3RcIjtcbmltcG9ydCB7XG4gIFgsXG4gIFNlbmQsXG4gIExvYWRlcjIsXG4gIENoZWNrQ2lyY2xlMixcbiAgQnVnLFxuICBMaWdodGJ1bGIsXG4gIEhlbHBDaXJjbGUsXG4gIEhlYXJ0LFxuICBBbGVydENpcmNsZSxcbiAgTWFpbCxcbiAgTWVzc2FnZVNxdWFyZSxcbn0gZnJvbSBcImx1Y2lkZS1yZWFjdFwiO1xuaW1wb3J0IFdoYXRzQXBwSWNvbiBmcm9tIFwiLi9XaGF0c0FwcEljb25cIjtcbmltcG9ydCB7XG4gIHNlbmRTdXBwb3J0UmVwb3J0RW1haWwsXG4gIFN1cHBvcnRSZXBvcnREYXRhLFxuICBjcmVhdGVNYWlsdG9TdXBwb3J0TGluayxcbiAgb3BlbldoYXRzQXBwU3VwcG9ydCxcbiAgU1VQUE9SVF9XSEFUU0FQUF9ESVNQTEFZLFxuICBzYXZlU3VwcG9ydE1lc3NhZ2VMb2NhbGx5LFxufSBmcm9tIFwiQC9zZXJ2aWNlcy9yZXNlbmRTZXJ2aWNlXCI7XG5pbXBvcnQgeyBnZXRQcm9maWxlIH0gZnJvbSBcIkAvZGF0YS9raWRzUHJvZmlsZVwiO1xuaW1wb3J0IHsgQ1VSUkVOVF9WRVJTSU9OIH0gZnJvbSBcIkAvdXRpbHMvdXBkYXRlQ2hlY2tlclwiO1xuaW1wb3J0IHsgdG9hc3QgfSBmcm9tIFwiQC9ob29rcy91c2UtdG9hc3RcIjtcblxuaW50ZXJmYWNlIFByb3BzIHtcbiAgb25DbG9zZTogKCkgPT4gdm9pZDtcbn1cblxudHlwZSBSZXBvcnRUeXBlID0gXCJidWdcIiB8IFwic3VnZ2VzdGlvblwiIHwgXCJpbnF1aXJ5XCIgfCBcInRoYW5rc1wiIHwgXCJvdGhlclwiO1xuXG5jb25zdCBSRVBPUlRfVFlQRVM6IEFycmF5PHtcbiAgaWQ6IFJlcG9ydFR5cGU7XG4gIGxhYmVsOiBzdHJpbmc7XG4gIGljb246IFJlYWN0LkNvbXBvbmVudFR5cGU8eyBjbGFzc05hbWU/OiBzdHJpbmcgfT47XG59PiA9IFtcbiAgeyBpZDogXCJidWdcIiwgbGFiZWw6IFwi2YXYtNmD2YTYqSDYqtmC2YbZitipXCIsIGljb246IEJ1ZyB9LFxuICB7IGlkOiBcInN1Z2dlc3Rpb25cIiwgbGFiZWw6IFwi2KfZgtiq2LHYp9itINmB2YPYsdipXCIsIGljb246IExpZ2h0YnVsYiB9LFxuICB7IGlkOiBcImlucXVpcnlcIiwgbGFiZWw6IFwi2KfYs9iq2YHYs9in2LFcIiwgaWNvbjogSGVscENpcmNsZSB9LFxuICB7IGlkOiBcInRoYW5rc1wiLCBsYWJlbDogXCLYtNmD2LEg2YjYqtmC2K/ZitixXCIsIGljb246IEhlYXJ0IH0sXG5dO1xuXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBTdXBwb3J0TW9kYWwoeyBvbkNsb3NlIH06IFByb3BzKSB7XG4gIGNvbnN0IGFjdGl2ZVByb2ZpbGUgPSBnZXRQcm9maWxlKCk7XG4gIGNvbnN0IFt0eXBlLCBzZXRUeXBlXSA9IHVzZVN0YXRlPFJlcG9ydFR5cGU+KFwiYnVnXCIpO1xuICBjb25zdCBbZGVzY3JpcHRpb24sIHNldERlc2NyaXB0aW9uXSA9IHVzZVN0YXRlKFwiXCIpO1xuICBjb25zdCBbc2VuZGVyRW1haWwsIHNldFNlbmRlckVtYWlsXSA9IHVzZVN0YXRlKFwiXCIpO1xuICBjb25zdCBbc2VuZGluZywgc2V0U2VuZGluZ10gPSB1c2VTdGF0ZShmYWxzZSk7XG4gIGNvbnN0IFtzZW50U3VjY2Vzcywgc2V0U2VudFN1Y2Nlc3NdID0gdXNlU3RhdGUoZmFsc2UpO1xuICBjb25zdCBbZXJyb3JNZXNzYWdlLCBzZXRFcnJvck1lc3NhZ2VdID0gdXNlU3RhdGUoXCJcIik7XG5cbiAgY29uc3QgaGFuZGxlU2VuZFdoYXRzQXBwID0gYXN5bmMgKGU/OiBSZWFjdC5Gb3JtRXZlbnQpID0+IHtcbiAgICBpZiAoZSkgZS5wcmV2ZW50RGVmYXVsdCgpO1xuICAgIGlmICghZGVzY3JpcHRpb24udHJpbSgpKSB7XG4gICAgICBzZXRFcnJvck1lc3NhZ2UoXCLZitix2KzZiSDZg9iq2KfYqNipINmG2LUg2KfZhNix2LPYp9mE2Kkg2KPZiCDZiNi12YEg2KfZhNmF2LTZg9mE2Kkg2KPZiNmE2KfZi1wiKTtcbiAgICAgIHJldHVybjtcbiAgICB9XG5cbiAgICBzZXRTZW5kaW5nKHRydWUpO1xuICAgIHNldEVycm9yTWVzc2FnZShcIlwiKTtcblxuICAgIGNvbnN0IHR5cGVJdGVtID0gUkVQT1JUX1RZUEVTLmZpbmQoKHQpID0+IHQuaWQgPT09IHR5cGUpO1xuXG4gICAgY29uc3QgcmVwb3J0RGF0YTogU3VwcG9ydFJlcG9ydERhdGEgPSB7XG4gICAgICB0eXBlLFxuICAgICAgdHlwZUxhYmVsOiB0eXBlSXRlbSA/IHR5cGVJdGVtLmxhYmVsIDogXCLYsdiz2KfZhNipINi52KfZhdipXCIsXG4gICAgICBkZXNjcmlwdGlvbjogZGVzY3JpcHRpb24udHJpbSgpLFxuICAgICAgc2VuZGVyRW1haWw6IHNlbmRlckVtYWlsLnRyaW0oKSB8fCB1bmRlZmluZWQsXG4gICAgICBwcm9maWxlTmFtZTogYWN0aXZlUHJvZmlsZT8ubmFtZSB8fCBcItmF2LPYqtiu2K/ZhSDYp9mE2KrYt9io2YrZglwiLFxuICAgICAgYXBwVmVyc2lvbjogQ1VSUkVOVF9WRVJTSU9OLFxuICAgICAgcGxhdGZvcm06IHR5cGVvZiBuYXZpZ2F0b3IgIT09IFwidW5kZWZpbmVkXCIgPyBuYXZpZ2F0b3IudXNlckFnZW50IDogXCJXZWJcIixcbiAgICAgIHRpbWVzdGFtcDogbmV3IERhdGUoKS50b0xvY2FsZVN0cmluZyhcImFyLVNBXCIpLFxuICAgIH07XG5cbiAgICAvLyDYrdmB2Lgg2YXYrdmE2Yog2YjYpdix2LPYp9mEINiq2YLYsdmK2LEg2K7ZhNmB2Yog2YTZhNij2LHYtNmB2KlcbiAgICBzYXZlU3VwcG9ydE1lc3NhZ2VMb2NhbGx5KHJlcG9ydERhdGEpO1xuICAgIHZvaWQgc2VuZFN1cHBvcnRSZXBvcnRFbWFpbChyZXBvcnREYXRhKTtcblxuICAgIC8vINmB2KrYrSDZiNin2KrYs9in2Kgg2YHZiNix2KfZiyDZhNmE2LHZgtmFINin2YTZhdit2K/YryAwNjU4MTg4NjQ0XG4gICAgYXdhaXQgb3BlbldoYXRzQXBwU3VwcG9ydChyZXBvcnREYXRhKTtcblxuICAgIHNldFNlbmRpbmcoZmFsc2UpO1xuICAgIHNldFNlbnRTdWNjZXNzKHRydWUpO1xuICAgIHRvYXN0KHtcbiAgICAgIHRpdGxlOiBcItis2KfYsdmKINmB2KrYrSDZiNin2KrYs9in2Kgg8J+SrFwiLFxuICAgICAgZGVzY3JpcHRpb246IGDYqtmFINiq2KzZh9mK2LIg2LHYs9in2YTYqtmDINmE2YTYpdix2LPYp9mEINil2YTZiSDYp9mE2K/YudmFINin2YTZgdmG2YogKCR7U1VQUE9SVF9XSEFUU0FQUF9ESVNQTEFZfSkuYCxcbiAgICB9KTtcbiAgfTtcblxuICBjb25zdCBoYW5kbGVEaXJlY3RRdWlja1doYXRzQXBwID0gKCkgPT4ge1xuICAgIGNvbnN0IG1zZyA9XG4gICAgICBg2KfZhNiz2YTYp9mFINi52YTZitmD2YUg2YjYsdit2YXYqSDYp9mE2YTZhyDZiNio2LHZg9in2KrZh9iMXFxuYCArXG4gICAgICBg2KPYrdiq2KfYrCDZhdiz2KfYudiv2Kkg2YjYqtmI2KfYtdmE2KfZiyDZhdi5INin2YTYr9i52YUg2KfZhNmB2YbZiiDZhNiq2LfYqNmK2YIg2KfZhNmC2LHYotmGINmE2YTYo9i32YHYp9mEOlxcbmAgK1xuICAgICAgYOKAoiDYp9mE2KXYtdiv2KfYsTogJHtDVVJSRU5UX1ZFUlNJT059YCArXG4gICAgICAoZGVzY3JpcHRpb24udHJpbSgpID8gYFxcbuKAoiDYp9mE2LHYs9in2YTYqTogJHtkZXNjcmlwdGlvbi50cmltKCl9YCA6IFwiXCIpO1xuXG4gICAgdm9pZCBvcGVuV2hhdHNBcHBTdXBwb3J0KG1zZyk7XG4gIH07XG5cbiAgcmV0dXJuIChcbiAgICA8ZGl2XG4gICAgICBjbGFzc05hbWU9XCJmaXhlZCBpbnNldC0wIHotWzI1MF0gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYmctYmxhY2svNzAgYmFja2Ryb3AtYmx1ci1tZCBwLTQgYW5pbWF0ZS1pbiBmYWRlLWluIGR1cmF0aW9uLTIwMFwiXG4gICAgICBkaXI9XCJydGxcIlxuICAgID5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmVsYXRpdmUgdy1mdWxsIG1heC13LW1kIHJvdW5kZWQtM3hsIGJnLWNhcmQgYm9yZGVyIGJvcmRlci1ib3JkZXIgc2hhZG93LTJ4bCBwLTYgc3BhY2UteS00IG1heC1oLVs5MnZoXSBvdmVyZmxvdy15LWF1dG8gYW5pbWF0ZS1pbiB6b29tLWluLTk1IGR1cmF0aW9uLTIwMFwiPlxuICAgICAgICB7Lyog2LLYsSDYp9mE2KXYutmE2KfZgiAqL31cbiAgICAgICAgPGJ1dHRvblxuICAgICAgICAgIG9uQ2xpY2s9e29uQ2xvc2V9XG4gICAgICAgICAgY2xhc3NOYW1lPVwiYWJzb2x1dGUgdG9wLTQgbGVmdC00IHAtMiByb3VuZGVkLWZ1bGwgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIGhvdmVyOmJnLW11dGVkIHRyYW5zaXRpb24tY29sb3JzIGN1cnNvci1wb2ludGVyXCJcbiAgICAgICAgICBhcmlhLWxhYmVsPVwi2KXYutmE2KfZglwiXG4gICAgICAgID5cbiAgICAgICAgICA8WCBjbGFzc05hbWU9XCJ3LTUgaC01XCIgLz5cbiAgICAgICAgPC9idXR0b24+XG5cbiAgICAgICAgey8qINix2KPYsyDYp9mE2YbYp9mB2LDYqSAqL31cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ0ZXh0LWNlbnRlciBzcGFjZS15LTEgcHQtMVwiPlxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXgtYXV0byB3LTEyIGgtMTIgcm91bmRlZC0yeGwgYmctWyMyNUQzNjZdLzE1IHRleHQtWyMyNUQzNjZdIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIG1iLTFcIj5cbiAgICAgICAgICAgIDxXaGF0c0FwcEljb24gY2xhc3NOYW1lPVwidy03IGgtN1wiIC8+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPGgzIGNsYXNzTmFtZT1cImZvbnQtZXh0cmFib2xkIHRleHQteGwgdGV4dC1mb3JlZ3JvdW5kXCI+2KfZhNiv2LnZhSDYp9mE2YHZhtmKINin2YTZhdio2KfYtNixPC9oMz5cbiAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBsZWFkaW5nLXJlbGF4ZWRcIj5cbiAgICAgICAgICAgINiq2YjYp9i12YQg2LPYsdmK2Lkg2YjZhdio2KfYtNixINmF2Lkg2YHYsdmK2YIg2KfZhNiv2LnZhSDYp9mE2YHZhtmKINi52KjYsSDZiNin2KrYs9in2KhcbiAgICAgICAgICA8L3A+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiDYqNi32KfZgtipINmB2KrYrSDZiNin2KrYs9in2Kgg2KfZhNmB2YjYsdmK2KkgKi99XG4gICAgICAgIDxidXR0b25cbiAgICAgICAgICB0eXBlPVwiYnV0dG9uXCJcbiAgICAgICAgICBvbkNsaWNrPXtoYW5kbGVEaXJlY3RRdWlja1doYXRzQXBwfVxuICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCBwLTMgcm91bmRlZC0yeGwgYmctWyMyNUQzNjZdLzEwIGJvcmRlciBib3JkZXItWyMyNUQzNjZdLzMwIGhvdmVyOmJnLVsjMjVEMzY2XS8yMCB0cmFuc2l0aW9uLWFsbCB0ZXh0LXJpZ2h0IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktYmV0d2VlbiBnYXAtMyBncm91cCBjdXJzb3ItcG9pbnRlciBzaGFkb3ctc21cIlxuICAgICAgICA+XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMi41XCI+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInctOSBoLTkgcm91bmRlZC14bCBiZy1bIzI1RDM2Nl0gdGV4dC13aGl0ZSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBzaHJpbmstMCBzaGFkb3ctc21cIj5cbiAgICAgICAgICAgICAgPFdoYXRzQXBwSWNvbiBjbGFzc05hbWU9XCJ3LTUgaC01IHRleHQtd2hpdGVcIiAvPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICA8YiBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LWZvcmVncm91bmQgYmxvY2tcIj7Zhdit2KfYr9ir2Kkg2YjYp9iq2LPYp9ioINmF2KjYp9i02LHYqSAoe1NVUFBPUlRfV0hBVFNBUFBfRElTUExBWX0pPC9iPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LVsxMXB4XSB0ZXh0LW11dGVkLWZvcmVncm91bmRcIj7Yp9mG2YLYsSDZh9mG2Kcg2YTZgdiq2K0g2YjYp9iq2LPYp9ioINmI2YXYsdin2LPZhNipINin2YTYr9i52YUg2YHZiNix2KfZizwvc3Bhbj5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQteHMgZm9udC1ib2xkIHRleHQtWyMyNUQzNjZdIGdyb3VwLWhvdmVyOnRyYW5zbGF0ZS14LVstMnB4XSB0cmFuc2l0aW9uLXRyYW5zZm9ybVwiPlxuICAgICAgICAgICAg2YHYqtitIPCfkqxcbiAgICAgICAgICA8L3NwYW4+XG4gICAgICAgIDwvYnV0dG9uPlxuXG4gICAgICAgIHtzZW50U3VjY2VzcyA/IChcbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInB5LTYgdGV4dC1jZW50ZXIgc3BhY2UteS00IGFuaW1hdGUtaW4gZmFkZS1pbiB6b29tLWluIGR1cmF0aW9uLTMwMFwiPlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJteC1hdXRvIHctMTYgaC0xNiByb3VuZGVkLWZ1bGwgYmctWyMyNUQzNjZdLzE1IHRleHQtWyMyNUQzNjZdIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHJpbmctNCByaW5nLVsjMjVEMzY2XS8yMFwiPlxuICAgICAgICAgICAgICA8Q2hlY2tDaXJjbGUyIGNsYXNzTmFtZT1cInctMTAgaC0xMFwiIC8+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0xXCI+XG4gICAgICAgICAgICAgIDxoNCBjbGFzc05hbWU9XCJmb250LWV4dHJhYm9sZCB0ZXh0LWxnIHRleHQtZm9yZWdyb3VuZFwiPtiq2YUg2KrZiNis2YrZhyDYsdiz2KfZhNiq2YMg2KXZhNmJINmI2KfYqtiz2KfYqCE8L2g0PlxuICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBtYXgtdy14cyBteC1hdXRvIGxlYWRpbmctcmVsYXhlZFwiPlxuICAgICAgICAgICAgICAgINi02YPYsdin2Ysg2YTYqtmI2KfYtdmE2YMg2YXYudmG2Kcg2LnZhNmJINin2YTYsdmC2YUgPHNwYW4gY2xhc3NOYW1lPVwiZm9udC1ib2xkIHRleHQtWyMyNUQzNjZdXCI+e1NVUFBPUlRfV0hBVFNBUFBfRElTUExBWX08L3NwYW4+2Iwg2YjYs9mG2K3Ysdi1INi52YTZiSDYp9mE2LHYryDYudmE2YrZgyDZiNmF2LPYp9i52K/YqtmDINio2KPYs9ix2Lkg2YjZgtiqINil2YYg2LTYp9ihINin2YTZhNmHLlxuICAgICAgICAgICAgICA8L3A+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBnYXAtMiBqdXN0aWZ5LWNlbnRlclwiPlxuICAgICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgICAgdHlwZT1cImJ1dHRvblwiXG4gICAgICAgICAgICAgICAgb25DbGljaz17aGFuZGxlRGlyZWN0UXVpY2tXaGF0c0FwcH1cbiAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJweC01IHB5LTIuNSByb3VuZGVkLXhsIGJnLVsjMjVEMzY2XSB0ZXh0LXdoaXRlIGZvbnQtYm9sZCB0ZXh0LXhzIGZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjUgc2hhZG93IGN1cnNvci1wb2ludGVyIGFjdGl2ZTpzY2FsZS05NSB0cmFuc2l0aW9uLWFsbFwiXG4gICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICA8V2hhdHNBcHBJY29uIGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC13aGl0ZVwiIC8+XG4gICAgICAgICAgICAgICAgPHNwYW4+2KXYudin2K/YqSDZgdiq2K0g2YjYp9iq2LPYp9ioPC9zcGFuPlxuICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgIG9uQ2xpY2s9e29uQ2xvc2V9XG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiYnRuLWdvbGQgcHgtNiBweS0yLjUgcm91bmRlZC14bCBmb250LWJvbGQgdGV4dC14cyBzaGFkb3ctbWQgYWN0aXZlOnNjYWxlLTk1IHRyYW5zaXRpb24tdHJhbnNmb3JtIGN1cnNvci1wb2ludGVyXCJcbiAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgINil2LrZhNin2YJcbiAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgKSA6IChcbiAgICAgICAgICA8Zm9ybSBvblN1Ym1pdD17aGFuZGxlU2VuZFdoYXRzQXBwfSBjbGFzc05hbWU9XCJzcGFjZS15LTMuNVwiPlxuICAgICAgICAgICAgey8qINmG2YjYuSDYp9mE2LHYs9in2YTYqSAqL31cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0xLjUgdGV4dC1yaWdodFwiPlxuICAgICAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgdGV4dC1mb3JlZ3JvdW5kIGJsb2NrXCI+2YbZiNi5INin2YTZhdmI2LbZiNi5PC9sYWJlbD5cbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJncmlkIGdyaWQtY29scy0yIHNtOmdyaWQtY29scy00IGdhcC0xLjVcIj5cbiAgICAgICAgICAgICAgICB7UkVQT1JUX1RZUEVTLm1hcCgoaXRlbSkgPT4ge1xuICAgICAgICAgICAgICAgICAgY29uc3QgSWNvbiA9IGl0ZW0uaWNvbjtcbiAgICAgICAgICAgICAgICAgIGNvbnN0IGlzU2VsZWN0ZWQgPSB0eXBlID09PSBpdGVtLmlkO1xuICAgICAgICAgICAgICAgICAgcmV0dXJuIChcbiAgICAgICAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgICAgICAgIGtleT17aXRlbS5pZH1cbiAgICAgICAgICAgICAgICAgICAgICB0eXBlPVwiYnV0dG9uXCJcbiAgICAgICAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBzZXRUeXBlKGl0ZW0uaWQpfVxuICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YGgtMTYgcm91bmRlZC0yeGwgcC0xLjUgZmxleCBmbGV4LWNvbCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgZ2FwLTEgYm9yZGVyIHRyYW5zaXRpb24tYWxsIHRleHQteHMgZm9udC1ib2xkIGN1cnNvci1wb2ludGVyICR7XG4gICAgICAgICAgICAgICAgICAgICAgICBpc1NlbGVjdGVkXG4gICAgICAgICAgICAgICAgICAgICAgICAgID8gXCJib3JkZXItWyMyNUQzNjZdIGJnLVsjMjVEMzY2XS8xMCB0ZXh0LWVtZXJhbGQtNzAwIGRhcms6dGV4dC1lbWVyYWxkLTQwMCBzaGFkb3ctc20gcmluZy0xIHJpbmctWyMyNUQzNjZdLzMwIHNjYWxlLVsxLjAyXVwiXG4gICAgICAgICAgICAgICAgICAgICAgICAgIDogXCJib3JkZXItYm9yZGVyIGJnLW11dGVkLzUwIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBob3ZlcjpiZy1tdXRlZFwiXG4gICAgICAgICAgICAgICAgICAgICAgfWB9XG4gICAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgICA8SWNvblxuICAgICAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgdy00IGgtNCAke1xuICAgICAgICAgICAgICAgICAgICAgICAgICBpc1NlbGVjdGVkXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPyBcInRleHQtWyMyNUQzNjZdXCJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA6IFwidGV4dC1tdXRlZC1mb3JlZ3JvdW5kXCJcbiAgICAgICAgICAgICAgICAgICAgICAgIH1gfVxuICAgICAgICAgICAgICAgICAgICAgIC8+XG4gICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1bMTFweF0gdHJ1bmNhdGUgdy1mdWxsIHRleHQtY2VudGVyXCI+e2l0ZW0ubGFiZWx9PC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgICAgICk7XG4gICAgICAgICAgICAgICAgfSl9XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG5cblxuICAgICAgICAgICAgey8qINmG2LUg2KfZhNix2LPYp9mE2Kkg2KPZiCDYp9mE2KjZhNin2LogKi99XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMSB0ZXh0LXJpZ2h0XCI+XG4gICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LWZvcmVncm91bmQgYmxvY2tcIj5cbiAgICAgICAgICAgICAgICDZhti1INin2YTYsdiz2KfZhNipINij2Ygg2KfZhNin2LPYqtmB2LPYp9ixIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtZGVzdHJ1Y3RpdmVcIj4qPC9zcGFuPlxuICAgICAgICAgICAgICA8L2xhYmVsPlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJlbGF0aXZlXCI+XG4gICAgICAgICAgICAgICAgPHRleHRhcmVhXG4gICAgICAgICAgICAgICAgICB2YWx1ZT17ZGVzY3JpcHRpb259XG4gICAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGUpID0+IHtcbiAgICAgICAgICAgICAgICAgICAgaWYgKGUudGFyZ2V0LnZhbHVlLmxlbmd0aCA8PSA2MDApIHtcbiAgICAgICAgICAgICAgICAgICAgICBzZXREZXNjcmlwdGlvbihlLnRhcmdldC52YWx1ZSk7XG4gICAgICAgICAgICAgICAgICAgICAgc2V0RXJyb3JNZXNzYWdlKFwiXCIpO1xuICAgICAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgICB9fVxuICAgICAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9XCLYp9mD2KrYqCDZh9mG2Kcg2YXYpyDYqtit2KrYp9is2Ycg2KPZiCDYp9mE2YXYtNmD2YTYqSDYp9mE2KrZiiDZiNin2KzZh9iq2YMg2YjYs9mK2LHYryDYudmE2YrZgyDYp9mE2K/YudmFINin2YTZgdmG2Yog2YHZiNix2KfZiyDYudmE2Ykg2YjYp9iq2LPYp9ioLi4uXCJcbiAgICAgICAgICAgICAgICAgIHJvd3M9ezR9XG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJ3LWZ1bGwgdGV4dC14cyBwLTMgcm91bmRlZC0yeGwgYmctbXV0ZWQvNjAgYm9yZGVyIGJvcmRlci1ib3JkZXIgdGV4dC1mb3JlZ3JvdW5kIHBsYWNlaG9sZGVyLW11dGVkLWZvcmVncm91bmQgZm9jdXM6Ym9yZGVyLWFjY2VudCBvdXRsaW5lLW5vbmUgdHJhbnNpdGlvbi1jb2xvcnMgcmVzaXplLW5vbmUgbGVhZGluZy1yZWxheGVkXCJcbiAgICAgICAgICAgICAgICAvPlxuICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImFic29sdXRlIGJvdHRvbS0yIGxlZnQtMyB0ZXh0LVsxMHB4XSB0ZXh0LW11dGVkLWZvcmVncm91bmQgZm9udC1tb25vXCI+XG4gICAgICAgICAgICAgICAgICB7ZGVzY3JpcHRpb24ubGVuZ3RofS82MDBcbiAgICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgIHsvKiDYsdiz2KfZhNipINin2YTYqtmG2KjZitmHINil2YYg2YjZj9is2K/YqiAqL31cbiAgICAgICAgICAgIHtlcnJvck1lc3NhZ2UgJiYgKFxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjUgdGV4dC14cyB0ZXh0LWRlc3RydWN0aXZlIGZvbnQtYm9sZFwiPlxuICAgICAgICAgICAgICAgIDxBbGVydENpcmNsZSBjbGFzc05hbWU9XCJ3LTQgaC00IHNocmluay0wXCIgLz5cbiAgICAgICAgICAgICAgICA8c3Bhbj57ZXJyb3JNZXNzYWdlfTwvc3Bhbj5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICApfVxuXG4gICAgICAgICAgICB7Lyog2LLYsSDYp9mE2KXYsdiz2KfZhCDYp9mE2LHYptmK2LPZiiDYudio2LEg2YjYp9iq2LPYp9ioICovfVxuICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICB0eXBlPVwic3VibWl0XCJcbiAgICAgICAgICAgICAgZGlzYWJsZWQ9e3NlbmRpbmcgfHwgIWRlc2NyaXB0aW9uLnRyaW0oKX1cbiAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIGgtMTMgcm91bmRlZC0yeGwgYmctWyMyNUQzNjZdIGhvdmVyOmJnLVsjMjBiZDVhXSB0ZXh0LXdoaXRlIGZvbnQtYmxhY2sgdGV4dC1zbSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMi41IHNoYWRvdy1sZyBzaGFkb3ctWyMyNUQzNjZdLzIwIGFjdGl2ZTpzY2FsZS05NSBkaXNhYmxlZDpvcGFjaXR5LTUwIHRyYW5zaXRpb24tYWxsIGN1cnNvci1wb2ludGVyXCJcbiAgICAgICAgICAgID5cbiAgICAgICAgICAgICAge3NlbmRpbmcgPyAoXG4gICAgICAgICAgICAgICAgPD5cbiAgICAgICAgICAgICAgICAgIDxMb2FkZXIyIGNsYXNzTmFtZT1cInctNSBoLTUgYW5pbWF0ZS1zcGluXCIgLz5cbiAgICAgICAgICAgICAgICAgIDxzcGFuPtis2KfYsdmKINmB2KrYrSDZiNin2KrYs9in2KguLi48L3NwYW4+XG4gICAgICAgICAgICAgICAgPC8+XG4gICAgICAgICAgICAgICkgOiAoXG4gICAgICAgICAgICAgICAgPD5cbiAgICAgICAgICAgICAgICAgIDxXaGF0c0FwcEljb24gY2xhc3NOYW1lPVwidy01IGgtNSB0ZXh0LXdoaXRlXCIgLz5cbiAgICAgICAgICAgICAgICAgIDxzcGFuPtil2LHYs9in2YQg2KfZhNix2LPYp9mE2Kkg2LnYqNixINmI2KfYqtiz2KfYqCAoe1NVUFBPUlRfV0hBVFNBUFBfRElTUExBWX0pPC9zcGFuPlxuICAgICAgICAgICAgICAgIDwvPlxuICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgPC9idXR0b24+XG5cbiAgICAgICAgICAgIHsvKiDYrtmK2KfYsdin2Kog2KXYttin2YHZitipICovfVxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwdC0yIHRleHQtY2VudGVyIGJvcmRlci10IGJvcmRlci1ib3JkZXIvNTAgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgZ2FwLTMgdGV4dC14c1wiPlxuICAgICAgICAgICAgICA8YVxuICAgICAgICAgICAgICAgIGhyZWY9e2NyZWF0ZU1haWx0b1N1cHBvcnRMaW5rKHtcbiAgICAgICAgICAgICAgICAgIHR5cGVMYWJlbDogUkVQT1JUX1RZUEVTLmZpbmQoKHQpID0+IHQuaWQgPT09IHR5cGUpPy5sYWJlbCB8fCBcItix2LPYp9mE2KlcIixcbiAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uOiBkZXNjcmlwdGlvbi50cmltKCksXG4gICAgICAgICAgICAgICAgICBwcm9maWxlTmFtZTogYWN0aXZlUHJvZmlsZT8ubmFtZSB8fCBcItmF2LPYqtiu2K/ZhSDYp9mE2KrYt9io2YrZglwiLFxuICAgICAgICAgICAgICAgICAgYXBwVmVyc2lvbjogQ1VSUkVOVF9WRVJTSU9OLFxuICAgICAgICAgICAgICAgIH0pfVxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInRleHQtbXV0ZWQtZm9yZWdyb3VuZCBob3Zlcjp0ZXh0LWZvcmVncm91bmQgZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEgdGV4dC1bMTFweF0gZm9udC1tZWRpdW0gdHJhbnNpdGlvbi1jb2xvcnNcIlxuICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgPE1haWwgY2xhc3NOYW1lPVwidy0zLjUgaC0zLjVcIiAvPlxuICAgICAgICAgICAgICAgIDxzcGFuPtij2Ygg2KfZhNil2LHYs9in2YQg2LnYqNixINin2YTYqNix2YrYryDYp9mE2KXZhNmD2KrYsdmI2YbZijwvc3Bhbj5cbiAgICAgICAgICAgICAgPC9hPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9mb3JtPlxuICAgICAgICApfVxuICAgICAgPC9kaXY+XG4gICAgPC9kaXY+XG4gICk7XG59XG4iXSwibmFtZXMiOlsidXNlU3RhdGUiLCJYIiwiTG9hZGVyMiIsIkNoZWNrQ2lyY2xlMiIsIkJ1ZyIsIkxpZ2h0YnVsYiIsIkhlbHBDaXJjbGUiLCJIZWFydCIsIkFsZXJ0Q2lyY2xlIiwiTWFpbCIsIldoYXRzQXBwSWNvbiIsInNlbmRTdXBwb3J0UmVwb3J0RW1haWwiLCJjcmVhdGVNYWlsdG9TdXBwb3J0TGluayIsIm9wZW5XaGF0c0FwcFN1cHBvcnQiLCJTVVBQT1JUX1dIQVRTQVBQX0RJU1BMQVkiLCJzYXZlU3VwcG9ydE1lc3NhZ2VMb2NhbGx5IiwiZ2V0UHJvZmlsZSIsIkNVUlJFTlRfVkVSU0lPTiIsInRvYXN0IiwiUkVQT1JUX1RZUEVTIiwiaWQiLCJsYWJlbCIsImljb24iLCJTdXBwb3J0TW9kYWwiLCJvbkNsb3NlIiwiYWN0aXZlUHJvZmlsZSIsInR5cGUiLCJzZXRUeXBlIiwiZGVzY3JpcHRpb24iLCJzZXREZXNjcmlwdGlvbiIsInNlbmRlckVtYWlsIiwic2V0U2VuZGVyRW1haWwiLCJzZW5kaW5nIiwic2V0U2VuZGluZyIsInNlbnRTdWNjZXNzIiwic2V0U2VudFN1Y2Nlc3MiLCJlcnJvck1lc3NhZ2UiLCJzZXRFcnJvck1lc3NhZ2UiLCJoYW5kbGVTZW5kV2hhdHNBcHAiLCJlIiwicHJldmVudERlZmF1bHQiLCJ0cmltIiwidHlwZUl0ZW0iLCJmaW5kIiwidCIsInJlcG9ydERhdGEiLCJ0eXBlTGFiZWwiLCJ1bmRlZmluZWQiLCJwcm9maWxlTmFtZSIsIm5hbWUiLCJhcHBWZXJzaW9uIiwicGxhdGZvcm0iLCJuYXZpZ2F0b3IiLCJ1c2VyQWdlbnQiLCJ0aW1lc3RhbXAiLCJEYXRlIiwidG9Mb2NhbGVTdHJpbmciLCJ0aXRsZSIsImhhbmRsZURpcmVjdFF1aWNrV2hhdHNBcHAiLCJtc2ciLCJkaXYiLCJjbGFzc05hbWUiLCJkaXIiLCJidXR0b24iLCJvbkNsaWNrIiwiYXJpYS1sYWJlbCIsImgzIiwicCIsImIiLCJzcGFuIiwiaDQiLCJmb3JtIiwib25TdWJtaXQiLCJtYXAiLCJpdGVtIiwiSWNvbiIsImlzU2VsZWN0ZWQiLCJ0ZXh0YXJlYSIsInZhbHVlIiwib25DaGFuZ2UiLCJ0YXJnZXQiLCJsZW5ndGgiLCJwbGFjZWhvbGRlciIsInJvd3MiLCJkaXNhYmxlZCIsImEiLCJocmVmIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxTQUFTQSxRQUFRLFFBQVEsUUFBUTtBQUNqQyxTQUNFQyxDQUFDLEVBRURDLE9BQU8sRUFDUEMsWUFBWSxFQUNaQyxHQUFHLEVBQ0hDLFNBQVMsRUFDVEMsVUFBVSxFQUNWQyxLQUFLLEVBQ0xDLFdBQVcsRUFDWEMsSUFBSSxRQUVDLGVBQWU7QUFDdEIsT0FBT0Msa0JBQWtCLGlCQUFpQjtBQUMxQyxTQUNFQyxzQkFBc0IsRUFFdEJDLHVCQUF1QixFQUN2QkMsbUJBQW1CLEVBQ25CQyx3QkFBd0IsRUFDeEJDLHlCQUF5QixRQUNwQiwyQkFBMkI7QUFDbEMsU0FBU0MsVUFBVSxRQUFRLHFCQUFxQjtBQUNoRCxTQUFTQyxlQUFlLFFBQVEsd0JBQXdCO0FBQ3hELFNBQVNDLEtBQUssUUFBUSxvQkFBb0I7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

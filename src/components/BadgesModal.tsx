@@ -256,14 +256,60 @@ export default function BadgesModal({ onClose }: Props) {
               </div>
             </div>
 
-            <button
-              onClick={handleDownloadCertificate}
-              disabled={isDownloading}
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-black text-xs flex items-center gap-1.5 shadow-lg active:scale-95 transition-all cursor-pointer shrink-0"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>{isDownloading ? "جاري التجهيز..." : "تحميل شهادة الحماس"}</span>
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={async () => {
+                  if (isDownloading) return;
+                  setIsDownloading(true);
+                  try {
+                    const { downloadLegendaryCertificate } = await import("../utils/certificateGenerator");
+                    
+                    // حساب إحصائيات القرآن مثل الموجودة في الإعدادات
+                    let totalAyahs = 0;
+                    let surahsCompleted = 0;
+                    if (profile.stats?.history) {
+                      const uniqueAyahs = new Set<string>();
+                      const surahCounts: Record<number, number> = {};
+                      Object.values(profile.stats.history).forEach(day => {
+                        day.ayahs?.forEach(a => {
+                          uniqueAyahs.add(a);
+                          const surahNum = parseInt(a.split(':')[0]);
+                          surahCounts[surahNum] = (surahCounts[surahNum] || 0) + 1;
+                        });
+                      });
+                      totalAyahs = uniqueAyahs.size;
+                      surahsCompleted = Object.values(surahCounts).filter(count => count >= 3).length; // تقدير بسيط
+                    }
+
+                    await downloadLegendaryCertificate({
+                      studentName: profile.name,
+                      avatarName: profile.avatar,
+                      totalAyahs: totalAyahs,
+                      surahsCompleted: surahsCompleted,
+                      coins: profile.coins || 0,
+                      streakDays: Math.max(streakInfo.currentStreak, 1)
+                    });
+                    toast({
+                      title: "🎉 تم تحميل الشهادة الأسطورية بنجاح!",
+                      description: "تجدها في مجلد التنزيلات بجهازك",
+                    });
+                  } catch (e) {
+                    toast({
+                      title: "تعذر إنشاء الشهادة حالياً",
+                      description: "يرجى المحاولة مرة أخرى لاحقاً",
+                      variant: "destructive"
+                    });
+                  } finally {
+                    setIsDownloading(false);
+                  }
+                }}
+                disabled={isDownloading}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-black text-xs flex items-center gap-1.5 shadow-lg active:scale-95 transition-all cursor-pointer shrink-0 w-full justify-center"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{isDownloading ? "جاري التجهيز..." : "تحميل الشهادة الأسطورية 👑"}</span>
+              </button>
+            </div>
           </div>
         </div>
 

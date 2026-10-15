@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Headphones, BookOpen, Gamepad2, Settings, User, Lock, ShoppingBag, Sparkles } from "lucide-react";
 import { isKidsMode, setKidsLocked, hasKidsPin } from "../data/kidsLock";
@@ -12,9 +13,17 @@ interface AppNavProps {
   transparentBg?: boolean;
   /** When true, hide the mobile bottom nav (e.g. player is open) */
   hideBottomNav?: boolean;
+  position?: "inside" | "top" | "bottom";
+  onCyclePosition?: () => void;
 }
 
-export default function AppNav({ className = "", transparentBg = false, hideBottomNav = false }: AppNavProps) {
+export default function AppNav({
+  className = "",
+  transparentBg = false,
+  hideBottomNav = false,
+  position = "inside",
+  onCyclePosition,
+}: AppNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -86,17 +95,29 @@ export default function AppNav({ className = "", transparentBg = false, hideBott
   }, []);
 
   useEffect(() => {
-    requestAnimationFrame(() => {
+    const updateIndicator = () => {
       if (!navRef.current) return;
       const active = navRef.current.querySelector("[data-nav-active='true']") as HTMLElement | null;
       if (active) {
         const navRect = navRef.current.getBoundingClientRect();
         const activeRect = active.getBoundingClientRect();
-        setIndicatorStyle({ left: activeRect.left - navRect.left, width: activeRect.width });
+        const left = Math.max(0, activeRect.left - navRect.left);
+        const width = Math.min(activeRect.width, navRect.width - left);
+        setIndicatorStyle({ left, width });
       } else {
         setIndicatorStyle(null);
       }
-    });
+    };
+
+    const rafId = requestAnimationFrame(updateIndicator);
+    const timer = setTimeout(updateIndicator, 60);
+    window.addEventListener("resize", updateIndicator);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateIndicator);
+    };
   }, [location.pathname, kidsMode, pureMode]);
 
   const path = location.pathname;
@@ -119,11 +140,6 @@ export default function AppNav({ className = "", transparentBg = false, hideBott
   };
 
   const isActive = (p: string) => { if (p === "/audio") return path === "/audio" || path === "/"; return path === p; };
-
-  const navBtnClass = (p: string) =>
-    `nav-pill relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-2xl text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 active:scale-95 ${
-      isActive(p) ? "text-amber-950 dark:text-amber-100 font-extrabold" : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white"
-    }`;
 
   /* ── Mobile Bottom Navigation Items ── */
   const getMobileNavItems = () => {
@@ -150,107 +166,147 @@ export default function AppNav({ className = "", transparentBg = false, hideBott
     ];
   };
 
-  /* ── Desktop Top Nav Tabs (based on mode) ── */
-  const renderDesktopTabs = () => {
+  /* ── Tab Renderer with Circular Icon Badges ── */
+  const renderNavTab = (p: string, label: React.ReactNode, Icon: any, onClick: () => void, extra?: React.ReactNode) => {
+    const active = isActive(p);
+    const getTargetTag = (pathStr: string) => {
+      if (pathStr === "/audio") return "cyan-audio";
+      if (pathStr === "/mushaf") return "emerald-mushaf";
+      if (pathStr === "/games") return "purple-games";
+      if (pathStr === "/shop") return "pink-shop";
+      if (pathStr === "/settings") return "orange-settings";
+      if (pathStr === "/parent") return "amber-parent";
+      return undefined;
+    };
+    return (
+      <button
+        key={p}
+        data-nav-active={active}
+        data-color-target={getTargetTag(p)}
+        onClick={onClick}
+        className={`group nav-pill relative flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 px-2 sm:px-2.5 md:px-3 lg:px-4 py-1.5 sm:py-2 rounded-full text-xs md:text-sm font-bold transition-all duration-300 active:scale-95 ${
+          active
+            ? "text-white font-black shadow-md shadow-amber-500/25"
+            : "text-stone-700 dark:text-stone-200 hover:text-amber-800 dark:hover:text-amber-300"
+        }`}
+      >
+        <div
+          className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${
+            active
+              ? "bg-white/20 text-white shadow-inner scale-105"
+              : "bg-amber-500/10 dark:bg-amber-400/15 text-amber-700 dark:text-amber-400 group-hover:bg-amber-500/20 group-hover:scale-110"
+          }`}
+        >
+          <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 shrink-0" />
+        </div>
+        <span className="leading-none whitespace-nowrap">{label}</span>
+        {extra}
+      </button>
+    );
+  };
+
+  /* ── Tabs (based on mode) with Circular Styling ── */
+  const renderTabs = () => {
     if (kidsMode) {
       return (
-        <div className="flex items-center justify-center gap-0.5 sm:gap-1 flex-1 overflow-x-auto no-scrollbar py-0.5 relative z-10" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-          <button data-nav-active={isActive("/games")} onClick={handleGamesClick} className={navBtnClass("/games")}>
-            <Gamepad2 className="w-4 h-4 shrink-0" /><span>الألعاب</span>
-            {isGamesLocked() && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-400 text-[10px] font-mono font-black shrink-0 shadow-sm">
-                <Lock className="w-2.5 h-2.5 animate-pulse" /><span>{getCountdownText()}</span>
-              </span>
-            )}
-          </button>
-          <button data-nav-active={isActive("/audio")} onClick={() => navigate("/audio")} className={navBtnClass("/audio")}><Headphones className="w-4 h-4 shrink-0" /><span>التلاوات</span></button>
-          <button data-nav-active={isActive("/mushaf")} onClick={() => navigate("/mushaf")} className={navBtnClass("/mushaf")}><BookOpen className="w-4 h-4 shrink-0" /><span>المصحف</span></button>
-          <button data-nav-active={isActive("/shop")} onClick={handleShopClick} className={navBtnClass("/shop")}>
-            <ShoppingBag className="w-4 h-4 shrink-0" /><span>المتجر</span>
-            {isGamesLocked() ? (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-400 text-[10px] font-mono font-black shrink-0 shadow-sm">
-                <Lock className="w-2.5 h-2.5 animate-pulse" /><span>{getCountdownText()}</span>
-              </span>
-            ) : (<span className="text-[10px] text-amber-600 dark:text-amber-400 font-black">⭐</span>)}
-          </button>
+        <div className="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 flex-1 py-0.5 relative z-10 w-full">
+          {renderNavTab("/games", "الألعاب", Gamepad2, handleGamesClick, isGamesLocked() && (
+            <Lock className={`w-3 h-3 ${isActive("/games") ? "text-amber-200" : "text-amber-600 dark:text-amber-400"} animate-pulse shrink-0`} />
+          ))}
+          {renderNavTab("/audio", "التلاوات", Headphones, () => navigate("/audio"))}
+          {renderNavTab("/mushaf", "المصحف", BookOpen, () => navigate("/mushaf"))}
+          {renderNavTab("/shop", "المتجر", ShoppingBag, handleShopClick, isGamesLocked() ? (
+            <Lock className={`w-3 h-3 ${isActive("/shop") ? "text-amber-200" : "text-amber-600 dark:text-amber-400"} animate-pulse shrink-0`} />
+          ) : (
+            <span className="text-[10px] text-amber-500 font-black">⭐</span>
+          ))}
         </div>
       );
     }
     if (pureMode) {
       return (
-        <div className="flex items-center justify-center gap-0.5 sm:gap-1 flex-1 overflow-x-auto no-scrollbar py-0.5 relative z-10" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-          <button data-nav-active={isActive("/audio")} onClick={() => navigate("/audio")} className={navBtnClass("/audio")}><Headphones className="w-4 h-4 shrink-0" /><span>التلاوات</span></button>
-          <button data-nav-active={isActive("/mushaf")} onClick={() => navigate("/mushaf")} className={navBtnClass("/mushaf")}><BookOpen className="w-4 h-4 shrink-0" /><span>المصحف</span></button>
-          <button data-nav-active={isActive("/settings")} onClick={handleSettingsClick} className={navBtnClass("/settings")}><Settings className="w-4 h-4 shrink-0" /><span>الإعدادات</span></button>
-          <button onClick={handleEnableKidsFromPure}
-            className="nav-pill flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-2xl text-[11px] sm:text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/25 hover:bg-amber-500/20 transition-all duration-300 shrink-0 active:scale-95 relative z-10">
-            <Sparkles className="w-3.5 h-3.5 shrink-0 animate-pulse" /><span>ركن الأطفال</span>
+        <div className="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 flex-1 py-0.5 relative z-10 w-full">
+          {renderNavTab("/audio", "التلاوات", Headphones, () => navigate("/audio"))}
+          {renderNavTab("/mushaf", "المصحف", BookOpen, () => navigate("/mushaf"))}
+          {renderNavTab("/settings", "الإعدادات", Settings, handleSettingsClick)}
+          <button
+            onClick={handleEnableKidsFromPure}
+            className="nav-pill flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/25 hover:bg-amber-500/20 transition-all duration-300 shrink-0 active:scale-95 relative z-10"
+          >
+            <div className="w-6 h-6 rounded-full bg-amber-500/15 flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 shrink-0 animate-pulse text-amber-500" />
+            </div>
+            <span>ركن الأطفال</span>
           </button>
         </div>
       );
     }
     return (
-      <div className="flex items-center justify-center gap-0.5 sm:gap-1 flex-1 overflow-x-auto no-scrollbar py-0.5 relative z-10" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        <button data-nav-active={isActive("/audio")} onClick={() => navigate("/audio")} className={navBtnClass("/audio")}><Headphones className="w-4 h-4 shrink-0" /><span>التلاوات</span></button>
-        <button data-nav-active={isActive("/mushaf")} onClick={() => navigate("/mushaf")} className={navBtnClass("/mushaf")}><BookOpen className="w-4 h-4 shrink-0" /><span>المصحف</span></button>
-        <button data-nav-active={isActive("/games")} onClick={() => navigate("/games")} className={navBtnClass("/games")}><Gamepad2 className="w-4 h-4 shrink-0" /><span>الألعاب</span></button>
-        <button data-nav-active={isActive("/parent")} onClick={handleParentClick} className={navBtnClass("/parent")}><User className="w-4 h-4 shrink-0" /><span><span className="hidden min-[480px]:inline">لوحة </span>الوالدين</span></button>
-        <button data-nav-active={isActive("/settings")} onClick={handleSettingsClick} className={navBtnClass("/settings")}><Settings className="w-4 h-4 shrink-0" /><span>الإعدادات</span></button>
+      <div className="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 flex-1 py-0.5 relative z-10 w-full">
+        {renderNavTab("/audio", "التلاوات", Headphones, () => navigate("/audio"))}
+        {renderNavTab("/mushaf", "المصحف", BookOpen, () => navigate("/mushaf"))}
+        {renderNavTab("/games", "الألعاب", Gamepad2, () => navigate("/games"))}
+        {renderNavTab(
+          "/parent",
+          <>
+            <span className="hidden xl:inline">لوحة </span>
+            <span>الوالدين</span>
+          </>,
+          User,
+          handleParentClick
+        )}
+        {renderNavTab("/settings", "الإعدادات", Settings, handleSettingsClick)}
       </div>
     );
   };
 
   return (
     <>
-      {/* ═══════════ DESKTOP TOP NAV (hidden on mobile < 768px) ═══════════ */}
-      <div className={`sticky top-0 z-40 w-full hidden md:block ${transparentBg ? "bg-transparent pointer-events-none" : ""}`}>
-        {!transparentBg && (
-          <div className="absolute inset-0 -bottom-2 bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm pointer-events-none" />
-        )}
-        <nav dir="rtl" aria-label="شريط التنقل الذكي" className={`relative w-full max-w-2xl mx-auto px-2 sm:px-4 py-2 pointer-events-auto ${className}`}>
-          <div ref={navRef} className="nav-container relative flex items-center justify-between gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-2xl bg-white/60 dark:bg-stone-900/70 backdrop-blur-2xl border border-amber-400/25 dark:border-amber-500/20 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+      {/* ═══════════ FLOATING CIRCULAR NAV DOCK (شريط التنقل الدائري العائم الفاخر) ═══════════ */}
+      {!isMobile && <div className={`w-full ${transparentBg ? "bg-transparent pointer-events-none" : "py-1 sm:py-2"} ${className}`}>
+        <nav dir="rtl" aria-label="شريط التنقل الذكي الدائري" className="relative w-full max-w-3xl mx-auto px-1 sm:px-3 pointer-events-auto">
+          <div
+            ref={navRef}
+            className="nav-container relative flex items-center justify-between gap-1 sm:gap-2 p-1 sm:p-1.5 md:p-2 rounded-full overflow-hidden bg-white/95 dark:bg-stone-900/95 backdrop-blur-2xl border-2 border-amber-400/50 dark:border-amber-500/40 shadow-[0_10px_35px_rgba(217,119,6,0.18),0_2px_8px_rgba(0,0,0,0.06)] ring-4 ring-amber-400/15 dark:ring-amber-500/10"
+          >
+            {/* مؤشر التنقل الدائري الانسيابي الذهبي */}
             {indicatorStyle && (
-              <div className="nav-indicator absolute top-1 sm:top-1.5 h-[calc(100%-0.5rem)] sm:h-[calc(100%-0.75rem)] rounded-xl bg-gradient-to-br from-amber-400/90 to-amber-500/90 dark:from-amber-500/80 dark:to-amber-600/80 shadow-[0_4px_20px_rgba(217,165,32,0.35)] dark:shadow-[0_4px_20px_rgba(217,165,32,0.25)] pointer-events-none z-0"
-                style={{ left: `${indicatorStyle.left}px`, width: `${indicatorStyle.width}px`, transition: "left 0.35s cubic-bezier(0.22, 1, 0.36, 1), width 0.35s cubic-bezier(0.22, 1, 0.36, 1)" }}>
-                <div className="absolute inset-0 rounded-xl overflow-hidden"><div className="absolute inset-0 shimmer-gold opacity-40" /></div>
+              <div
+                className="nav-indicator absolute top-1 sm:top-1.5 md:top-2 h-[calc(100%-0.5rem)] sm:h-[calc(100%-0.75rem)] md:h-[calc(100%-1rem)] rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 shadow-[0_4px_18px_rgba(245,158,11,0.55)] pointer-events-none z-0"
+                style={{
+                  left: `${indicatorStyle.left}px`,
+                  width: `${indicatorStyle.width}px`,
+                  transition: "left 0.35s cubic-bezier(0.22, 1, 0.36, 1), width 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
+                }}
+              >
+                <div className="absolute inset-0 rounded-full overflow-hidden">
+                  <div className="absolute inset-0 shimmer-gold opacity-35" />
+                </div>
               </div>
             )}
-            {renderDesktopTabs()}
-            <div className="flex items-center gap-1 shrink-0 pl-0.5 relative z-10">
-              {kidsMode && (
-                <button onClick={handleUnlockClick} className="h-8 px-2 sm:px-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 text-[10px] sm:text-[11px] font-extrabold flex items-center gap-1 active:scale-95 transition-all duration-300 shrink-0" title="اضغط لعرض العداد التنازلي التفاعلي">
-                  <Lock className="w-3.5 h-3.5 shrink-0" /><span className="hidden min-[400px]:inline">العداد التنازلي</span>
+
+            {/* أزرار التنقل الدائرية الرئيسية (المصحف، التلاوات، الألعاب، الإعدادات...) */}
+            {renderTabs()}
+
+            {/* عناصر التحكم الجانبية الدائرية: قفل الأطفال وتبديل الموضع */}
+            {kidsMode && (
+              <div className="flex items-center gap-1.5 shrink-0 pl-1 relative z-10">
+                <button
+                  onClick={handleUnlockClick}
+                  className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-full bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-700 dark:text-amber-300 text-[11px] sm:text-xs font-mono font-extrabold flex items-center gap-1.5 active:scale-95 transition-all duration-300 shrink-0 shadow-xs"
+                  title="انقر لفك قفل وضع الأطفال أو عرض تفاصيل الوقت"
+                >
+                  <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span className="hidden sm:inline">{isGamesLocked() ? getCountdownText() : "مفتوح"}</span>
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </nav>
-      </div>
-
-      {/* ═══════════ MOBILE TOP HEADER (simplified, shown on mobile only) ═══════════ */}
-      <div className={`sticky top-0 z-40 w-full md:hidden ${transparentBg ? "bg-transparent pointer-events-none" : ""}`}>
-        {!transparentBg && (
-          <div className="absolute inset-0 bg-background/85 backdrop-blur-xl border-b border-border/30 pointer-events-none" />
-        )}
-        <div className="relative px-4 py-2 flex items-center justify-between pointer-events-auto" dir="rtl">
-          <h1 className="font-amiri font-bold text-lg text-foreground/90">
-            {path === "/audio" || path === "/" ? "التلاوات" :
-             path === "/mushaf" ? "المصحف" :
-             path === "/games" ? "الألعاب" :
-             path === "/settings" ? "الإعدادات" :
-             path === "/parent" ? "لوحة الوالدين" :
-             path === "/shop" ? "المتجر" : ""}
-          </h1>
-          {kidsMode && (
-            <button onClick={handleUnlockClick} className="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-600 text-[10px] font-bold flex items-center gap-1 active:scale-95">
-              <Lock className="w-3 h-3" /><span>{getCountdownText()}</span>
-            </button>
-          )}
-        </div>
-      </div>
+      </div>}
 
       {/* ═══════════ MOBILE BOTTOM NAVIGATION ═══════════ */}
-      {isMobile && (
+      {isMobile && createPortal((
         <div className={`mobile-bottom-nav ${hideBottomNav ? "player-open" : ""}`} dir="rtl">
           <div className="flex items-center">
             {getMobileNavItems().map((item) => {
@@ -268,7 +324,7 @@ export default function AppNav({ className = "", transparentBg = false, hideBott
             })}
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* نافذة التحقق من ولي الأمر */}
       {pinAction && (
