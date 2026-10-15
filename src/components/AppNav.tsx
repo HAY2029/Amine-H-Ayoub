@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Headphones, BookOpen, Gamepad2, Settings, User, Lock, ShoppingBag, Sparkles } from "lucide-react";
+import { Headphones, BookOpen, Gamepad2, Settings, User, Lock, ShoppingBag, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { isKidsMode, setKidsLocked, hasKidsPin } from "../data/kidsLock";
 import { isPureMode, setPureMode, setKidsHidden, getAppMode, setAppMode, getCoins, getProfile, getProgress } from "../data/kidsProfile";
 import ParentalGateModal from "./ParentalGateModal";
@@ -35,6 +35,7 @@ export default function AppNav({
   const [showLockGate, setShowLockGate] = useState(false);
   const [lockGateTarget, setLockGateTarget] = useState("الألعاب");
   const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth < 768 : false);
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
 
   // Animated indicator
   const navRef = useRef<HTMLDivElement>(null);
@@ -306,9 +307,9 @@ export default function AppNav({
       </div>}
 
       {/* ═══════════ MOBILE BOTTOM NAVIGATION ═══════════ */}
-      {isMobile && createPortal((
+      {isMobile && !isNavCollapsed && createPortal((
         <div className={`mobile-bottom-nav ${hideBottomNav ? "player-open" : ""}`} dir="rtl">
-          <div className="flex items-center">
+          <div className="flex items-center relative">
             {getMobileNavItems().map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
@@ -322,8 +323,28 @@ export default function AppNav({
                 </button>
               );
             })}
+            <button
+              onClick={() => setIsNavCollapsed(true)}
+              className="px-1 text-stone-400 hover:text-amber-600 active:scale-95 transition-all shrink-0"
+              title="إخفاء الشريط مؤقتاً لمشاهدة كامل اللوحة"
+              aria-label="إخفاء الشريط"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
           </div>
         </div>
+      ), document.body)}
+
+      {/* زر عائم صغير لإظهار شريط التنقل عند إخفائه */}
+      {isMobile && isNavCollapsed && !hideBottomNav && createPortal((
+        <button
+          onClick={() => setIsNavCollapsed(false)}
+          className="fixed bottom-2 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-400/50 shadow-lg text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center gap-1.5 active:scale-95 transition-all animate-bounce"
+          title="إظهار شريط التنقل"
+        >
+          <ChevronUp className="w-3.5 h-3.5 text-amber-600" />
+          <span>القائمة</span>
+        </button>
       ), document.body)}
 
       {/* نافذة التحقق من ولي الأمر */}

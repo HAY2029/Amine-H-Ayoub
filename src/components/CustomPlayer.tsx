@@ -572,7 +572,7 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
     if (isMinimized) {
       return (
         <div
-          className="fixed bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-[540px] animate-fade-up"
+          className="fixed bottom-3 sm:bottom-5 left-0 right-0 mx-auto z-[100] w-[95%] max-w-[540px] animate-fade-up"
           dir="rtl"
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
@@ -678,7 +678,7 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
      * ========================================================================= */
     return (
       <div
-        className="fixed bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-[720px] animate-fade-up"
+        className="fixed bottom-3 sm:bottom-5 left-0 right-0 mx-auto z-[100] w-[95%] max-w-[720px] animate-fade-up"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}

@@ -16,7 +16,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useTVNavigation } from "@/hooks/useTVNavigation";
 import { useAudioContext } from "@/contexts/audioContext";
 
-import { Shuffle, ListOrdered, Settings, Bell, Gamepad2, Lock } from "lucide-react";
+import { Shuffle, ListOrdered, Settings, Bell, Gamepad2, Lock, Maximize2, Minimize2 } from "lucide-react";
 import { isKidsMode, setKidsLocked, hasKidsPin } from "@/data/kidsLock";
 import { isTimeAllowed } from "@/data/kidsSchedule";
 import { kidsEnabled as getKidsEnabled, addReadingMinutes, addCoins, setAppMode, getProgress, isPureMode, setKidsHidden, kidsHidden } from "@/data/kidsProfile";
@@ -48,6 +48,7 @@ const Index = () => {
   const lastSavedRef = useRef(0);
   const [isShuffled, setIsShuffled] = useState(false);
   const [shuffledSurahs, setShuffledSurahs] = useState<SurahItem[]>([]);
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
 
   // ركن الأطفال
   const [kidsMode, setKidsMode] = useState(isKidsMode);
@@ -434,7 +435,7 @@ const Index = () => {
         <div className="quran-kids-overlay" />
 
         {/* المكان الأبيض الشفاف المخصص لقائمة السور */}
-        <div className="quran-kids-white-area">
+        <div className={`quran-kids-white-area ${isMobileExpanded ? "expanded-mode" : ""}`}>
           {/* ═══════════════════════════════════════════════════════════════
               التاج العلوي الأندلسي المقوّس (Curved Islamic Arch Canopy)
               شريط علوي منحني دائري غير مستقيم يجمع التنقل والبحث والأدوات
@@ -453,7 +454,7 @@ const Index = () => {
               </div>
             )}
 
-            {/* شريط أدوات قائمة السور الدائري: بحث كبسولي + زر عشوائي دائري + نجوم */}
+            {/* شريط أدوات قائمة السور الدائري: بحث كبسولي + زر عشوائي دائري + زر التوسيع للهاتف + نجوم */}
             <div className="flex items-center gap-2 pt-0.5">
               <div className="flex-1 min-w-0" data-color-target="cyan-search">
                 <SearchBar value={search} onChange={setSearch} />
@@ -473,6 +474,18 @@ const Index = () => {
                   <ListOrdered className="w-5 h-5 text-white" />
                 ) : (
                   <Shuffle className="w-5 h-5 text-amber-950 font-black" />
+                )}
+              </button>
+              <button
+                onClick={() => setIsMobileExpanded(!isMobileExpanded)}
+                className="sm:hidden shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border bg-white/90 hover:bg-amber-100 text-amber-900 border-amber-400/50 shadow-xs active:scale-95"
+                title={isMobileExpanded ? "العودة للوضع المؤطر الفني" : "توسيع عرض السور للهاتف"}
+                aria-label={isMobileExpanded ? "العودة للوضع المؤطر الفني" : "توسيع عرض السور للهاتف"}
+              >
+                {isMobileExpanded ? (
+                  <Minimize2 className="w-4 h-4 text-amber-800" />
+                ) : (
+                  <Maximize2 className="w-4 h-4 text-amber-800" />
                 )}
               </button>
               {kidsOn && !isPureMode() && (
