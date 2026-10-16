@@ -13,13 +13,13 @@ import fs from "fs";
 export default defineConfig(({ mode }) => ({
   base: mode === "development" ? "/" : process.env.VITE_BASE_URL || "/",
   server: {
-    host: "::",
-    // Explicit port: on some environments (Node 24) vite 5.4.21 does not apply the
-    // default 5173 port to config.server.port before injecting HMR values into
-    // /@vite/client, which produced "localhost:undefined" and broke the HMR socket.
+    host: "0.0.0.0",
+    // 0.0.0.0 يقبل اتصالات من أي جهاز على نفس Wi-Fi (الهاتف عبر IPv4)
     port: 5173,
+    strictPort: true,
     hmr: {
       overlay: false,
+      clientPort: 5173,
     },
     warmup: {
       clientFiles: ['./src/main.tsx', './src/App.tsx']
@@ -30,10 +30,17 @@ export default defineConfig(({ mode }) => ({
     // ملاحظة: مجلد النسخ الأصلية public/avatars/_originals مستثنى عبر .gitignore ولا يجب رفعه؛
     // ومن أراد تقليل حجم dist أكثر يحذفه قبل البناء (يُحتسب ~50MB).
     copyPublicDir: true,
+    minify: 'esbuild',
+    cssMinify: true,
+    sourcemap: false,
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('src/data/quranText.ts') || id.includes('src/data/surahs.ts')) {
+          if (id.includes('src/data/quranText.ts')) {
+            return 'quran-text';
+          }
+          if (id.includes('src/data/surahs.ts')) {
             return 'quran-data';
           }
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router-dom/')) {
@@ -51,24 +58,94 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/lucide-react/')) {
             return 'vendor-icons';
           }
-        }
-      }
+        },
+        // تحميل متوازٍ أسرع للهاتف
+        chunkFileNames: (chunkInfo) => {
+          return `js/[name]-[hash].js`;
+        },
+      },
     },
-    minify: 'esbuild',
-    chunkSizeWarningLimit: 1000,
   },
   plugins: [
     {
       name: 'save-boxes-plugin',
+      buildStart() {
+        try {
+          const srcDir = path.resolve(__dirname, 'صفحة قران');
+          const destDir = path.resolve(__dirname, 'public/pages');
+          if (fs.existsSync(srcDir)) {
+            if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+            const files = fs.readdirSync(srcDir);
+            for (const file of files) {
+              fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
+            }
+          }
+        } catch (e) {
+          console.debug('Quran pages copy hook:', e);
+        }
+      },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       configureServer(server: any) {
+        // 1. خدمة صفحات المصحف مباشرة وحياً من مجلد "صفحة قران"
+        server.middlewares.use('/pages', (req: any, res: any, next: any) => {
+          try {
+            const rawName = decodeURIComponent((req.url || '').replace(/^\//, '').split('?')[0]);
+            const quranFolder = path.resolve(__dirname, 'صفحة قران');
+            const targetPath = path.join(quranFolder, rawName);
+            if (rawName && fs.existsSync(targetPath) && fs.statSync(targetPath).isFile()) {
+              const ext = path.extname(rawName).toLowerCase();
+              const mime = ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
+              res.setHeader('Content-Type', mime);
+              res.setHeader('Cache-Control', 'no-cache');
+              fs.createReadStream(targetPath).pipe(res);
+              return;
+            }
+          } catch (e) {
+            // fallback to next
+          }
+          next();
+        });
+
+        // 2. واجهة برمجية لجلب كافة الصفحات الموجودة فعلياً في مجلد "صفحة قران"
+        server.middlewares.use('/api/quran-pages', (_req: any, res: any) => {
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const quranFolder = path.resolve(__dirname, 'صفحة قران');
+            if (fs.existsSync(quranFolder)) {
+              const files = fs.readdirSync(quranFolder)
+                .filter((f: string) => /\.(jpe?g|png|webp)$/i.test(f))
+                .sort((a: string, b: string) => {
+                  const numA = parseInt(a.match(/\d+/)?.[0] || '0', 10);
+                  const numB = parseInt(b.match(/\d+/)?.[0] || '0', 10);
+                  return numA - numB;
+                });
+              res.statusCode = 200;
+              res.end(JSON.stringify(files.map((f: string) => `/pages/${f}`)));
+              return;
+            }
+            res.statusCode = 200;
+            res.end('[]');
+          } catch (err: any) {
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: err.message }));
+          }
+        });
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         server.middlewares.use('/api/save-boxes', (req: any, res: any) => {
           if (req.method === 'GET') {
             res.setHeader('Content-Type', 'application/json');
             try {
-              if (fs.existsSync('boxes-dump.json')) {
+              if (fs.existsSync('ملف_التظليل/shading_data.json')) {
+                const content = fs.readFileSync('ملف_التظليل/shading_data.json', 'utf-8');
+                res.statusCode = 200;
+                res.end(content || '{}');
+              } else if (fs.existsSync('boxes-dump.json')) {
                 const content = fs.readFileSync('boxes-dump.json', 'utf-8');
+                res.statusCode = 200;
+                res.end(content || '{}');
+              } else if (fs.existsSync('src/data/shading/boxes-dump.json')) {
+                const content = fs.readFileSync('src/data/shading/boxes-dump.json', 'utf-8');
                 res.statusCode = 200;
                 res.end(content || '{}');
               } else {
@@ -87,10 +164,21 @@ export default defineConfig(({ mode }) => ({
             req.on('data', (chunk: any) => body += chunk);
             req.on('end', () => {
               try {
+                // 1. الحفظ في المجلد المخصص داخل المشروع
+                if (!fs.existsSync('ملف_التظليل')) {
+                  fs.mkdirSync('ملف_التظليل', { recursive: true });
+                }
+                fs.writeFileSync('ملف_التظليل/shading_data.json', body);
+
+                // 2. الحفظ في ملفات المشروع المصدرية والجذر
                 fs.writeFileSync('boxes-dump.json', body);
+                if (fs.existsSync('src/data/shading')) {
+                  fs.writeFileSync('src/data/shading/boxes-dump.json', body);
+                }
+
                 res.setHeader('Content-Type', 'application/json');
                 res.statusCode = 200;
-                res.end(JSON.stringify({ success: true, message: 'saved' }));
+                res.end(JSON.stringify({ success: true, message: 'saved in project files' }));
               } catch (err: any) {
                 res.statusCode = 500;
                 res.end(JSON.stringify({ error: err.message }));

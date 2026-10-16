@@ -3,6 +3,7 @@ import { ArrowRight, Pencil, Scissors, Link2, ChevronLeft, GraduationCap, Mic, T
 import AppNav from "@/components/AppNav";
 
 const TOOLS = [
+  { to: "/sync-audio", Icon: Link2, name: "استوديو ربط التظليل بموقع الصوت (الجديد ⭐)", desc: "ربط كل مربع تظليل بتوقيت بدايته ونهايته في الصوت بنقرة زر ومعاينة مباشرة", tint: "bg-gradient-to-r from-emerald-500/30 to-amber-500/20 text-amber-300" },
   { to: "/surah-shading", Icon: Sparkles, name: "تظليل السور (مربع التظليل الجديد)", desc: "عرض السورة ومربع تظليل تفاعلي قابل للسحب والتكبير والتصغير وحفظ الموضع", tint: "bg-amber-500/20 text-amber-300" },
   { to: "/calibrate", Icon: Pencil, name: "المعايرة (التظليل)", desc: "ضبط مواضع الآيات والسور ورفع صفحات المصحف", tint: "bg-violet-500/20 text-violet-300" },
   { to: "/timings", Icon: Timer, name: "توقيت الآيات", desc: "تسجيل بداية كل آية في الصوت بدقة", tint: "bg-emerald-500/20 text-emerald-300" },

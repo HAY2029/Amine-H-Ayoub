@@ -1389,24 +1389,38 @@ html[data-theme="dark"] .mobile-bottom-nav-item.active,
 }
 
 /* ============================================================
-   تحسين تظليل الآيات — أنعم وأجمل
+   وضع الليل الفاخر للمصحف الشريف (Night Mode Quran Pages)
+   يحول الورق الأبيض إلى خلفية ليلية مريحة وحبر كريمي/ذهبي ناصع
+   ============================================================ */
+html[data-theme="dark"] .mushaf-page-img,
+.dark .mushaf-page-img {
+  filter: invert(0.92) hue-rotate(180deg) brightness(0.88) contrast(1.15);
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   تحسين تظليل الآيات — أنعم وأجمل ومتحرك
    ============================================================ */
 .ayah-highlight-smooth {
   transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: fill, stroke, filter, opacity;
 }
 .ayah-highlight-smooth.ayah-current {
-  animation: ayah-breathe 2.5s ease-in-out infinite;
+  animation: ayah-breathe 2.2s ease-in-out infinite, ayah-pulse-glow 2.8s ease-in-out infinite alternate;
 }
 @keyframes ayah-breathe {
   0%, 100% {
-    filter: drop-shadow(0 0 4px var(--ayah-glow, rgba(251, 191, 36, 0.3)));
+    filter: drop-shadow(0 0 5px var(--ayah-glow, rgba(251, 191, 36, 0.45)));
     opacity: 0.88;
   }
   50% {
-    filter: drop-shadow(0 0 12px var(--ayah-glow, rgba(251, 191, 36, 0.55)));
+    filter: drop-shadow(0 0 16px var(--ayah-glow, rgba(251, 191, 36, 0.75)));
     opacity: 1;
   }
+}
+@keyframes ayah-pulse-glow {
+  0% { stroke-width: 3px; }
+  100% { stroke-width: 4.5px; }
 }
 
 /* User-selected ayah (click) vs currently-playing ayah */

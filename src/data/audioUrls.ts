@@ -19,7 +19,7 @@ const archiveUrls = (number: number): string[] => [
 export const getHuggingFaceAudioUrl = (number: number): string => `${HF_BASE}/${number}.mp3`;
 
 /**
- * رابط الصوت الأساسي المباشر والسريع جداً من سيرفر التخزين.
+ * رابط الصوت الأساسي المباشر والسريع من سيرفر التخزين السحابي الخارجي.
  */
 export const getSurahAudioUrl = (number: number): string => {
   if (activeProvider === "archive") return archiveUrls(number)[0];
@@ -35,7 +35,7 @@ export const getFallbackAudioUrl = (number: number): string => {
 
 export const getArchiveGatewayAudioUrl = (number: number): string => archiveUrls(number)[1];
 
-/** URLs to try in order for a durable download; no credentials are required. */
+/** URLs to try in order for a durable download from external servers. */
 export function getSurahAudioCandidates(number: number): string[] {
   const preferred = getSurahAudioUrl(number);
   const candidates = activeProvider === "huggingface"
@@ -272,3 +272,34 @@ export const getAudioPath = (number: number, speaker: "teacher" | "kids" = "teac
   if (custom) return custom;
   return getSurahAudioUrl(number);
 };
+
+/** رابط الصوت للمعلم من المسار المحلي على القرص H */
+export const getTeacherAudioUrl = (number: number): string => {
+  return `/audio/teacher/${number}.mp3`;
+};
+
+/** رابط الصوت للطفل من المسار المحلي على القرص H */
+export const getKidsAudioUrl = (number: number): string => {
+  return `/audio/kids/${number}.mp3`;
+};
+
+/** الحصول على رابط الصوت النهائي مع دعم المعلم والطفل */
+export const getSurahAudioBySpeaker = (
+  number: number,
+  speaker: "teacher" | "kids" = "teacher"
+): string => {
+  const custom = getCustomAudioUrl(number, speaker);
+  if (custom) return custom;
+
+  if (speaker === "kids") {
+    return getKidsAudioUrl(number);
+  }
+  return getTeacherAudioUrl(number);
+};
+
+/** مسارات الصوت على القرص H للملفات المحلية */
+export const H_DISK_AUDIO_PATHS = {
+  teacher: "H:/Amine-H-Ayoub/audio/teacher",
+  kids: "H:/Amine-H-Ayoub/audio/kids",
+  surahs: "H:/Amine-H-Ayoub/audio/surahs",
+} as const;

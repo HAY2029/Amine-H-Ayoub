@@ -1,0 +1,105 @@
+﻿[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32mظ£ô[39m 1877 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mmanifest.webmanifest                    [39m[1m[2m  0.46 kB[22m[1m[22m
+[2mdist/[22m[32mindex.html                              [39m[1m[2m  3.03 kB[22m[1m[22m[2m ظ¤é gzip:  1.17 kB[22m
+[2mdist/[22m[32massets/603-CIWjNpBW.jpg                 [39m[1m[2m559.07 kB[22m[1m[22m
+[2mdist/[22m[32massets/599-CJZZxU-f.jpg                 [39m[1m[2m578.31 kB[22m[1m[22m
+[2mdist/[22m[32massets/594-B7e6dVQl.jpg                 [39m[1m[2m584.17 kB[22m[1m[22m
+[2mdist/[22m[32massets/601-DIdOdAXI.jpg                 [39m[1m[2m585.34 kB[22m[1m[22m
+[2mdist/[22m[32massets/586-F7w19DjL.jpg                 [39m[1m[2m586.33 kB[22m[1m[22m
+[2mdist/[22m[32massets/592-BiqFh7hi.jpg                 [39m[1m[2m589.05 kB[22m[1m[22m
+[2mdist/[22m[32massets/602-Bcu9F4Jw.jpg                 [39m[1m[2m589.35 kB[22m[1m[22m
+[2mdist/[22m[32massets/587-CNrYeBX1.jpg                 [39m[1m[2m591.02 kB[22m[1m[22m
+[2mdist/[22m[32massets/598-ClatRLRy.jpg                 [39m[1m[2m595.65 kB[22m[1m[22m
+[2mdist/[22m[32massets/597-CrB5sv8e.jpg                 [39m[1m[2m596.91 kB[22m[1m[22m
+[2mdist/[22m[32massets/591-82XEDrgd.jpg                 [39m[1m[2m597.60 kB[22m[1m[22m
+[2mdist/[22m[32massets/581-CbkPHiHZ.jpg                 [39m[1m[2m598.48 kB[22m[1m[22m
+[2mdist/[22m[32massets/590-DqB5xgPt.jpg                 [39m[1m[2m601.31 kB[22m[1m[22m
+[2mdist/[22m[32massets/582-DEpKRI0e.jpg                 [39m[1m[2m602.25 kB[22m[1m[22m
+[2mdist/[22m[32massets/588-5N3r9lj2.jpg                 [39m[1m[2m602.43 kB[22m[1m[22m
+[2mdist/[22m[32massets/600-Bh0zj0FX.jpg                 [39m[1m[2m606.64 kB[22m[1m[22m
+[2mdist/[22m[32massets/596-Ji9qAgmL.jpg                 [39m[1m[2m613.46 kB[22m[1m[22m
+[2mdist/[22m[32massets/595-iqRU32Xy.jpg                 [39m[1m[2m615.98 kB[22m[1m[22m
+[2mdist/[22m[32massets/583-BD1Hq_xi.jpg                 [39m[1m[2m623.38 kB[22m[1m[22m
+[2mdist/[22m[32massets/589-B-4O7lFF.jpg                 [39m[1m[2m625.56 kB[22m[1m[22m
+[2mdist/[22m[32massets/585-CokiXF__.jpg                 [39m[1m[2m627.90 kB[22m[1m[22m
+[2mdist/[22m[32massets/593-DUeSa1G7.jpg                 [39m[1m[2m629.55 kB[22m[1m[22m
+[2mdist/[22m[32massets/0-C2Zz970X.jpg                   [39m[1m[2m740.36 kB[22m[1m[22m
+[2mdist/[22m[35massets/SettingsPage-NRbF0xUd.css        [39m[1m[2m  4.79 kB[22m[1m[22m[2m ظ¤é gzip:  1.25 kB[22m
+[2mdist/[22m[35massets/index-Bh6cBtDB.css               [39m[1m[2m269.97 kB[22m[1m[22m[2m ظ¤é gzip: 41.86 kB[22m
+[2mdist/[22m[36mjs/AppFooter-Bk9lZgrp.js                [39m[1m[2m  0.04 kB[22m[1m[22m[2m ظ¤é gzip:  0.06 kB[22m
+[2mdist/[22m[36mjs/NotFound-CIZ_F6Gr.js                 [39m[1m[2m  1.44 kB[22m[1m[22m[2m ظ¤é gzip:  0.78 kB[22m
+[2mdist/[22m[36mjs/playlistStore-CWZy6cts.js            [39m[1m[2m  1.62 kB[22m[1m[22m[2m ظ¤é gzip:  0.78 kB[22m
+[2mdist/[22m[36mjs/customAudioStore-rmAfgVRA.js         [39m[1m[2m  1.69 kB[22m[1m[22m[2m ظ¤é gzip:  0.66 kB[22m
+[2mdist/[22m[36mjs/remoteGames-DlORbrIA.js              [39m[1m[2m  1.74 kB[22m[1m[22m[2m ظ¤é gzip:  0.87 kB[22m
+[2mdist/[22m[36mjs/useSurahData-BdSNxs3R.js             [39m[1m[2m  2.96 kB[22m[1m[22m[2m ظ¤é gzip:  1.49 kB[22m
+[2mdist/[22m[36mjs/shadingSyncService-B_T9_tQF.js       [39m[1m[2m  2.98 kB[22m[1m[22m[2m ظ¤é gzip:  1.40 kB[22m
+[2mdist/[22m[36mjs/AnnouncementsPage-DNOJwHcg.js        [39m[1m[2m  3.26 kB[22m[1m[22m[2m ظ¤é gzip:  1.50 kB[22m
+[2mdist/[22m[36mjs/SiteLinksOverlay-Dj0fhr5y.js         [39m[1m[2m  3.45 kB[22m[1m[22m[2m ظ¤é gzip:  1.54 kB[22m
+[2mdist/[22m[36mjs/ErrorPage-JSN5uMND.js                [39m[1m[2m  3.89 kB[22m[1m[22m[2m ظ¤é gzip:  1.90 kB[22m
+[2mdist/[22m[36mjs/quran-data-CoJTLNr3.js               [39m[1m[2m  4.11 kB[22m[1m[22m[2m ظ¤é gzip:  0.95 kB[22m
+[2mdist/[22m[36mjs/TeacherTools-Cev_kphP.js             [39m[1m[2m  4.49 kB[22m[1m[22m[2m ظ¤é gzip:  2.10 kB[22m
+[2mdist/[22m[36mjs/NotificationsModal-CgJrY2PB.js       [39m[1m[2m  4.55 kB[22m[1m[22m[2m ظ¤é gzip:  1.95 kB[22m
+[2mdist/[22m[36mjs/AudioSplitterPage-BsPe2tQe.js        [39m[1m[2m  4.89 kB[22m[1m[22m[2m ظ¤é gzip:  2.57 kB[22m
+[2mdist/[22m[36mjs/kidsBadges-BC371CRe.js               [39m[1m[2m  5.00 kB[22m[1m[22m[2m ظ¤é gzip:  2.28 kB[22m
+[2mdist/[22m[36mjs/gameCatalog-Berrd4BV.js              [39m[1m[2m  5.36 kB[22m[1m[22m[2m ظ¤é gzip:  2.15 kB[22m
+[2mdist/[22m[36mjs/LegendaryDownloadHub-BemQlmUV.js     [39m[1m[2m  5.44 kB[22m[1m[22m[2m ظ¤é gzip:  2.25 kB[22m
+[2mdist/[22m[36mjs/workbox-window.prod.es5-BqEJf4Xk.js  [39m[1m[2m  5.71 kB[22m[1m[22m[2m ظ¤é gzip:  2.34 kB[22m
+[2mdist/[22m[36mjs/QuranLockGateModal-Dld_njWa.js       [39m[1m[2m  5.95 kB[22m[1m[22m[2m ظ¤é gzip:  2.11 kB[22m
+[2mdist/[22m[36mjs/AdminReleasesPanel-D3QU51OJ.js       [39m[1m[2m  7.00 kB[22m[1m[22m[2m ظ¤é gzip:  2.73 kB[22m
+[2mdist/[22m[36mjs/SupportModal-DYFAOoDl.js             [39m[1m[2m  7.43 kB[22m[1m[22m[2m ظ¤é gzip:  2.88 kB[22m
+[2mdist/[22m[36mjs/MushafUploadPage-B7h89ZzW.js         [39m[1m[2m  7.55 kB[22m[1m[22m[2m ظ¤é gzip:  3.07 kB[22m
+[2mdist/[22m[36mjs/ImageManager-BGKa2tRe.js             [39m[1m[2m  7.70 kB[22m[1m[22m[2m ظ¤é gzip:  3.06 kB[22m
+[2mdist/[22m[36mjs/huggingFaceService-ByfjFnzM.js       [39m[1m[2m  7.73 kB[22m[1m[22m[2m ظ¤é gzip:  3.02 kB[22m
+[2mdist/[22m[36mjs/AppNav-DctiUC7I.js                   [39m[1m[2m 10.10 kB[22m[1m[22m[2m ظ¤é gzip:  3.70 kB[22m
+[2mdist/[22m[36mjs/CustomAudioManager-C7J2Z4Gk.js       [39m[1m[2m 10.49 kB[22m[1m[22m[2m ظ¤é gzip:  4.09 kB[22m
+[2mdist/[22m[36mjs/UploadDeskPage-9jZBWVep.js           [39m[1m[2m 10.58 kB[22m[1m[22m[2m ظ¤é gzip:  3.98 kB[22m
+[2mdist/[22m[36mjs/certificateGenerator-DhtWcD9p.js     [39m[1m[2m 10.64 kB[22m[1m[22m[2m ظ¤é gzip:  4.01 kB[22m
+[2mdist/[22m[36mjs/BadgesModal-B8cgDzUc.js              [39m[1m[2m 11.01 kB[22m[1m[22m[2m ظ¤é gzip:  3.94 kB[22m
+[2mdist/[22m[36mjs/LinkAudioPage-Ctj6ZVsF.js            [39m[1m[2m 11.22 kB[22m[1m[22m[2m ظ¤é gzip:  4.18 kB[22m
+[2mdist/[22m[36mjs/TimingsRecorder-Bzog1Waa.js          [39m[1m[2m 11.79 kB[22m[1m[22m[2m ظ¤é gzip:  4.30 kB[22m
+[2mdist/[22m[36mjs/ShadingSettingsPage-BV16r2PB.js      [39m[1m[2m 12.58 kB[22m[1m[22m[2m ظ¤é gzip:  3.77 kB[22m
+[2mdist/[22m[36mjs/SortPagesPage-BrTRqjKO.js            [39m[1m[2m 12.78 kB[22m[1m[22m[2m ظ¤é gzip:  4.88 kB[22m
+[2mdist/[22m[36mjs/AudioUploadPage-DVsNJOaK.js          [39m[1m[2m 13.50 kB[22m[1m[22m[2m ظ¤é gzip:  4.13 kB[22m
+[2mdist/[22m[36mjs/SupportPage-D8H6naUQ.js              [39m[1m[2m 13.72 kB[22m[1m[22m[2m ظ¤é gzip:  4.97 kB[22m
+[2mdist/[22m[36mjs/window-GT7ZRoXa.js                   [39m[1m[2m 14.21 kB[22m[1m[22m[2m ظ¤é gzip:  3.57 kB[22m
+[2mdist/[22m[36mjs/ShadingPage-CkVeae4l.js              [39m[1m[2m 15.78 kB[22m[1m[22m[2m ظ¤é gzip:  5.72 kB[22m
+[2mdist/[22m[36mjs/KidsShop-CRBO576A.js                 [39m[1m[2m 19.03 kB[22m[1m[22m[2m ظ¤é gzip:  5.89 kB[22m
+[2mdist/[22m[36mjs/Index-B_dqQWvz.js                    [39m[1m[2m 21.38 kB[22m[1m[22m[2m ظ¤é gzip:  7.38 kB[22m
+[2mdist/[22m[36mjs/AudioShadingSyncPage-MIs_9eoN.js     [39m[1m[2m 21.78 kB[22m[1m[22m[2m ظ¤é gzip:  6.82 kB[22m
+[2mdist/[22m[36mjs/RecitationPage-BukFZXeN.js           [39m[1m[2m 22.75 kB[22m[1m[22m[2m ظ¤é gzip:  9.04 kB[22m
+[2mdist/[22m[36mjs/vendor-tanstack-D55q92VL.js          [39m[1m[2m 28.27 kB[22m[1m[22m[2m ظ¤é gzip:  8.63 kB[22m
+[2mdist/[22m[36mjs/AyahCalibration-B-Mr9oKy.js          [39m[1m[2m 30.29 kB[22m[1m[22m[2m ظ¤é gzip:  8.77 kB[22m
+[2mdist/[22m[36mjs/SurahShadingPage-gMmUypQV.js         [39m[1m[2m 34.68 kB[22m[1m[22m[2m ظ¤é gzip: 10.58 kB[22m
+[2mdist/[22m[36mjs/quran-text-GtyBqxhZ.js               [39m[1m[2m 35.27 kB[22m[1m[22m[2m ظ¤é gzip: 12.84 kB[22m
+[2mdist/[22m[36mjs/SettingsPage-D_oj51JA.js             [39m[1m[2m 43.92 kB[22m[1m[22m[2m ظ¤é gzip: 12.59 kB[22m
+[2mdist/[22m[36mjs/RecitationMethods-01vvHhi8.js        [39m[1m[2m 55.40 kB[22m[1m[22m[2m ظ¤é gzip: 17.65 kB[22m
+[2mdist/[22m[36mjs/vendor-radix-BUXS_TCz.js             [39m[1m[2m 59.93 kB[22m[1m[22m[2m ظ¤é gzip: 20.69 kB[22m
+[2mdist/[22m[36mjs/vendor-icons-DE63p7Vj.js             [39m[1m[2m 60.73 kB[22m[1m[22m[2m ظ¤é gzip: 12.03 kB[22m
+[2mdist/[22m[36mjs/QuranReader-Bf-F_ruz.js              [39m[1m[2m 71.47 kB[22m[1m[22m[2m ظ¤é gzip: 22.47 kB[22m
+[2mdist/[22m[36mjs/ParentDashboard-5dmNtqix.js          [39m[1m[2m 98.64 kB[22m[1m[22m[2m ظ¤é gzip: 21.54 kB[22m
+[2mdist/[22m[36mjs/vendor-react-D-QACUcH.js             [39m[1m[2m163.86 kB[22m[1m[22m[2m ظ¤é gzip: 53.44 kB[22m
+[2mdist/[22m[36mjs/KidsGames-DymV26DC.js                [39m[1m[2m202.23 kB[22m[1m[22m[2m ظ¤é gzip: 56.16 kB[22m
+[2mdist/[22m[36mjs/vendor-supabase-C8W5_S3P.js          [39m[1m[2m210.53 kB[22m[1m[22m[2m ظ¤é gzip: 54.57 kB[22m
+[2mdist/[22m[36massets/index-JowGO52Q.js                [39m[1m[2m267.74 kB[22m[1m[22m[2m ظ¤é gzip: 80.97 kB[22m
+[32mظ£ô built in 15.83s[39m
+
+PWA v1.3.0
+Building src/service-worker.js service worker ("es" format)...
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32mظ£ô[39m 1 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[36mservice-worker.mjs  [39m[1m[2m0.58 kB[22m[1m[22m[2m ظ¤é gzip: 0.36 kB[22m
+[32mظ£ô built in 137ms[39m
+
+PWA v1.3.0
+mode      injectManifest
+format:   es
+precache  89 entries (2375.96 KiB)
+files generated
+  dist/service-worker.js

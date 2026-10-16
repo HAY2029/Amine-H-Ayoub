@@ -6,21 +6,20 @@ import ParentalGateModal from "./components/ParentalGateModal";
 import { Toaster as Sonner } from "./components/ui/sonner";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
-import { useEffect, useState, useCallback, lazy, Suspense, type ReactNode } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense, startTransition, type ReactNode } from "react";
 const SiteLinksOverlay = lazy(() => import("./components/SiteLinksOverlay"));
-import { syncCoordinatesFromServer } from "./data/ayahCoordinates";
-import { syncTimingsFromServer } from "./data/ayahTimings";
-import { syncCustomPagesFromServer, syncAllShadingFromServer } from "./data/customPages";
-import { syncSurahRegionsFromServer } from "./data/surahRegions";
-import { syncBookmarksFromServer } from "./data/bookmarks";
 import { AudioContextProvider } from "./contexts/audioContext";
-import { preloadCorpusInBackground } from "./data/lazyCorpus";
 const Index = lazy(() => import("./pages/Index.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const QuranReader = lazy(() => import("./pages/QuranReader.tsx"));
 const KidsGames = lazy(() => import("./pages/KidsGames.tsx"));
 const KidsShop = lazy(() => import("./pages/KidsShop.tsx"));
 import { applyTheme, getTheme } from "./utils/theme";
+import { syncCoordinatesFromServer } from "./data/ayahCoordinates";
+import { syncTimingsFromServer } from "./data/ayahTimings";
+import { syncCustomPagesFromServer, syncAllShadingFromServer } from "./data/customPages";
+import { syncSurahRegionsFromServer } from "./data/surahRegions";
+import { syncBookmarksFromServer } from "./data/bookmarks";
 import { syncAdminDataFromServer } from "./data/titles";
 import { syncKidsProfileFromServer } from "./data/kidsProfile";
 const SettingsPage = lazy(() => import("./pages/SettingsPage.tsx"));
@@ -48,6 +47,7 @@ const SortPagesPage = lazy(() => import("./pages/SortPagesPage.tsx"));
 const RecitationPage = lazy(() => import("./pages/RecitationPage.tsx"));
 const ShadingSettingsPage = lazy(() => import("./pages/ShadingSettingsPage.tsx"));
 const SurahShadingPage = lazy(() => import("./pages/SurahShadingPage.tsx"));
+const AudioShadingSyncPage = lazy(() => import("./pages/AudioShadingSyncPage.tsx"));
 import { getProfile, getAppMode, getProfiles, kidsEnabled } from "./data/kidsProfile";
 import { toast } from "./hooks/use-toast";
 import WelcomeOverlay, { isOnboarded } from "./components/WelcomeOverlay.tsx";
@@ -59,18 +59,19 @@ import { setupRemoteControlListeners } from "./utils/controllerNavigation";
 import { GlobalPlayerWrapper } from "./GlobalPlayerWrapper";
 import QuranLoading from "./components/QuranLoading";
 import Intro3DCarousel from "./components/Intro3DCarousel";
+import NetworkStatusBar from "./components/NetworkStatusBar";
 
 const queryClient = new QueryClient();
 
-// 🎞️ غلاف انتقال موحّد: كل صفحة تدخل بحركة ظهور واحدة (fade + صعود خفيف)
-// يستعمل key=location.pathname ليعاد تشغيل الحركة عند كل تغيير مسار،
-// ويعمل مع lazy/Suspense لأن الغلاف يبقى خارج منطقة التحميل الكسول.
+// 🎞️ غلاف انتقال موحّد: كل صفحة تدخل بحركة ظهور واحدة مع حماية Suspense ثابتة لكل مسار
 const PageTransition = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   return (
-    <div key={location.pathname} className="page-transition">
-      {children}
-    </div>
+    <Suspense fallback={<QuranLoading fullScreen label="جارٍ فتح الصفحة..." />}>
+      <div key={location.pathname} className="page-transition">
+        {children}
+      </div>
+    </Suspense>
   );
 };
 
@@ -116,9 +117,13 @@ const HomeRoute = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // إن كان مسار الجذر يحمل معاملات (query/hash) فحوّل إلى /audio مع الحفاظ عليها
-    if (location.search || location.hash) {
-      navigate(`/audio${location.search}${location.hash}`, { replace: true });
+    // إن كان مسار الجذر يحمل معاملات query فقط (بدون hash)، حوّل إلى /audio مع الحفاظ عليها.
+    // لا نعيد توجيه الروابط التي تحتوي على hash (مثل #/sync-audio) لأن React Router HashRouter
+    // يتعامل معها مباشرة وعرض الصفحة المقصودة.
+    if (location.search && !location.hash) {
+      startTransition(() => {
+        navigate(`/audio${location.search}`, { replace: true });
+      });
     }
   }, [location.search, location.hash, navigate]);
 
@@ -131,9 +136,17 @@ function KidsModeGuard() {
 
   useEffect(() => {
     const checkMode = () => {
-      const allowedPaths = ["/games", "/", "/audio", "/mushaf", "/shop", "/profiles", "/settings", "/parent"];
+      const allowedPaths = [
+        "/games", "/", "/audio", "/mushaf", "/shop", "/profiles", "/settings", "/parent",
+        "/teacher-tools", "/ayah-calibrate", "/calibrate", "/timings", "/shading", "/link",
+        "/recitation-methods", "/audio-splitter", "/image-manager", "/mushaf-upload", "/sort",
+        "/recitation", "/surah-shading", "/shading-settings", "/new-shading", "/shading-box",
+        "/sync-audio", "/audio-shading-sync", "/announcements", "/support", "/download", "/releases", "/error"
+      ];
       if (isKidsMode() && !allowedPaths.includes(location.pathname)) {
-        navigate("/audio", { replace: true });
+        startTransition(() => {
+          navigate("/audio", { replace: true });
+        });
       }
     };
     checkMode();
@@ -156,10 +169,18 @@ function KidsModeGuard() {
 
     const handlePopState = () => {
       if (isKidsMode()) {
-        const allowedPaths = ["/games", "/", "/audio", "/mushaf", "/shop", "/profiles", "/settings", "/parent"];
+        const allowedPaths = [
+          "/games", "/", "/audio", "/mushaf", "/shop", "/profiles", "/settings", "/parent",
+          "/teacher-tools", "/ayah-calibrate", "/calibrate", "/timings", "/shading", "/link",
+          "/recitation-methods", "/audio-splitter", "/image-manager", "/mushaf-upload", "/sort",
+          "/recitation", "/surah-shading", "/shading-settings", "/new-shading", "/shading-box",
+          "/sync-audio", "/audio-shading-sync", "/announcements", "/support", "/download", "/releases", "/error"
+        ];
         if (!allowedPaths.includes(window.location.pathname)) {
           window.history.pushState(null, "", "/audio");
-          navigate("/audio", { replace: true });
+          startTransition(() => {
+            navigate("/audio", { replace: true });
+          });
         }
       }
     };
@@ -232,23 +253,21 @@ const App = () => {
 
   useEffect(() => {
     applyTheme(getTheme());
-    // ⚡ الأداء: المزامنة مع السيرفر تُؤجَّل للخلفية كي لا تبطئ فتح التطبيق
+    // مزامنة البيانات في الخلفية دون أن توقف إكمال بقية المهام عند فشل طلب واحد.
     const syncTimer = setTimeout(() => {
-      syncCoordinatesFromServer();
-      syncTimingsFromServer();
-      syncCustomPagesFromServer();   // الصفحات المرفوعة + صورها (تُجلب من السيرفر)
-      syncSurahRegionsFromServer();  // مناطق السور المعرّفة في المعايرة
-      syncBookmarksFromServer();
-      syncKidsProfileFromServer();
-      syncAdminDataFromServer(); // الألقاب + أكواد النقاط + كود HTML الخارجي (مركزي من لوحة admin.html)
-      syncAllShadingFromServer();    // إعدادات التظليل (الثيم، الشفافية، الإخفاء)
+      [
+        syncCoordinatesFromServer,
+        syncTimingsFromServer,
+        syncCustomPagesFromServer,
+        syncSurahRegionsFromServer,
+        syncBookmarksFromServer,
+        syncKidsProfileFromServer,
+        syncAdminDataFromServer,
+        syncAllShadingFromServer,
+      ].forEach((sync) => {
+        Promise.resolve().then(sync).catch(() => { /* offline or server unavailable */ });
+      });
     }, 1500);
-
-    // Preload Quran corpus in background after initial render
-    // This improves performance when user navigates to reading/listening pages
-    setTimeout(() => {
-      preloadCorpusInBackground();
-    }, 500);
 
     // Log analytics
     logAppOpen();
@@ -303,6 +322,8 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          {/* 📡 شريط تنبيه الانقطاع المؤقت وعودة الاتصال بالإنترنت */}
+          <NetworkStatusBar />
           {/* 🌟 شاشة الدخول ثلاثية الأبعاد الدوارة لمدة 5 ثوانٍ عند فتح التطبيق */}
           <Intro3DCarousel />
           <HashRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -347,6 +368,8 @@ const App = () => {
                 <Route path="/shading-settings" element={<PageTransition><ShadingSettingsPage /></PageTransition>} />
                 <Route path="/new-shading" element={<PageTransition><SurahShadingPage /></PageTransition>} />
                 <Route path="/shading-box" element={<PageTransition><SurahShadingPage /></PageTransition>} />
+                <Route path="/sync-audio" element={<PageTransition><AudioShadingSyncPage /></PageTransition>} />
+                <Route path="/audio-shading-sync" element={<PageTransition><AudioShadingSyncPage /></PageTransition>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
               </Routes>

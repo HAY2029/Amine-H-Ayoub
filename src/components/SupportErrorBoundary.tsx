@@ -1,5 +1,6 @@
+import React, { useState, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { RefreshCw, Trash2, HeartHandshake } from "lucide-react";
+import { RefreshCw, Trash2, HeartHandshake, WifiOff, Wifi, Sparkles, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "./ui/button";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { openWhatsAppSupport, SUPPORT_WHATSAPP_DISPLAY } from "@/services/resendService";
@@ -7,26 +8,84 @@ import { getProfile } from "@/data/kidsProfile";
 import { CURRENT_VERSION } from "@/utils/updateChecker";
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+  const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== "undefined" ? navigator.onLine : true);
+  const [showTechDetails, setShowTechDetails] = useState<boolean>(false);
+  const [isReconnecting, setIsReconnecting] = useState<boolean>(false);
+
+  // استماع مباشر لتغير حالة الشبكة (أونلاين / أوفلاين)
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      setIsReconnecting(true);
+      setTimeout(() => {
+        resetErrorBoundary();
+      }, 1200);
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [resetErrorBoundary]);
+
+  const rawErrMsg = error ? (error.message || String(error)) : "";
+
+  // استعادة تلقائية فورية إذا كان الخطأ مجرد توقف مؤقت أثناء تحميل صفحة (React Suspense Transition)
+  useEffect(() => {
+    if (
+      rawErrMsg.toLowerCase().includes("suspended while responding") ||
+      rawErrMsg.toLowerCase().includes("updates that suspend")
+    ) {
+      const timer = setTimeout(() => {
+        resetErrorBoundary();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [rawErrMsg, resetErrorBoundary]);
+
+  const isNetworkIssue =
+    !isOnline ||
+    rawErrMsg.toLowerCase().includes("fetch") ||
+    rawErrMsg.toLowerCase().includes("network") ||
+    rawErrMsg.toLowerCase().includes("offline") ||
+    rawErrMsg.toLowerCase().includes("internet") ||
+    rawErrMsg.toLowerCase().includes("failed to load");
+
   const handleWhatsAppContact = () => {
     const activeProfile = getProfile();
     const profileName = activeProfile?.name || "مستخدم التطبيق";
-    const errMsg = error ? (error.message || String(error)) : "توقف غير متوقع";
     const msg =
       `السلام عليكم ورحمة الله وبركاته،\n` +
       `أحتاج مساعدة من الدعم الفني لتطبيق القرآن للأطفال:\n` +
+      `• اسم المستخدم: ${profileName}\n` +
       `• إصدار التطبيق: ${CURRENT_VERSION}\n` +
-      `• وصف الخطأ: ${errMsg}\n` +
-      `• واجهت توقفاً مؤقتاً في التطبيق وأرجو المساعدة.`;
+      `• نوع الحالة: ${isNetworkIssue ? "انقطاع مؤقت في الاتصال بالإنترنت" : "توقف مؤقت في التطبيق"}\n` +
+      `• التفاصيل: ${rawErrMsg.slice(0, 200) || "توقف مؤقت"}\n` +
+      `أرجو المساعدة والمتابعة، بارك الله فيكم.`;
 
     void openWhatsAppSupport(msg);
+  };
+
+  const handleManualRetry = () => {
+    setIsReconnecting(true);
+    setTimeout(() => {
+      resetErrorBoundary();
+    }, 600);
   };
 
   const handleHardReset = () => {
     try {
       sessionStorage.clear();
-      // مسح الكاشات المؤقتة فقط
+      // مسح الكاشات المؤقتة فقط دون مسح نجوم الطفل ومحفوظاته
       Object.keys(localStorage).forEach((key) => {
-        if (key.includes("cache") || key.includes("temp")) {
+        if (key.includes("cache") || key.includes("temp") || key.includes("v-runtime")) {
           localStorage.removeItem(key);
         }
       });
@@ -37,56 +96,110 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50/50 via-slate-50 to-teal-50/50 p-4 font-quran text-right" dir="rtl">
-      <div className="max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-emerald-100/80 flex flex-col items-center text-center gap-6 animate-in zoom-in-95 duration-200">
+    <div
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-950 via-slate-950 to-teal-950 p-4 font-sans text-right select-none"
+      dir="rtl"
+    >
+      <div className="max-w-md w-full bg-[#121816]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-emerald-500/20 flex flex-col items-center text-center gap-6 animate-in zoom-in-95 duration-300">
         
-        {/* أيقونة ودودة ومطمئنة */}
-        <div className="w-20 h-20 bg-emerald-500/10 text-emerald-600 rounded-3xl flex items-center justify-center ring-8 ring-emerald-500/5 shadow-inner">
-          <HeartHandshake className="w-10 h-10" />
-        </div>
+        {/* أيقونة الحالة الدالة */}
+        {isNetworkIssue ? (
+          <div className="relative">
+            <div className="w-20 h-20 bg-amber-500/15 text-amber-400 rounded-3xl flex items-center justify-center ring-8 ring-amber-500/10 shadow-inner">
+              <WifiOff className="w-10 h-10 animate-pulse" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-black text-xs font-bold shadow-md">
+              !
+            </div>
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="w-20 h-20 bg-emerald-500/15 text-emerald-400 rounded-3xl flex items-center justify-center ring-8 ring-emerald-500/10 shadow-inner">
+              <HeartHandshake className="w-10 h-10" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-black shadow-md">
+              <Sparkles className="w-3.5 h-3.5" />
+            </div>
+          </div>
+        )}
 
-        {/* رسالة لطيفة بدون أي نصوص أخطاء تقنية */}
-        <div className="space-y-2">
-          <h2 className="text-2xl font-black text-slate-800">نعتذر منك، حدث توقف مؤقت بسيط 🌸</h2>
-          <p className="text-slate-600 text-sm leading-relaxed max-w-xs mx-auto font-medium">
-            لا تقلق، جميع محفوظاتك وبياناتك في أمان تام. نحن هنا لمساعدتك في أي وقت لحل المشكلة فوراً.
+        {/* الرسالة التوضيحية */}
+        <div className="space-y-2.5">
+          <h2 className="text-xl sm:text-2xl font-black text-white">
+            {isNetworkIssue ? "انقطاع مؤقت في الاتصال بالإنترنت 📡" : "نعتذر منك، حدث توقف مؤقت بسيط 🌸"}
+          </h2>
+          <p className="text-stone-300 text-xs sm:text-sm leading-relaxed max-w-xs mx-auto font-medium">
+            {isNetworkIssue
+              ? "يبدو أن اتصال الإنترنت ضعيف أو منقطع مؤقتاً. التطبيق يستمع لعودة الشبكة وسيعاود العمل تلقائياً فور توفرها."
+              : "لا تقلق، جميع محفوظاتك ونجومك وبياناتك في أمان تام. نحن هنا لمساعدتك في أي لحظة."}
           </p>
         </div>
 
-        {/* الأزرار والإجراءات */}
-        <div className="flex flex-col w-full gap-3">
-          {/* زر واتساب الرئيسي المباشر للرقم 0658188644 */}
+        {/* مؤشر الحالة الحية */}
+        <div className="w-full bg-black/40 border border-white/5 rounded-2xl p-3 flex items-center justify-between text-xs">
+          <span className="text-stone-400 flex items-center gap-1.5 font-bold">
+            {isOnline ? <Wifi className="w-4 h-4 text-emerald-400" /> : <WifiOff className="w-4 h-4 text-amber-400" />}
+            <span>حالة الشبكة:</span>
+          </span>
+          <span className={`font-bold flex items-center gap-1.5 ${isOnline ? "text-emerald-400" : "text-amber-400"}`}>
+            <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-emerald-400" : "bg-amber-400 animate-ping"}`} />
+            <span>{isOnline ? "متصل (جاري الاستعادة...)" : "غير متصل حالياً"}</span>
+          </span>
+        </div>
+
+        {/* الأزرار والإجراءات المباشرة */}
+        <div className="flex flex-col w-full gap-2.5">
+          {/* زر إعادة المحاولة الفوري */}
+          <Button
+            onClick={handleManualRetry}
+            disabled={isReconnecting}
+            className="w-full h-13 text-sm bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all disabled:opacity-60"
+          >
+            <RefreshCw className={`w-4 h-4 ${isReconnecting ? "animate-spin" : ""}`} />
+            <span>{isReconnecting ? "جاري إعادة الاتصال والتحديث..." : "إعادة المحاولة وتحديث الصفحة 🔄"}</span>
+          </Button>
+
+          {/* زر واتساب للدعم الفني المباشر */}
           <button
             type="button"
             onClick={handleWhatsAppContact}
-            className="w-full h-14 text-base bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] transition-all rounded-2xl text-white font-extrabold shadow-lg shadow-[#25D366]/25 flex items-center justify-center gap-3 cursor-pointer"
+            className="w-full h-12 text-xs sm:text-sm bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] transition-all rounded-2xl text-white font-extrabold shadow-md shadow-[#25D366]/20 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <WhatsAppIcon className="w-6 h-6 text-white shrink-0" />
-            <span>تواصل مع الدعم الفني عبر واتساب ({SUPPORT_WHATSAPP_DISPLAY})</span>
+            <WhatsAppIcon className="w-5 h-5 text-white shrink-0" />
+            <span>تواصل مع الدعم الفني ({SUPPORT_WHATSAPP_DISPLAY})</span>
           </button>
 
-          {/* زر إعادة المحاولة */}
-          <Button
-            onClick={resetErrorBoundary}
-            className="w-full h-12 text-sm bg-slate-800 hover:bg-slate-900 active:scale-[0.98] transition-all rounded-2xl text-white font-bold flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span>إعادة تشغيل التطبيق</span>
-          </Button>
-
-          {/* زر مسح الذاكرة المؤقتة والبدء من جديد */}
+          {/* زر إصلاح سريع والعودة للرئيسية */}
           <Button
             onClick={handleHardReset}
             variant="ghost"
-            className="w-full h-10 text-xs text-slate-500 hover:text-slate-800 hover:bg-slate-100/60 rounded-xl font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+            className="w-full h-10 text-xs text-stone-400 hover:text-white hover:bg-white/5 rounded-xl font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
           >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>مسح الذاكرة المؤقتة والعودة للرئيسية</span>
+            <Trash2 className="w-3.5 h-3.5 text-stone-500" />
+            <span>إصلاح سريع وتنظيف الذاكرة المؤقتة</span>
           </Button>
         </div>
 
-        <p className="text-[11px] text-slate-400 font-medium">
-          الدعم الفني متاح دائماً لخدمتكم ومساعدتكم عبر واتساب
+        {/* تفاصيل تقنية قابلة للطي للمطور / ولي الأمر */}
+        {rawErrMsg && (
+          <div className="w-full border-t border-white/5 pt-3">
+            <button
+              onClick={() => setShowTechDetails((v) => !v)}
+              className="text-[11px] text-stone-500 hover:text-stone-300 flex items-center justify-center gap-1 mx-auto transition-colors"
+            >
+              <span>{showTechDetails ? "إخفاء التفاصيل الفنية" : "عرض التفاصيل الفنية"}</span>
+              {showTechDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+            {showTechDetails && (
+              <div className="mt-2.5 p-3 rounded-xl bg-black/60 border border-white/5 text-[10px] text-stone-400 font-mono text-left dir-ltr max-h-24 overflow-y-auto break-all">
+                {rawErrMsg}
+              </div>
+            )}
+          </div>
+        )}
+
+        <p className="text-[11px] text-stone-500 font-medium">
+          تطبيق القرآن للأطفال • دعم فني مستمر لخدمتكم 💖
         </p>
       </div>
     </div>
@@ -98,7 +211,7 @@ export function SupportErrorBoundary({ children }: { children: React.ReactNode }
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
       onReset={() => {
-        window.location.href = "/";
+        window.location.reload();
       }}
     >
       {children}

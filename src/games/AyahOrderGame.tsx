@@ -5,6 +5,7 @@ import { toast } from '../hooks/use-toast';
 import { ensureCorpus, SurahText } from '../data/quranText';
 import { GameDef } from '../data/gameCatalog';
 import { createPortal } from 'react-dom';
+import { playCardFlipSfx, playMatchSuccessSfx, playMismatchSfx, playVictoryFanfareSfx } from '../utils/gameSfx';
 
 interface AyahOrderGameProps {
   def: GameDef;
@@ -94,6 +95,7 @@ export default function AyahOrderGame({ def, minSurah, onBack }: AyahOrderGamePr
   const handleAyahTap = (id: string) => {
     if (evaluating || selectedOrder.includes(id)) return;
     
+    playCardFlipSfx();
     const currentRound = rounds[currentIndex];
     const newSelection = [...selectedOrder, id];
     setSelectedOrder(newSelection);
@@ -102,6 +104,7 @@ export default function AyahOrderGame({ def, minSurah, onBack }: AyahOrderGamePr
     for (let i = 0; i < newSelection.length; i++) {
       if (newSelection[i] !== currentRound.ayahs[i].id) {
         // Mistake!
+        playMismatchSfx();
         setEvaluating(true);
         setTimeout(() => {
           setSelectedOrder([]);
@@ -113,6 +116,7 @@ export default function AyahOrderGame({ def, minSurah, onBack }: AyahOrderGamePr
     
     // If we reached the end successfully
     if (newSelection.length === currentRound.ayahs.length) {
+      playMatchSuccessSfx();
       setEvaluating(true);
       setTimeout(() => {
         const newScore = score + 1;
@@ -130,6 +134,7 @@ export default function AyahOrderGame({ def, minSurah, onBack }: AyahOrderGamePr
     if (evaluating) return;
     // Only allow removing the last selected item
     if (selectedOrder[selectedOrder.length - 1] === id) {
+      playCardFlipSfx();
       setSelectedOrder(selectedOrder.slice(0, -1));
     }
   };
@@ -146,10 +151,11 @@ export default function AyahOrderGame({ def, minSurah, onBack }: AyahOrderGamePr
 
   const handleWin = () => {
     setWon(true);
+    playVictoryFanfareSfx();
     addCoins(3); 
     toast({
       title: "🎉 ترتيب ممتاز!",
-      description: "حصلت على 15 نجمة!",
+      description: "حصلت على نجوم تشجيعية!",
     });
   };
 

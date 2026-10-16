@@ -1,5 +1,4 @@
 import { SurahItem } from "@/hooks/useSurahData";
-import { useEffect, useRef, useState } from "react";
 
 interface Props {
   surahs: SurahItem[];
@@ -14,60 +13,20 @@ const SurahList = ({
   onSelect,
   className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5",
 }: Props) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
-
-  // Intersection Observer for staggered entrance
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const idx = Number((entry.target as HTMLElement).dataset.idx);
-            if (!isNaN(idx)) {
-              setVisibleItems((prev) => new Set(prev).add(idx));
-            }
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: "50px" }
-    );
-
-    const items = container.querySelectorAll("[data-idx]");
-    items.forEach((item) => observer.observe(item));
-
-    return () => observer.disconnect();
-  }, [surahs]);
-
   return (
-    <div className={className} ref={containerRef}>
-      {surahs.map((surah, index) => {
+    <div className={className}>
+      {surahs.map((surah) => {
         const isActive = currentPlaying === surah.number;
-        const isVisible = visibleItems.has(index);
 
         return (
           <button
             key={surah.number}
-            data-idx={index}
             onClick={() => onSelect(surah)}
             className={`surah-card group relative flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 text-right focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:outline-none ${
               isActive
                 ? "bg-amber-500/25 dark:bg-amber-950/60 border-amber-500 shadow-lg ring-2 ring-amber-400/50 scale-[1.01]"
-                : "bg-white/60 dark:bg-card/50 backdrop-blur-sm border-amber-500/30 hover:border-amber-500 hover:shadow-lg hover:bg-white/90 dark:hover:bg-card/80 hover:scale-[1.01]"
+                : "bg-white dark:bg-card border-amber-500/30 hover:border-amber-500 hover:shadow-lg hover:bg-white/90 dark:hover:bg-card/80 hover:scale-[1.01]"
             }`}
-            style={{
-              opacity: isVisible ? 1 : 0,
-              transform: isVisible
-                ? isActive
-                  ? "scale(1.01)"
-                  : "translateY(0) scale(1)"
-                : "translateY(20px) scale(0.97)",
-              transition: `opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${Math.min(index * 0.04, 0.4)}s, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) ${Math.min(index * 0.04, 0.4)}s, box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease`,
-            }}
           >
             {/* Active glow effect */}
             {isActive && (

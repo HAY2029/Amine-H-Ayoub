@@ -6,6 +6,7 @@ import { ensureCorpus, SurahText, normalizeArabic } from '../data/quranText';
 import { GameDef } from '../data/gameCatalog';
 import { pullNewQuestions, addQuestions, removeQuestion, getAnsweredIds, getBank, fetchFromQuestionServer, type BankQuestion } from '../data/questionBank';
 import { createPortal } from 'react-dom';
+import { playMatchSuccessSfx, playMismatchSfx, playVictoryFanfareSfx } from '../utils/gameSfx';
 
 interface MissingWordGameProps {
   def: GameDef;
@@ -189,6 +190,7 @@ export default function MissingWordGame({ def, minSurah, onBack }: MissingWordGa
       .catch(() => { /* بدون إنترنت — يكفي البنك المحلي */ });
     
     if (correct) {
+      playMatchSuccessSfx();
       const newScore = score + 1;
       setScore(newScore);
       if (newScore >= REQUIRED_SCORE) {
@@ -197,6 +199,7 @@ export default function MissingWordGame({ def, minSurah, onBack }: MissingWordGa
         setTimeout(() => nextQuestion(), 1000);
       }
     } else {
+      playMismatchSfx();
       setTimeout(() => nextQuestion(), 1500);
     }
   };
@@ -214,10 +217,11 @@ export default function MissingWordGame({ def, minSurah, onBack }: MissingWordGa
 
   const handleWin = () => {
     setWon(true);
-    addCoins(3); // مكافأة صارمة
+    playVictoryFanfareSfx();
+    addCoins(3); // مكافأة
     toast({
       title: "🎉 بطل متميز!",
-      description: "حصلت على 20 نجمة لتركيزك العالي!",
+      description: "حصلت على نجوم تشجيعية لتركيزك العالي!",
     });
   };
 

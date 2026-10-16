@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { useNavigate, useRouteError } from "react-router-dom";
-import { RefreshCw, HeartHandshake, Home } from "lucide-react";
+import { RefreshCw, HeartHandshake, Home, WifiOff, Wifi } from "lucide-react";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { openWhatsAppSupport, SUPPORT_WHATSAPP_DISPLAY } from "@/services/resendService";
 import { getProfile } from "@/data/kidsProfile";
@@ -8,14 +9,30 @@ import { CURRENT_VERSION } from "@/utils/updateChecker";
 export default function ErrorPage() {
   const navigate = useNavigate();
   const routeError = useRouteError() as Error;
+  const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== "undefined" ? navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  const rawMsg = routeError ? (routeError.message || String(routeError)) : "";
+  const isNetworkIssue = !isOnline || rawMsg.toLowerCase().includes("fetch") || rawMsg.toLowerCase().includes("network");
 
   const handleWhatsAppContact = () => {
     const profile = getProfile();
-    const errMsg = routeError ? (routeError.message || String(routeError)) : "توقف غير متوقع";
+    const errMsg = rawMsg || (isNetworkIssue ? "انقطاع اتصال بالإنترنت" : "توقف غير متوقع");
     const msg =
       `السلام عليكم ورحمة الله تعالى وبركاته\n` +
       `أنا أواجه مشكلة في شاشة الخطأ وتوقف التطبيق مؤقتاً.\n` +
       `الإصدار: ${CURRENT_VERSION}\n` +
+      `الحالة: ${isNetworkIssue ? "انقطاع شبكة" : "توقف مؤقت"}\n` +
       `وصف الخطأ: ${errMsg}`;
     void openWhatsAppSupport(msg);
   };
@@ -33,13 +50,17 @@ export default function ErrorPage() {
 
       <div className="card-nour relative z-10 w-full max-w-lg px-8 py-10 text-center shadow-2xl border border-emerald-100/80 rounded-3xl bg-white/95 backdrop-blur-md space-y-6 animate-in zoom-in-95 duration-200">
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/10 text-emerald-600 ring-8 ring-emerald-500/5 shadow-inner">
-          <HeartHandshake className="w-10 h-10" />
+          {isNetworkIssue ? <WifiOff className="w-10 h-10 text-amber-600 animate-pulse" /> : <HeartHandshake className="w-10 h-10 text-emerald-600" />}
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-800">نعتذر منك، حدث توقف مؤقت 🌸</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-800">
+            {isNetworkIssue ? "انقطاع مؤقت في الاتصال بالإنترنت 📡" : "نعتذر منك، حدث توقف مؤقت 🌸"}
+          </h1>
           <p className="text-sm text-slate-600 leading-relaxed font-medium max-w-sm mx-auto">
-            لا تقلق، جميع محفوظاتك وبياناتك في أمان تام. يمكنك مراسلة الدعم الفني فوراً عبر واتساب أو إعادة المحاولة.
+            {isNetworkIssue
+              ? "يبدو أن اتصال الإنترنت ضعيف أو منقطع مؤقتاً. التطبيق سيستأنف العمل تلقائياً فور توفر الشبكة."
+              : "لا تقلق، جميع محفوظاتك وبياناتك في أمان تام. يمكنك مراسلة الدعم الفني فوراً عبر واتساب أو إعادة المحاولة."}
           </p>
         </div>
 

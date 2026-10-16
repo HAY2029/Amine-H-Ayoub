@@ -1,0 +1,34 @@
+/* ? √‰„«ÿ »”Ìÿ… Ê”—Ì⁄… ·√œÊ«  «·„⁄·„ */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Cairo', 'Amiri', sans-serif;
+  background: #f5f5dc;
+  color: #2c2c2c;
+  direction: rtl;
+}
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+
+.card { background: #fff; border: 1px solid #ddd; border-radius: 1rem; padding: 1.5rem; margin: 1rem 0; }
+
+.btn { background: #153e18; color: #fff; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: bold; }
+
+.btn:hover { background: #0d2c10; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+
+.h1, h1 { font-size: 2rem; margin-bottom: 1rem; }
+
+.text-center { text-align: center; }
+
+.mt-4 { margin-top: 1rem; }
+
+.mb-4 { margin-bottom: 1rem; }
+
+.p-4 { padding: 1rem; }
+

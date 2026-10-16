@@ -649,7 +649,7 @@ export default function ParentDashboard() {
 
               <button
                 onClick={() => {
-                  grantMorePlay(15);
+                  grantMorePlay();
                   refresh();
                   toast({ title: "⏱️ تم منح 15 دقيقة لعب إضافية للطفل!" });
                 }}

@@ -160,7 +160,8 @@ export const JUZ_AMMA_PAGE_SECTIONS: Record<number, PageSectionInfo[]> = {
 export function generateDefaultBoxesForPage(pageSrc: string): AyahBox[] {
   const match = pageSrc.match(/(\d+)/);
   const pageNum = match ? parseInt(match[1], 10) : 0;
-  if (pageNum === 0 || pageNum === 1 || pageSrc.includes("fatiha")) {
+  // القرآن بدون تظليل إلا الفاتحة — فقط الفاتحة تحمل تظليلاً افتراضياً
+  if (pageNum === 0 || pageNum === 1 || pageSrc.includes("fatiha") || pageSrc.includes("0.jpg") || pageSrc.includes("1.jpg")) {
     return [
       { surah: 1, ayah: 0, x: 340, y: 516, width: 580, height: 95, label: "البسملة", color: "#eab308" },
       { surah: 1, ayah: 1, x: 330, y: 660, width: 600, height: 95, label: "الآية 1", color: "#eab308" },
@@ -173,77 +174,8 @@ export function generateDefaultBoxesForPage(pageSrc: string): AyahBox[] {
     ];
   }
 
-  const sections = JUZ_AMMA_PAGE_SECTIONS[pageNum] || [];
-  if (!sections || sections.length === 0) return [];
-
-  const CONTENT_X = 140;
-  const CONTENT_W = 980;
-  const CONTENT_Y = 220;
-  const CONTENT_H = 1530;
-
-  const boxes: AyahBox[] = [];
-  const totalWeight = sections.reduce((acc, s) => acc + (s.endAyah - s.startAyah + 1) + (s.hasBasmalah ? 2.5 : 0), 0);
-  let currentY = CONTENT_Y;
-
-  sections.forEach((sec) => {
-    const ayahCount = sec.endAyah - sec.startAyah + 1;
-    const weight = ayahCount + (sec.hasBasmalah ? 2.5 : 0);
-    const secH = Math.round((weight / totalWeight) * CONTENT_H);
-
-    let startY = currentY;
-    let availableH = secH;
-
-    if (sec.hasBasmalah && sec.startAyah === 1) {
-      const bHeight = Math.min(85, Math.max(55, Math.round(secH * 0.15)));
-      boxes.push({
-        surah: sec.surah,
-        ayah: 0,
-        x: CONTENT_X + 100,
-        y: Math.round(startY + 5),
-        width: CONTENT_W - 200,
-        height: bHeight,
-        label: "البسملة",
-        color: "#eab308",
-      });
-      startY += bHeight + 12;
-      availableH -= (bHeight + 12);
-    }
-
-    let cols = 1;
-    if (ayahCount > 18) cols = 3;
-    else if (ayahCount > 4) cols = 2;
-    else cols = 1;
-
-    const rows = Math.ceil(ayahCount / cols);
-    const rowH = Math.max(36, Math.floor(availableH / rows));
-
-    for (let i = 0; i < ayahCount; i++) {
-      const ayahNum = sec.startAyah + i;
-      const r = Math.floor(i / cols);
-      const c = i % cols;
-      const itemsInRow = Math.min(cols, ayahCount - r * cols);
-      const gap = 12;
-      const bWidth = Math.floor((CONTENT_W - (itemsInRow - 1) * gap) / itemsInRow);
-      // RTL: right column is first ayah
-      const bX = CONTENT_X + CONTENT_W - (c + 1) * bWidth - c * gap;
-      const bY = startY + r * rowH;
-
-      boxes.push({
-        surah: sec.surah,
-        ayah: ayahNum,
-        x: Math.round(bX),
-        y: Math.round(bY + 2),
-        width: Math.round(bWidth),
-        height: Math.round(rowH - 4),
-        label: `الآية ${ayahNum}`,
-        color: "#eab308",
-      });
-    }
-
-    currentY += secH;
-  });
-
-  return boxes;
+  // سائر صفحات القرآن الكريم بدون تظليل افتراضي
+  return [];
 }
 
 // سيتم الاعتماد كلياً على المجلد المحلي `public/pages/`
@@ -327,7 +259,8 @@ export const getSavedAyahCoordinates = (): Record<string, AyahBox[]> => {
  * 1. المربعات المربوطة مباشرة بالصفحة (من الإعدادات المحفوظة أو المدمجة)
  * 2. المربعات التي تشير إلى هذه الصفحة عبر حقل `pages` (مربعات مشتركة بين صفحات)
  */
-export const getPageAyahBoxes = (pageSrc: string) => {
+export const getPageAyahBoxes = (rawPageSrc: string) => {
+  const pageSrc = (rawPageSrc && rawPageSrc.includes("fatiha")) ? "/pages/0.jpg" : rawPageSrc;
   const allSaved = getSavedAyahCoordinates();
   const result: AyahBox[] = [];
   const seen = new Set<string>();
@@ -335,7 +268,7 @@ export const getPageAyahBoxes = (pageSrc: string) => {
   // 1. المربعات المباشرة للصفحة
   const directBoxes = pageSrc in allSaved
     ? allSaved[pageSrc]
-    : (AYAH_COORDINATES[pageSrc] ?? []);
+    : (AYAH_COORDINATES[pageSrc] ?? (pageSrc === "/pages/0.jpg" ? (allSaved["/pages/fatiha.jpg"] ?? AYAH_COORDINATES["/pages/fatiha.jpg"] ?? []) : []));
   for (const box of directBoxes) {
     const key = `${box.surah}-${box.ayah}-${box.x}-${box.y}`;
     if (!seen.has(key)) {
@@ -374,19 +307,8 @@ export const getPageAyahBoxes = (pageSrc: string) => {
     }
   }
 
-  const match = pageSrc.match(/(\d+)/);
-  const pageNum = match ? parseInt(match[1], 10) : 0;
-  const expectedSections = JUZ_AMMA_PAGE_SECTIONS[pageNum] || (pageNum === 0 ? JUZ_AMMA_PAGE_SECTIONS[0] : []);
-  const validSurahs = new Set(expectedSections.map(s => s.surah));
-
-  // تحقق من صحة المربعات: هل تنتمي للسور الصحيحة في هذه الصفحة؟
-  const hasInvalidSurahs = validSurahs.size > 0 && result.some(b => b.surah > 0 && !validSurahs.has(b.surah));
-  
-  // هل المربعات غير مكتملة بشكل فادح (أقل من نصف آيات الصفحة)؟
-  const totalExpectedAyahs = expectedSections.reduce((acc, s) => acc + (s.endAyah - s.startAyah + 1), 0);
-  const isIncomplete = totalExpectedAyahs > 4 && result.length < Math.floor(totalExpectedAyahs / 2);
-
-  if (result.length === 0 || hasInvalidSurahs || isIncomplete) {
+  // إذا لم توجد مربعات محفوظة، يتم توليد الافتراضي فقط لسورة الفاتحة، أما باقي صفحات المصحف فتظل بدون تظليل
+  if (result.length === 0) {
     return generateDefaultBoxesForPage(pageSrc);
   }
 
@@ -397,9 +319,14 @@ export const getPageAyahBoxes = (pageSrc: string) => {
  * حفظ مربعات الآية لصفحة معينة في السيرفر.
  * إذا كان لأي مربع حقل `pages`، يتم نسخه تلقائياً إلى كل الصفحات المذكورة.
  */
-export const savePageAyahBoxes = async (pageSrc: string, boxes: AyahBox[]) => {
+export const savePageAyahBoxes = async (rawPageSrc: string, boxes: AyahBox[]) => {
   if (typeof window === "undefined") return;
+  const pageSrc = (rawPageSrc && rawPageSrc.includes("fatiha")) ? "/pages/0.jpg" : rawPageSrc;
   const saved = getSavedAyahCoordinates();
+  // إزالة أي مفتاح قديم مكرر للفاتحة
+  delete saved["/pages/fatiha.jpg"];
+  delete saved["fatiha.jpg"];
+
   saved[pageSrc] = cloneBoxes(boxes);
   cachedAyahCoords = saved;
   lastCacheTime = Date.now();
@@ -466,4 +393,4 @@ export const resetPageAyahBoxes = async (pageSrc: string) => {
   }
 };
 
-export const getAllPageSources = () => Object.keys(AYAH_COORDINATES);
+export const getAllPageSources = () => Object.keys(AYAH_COORDINATES).filter(k => !k.includes("fatiha"));

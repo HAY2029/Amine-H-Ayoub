@@ -1,12 +1,17 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, startTransition } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, ChevronLeft, ChevronRight, Play, Pause, Maximize2, Minimize2, X, Shuffle, Pencil, Check, Settings, Bell, SplitSquareHorizontal, SplitSquareVertical, Volume2, VolumeX, Menu, Eye, EyeOff, List, Lock, Baby, Bookmark as BookmarkIcon, Trash2, Plus, Wrench, Headphones, Download, Mic, Repeat, Palette, LayoutGrid, GripVertical, SkipForward, SkipBack } from "lucide-react";
-import { getAudioPath as audioPath, getFallbackAudioUrl, getArchiveGatewayAudioUrl, reportHuggingFaceFailure } from "@/data/audioUrls";
-import { getPageAyahBoxes, PAGE_IMAGE_SIZE } from "@/data/ayahCoordinates";
+import { ArrowRight, ChevronLeft, ChevronRight, Play, Pause, Maximize2, Minimize2, X, Shuffle, Pencil, Check, Settings, Bell, SplitSquareHorizontal, SplitSquareVertical, Volume2, VolumeX, Menu, Eye, EyeOff, List, Lock, Baby, Bookmark as BookmarkIcon, Trash2, Plus, Wrench, Headphones, Download, Mic, Repeat, Palette, LayoutGrid, GripVertical, SkipForward, SkipBack, Sun, Moon, Layers, Search, Sparkles, ToggleRight } from "lucide-react";
+import { getAudioPath as audioPath, getFallbackAudioUrl, getArchiveGatewayAudioUrl, reportHuggingFaceFailure, getSurahAudioBySpeaker, getTeacherAudioUrl, getKidsAudioUrl } from "@/data/audioUrls";
+import { supabase, hasValidSupabaseKey } from "@/lib/supabase";
+import { getPageAyahBoxes, PAGE_IMAGE_SIZE, AyahBox, getSavedAyahCoordinates } from "@/data/ayahCoordinates";
+import { getTheme, toggleTheme, setTheme } from "@/utils/theme";
+import DayNightSwitch from "@/components/ui/DayNightSwitch";
 import AppFooter from "@/components/AppFooter";
 import AppNav from "@/components/AppNav";
 import QuranLoading from "@/components/QuranLoading";
 import { getSavedTimings, getSurahTimings } from "@/data/ayahTimings";
+import { getSurahServerUrl, getSavedLinks, getSurahLink, saveSurahLink, initDefaultLinks, syncLinksFromServer } from "@/data/surahLink";
+import { getSurahSegments, SurahSegment, getOrderedSegments, createAlternatingSegments, saveSurahSegments } from "@/data/surahSegments";
 import { getCustomPages, getAllPageImages, getPageOrder, getPageOrderSrcs, savePageOrder, normalizeImageKey, isBogusSrc, sanitizePageOrder } from "@/data/customPages";
 import { getPageSurahRegions } from "@/data/surahRegions";
 import { addReadingMinutes, addCoins, kidsEnabled as getKidsEnabled, getProgress, isPureMode, setAppMode } from "@/data/kidsProfile";
@@ -95,7 +100,10 @@ async function saveCustomPageName(pageSrc: string, name: string) {
   }
   localStorage.setItem(PAGE_NAMES_KEY, JSON.stringify(all));
   try {
-    await supabase.from("store").upsert({ key: PAGE_NAMES_KEY, value: all });
+    if (hasValidSupabaseKey()) {
+      // void — الاستعلام يعيد PostgrestFilterBuilder (وليس Promise) فننتظره يدوياً بـ then
+      await Promise.resolve(supabase.from("store").upsert({ key: PAGE_NAMES_KEY, value: all }));
+    }
   } catch (e) {
     console.error("Save page name error:", e);
   }
@@ -123,7 +131,7 @@ const STORAGE_KEY = "mushaf:lastPage";
 const MUSHAF_LAST_SURAH = "mushaf:lastSurah";
 const MUSHAF_LAST_TIME = "mushaf:lastTime";
 
-interface SurahAudio { name: string; number: number; src: string; ayahCount: number; }
+interface SurahAudio { name: string; number: number; src: string; ayahCount: number; ayahs?: string[]; }
 interface PageInfo { name: string; src: string; surahs: SurahAudio[]; }
 
 // صفحات المصحف المدمجة داخل الكود محلياً لضمان جاهزية فورية (0ms) بلا أي اتصال بسيرفر
@@ -133,6 +141,11 @@ const SPEAKER_LABELS: Record<Speaker, string> = { teacher: "المعلم", kids:
 
 export default function QuranReader() {
   const navigate = useNavigate();
+  const safeNavigate = (to: string) => {
+    startTransition(() => {
+      navigate(to);
+    });
+  };
   const { simultaneousMode, setSimultaneousMode } = useAudioContext();
 
   const [customPageList, setCustomPageList] = useState(() => getCustomPages());
@@ -295,7 +308,7 @@ export default function QuranReader() {
         try { localStorage.setItem(usedKey, JSON.stringify(cleanOrder)); } catch { /* ignore */ }
       }
       // الفاتحة أولاً دائماً (لو جاء ترتيب قديم بصفحة غريبة في الصدارة)
-      const isFatihaPage = (src: string) => /fatiha/i.test(src);
+      const isFatihaPage = (src: string) => /fatiha|(\b|\/)0\.jpg$/i.test(src);
       const firstNonFatiha = cleanOrder.findIndex(src => !isFatihaPage(src));
       if (firstNonFatiha > 0) {
         const fIdx = cleanOrder.findIndex(src => isFatihaPage(src));
@@ -379,26 +392,12 @@ export default function QuranReader() {
   const [controlsOpen, setControlsOpen] = useState(false);
   const [isGridOpen, setIsGridOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [skipBismillah, setSkipBismillah] = useState(() => {
-    // افتراضياً: تخطي البسملة والبدء من الصفحة 2
-    const saved = localStorage.getItem("mushaf:skipBismillah:v1");
-    return saved !== null ? saved === "true" : true;
-  });
-
-  // حفظ إعداد تخطي البسملة
+  // تنظيف أي قيمة سابقة لإعداد تخطي البسملة الخاطئ الذي كان يقفز من الفاتحة إلى النبأ
   useEffect(() => {
-    localStorage.setItem("mushaf:skipBismillah:v1", skipBismillah ? "true" : "false");
-  }, [skipBismillah]);
-
-  // تخطي البسملة عند التحميل الأول: إذا كانت الصفحة 0 والإعداد مفعل، انتقل للصفحة 1
-  useEffect(() => {
-    if (skipBismillah && currentPage === 0 && pages.length > 1) {
-      const timer = setTimeout(() => {
-        setCurrentPage(1);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [skipBismillah, pages.length]); // يُنفذ مرة واحدة بعد تحميل الصفحات
+    try {
+      localStorage.removeItem("mushaf:skipBismillah:v1");
+    } catch { /* ignore */ }
+  }, []);
 
   // Audio state
   const [activeSurah, setActiveSurah] = useState<SurahAudio | null>(null);
@@ -639,7 +638,19 @@ export default function QuranReader() {
     setDraggedIdx(null);
     setDragOverIdx(null);
   }, [draggedIdx]);
-  const [navTab, setNavTab] = useState<"surahs" | "bookmarks">("surahs");
+  const [navTab, setNavTab] = useState<"surahs" | "bookmarks" | "boxes">("surahs");
+  const [boxSearchQuery, setBoxSearchQuery] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => getTheme() === "dark");
+
+  useEffect(() => {
+    const handleThemeEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<"dark" | "light">;
+      setIsDarkMode(customEvent.detail ? customEvent.detail === "dark" : getTheme() === "dark");
+    };
+    window.addEventListener("mushaf:theme", handleThemeEvent);
+    return () => window.removeEventListener("mushaf:theme", handleThemeEvent);
+  }, []);
+
   const [bookmarks, setBookmarks] = useState<Bookmark[]>(getBookmarks);
   useEffect(() => { const h = () => setKidsModeState(isKidsMode()); window.addEventListener("mushaf:kidsmode", h); return () => window.removeEventListener("mushaf:kidsmode", h); }, []);
   useEffect(() => { const h = () => setKidsCorner(getKidsEnabled()); window.addEventListener("mushaf:appmode", h); return () => window.removeEventListener("mushaf:appmode", h); }, []);
@@ -686,11 +697,11 @@ export default function QuranReader() {
   const actualPage = getActualPageIndex(currentPage);
 
   // ── ركن الأطفال: الدخول يقفل التطبيق، والخروج يتطلّب الرمز ──
-  const enterKids = () => { if (hasKidsPin()) { setKidsLocked(true); navigate("/games"); } else setPinAction("enter"); };
+  const enterKids = () => { if (hasKidsPin()) { setKidsLocked(true); safeNavigate("/games"); } else setPinAction("enter"); };
   const requestExitKids = () => setPinAction("exit");
   // الإعدادات محميّة: تتطلّب رمز ولي الأمر إن كان مضبوطاً
-  const openSettings = () => { if (hasKidsPin()) setPinAction("settings"); else navigate("/settings"); };
-  const openTools = () => { if (hasKidsPin()) setPinAction("settings"); else navigate("/teacher-tools"); };
+  const openSettings = () => { if (hasKidsPin()) setPinAction("settings"); else safeNavigate("/settings"); };
+  const openTools = () => { if (hasKidsPin()) setPinAction("settings"); else safeNavigate("/teacher-tools"); };
 
   // ── قائمة كل السور للانتقال المباشر ──
   const allSurahsList = useMemo(() => {
@@ -704,6 +715,83 @@ export default function QuranReader() {
     setCurrentPage(display);
     setSelectedSurahIdx(surahIdx);
     setSurahListOpen(false);
+  };
+
+  // ── نظام المربعات: تجميع كافة المربعات المسجلة مع أسمائها وصفحاتها ──
+  const allMushafBoxes = useMemo(() => {
+    const coords = getSavedAyahCoordinates();
+    const list: {
+      box: AyahBox;
+      pageSrc: string;
+      pageIdx: number;
+      pageName: string;
+      surahName: string;
+      displayLabel: string;
+    }[] = [];
+
+    pages.forEach((p, pIdx) => {
+      const pageBoxes = coords[p.src] || getPageAyahBoxes(p.src);
+      pageBoxes.forEach((b) => {
+        const surah = p.surahs?.find((s) => s.number === b.surah) || pages.flatMap(x => x.surahs || []).find(s => s.number === b.surah);
+        const displayLabel = b.label || (b.ayah === 0 ? "بسملة" : `الآية ${b.ayah}`);
+        list.push({
+          box: b,
+          pageSrc: p.src,
+          pageIdx: pIdx,
+          pageName: p.name,
+          surahName: surah?.name || `سورة ${b.surah}`,
+          displayLabel,
+        });
+      });
+    });
+    return list;
+  }, [pages, orderVersion]);
+
+  const filteredMushafBoxes = useMemo(() => {
+    if (!boxSearchQuery.trim()) return allMushafBoxes;
+    const q = boxSearchQuery.trim().toLowerCase();
+    return allMushafBoxes.filter(
+      (item) =>
+        item.displayLabel.toLowerCase().includes(q) ||
+        item.surahName.toLowerCase().includes(q) ||
+        item.pageName.toLowerCase().includes(q) ||
+        String(item.box.ayah).includes(q)
+    );
+  }, [allMushafBoxes, boxSearchQuery]);
+
+  const surahBoxMap = useMemo(() => {
+    const map: Record<number, { count: number; labels: string[] }> = {};
+    allMushafBoxes.forEach((item) => {
+      if (!map[item.box.surah]) {
+        map[item.box.surah] = { count: 0, labels: [] };
+      }
+      map[item.box.surah].count++;
+      if (!map[item.box.surah].labels.includes(item.displayLabel)) {
+        map[item.box.surah].labels.push(item.displayLabel);
+      }
+    });
+    return map;
+  }, [allMushafBoxes]);
+
+  const jumpToBox = (item: { box: AyahBox; pageSrc: string; pageIdx: number; pageName: string; surahName: string; displayLabel: string }) => {
+    let display = item.pageIdx;
+    if (customPageOrder.length > 0) {
+      const d = customPageOrder.indexOf(item.pageIdx);
+      if (d >= 0) display = d;
+    }
+    setCurrentPage(display);
+    setSelectedAyah(item.box.ayah);
+    const surah = pages[item.pageIdx]?.surahs.find((s) => s.number === item.box.surah);
+    if (surah) {
+      const sIdx = pages[item.pageIdx]?.surahs.findIndex((s) => s.number === surah.number);
+      if (sIdx !== -1) setSelectedSurahIdx(sIdx);
+      playAyah(surah, item.box.ayah, playModeRef.current === "kids" ? "kids" : "teacher");
+    }
+    setSurahListOpen(false);
+    toast({
+      title: `📍 ${item.displayLabel}`,
+      description: `${item.surahName} — ${item.pageName}`,
+    });
   };
 
   // ── العلامات المرجعية ──
@@ -823,9 +911,11 @@ export default function QuranReader() {
 
   const resolveAudioSrc = useCallback(async (surah: SurahAudio, speaker: Speaker = "teacher") => {
     try {
-      const timings = getSurahTimings(surah.number);
-      const speakerUrl = speaker === "kids" ? timings?.kidsAudioUrl : timings?.teacherAudioUrl;
-      const preferredUrl = speakerUrl || audioPath(surah.number, speaker) || surah.src;
+      // جلب رابط الصوت من السيرفر للتسريع على الهاتف
+      const serverUrl = getSurahServerUrl(surah.number);
+      const link = getSurahLink(surah.number);
+      const speakerUrl = speaker === "kids" ? link?.kidsUrl : link?.teacherUrl || serverUrl;
+      const preferredUrl = speakerUrl || serverUrl || audioPath(surah.number, speaker) || surah.src;
       const resolved = await resolvePlayableAudioUrl(surah.number, preferredUrl);
       if (resolved) return resolved;
     } catch (e) {
@@ -834,7 +924,31 @@ export default function QuranReader() {
     return surah.src;
   }, []);
 
-  // Refs for tracking without re-renders
+  // === تشغيل السورة بالتناوب بين المعلم والطفل ===
+  const [alternatingMode, setAlternatingMode] = useState<boolean>(false);
+  const [autoAdvanceSegments, setAutoAdvanceSegments] = useState<boolean>(true);
+  const [currentSpeaker, setCurrentSpeaker] = useState<"teacher" | "kids">("teacher");
+  const [currentSegments, setCurrentSegments] = useState<SurahSegment[]>([]);
+  const [currentSegmentIndex, setCurrentSegmentIndex] = useState<number>(0);
+
+  const curSurah = activeSurah || pages[actualPage]?.surahs?.[selectedSurahIdx] || pages[actualPage]?.surahs?.[0];
+
+  // تحميل مقاطع السورة عند تغير السورة
+  useEffect(() => {
+    const segs = getOrderedSegments(curSurah?.number || 1);
+    setCurrentSegments(segs);
+    setCurrentSegmentIndex(0);
+  }, [curSurah?.number]);
+
+  // تحميل مقاطع تلقائية للسورة إذا لم تكن موجودة
+  useEffect(() => {
+    if (curSurah && currentSegments.length === 0) {
+      const totalAyahs = curSurah.ayahCount || 7;
+      const autoSegs = createAlternatingSegments(curSurah.number, totalAyahs, 3, "teacher");
+      saveSurahSegments(curSurah.number, autoSegs);
+      setCurrentSegments(autoSegs);
+    }
+  }, [curSurah, currentSegments.length]);
   const { globalAudioRef, currentTrack, setCurrentTrack, setPlayNextHandler, setPlayPrevHandler, requestPlay } = useAudioContext();
   const audioRef = globalAudioRef;
   const requestRef = useRef<number>();
@@ -866,6 +980,83 @@ export default function QuranReader() {
     setActiveSurahNum(prev => (prev === surahNum ? prev : surahNum));
     setActiveAyahNum(prev => (prev === ayahNum ? prev : ayahNum));
   }, []);
+
+  // تشغيل المقطع الحالي بالتناوب بين المعلم والطفل
+  const playCurrentSegment = useCallback(async (segment: SurahSegment) => {
+    if (!audioRef.current) return;
+    
+    // تحديد المتحدث
+    setCurrentSpeaker(segment.speaker);
+    
+    // جلب رابط الصوت حسب المتحدث
+    const link = getSurahLink(segment.surah);
+    const audioUrl = segment.speaker === "kids" 
+      ? (link?.kidsUrl || getSurahServerUrl(segment.surah))
+      : (link?.teacherUrl || getSurahServerUrl(segment.surah));
+    
+    // تعيين مصدر الصوت والتشغيل من توقيت البداية
+    audioRef.current.src = audioUrl;
+    audioRef.current.currentTime = segment.startTime;
+    audioRef.current.play().catch(() => {});
+    
+    // تحديد توقيت الإيقاف
+    stopAtRef.current = segment.endTime;
+    
+    // تظليل الآية الأولى للمقطع
+    highlightAyah(segment.surah, segment.startAyah, segment.speaker);
+  }, [audioRef, highlightAyah]);
+
+  // الانتقال للمقطع التالي
+  const playNextSegment = useCallback(() => {
+    setCurrentSegmentIndex(prev => {
+      const nextIdx = prev + 1;
+      const nextSeg = currentSegments[nextIdx];
+      if (nextSeg) {
+        playCurrentSegment(nextSeg);
+        return nextIdx;
+      }
+      // انتهى جميع المقاطع - التوقف
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+      toast({ title: "انتهى تشغيل السورة بالتناوب بين المعلم والطفل" });
+      return prev;
+    });
+  }, [currentSegments, playCurrentSegment, toast, audioRef]);
+
+  // تبديل نمط التشغيل التناوبي
+  const toggleAlternatingMode = useCallback(() => {
+    setAlternatingMode(prev => {
+      const next = !prev;
+      if (next && currentSegments.length > 0) {
+        setCurrentSegmentIndex(0);
+        playCurrentSegment(currentSegments[0]);
+      }
+      return next;
+    });
+  }, [currentSegments, playCurrentSegment]);
+
+  // مراقبة انتهاء المقطع والتحويل تلقائياً
+  useEffect(() => {
+    if (!audioRef.current || !autoAdvanceSegments || !alternatingMode) return;
+
+    const handleTimeUpdate = () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      const currentTime = audio.currentTime;
+      const stopAt = stopAtRef.current;
+
+      if (stopAt !== null && currentTime >= stopAt - 0.5) {
+        stopAtRef.current = null; // منع إعادة الإطلاق لنفس النهاية عدة مرات
+        audio.pause();
+        playNextSegment();
+      }
+    };
+
+    audioRef.current.addEventListener("timeupdate", handleTimeUpdate);
+    return () => audioRef.current?.removeEventListener("timeupdate", handleTimeUpdate);
+  }, [audioRef, autoAdvanceSegments, alternatingMode, playNextSegment]);
 
   // Shuffle handlers
   const handleShuffle = useCallback(() => {
@@ -934,22 +1125,29 @@ export default function QuranReader() {
     }
   }, [currentPage, pages]);
 
-  // عند تحميل الصفحات أول مرة (مثلاً بعد وصول صور HF) استعادة الموضع من مسار URL أو المحفوظة
   const pageSrcRestoredRef = useRef(false);
+
+  // تهيئة الروابط الافتراضية للسور عند تحميل التطبيق
+  useEffect(() => {
+    initDefaultLinks();
+    syncLinksFromServer().catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (pageSrcRestoredRef.current) return;
     if (pages.length === 0) return;
-    
+
     let targetIdx = -1;
-    
-    // 1. الأولوية لمسار URL
-    const urlParams = new URLSearchParams(window.location.search);
+
+    // 1. الأولوية لمسار URL (يدعم كلاً من الاستعلام العادي و HashRouter)
+    const hashQuery = window.location.hash.includes("?") ? window.location.hash.slice(window.location.hash.indexOf("?") + 1) : "";
+    const urlParams = new URLSearchParams(window.location.search || hashQuery);
     const surahParam = urlParams.get("surah");
     if (surahParam) {
       const targetSurah = parseInt(surahParam, 10);
       targetIdx = pages.findIndex(p => p.surahs?.some(s => s.number === targetSurah));
     }
-    
+
     // 2. إذا لم يكن هناك رابط، أو لم نجد السورة، نقرأ من التخزين المحلي
     if (targetIdx === -1) {
       const savedSrc = localStorage.getItem(STORAGE_KEY + ":src");
@@ -957,14 +1155,13 @@ export default function QuranReader() {
         targetIdx = pages.findIndex(p => p.src === savedSrc);
       }
     }
-    
+
     if (targetIdx >= 0 && targetIdx !== currentPage) {
       setCurrentPage(targetIdx);
     }
-    
+
     pageSrcRestoredRef.current = true;
   }, [pages, currentPage]);
-
   useEffect(() => {
     // تغيُّر الصفحة بسبب متابعة التشغيل لسورة ممتدّة على صفحتين: لا توقف الصوت ولا تُصفّر الحالة
     if (autoFollowRef.current) { autoFollowRef.current = false; return; }
@@ -1769,8 +1966,8 @@ export default function QuranReader() {
                 style={{ aspectRatio: `${PAGE_IMAGE_SIZE.width}/${PAGE_IMAGE_SIZE.height}`, height: '100%', maxWidth: '100%' }}
               >
                 <img src={imgSrcFor(page.src)} alt={page.name}
-                  fetchpriority={idx === 0 ? "high" : "auto"}
-                  className={`absolute inset-0 w-full h-full select-none transition-opacity duration-200 ${loadedImgs.has(page.src) ? "opacity-100" : "opacity-0"}`}
+                  fetchPriority={idx === 0 ? "high" : "auto"}
+                  className={`mushaf-page-img absolute inset-0 w-full h-full select-none transition-opacity duration-200 ${loadedImgs.has(page.src) ? "opacity-100" : "opacity-0"}`}
                   draggable={false} decoding="async" referrerPolicy="no-referrer"
                   ref={(el) => {
                     if (el && el.complete && el.naturalWidth > 0 && !loadedImgs.has(page.src)) {
@@ -1910,11 +2107,22 @@ export default function QuranReader() {
 
       {/* ── أيقونات الخيارات (منفصلة، أسفل وسط الشاشة) ── */}
       {!controlsOpen && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 flex-wrap justify-center max-w-[90vw]" dir="rtl">
+        <div className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 flex-wrap justify-center max-w-[90vw]" dir="rtl">
           {([
-            { key: "back", icon: <ArrowRight className="w-5 h-5 text-foreground" />, label: "رجوع", onClick: () => navigate("/audio"), active: false },
+            { key: "back", icon: <ArrowRight className="w-5 h-5 text-foreground" />, label: "رجوع", onClick: () => safeNavigate("/audio"), active: false },
+            {
+              key: "theme",
+              icon: isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-indigo-600 dark:text-amber-300" />,
+              label: isDarkMode ? "الوضع النهاري" : "الوضع الليلي",
+              onClick: () => {
+                const next = toggleTheme();
+                setIsDarkMode(next === "dark");
+                toast({ title: next === "dark" ? "🌙 تم تفعيل الوضع الليلي للمصحف" : "☀️ تم تفعيل الوضع النهاري للمصحف" });
+              },
+              active: isDarkMode
+            },
             { key: "grid", icon: <LayoutGrid className="w-5 h-5 text-foreground" />, label: "وصول مباشر", onClick: () => setIsGridOpen(true), active: isGridOpen },
-            kidsMode && !isPureMode() && { key: "games", icon: <Baby className="w-5 h-5 text-foreground" />, label: "الألعاب", onClick: () => navigate("/games"), active: false },
+            kidsMode && !isPureMode() && { key: "games", icon: <Baby className="w-5 h-5 text-foreground" />, label: "الألعاب", onClick: () => safeNavigate("/games"), active: false },
             kidsMode
               ? { key: "lock", icon: <Lock className="w-5 h-5 text-foreground" />, label: "خروج من ركن الأطفال", onClick: requestExitKids, active: true }
               : (kidsCorner && !isPureMode() && { key: "kids", icon: <Baby className="w-5 h-5 text-foreground" />, label: "ركن الأطفال", onClick: enterKids, active: false }),
@@ -1925,8 +2133,12 @@ export default function QuranReader() {
               onClick={b.onClick}
               aria-label={b.label}
               title={b.label}
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95"
-              style={{ background: b.active ? "rgba(250,204,21,0.7)" : "rgba(255,255,255,0.72)", backdropFilter: "blur(12px) saturate(140%)" }}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95 border ${
+                b.active
+                  ? "bg-amber-400 text-black border-amber-500 shadow-amber-500/20"
+                  : "bg-white/85 dark:bg-[#1a231d]/90 text-foreground border-white/40 dark:border-white/10 hover:bg-white dark:hover:bg-[#232f27]"
+              }`}
+              style={{ backdropFilter: "blur(14px) saturate(140%)" }}
             >
               {b.icon}
             </button>
@@ -1934,28 +2146,109 @@ export default function QuranReader() {
         </div>
       )}
 
-      {/* لوحة التنقّل — السور والعلامات المرجعية */}
+      {/* لوحة التنقّل — السور ونظام المربعات والعلامات المرجعية */}
       {surahListOpen && (
-        <div className="absolute inset-0 z-[55] flex items-end justify-center bg-black/50 animate-fade-in" onClick={() => setSurahListOpen(false)}>
-          <div className="w-full max-w-md max-h-[72vh] overflow-y-auto rounded-t-3xl p-3 shadow-2xl border-t border-white/40"
-            style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(20px)" }} onClick={e => e.stopPropagation()} dir="rtl">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex gap-1 bg-foreground/5 rounded-xl p-1">
-                <button onClick={() => setNavTab("surahs")} className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 ${navTab === "surahs" ? "bg-amber-400 text-black" : "text-foreground/70"}`}><List className="w-4 h-4" /> السور</button>
-                <button onClick={() => setNavTab("bookmarks")} className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 ${navTab === "bookmarks" ? "bg-amber-400 text-black" : "text-foreground/70"}`}><BookmarkIcon className="w-4 h-4" /> العلامات</button>
+        <div className="absolute inset-0 z-[55] flex items-end justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setSurahListOpen(false)}>
+          <div className="w-full max-w-md max-h-[78dvh] overflow-y-auto rounded-t-3xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] shadow-2xl border-t border-white/40 dark:border-white/10 bg-white/95 dark:bg-[#121915]/95 backdrop-blur-2xl text-foreground"
+            onClick={e => e.stopPropagation()} dir="rtl">
+            <div className="flex items-center justify-between mb-3.5">
+              <div className="flex gap-1 bg-foreground/5 dark:bg-white/5 rounded-xl p-1">
+                <button onClick={() => setNavTab("surahs")} className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${navTab === "surahs" ? "bg-amber-400 text-black shadow-sm" : "text-foreground/70 dark:text-stone-300"}`}><List className="w-3.5 h-3.5" /> السور</button>
+                <button onClick={() => setNavTab("boxes")} className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${navTab === "boxes" ? "bg-amber-400 text-black shadow-sm" : "text-foreground/70 dark:text-stone-300"}`}><Layers className="w-3.5 h-3.5" /> نظام المربعات</button>
+                <button onClick={() => setNavTab("bookmarks")} className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${navTab === "bookmarks" ? "bg-amber-400 text-black shadow-sm" : "text-foreground/70 dark:text-stone-300"}`}><BookmarkIcon className="w-3.5 h-3.5" /> العلامات</button>
               </div>
-              <button onClick={() => setSurahListOpen(false)} className="w-8 h-8 rounded-full bg-foreground/10 flex items-center justify-center"><X className="w-4 h-4" /></button>
+              <button onClick={() => setSurahListOpen(false)} aria-label="إغلاق" className="w-8 h-8 rounded-full bg-foreground/10 hover:bg-foreground/20 text-foreground flex items-center justify-center transition-colors"><X className="w-4 h-4" /></button>
             </div>
 
-            {navTab === "surahs" ? (
-              <div className="grid grid-cols-2 gap-2">
-                {allSurahsList.map((s, i) => (
-                  <button key={`${s.number}-${i}`} onClick={() => jumpToSurah(s.pageIdx, s.surahIdx)}
-                    className="p-2.5 rounded-xl bg-foreground/5 hover:bg-amber-200/70 text-right font-bold text-sm flex items-center justify-between gap-2 active:scale-[0.98] transition-all">
-                    <span className="truncate">{s.name}</span>
-                    <span className="text-[11px] text-muted-foreground shrink-0">{s.number}</span>
-                  </button>
-                ))}
+            {navTab === "boxes" ? (
+              <div className="space-y-3">
+                {/* شريط البحث في المربعات */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={boxSearchQuery}
+                    onChange={(e) => setBoxSearchQuery(e.target.value)}
+                    placeholder="ابحث باسم المربع (مثل: بسملة، الآية 1)..."
+                    className="w-full bg-foreground/5 dark:bg-white/5 border border-border/40 rounded-xl px-3 py-2 pr-9 text-xs font-bold text-foreground outline-none focus:border-amber-500/50"
+                  />
+                  {boxSearchQuery && (
+                    <button onClick={() => setBoxSearchQuery("")} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
+                  <span>المربعات المتاحة ({filteredMushafBoxes.length})</span>
+                  <span>اضغط للانتقال المباشر والتظليل</span>
+                </div>
+
+                {filteredMushafBoxes.length === 0 ? (
+                  <div className="text-center py-8 rounded-2xl bg-foreground/5 border border-dashed border-border/40 p-4 space-y-1">
+                    <Layers className="w-8 h-8 text-muted-foreground/40 mx-auto mb-1" />
+                    <p className="font-bold text-xs text-foreground">لا توجد مربعات مطابقة</p>
+                    <p className="text-[10px] text-muted-foreground">يمكنك إضافة وتسمية مربعات جديدة من محرر التظليل.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-[50vh] overflow-y-auto pr-0.5 custom-scrollbar">
+                    {filteredMushafBoxes.map((item, idx) => {
+                      const isCurrentBoxActive = activeSurahNum === item.box.surah && activeAyahNum === item.box.ayah;
+                      return (
+                        <button
+                          key={`mushaf-box-${item.box.surah}-${item.box.ayah}-${idx}`}
+                          onClick={() => jumpToBox(item)}
+                          className={`w-full p-2.5 rounded-2xl border text-right transition-all flex items-center justify-between gap-2.5 ${
+                            isCurrentBoxActive
+                              ? "bg-amber-500/20 dark:bg-amber-500/30 border-amber-500 shadow-md ring-1 ring-amber-400/50"
+                              : "bg-foreground/5 hover:bg-amber-500/10 dark:hover:bg-amber-500/15 border-border/30 hover:border-amber-500/40"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span
+                              className="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm border border-white/20"
+                              style={{ backgroundColor: item.box.color || "#eab308" }}
+                            />
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-amiri font-bold text-sm text-foreground truncate">
+                                {item.displayLabel}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground truncate">
+                                {item.surahName} · {item.pageName}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-foreground/5 border border-border/30 text-muted-foreground">
+                              {item.box.ayah === 0 ? "بسملة" : `آية ${item.box.ayah}`}
+                            </span>
+                            <Play className="w-3.5 h-3.5 text-amber-500" />
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : navTab === "surahs" ? (
+              <div className="grid grid-cols-2 gap-2 max-h-[55vh] overflow-y-auto pr-0.5 custom-scrollbar">
+                {allSurahsList.map((s, i) => {
+                  const bCount = surahBoxMap[s.number]?.count || 0;
+                  return (
+                    <button key={`${s.number}-${i}`} onClick={() => jumpToSurah(s.pageIdx, s.surahIdx)}
+                      className="p-2.5 rounded-xl bg-foreground/5 hover:bg-amber-200/70 dark:hover:bg-amber-950/50 text-right font-bold text-sm flex items-center justify-between gap-2 active:scale-[0.98] transition-all border border-transparent hover:border-amber-500/30">
+                      <div className="flex flex-col min-w-0">
+                        <span className="truncate">{s.name}</span>
+                        {bCount > 0 && (
+                          <span className="text-[9px] text-amber-600 dark:text-amber-400 font-sans font-medium flex items-center gap-1">
+                            <Layers className="w-2.5 h-2.5" /> {bCount} مربع
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-muted-foreground shrink-0">{s.number}</span>
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="space-y-2">
@@ -1982,8 +2275,7 @@ export default function QuranReader() {
       {pageOrderOpen && (
         <div className="absolute inset-0 z-[56] flex items-end justify-center bg-black/55 animate-fade-in" onClick={() => setPageOrderOpen(false)}>
           <div
-            className="w-full max-w-lg max-h-[85vh] rounded-t-3xl animate-slide-up-short pointer-events-auto overflow-hidden flex flex-col"
-            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.92) 100%)', backdropFilter: 'blur(24px)' }}
+            className="w-full max-w-lg max-h-[85dvh] pb-[env(safe-area-inset-bottom,0px)] rounded-t-3xl animate-slide-up-short pointer-events-auto overflow-hidden flex flex-col bg-white/95 dark:bg-[#121915]/95 backdrop-blur-2xl text-foreground border-t border-white/40 dark:border-white/10"
             onClick={e => e.stopPropagation()}
             dir="rtl"
           >
@@ -2082,7 +2374,7 @@ export default function QuranReader() {
         const stats = { t: segList.filter(s => s.type === 'teacher').length, k: segList.filter(s => s.type === 'kids').length };
         return (
           <div className="absolute inset-0 z-[57] flex items-end justify-center bg-black/55 animate-fade-in" onClick={() => setSplitToolOpen(false)}>
-            <div className="w-full max-w-lg max-h-[88vh] rounded-t-3xl animate-slide-up-short overflow-hidden flex flex-col" style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)' }} onClick={e => e.stopPropagation()} dir="rtl">
+            <div className="w-full max-w-lg max-h-[88dvh] pb-[env(safe-area-inset-bottom,0px)] rounded-t-3xl animate-slide-up-short overflow-hidden flex flex-col bg-white/95 dark:bg-[#121915]/95 backdrop-blur-2xl text-foreground border-t border-white/40 dark:border-white/10" onClick={e => e.stopPropagation()} dir="rtl">
               <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-muted/50">
                 <div className="flex items-center gap-2">
                   <span className="h-8 w-8 rounded-xl bg-violet-500/10 flex items-center justify-center"><SplitSquareHorizontal className="w-4 h-4 text-violet-600" /></span>
@@ -2117,7 +2409,7 @@ export default function QuranReader() {
                 )}
               </div>
               <div className="px-5 py-4 border-t border-muted/50 space-y-2">
-                <button onClick={() => { setSplitToolOpen(false); navigate('/timings'); }} className="w-full py-3 rounded-2xl bg-violet-500 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.97] shadow-lg"><Wrench className="w-4 h-4" /> صفحة التسجيل المتقدم</button>
+                <button onClick={() => { setSplitToolOpen(false); safeNavigate('/timings'); }} className="w-full py-3 rounded-2xl bg-violet-500 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.97] shadow-lg"><Wrench className="w-4 h-4" /> صفحة التسجيل المتقدم</button>
                 <button onClick={() => setSplitToolOpen(false)} className="w-full py-2.5 rounded-2xl bg-foreground/5 text-foreground/70 font-bold text-xs active:scale-[0.97]">إغلاق</button>
               </div>
             </div>
@@ -2139,10 +2431,10 @@ export default function QuranReader() {
             if (pinAction === "enter") {
               setAppMode("kids");
               setKidsLocked(true);
-              navigate("/games");
+              safeNavigate("/games");
             } else if (pinAction === "settings") {
               sessionStorage.setItem("mushaf:settingsUnlocked", "1");
-              navigate("/settings");
+              safeNavigate("/settings");
             } else {
               setAppMode("parent");
               setKidsLocked(false);
@@ -2155,8 +2447,8 @@ export default function QuranReader() {
 
       {controlsOpen && (
         <div className="absolute inset-x-0 bottom-0 z-40 animate-fade-in" onClick={(e) => e.stopPropagation()}>
-          <div className="absolute inset-0 -top-32 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-          <div className="relative mx-auto max-w-2xl m-3 rounded-3xl p-4 shadow-2xl border border-white/30" style={{ background: "rgba(255,255,255,0.55)", backdropFilter: "blur(24px) saturate(140%)" }}>
+          <div className="absolute inset-0 -top-32 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+          <div className="relative mx-auto max-w-2xl m-3 max-h-[85dvh] overflow-y-auto rounded-3xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] shadow-2xl border border-white/30 dark:border-white/10 bg-white/90 dark:bg-[#121915]/95 backdrop-blur-2xl text-foreground">
             <div className="flex items-center justify-between mb-3">
               {editingPageName ? (
                 <div className="flex items-center gap-2 flex-1">
@@ -2164,7 +2456,7 @@ export default function QuranReader() {
                     type="text"
                     value={tempPageName}
                     onChange={(e) => setTempPageName(e.target.value)}
-                    className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-accent/50 font-amiri font-bold text-base outline-none focus:ring-2 focus:ring-accent/50"
+                    className="flex-1 px-3 py-1.5 rounded-xl bg-background border border-accent/50 font-amiri font-bold text-base outline-none focus:ring-2 focus:ring-accent/50 text-foreground"
                     autoFocus
                     dir="rtl"
                     placeholder="اسم الصفحة..."
@@ -2238,14 +2530,14 @@ export default function QuranReader() {
               </div>
             )}
 
-            <div className="mb-4 bg-white/40 p-3 rounded-xl border border-white/60">
+            <div className="mb-4 bg-foreground/5 dark:bg-white/5 p-3 rounded-xl border border-border/50 dark:border-white/10">
               <p className="text-xs font-bold mb-2 text-muted-foreground">وضع التشغيل</p>
               
               {/* Play mode buttons - 2x2 grid for clarity */}
               <div className="grid grid-cols-2 gap-1.5 mb-3">
                 {([
-                  { mode: "teacher" as PlayMode, label: "معلم فقط", Icon: Mic, desc: "تشغيل المعلم وحده", activeColor: "bg-amber-400/20 border-amber-400/50 text-amber-800" },
-                  { mode: "kids" as PlayMode, label: "طفل فقط", Icon: Baby, desc: "تشغيل الطفل وحده", activeColor: "bg-sky-400/20 border-sky-400/50 text-sky-800" },
+                  { mode: "teacher" as PlayMode, label: "معلم فقط", Icon: Mic, desc: "تشغيل المعلم وحده", activeColor: "bg-amber-400/20 border-amber-400/50 text-amber-800 dark:text-amber-300" },
+                  { mode: "kids" as PlayMode, label: "طفل فقط", Icon: Baby, desc: "تشغيل الطفل وحده", activeColor: "bg-sky-400/20 border-sky-400/50 text-sky-800 dark:text-sky-300" },
                 ]).map(({ mode, label, Icon, desc, activeColor }) => (
                   <button
                     key={mode}
@@ -2256,7 +2548,7 @@ export default function QuranReader() {
                     className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all border flex flex-col items-center gap-0.5 ${
                       playMode === mode && !isSimultaneousPlaying
                         ? `${activeColor} shadow ring-1 ring-black/5`
-                        : "bg-white/70 border-border/60 text-foreground/70 hover:bg-white"
+                        : "bg-card/80 dark:bg-card/40 border-border/60 text-foreground/80 hover:bg-card"
                     }`}
                     title={desc}
                   >
@@ -2264,6 +2556,18 @@ export default function QuranReader() {
                     <span>{label}</span>
                   </button>
                 ))}
+
+                {/* Alternating teacher↔kids mode */}
+                {selectedSurah && (
+                  <button
+                    onClick={toggleAlternatingMode}
+                    className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all border border-2 flex flex-col items-center gap-0.5 ${alternatingMode ? "bg-amber-500/20 border-amber-500/50 text-amber-700 shadow ring-1 ring-black/5" : "bg-card/80 dark:bg-card/40 border-border/60 text-foreground/80 hover:bg-card"}`}
+                    title={alternatingMode ? "إيقاف التناوب بين المعلم والطفل" : "التناوب بين المعلم والطفل (كل 3 آيات)"}
+                  >
+                    <ToggleRight className="w-5 h-5" />
+                    <span>التبادل بين المعلم والطفل</span>
+                  </button>
+                )}
 
                 {/* Simultaneous (Together) mode */}
                 {selectedSurah && (() => {
@@ -2289,8 +2593,8 @@ export default function QuranReader() {
                       }}
                       className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all border flex flex-col items-center gap-0.5 ${
                         isSimultaneousPlaying
-                          ? "bg-emerald-400/20 border-emerald-400/50 text-emerald-800 shadow ring-1 ring-emerald-400/20 animate-pulse"
-                          : "bg-gradient-to-br from-amber-50 to-sky-50 border-border/60 text-foreground/70 hover:border-amber-400/40"
+                          ? "bg-emerald-400/20 border-emerald-400/50 text-emerald-800 dark:text-emerald-300 shadow ring-1 ring-emerald-400/20 animate-pulse"
+                          : "bg-card/80 dark:bg-card/40 border-border/60 text-foreground/80 hover:border-amber-400/40"
                       }`}
                       title="تشغيل المعلم والطفل في نفس الوقت"
                     >
@@ -2305,8 +2609,8 @@ export default function QuranReader() {
               {isPlaying && activeSurah && !isSimultaneousPlaying && (
                 <div className={`flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg mb-3 text-xs font-bold animate-fade-in ${
                   currentSpeakerRef.current === "kids" 
-                    ? "bg-sky-100/50 text-sky-700 border border-sky-200/50" 
-                    : "bg-amber-100/50 text-amber-700 border border-amber-200/50"
+                    ? "bg-sky-100/50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200/50 dark:border-sky-800/30" 
+                    : "bg-amber-100/50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/30"
                 }`}>
                   {currentSpeakerRef.current === "kids" ? <Baby className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                   <span>يتحدث الآن: {currentSpeakerRef.current === "kids" ? "الطفل" : "المعلم"}</span>
@@ -2319,7 +2623,7 @@ export default function QuranReader() {
               )}
 
               {isSimultaneousPlaying && (
-                <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg mb-3 text-xs font-bold bg-emerald-100/50 text-emerald-700 border border-emerald-200/50 animate-fade-in">
+                <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg mb-3 text-xs font-bold bg-emerald-100/50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/30 animate-fade-in">
                   <Volume2 className="w-4 h-4" />
                   <span>تشغيل المعلم والطفل المتزامن</span>
                   <div className="flex items-center gap-[2px] h-3">
@@ -2347,7 +2651,7 @@ export default function QuranReader() {
                 <select
                   value={repeatCount}
                   onChange={(e) => setRepeatCount(Number(e.target.value))}
-                  className="bg-white border border-border rounded-md px-2 py-1 text-sm outline-none cursor-pointer"
+                  className="bg-background border border-border text-foreground rounded-md px-2 py-1 text-sm outline-none cursor-pointer"
                 >
                   <option value={0}>بدون</option>
                   <option value={1}>مرة</option>
@@ -2360,7 +2664,7 @@ export default function QuranReader() {
 
               {/* زر الانتقال لإعدادات التظليل الكاملة (حسب طلب إزالة التحكم بالتظليل من هذه الواجهة) */}
               <button
-                onClick={() => navigate("/settings")}
+                onClick={() => safeNavigate("/settings")}
                 className="w-full mt-3 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 text-accent bg-accent/10 border border-accent/20 hover:bg-accent/20 transition-all active:scale-95"
               >
                 <Palette className="w-4 h-4" /> إعدادات المظهر والتظليل
@@ -2374,7 +2678,7 @@ export default function QuranReader() {
                     const allVisibleBoxes = visiblePages.flatMap(p => getPageAyahBoxes(p.src));
                     const firstA = allVisibleBoxes.filter(b => b.surah === s.number).sort((a,b)=>a.ayah-b.ayah)[0]?.ayah ?? 1;
                     return (
-                    <button key={s.number} onClick={() => { setSelectedSurahIdx(i); setSelectedAyah(firstA); }} className={`px-3 py-1.5 rounded-full text-sm font-amiri border transition-all ${selectedSurahIdx === i ? "bg-accent text-accent-foreground shadow" : "bg-white/70 border-border/60"}`}>
+                    <button key={`${s.number}-${i}`} onClick={() => { setSelectedSurahIdx(i); setSelectedAyah(firstA); }} className={`px-3 py-1.5 rounded-full text-sm font-amiri border transition-all ${selectedSurahIdx === i ? "bg-accent text-accent-foreground shadow" : "bg-card/80 dark:bg-card/40 border-border/60 text-foreground"}`}>
                       {s.name}
                     </button>
                     );
@@ -2395,7 +2699,7 @@ export default function QuranReader() {
                   return numbers.map(n => {
                     const box = surahBoxes.find(b => b.ayah === n);
                     return (
-                      <button key={n} onClick={() => { setSelectedAyah(n); currentRepeatRef.current = 0; playAyah(selectedSurah, n, playMode === "kids" ? "kids" : "teacher"); }} className={`aspect-square rounded-lg text-sm font-bold transition-all flex items-center justify-center ${selectedAyah === n ? "bg-accent text-accent-foreground shadow scale-105" : "bg-white/70 hover:bg-white"}`}>
+                      <button key={n} onClick={() => { setSelectedAyah(n); currentRepeatRef.current = 0; playAyah(selectedSurah, n, playMode === "kids" ? "kids" : "teacher"); }} className={`aspect-square rounded-lg text-sm font-bold transition-all flex items-center justify-center ${selectedAyah === n ? "bg-accent text-accent-foreground shadow scale-105" : "bg-card/80 dark:bg-card/40 hover:bg-card text-foreground"}`}>
                         {box?.label ? <span className="text-[10px] leading-tight block truncate px-1">{box.label}</span> : n}
                       </button>
                     );
@@ -2451,7 +2755,7 @@ export default function QuranReader() {
                     className={`aspect-square min-w-0 overflow-hidden whitespace-nowrap text-ellipsis rounded-2xl px-1 font-bold text-base sm:text-xl flex items-center justify-center transition-all ${
                       isActive 
                         ? "bg-accent text-accent-foreground shadow-lg scale-105 border-2 border-accent/20 ring-4 ring-accent/30" 
-                        : "bg-white/90 text-foreground/80 hover:bg-white hover:text-accent border border-border shadow-sm hover:scale-105 hover:shadow-md"
+                        : "bg-card/90 dark:bg-card/50 text-foreground/85 hover:bg-card dark:hover:bg-card/80 hover:text-accent border border-border/70 shadow-sm hover:scale-105 hover:shadow-md"
                     }`}
                     title={p.name}
                   >

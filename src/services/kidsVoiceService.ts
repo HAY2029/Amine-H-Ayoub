@@ -65,7 +65,7 @@ export const fetchKidsVoice = async ({
       let blob: Blob | null = null;
       if (payload.audioBase64) {
         const bytes = base64ToBytes(payload.audioBase64);
-        blob = new Blob([bytes], { type: payload.contentType || "audio/mpeg" });
+        blob = new Blob([bytes.buffer as ArrayBuffer], { type: payload.contentType || "audio/mpeg" });
       } else if (payload.audioUrl) {
         const res = await fetch(payload.audioUrl);
         if (res.ok) blob = await res.blob();

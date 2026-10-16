@@ -3,7 +3,7 @@
 
 // Mapping from API surah name → page image(s)
 export const surahPageMap: Record<string, string[]> = {
-  "الفاتحة": ["/pages/fatiha.jpg"],
+  "الفاتحة": ["/pages/0.jpg"],
   "التكاثر": ["/pages/600.jpg"],
   "العصر": ["/pages/601.jpg"],
   "الهمزة": ["/pages/601.jpg"],

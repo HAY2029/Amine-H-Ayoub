@@ -3,7 +3,7 @@
  */
 import { supabase, hasValidSupabaseKey } from "../lib/supabase";
 
-export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "catchstar" | "ayahmath" | "listenkids";
+export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "catchstar" | "ayahmath" | "listenkids" | "makkimadani" | "oddword";
 
 export interface GameDef {
   id: string;
@@ -117,7 +117,7 @@ const isValid = (g: unknown): g is GameDef => {
   const d = g as GameDef;
   if (!d || typeof d.id !== "string" || typeof d.title !== "string" || typeof d.cost !== "number") return false;
   if (BANNED_NON_QURAN_IDS.has(d.id)) return false;
-  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "catchstar", "ayahmath", "listenkids"];
+  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "catchstar", "ayahmath", "listenkids", "makkimadani", "oddword"];
   if (!engines.includes(d.engine)) return false;
   return true;
 };
@@ -269,4 +269,6 @@ export const BUILTIN_GAMES: GameDef[] = [
   G("wordbuilder", "رتّب كلمات القرآن", "wordbuilder", 4, 16, 250, "Puzzle", FULL, 1),
   G("catchstar", "صائد النجوم والكلمات", "catchstar", 4, 16, 200, "Star", FULL, 2),
   G("ayahmath", "أرقام وحساب الآيات", "ayahmath", 4, 16, 350, "Hash", FULL, 3),
+  G("makkimadani", "سفينة السور: مكية أم مدنية؟", "makkimadani", 4, 16, 200, "Landmark", FULL, 4),
+  G("oddword", "الكلمة القرآنية المختلفة", "oddword", 4, 16, 250, "Sparkles", FULL, 5),
 ];

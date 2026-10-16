@@ -267,10 +267,11 @@ export default function BadgesModal({ onClose }: Props) {
                     // حساب إحصائيات القرآن مثل الموجودة في الإعدادات
                     let totalAyahs = 0;
                     let surahsCompleted = 0;
-                    if (profile.stats?.history) {
+                    const statsHistory = (profile as unknown as { stats?: { history?: Record<string, { ayahs?: string[] }> } }).stats?.history;
+                    if (statsHistory) {
                       const uniqueAyahs = new Set<string>();
                       const surahCounts: Record<number, number> = {};
-                      Object.values(profile.stats.history).forEach(day => {
+                      Object.values(statsHistory).forEach(day => {
                         day.ayahs?.forEach(a => {
                           uniqueAyahs.add(a);
                           const surahNum = parseInt(a.split(':')[0]);

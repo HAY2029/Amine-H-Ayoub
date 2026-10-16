@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Trophy, Sparkles } from 'lucide-react';
 import { addCoins } from '../data/kidsProfile';
 import { toast } from '../hooks/use-toast';
+import { playCardFlipSfx, playMatchSuccessSfx, playMismatchSfx, playVictoryFanfareSfx } from '../utils/gameSfx';
 
 interface CardData {
   id: number;
@@ -106,6 +107,7 @@ export default function MemoryGame({ onBack, def, minSurah }: MemoryGameProps) {
     if (cards[index].isFlipped || cards[index].isMatched) return;
     if (firstCardIndex === index) return;
 
+    playCardFlipSfx();
     const newCards = [...cards];
     newCards[index].isFlipped = true;
     setCards(newCards);
@@ -125,6 +127,7 @@ export default function MemoryGame({ onBack, def, minSurah }: MemoryGameProps) {
 
     if (firstCard.id === secondCard.id && firstCard.type !== secondCard.type) {
       // Match found - تطابق صحيح
+      playMatchSuccessSfx();
       setTimeout(() => {
         const newCards = [...cards];
         newCards[firstCardIndex!].isMatched = true;
@@ -141,6 +144,7 @@ export default function MemoryGame({ onBack, def, minSurah }: MemoryGameProps) {
       }, 500);
     } else {
       // No match - إرجاع البطاقات لوضعها الأصلي
+      playMismatchSfx();
       setTimeout(() => {
         const newCards = [...cards];
         newCards[firstCardIndex!].isFlipped = false;
@@ -148,16 +152,17 @@ export default function MemoryGame({ onBack, def, minSurah }: MemoryGameProps) {
         setCards(newCards);
         setFirstCardIndex(null);
         setLockBoard(false);
-      }, 1000);
+      }, 900);
     }
   };
 
   const handleWin = () => {
     setWon(true);
-    addCoins(2); // مكافأة صارمة
+    playVictoryFanfareSfx();
+    addCoins(2); // مكافأة
     toast({
       title: "🎉 رائع! طابقت كل السور",
-      description: "حصلت على 10 نجوم!",
+      description: "حصلت على نجوم تشجيعية!",
     });
   };
 

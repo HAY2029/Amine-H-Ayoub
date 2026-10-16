@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, startTransition } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Headphones, BookOpen, Gamepad2, Settings, User, Lock, ShoppingBag, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
@@ -26,6 +26,12 @@ export default function AppNav({
 }: AppNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const safeNavigate = (to: string) => {
+    startTransition(() => {
+      navigate(to);
+    });
+  };
 
   const [kidsMode, setKidsMode] = useState(isKidsMode);
   const [pureMode, setPureModeState] = useState(isPureMode);
@@ -72,13 +78,13 @@ export default function AppNav({
   const handleGamesClick = (e?: React.MouseEvent) => {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     if (isGamesLocked()) { setLockGateTarget("الألعاب"); setShowLockGate(true); return; }
-    navigate("/games");
+    safeNavigate("/games");
   };
 
   const handleShopClick = (e?: React.MouseEvent) => {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     if (isGamesLocked()) { setLockGateTarget("المتجر"); setShowLockGate(true); return; }
-    navigate("/shop");
+    safeNavigate("/shop");
   };
 
   const refreshState = () => {
@@ -123,20 +129,20 @@ export default function AppNav({
 
   const path = location.pathname;
 
-  const handleParentClick = () => { if (kidsMode) setPinAction("parent"); else navigate("/parent"); };
-  const handleSettingsClick = () => { if (kidsMode) setPinAction("settings"); else navigate("/settings"); };
+  const handleParentClick = () => { if (kidsMode) setPinAction("parent"); else safeNavigate("/parent"); };
+  const handleSettingsClick = () => { if (kidsMode) setPinAction("settings"); else safeNavigate("/settings"); };
   const handleUnlockClick = () => { setLockGateTarget("الألعاب وركن الأطفال"); setShowLockGate(true); };
 
   const handleEnableKidsFromPure = () => {
     setPureMode(false); setKidsHidden(false); setAppMode("parent"); refreshState();
     toast({ title: "🌟 تم تفعيل ركن الأطفال!", description: "تم الانتقال إلى وضع التنقل المرن" });
-    navigate("/games");
+    safeNavigate("/games");
   };
 
   const onPinSuccess = () => {
     if (pinAction === "unlock") { setKidsLocked(false); refreshState(); toast({ title: "تم فك قفل الأطفال بنجاح ✓" }); }
-    else if (pinAction === "parent") { setKidsLocked(false); refreshState(); navigate("/parent"); }
-    else if (pinAction === "settings") { sessionStorage.setItem("mushaf:settingsUnlocked", "1"); navigate("/settings"); }
+    else if (pinAction === "parent") { setKidsLocked(false); refreshState(); safeNavigate("/parent"); }
+    else if (pinAction === "settings") { sessionStorage.setItem("mushaf:settingsUnlocked", "1"); safeNavigate("/settings"); }
     setPinAction(null);
   };
 
@@ -146,23 +152,23 @@ export default function AppNav({
   const getMobileNavItems = () => {
     if (kidsMode) {
       return [
-        { path: "/audio", icon: Headphones, label: "التلاوات", onClick: () => navigate("/audio") },
-        { path: "/mushaf", icon: BookOpen, label: "المصحف", onClick: () => navigate("/mushaf") },
+        { path: "/audio", icon: Headphones, label: "التلاوات", onClick: () => safeNavigate("/audio") },
+        { path: "/mushaf", icon: BookOpen, label: "المصحف", onClick: () => safeNavigate("/mushaf") },
         { path: "/games", icon: Gamepad2, label: "الألعاب", onClick: () => handleGamesClick(), locked: isGamesLocked() },
         { path: "/shop", icon: ShoppingBag, label: "المتجر", onClick: () => handleShopClick(), locked: isGamesLocked() },
       ];
     }
     if (pureMode) {
       return [
-        { path: "/audio", icon: Headphones, label: "التلاوات", onClick: () => navigate("/audio") },
-        { path: "/mushaf", icon: BookOpen, label: "المصحف", onClick: () => navigate("/mushaf") },
+        { path: "/audio", icon: Headphones, label: "التلاوات", onClick: () => safeNavigate("/audio") },
+        { path: "/mushaf", icon: BookOpen, label: "المصحف", onClick: () => safeNavigate("/mushaf") },
         { path: "/settings", icon: Settings, label: "الإعدادات", onClick: handleSettingsClick },
       ];
     }
     return [
-      { path: "/audio", icon: Headphones, label: "التلاوات", onClick: () => navigate("/audio") },
-      { path: "/mushaf", icon: BookOpen, label: "المصحف", onClick: () => navigate("/mushaf") },
-      { path: "/games", icon: Gamepad2, label: "الألعاب", onClick: () => navigate("/games") },
+      { path: "/audio", icon: Headphones, label: "التلاوات", onClick: () => safeNavigate("/audio") },
+      { path: "/mushaf", icon: BookOpen, label: "المصحف", onClick: () => safeNavigate("/mushaf") },
+      { path: "/games", icon: Gamepad2, label: "الألعاب", onClick: () => safeNavigate("/games") },
       { path: "/settings", icon: Settings, label: "الإعدادات", onClick: handleSettingsClick },
     ];
   };
@@ -214,8 +220,8 @@ export default function AppNav({
           {renderNavTab("/games", "الألعاب", Gamepad2, handleGamesClick, isGamesLocked() && (
             <Lock className={`w-3 h-3 ${isActive("/games") ? "text-amber-200" : "text-amber-600 dark:text-amber-400"} animate-pulse shrink-0`} />
           ))}
-          {renderNavTab("/audio", "التلاوات", Headphones, () => navigate("/audio"))}
-          {renderNavTab("/mushaf", "المصحف", BookOpen, () => navigate("/mushaf"))}
+          {renderNavTab("/audio", "التلاوات", Headphones, () => safeNavigate("/audio"))}
+          {renderNavTab("/mushaf", "المصحف", BookOpen, () => safeNavigate("/mushaf"))}
           {renderNavTab("/shop", "المتجر", ShoppingBag, handleShopClick, isGamesLocked() ? (
             <Lock className={`w-3 h-3 ${isActive("/shop") ? "text-amber-200" : "text-amber-600 dark:text-amber-400"} animate-pulse shrink-0`} />
           ) : (
@@ -227,8 +233,8 @@ export default function AppNav({
     if (pureMode) {
       return (
         <div className="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 flex-1 py-0.5 relative z-10 w-full">
-          {renderNavTab("/audio", "التلاوات", Headphones, () => navigate("/audio"))}
-          {renderNavTab("/mushaf", "المصحف", BookOpen, () => navigate("/mushaf"))}
+          {renderNavTab("/audio", "التلاوات", Headphones, () => safeNavigate("/audio"))}
+          {renderNavTab("/mushaf", "المصحف", BookOpen, () => safeNavigate("/mushaf"))}
           {renderNavTab("/settings", "الإعدادات", Settings, handleSettingsClick)}
           <button
             onClick={handleEnableKidsFromPure}
@@ -244,9 +250,9 @@ export default function AppNav({
     }
     return (
       <div className="flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 flex-1 py-0.5 relative z-10 w-full">
-        {renderNavTab("/audio", "التلاوات", Headphones, () => navigate("/audio"))}
-        {renderNavTab("/mushaf", "المصحف", BookOpen, () => navigate("/mushaf"))}
-        {renderNavTab("/games", "الألعاب", Gamepad2, () => navigate("/games"))}
+        {renderNavTab("/audio", "التلاوات", Headphones, () => safeNavigate("/audio"))}
+        {renderNavTab("/mushaf", "المصحف", BookOpen, () => safeNavigate("/mushaf"))}
+        {renderNavTab("/games", "الألعاب", Gamepad2, () => safeNavigate("/games"))}
         {renderNavTab(
           "/parent",
           <>

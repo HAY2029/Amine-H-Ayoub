@@ -49,7 +49,7 @@ interface SurahAudio { name: string; number: number; src: string; ayahCount: num
 interface PageInfo { name: string; src: string; surahs: SurahAudio[]; }
 
 const pages: PageInfo[] = [
-  { name: "الفاتحة", src: "/pages/fatiha.jpg", surahs: [
+  { name: "الفاتحة", src: "/pages/0.jpg", surahs: [
     { name: "الفاتحة", number: 1, src: audioPath(1), ayahCount: 7 },
   ]},
   { name: "القارعة - التكاثر", src: "/pages/600.jpg", surahs: [

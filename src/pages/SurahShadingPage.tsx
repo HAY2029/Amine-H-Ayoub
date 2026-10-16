@@ -7,7 +7,7 @@ import {
   Layers, Upload, Server, Crosshair, BookOpen, Search, X, Zap, CheckCircle2
 } from "lucide-react";
 import { getAllSurahs, getSurahByNumber, SurahInfo } from "@/data/quranData";
-import { getSurahAudioUrl } from "@/data/audioUrls";
+import { getSurahAudioUrl, getSurahAudioCandidates, getFallbackAudioUrl } from "@/data/audioUrls";
 import {
   getPageAyahBoxes, savePageAyahBoxes, AyahBox, getAllPageSources,
   PAGE_IMAGE_SIZE, AYAH_COORDINATES, syncCoordinatesFromServer
@@ -160,6 +160,9 @@ export default function SurahShadingPage() {
     id: number;
   } | null>(null);
 
+  // الآية المختارة لتظليل فردي (تظليل أقوى عند الضغط على المربع)
+  const [singleAyahHighlight, setSingleAyahHighlight] = useState<{ surah: number; ayah: number } | null>(null);
+
   // مقياس العرض والتكبير (نسبة إلى 1260x1929)
   const [scale, setScale] = useState<number>(() => {
     if (typeof window === "undefined") return 0.55;
@@ -226,9 +229,23 @@ export default function SurahShadingPage() {
         setServerImagesMap(map);
         setServerImagesList([]);
 
-        // تجميع مصادر الصفحات (الصفحات المحلية فقط لتجنب صفحات مستعادة أو غير مرغوب بها)
+        // جلب كافة الصفحات من مجلد "صفحة قران" عبر الـ API
+        let folderPages: string[] = [];
+        try {
+          const res = await fetch("/api/quran-pages");
+          if (res.ok) {
+            folderPages = await res.json();
+          }
+        } catch {}
+
+        folderPages.forEach(src => {
+          map[src] = src;
+        });
+
+        // تجميع مصادر الصفحات (مجلد صفحة قران والصفحات المعرفة)
         const rawCombined = [
           ...getAllPageSources(),
+          ...folderPages,
         ];
 
         const normalized = rawCombined.map(src => {
@@ -239,12 +256,13 @@ export default function SurahShadingPage() {
             return "custom:" + s.replace(/^custom[:\/]/, "");
           }
           const name = s.replace(/^pages\//, "");
+          if (name.includes("fatiha")) return "/pages/0.jpg";
           return name ? `/pages/${name}` : null;
         }).filter(Boolean) as string[];
 
         const combined = Array.from(new Set(normalized)).sort((a, b) => {
           const getNum = (s: string) => {
-            if (s.includes("fatiha") || s.includes("0.jpg")) return 1;
+            if (s.includes("fatiha") || s.includes("0.jpg")) return 0;
             if (s.startsWith("custom:")) return 999999;
             const m = s.match(/\d+/);
             return m ? parseInt(m[0], 10) : 999998;
@@ -255,7 +273,7 @@ export default function SurahShadingPage() {
 
         // إعادة تحميل مربعات الصفحة الحالية بعد المزامنة
         const currentMappedPage =
-          SURAH_TO_DEFAULT_PAGE[initialSurah] || "/pages/fatiha.jpg";
+          SURAH_TO_DEFAULT_PAGE[initialSurah] || "/pages/0.jpg";
         loadPage(currentMappedPage, initialSurah);
         computeSurahBoxCounts();
 
@@ -540,7 +558,19 @@ export default function SurahShadingPage() {
   const loadPage = (src: string, surahForFilter?: number) => {
     setActivePageSrc(src);
     const pageBoxes = getPageAyahBoxes(src);
-    const targetSurah = surahForFilter ?? selectedSurahNum;
+
+    let targetSurah = surahForFilter;
+    if (!targetSurah && pageBoxes.length > 0 && pageBoxes[0].surah) {
+      targetSurah = pageBoxes[0].surah;
+    }
+    if (!targetSurah) {
+      if (src.includes("0.jpg") || src.includes("fatiha")) targetSurah = 1;
+      else targetSurah = selectedSurahNum;
+    }
+
+    if (targetSurah && targetSurah !== selectedSurahNum) {
+      setSelectedSurahNum(targetSurah);
+    }
 
     if (pageBoxes.length > 0) {
       setBoxes(pageBoxes);
@@ -548,8 +578,6 @@ export default function SurahShadingPage() {
       const matchIdx = pageBoxes.findIndex((b) => b.surah === targetSurah);
       setSelectedIndex(matchIdx >= 0 ? matchIdx : 0);
     } else {
-      // لا توجد مربعات محفوظة — لا ننشئ مربعاً دائماً تلقائياً حتى لا يظل ظاهراً
-      // (المستخدم ينشئه بنفسه من «إنشاء مربع» أو «رسم مربع بالسحب»، واختيار السورة يُظهر وميضاً مؤقتاً ثم يختفي)
       setBoxes([]);
       setSelectedIndex(0);
     }
@@ -678,6 +706,16 @@ export default function SurahShadingPage() {
       boxH: target.height
     };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  // تعيين تظليل فردي للآية المضغوطة (حتى لو كانت على سطرين)
+  const handleSingleAyahHighlight = (surah: number, ayah: number) => {
+    setSingleAyahHighlight({ surah, ayah });
+  };
+
+  // إلغاء تظليل الآية الفردية
+  const clearSingleAyahHighlight = () => {
+    setSingleAyahHighlight(null);
   };
 
   // تغيير أبعاد المربع بالمقابض (Resize)
@@ -846,22 +884,74 @@ export default function SurahShadingPage() {
     }
   };
 
-  // التحكم بالصوت
+  // التحكم بالصوت مع دعم البدائل التلقائية (محلي -> سحابي -> أرشيف)
   const togglePlay = () => {
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().then(() => setIsPlaying(true)).catch((err) => {
-        toast({ title: "تعذر تشغيل الصوت", description: err.message, variant: "destructive" });
-      });
+      const candidates = getSurahAudioCandidates(selectedSurahNum);
+      let idx = 0;
+
+      const tryPlayNext = () => {
+        if (!audioRef.current || idx >= candidates.length) {
+          toast({
+            title: "تعذر تشغيل الصوت",
+            description: `تأكد من توفر صوت سورة ${currentSurah?.name || selectedSurahNum}`,
+            variant: "destructive"
+          });
+          setIsPlaying(false);
+          return;
+        }
+        audioRef.current.src = candidates[idx];
+        audioRef.current.load();
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+        }).catch(() => {
+          idx++;
+          tryPlayNext();
+        });
+      };
+
+      tryPlayNext();
     }
   };
 
-
-
   // الألوان المشتقة من اختيار المستخدم
+  // تحديث مصدر الصوت تلقائياً عند تغيير السورة (إصلاح مشكلة عدم عمل الصوت عند الربط)
+  useEffect(() => {
+    if (!audioRef.current) return;
+    const url = getSurahAudioUrl(selectedSurahNum);
+    if (audioRef.current.src !== url) {
+      audioRef.current.src = url;
+      audioRef.current.load();
+    }
+    // معالج خطأ لتجربة الروابط الاحتياطية تلقائياً
+    const handleAudioError = () => {
+      const candidates = getSurahAudioCandidates(selectedSurahNum);
+      let tried = 0;
+      const tryNext = () => {
+        if (tried >= candidates.length) {
+          setIsPlaying(false);
+          toast({
+            title: "فشل تحميل الصوت",
+            description: "تأكد من الاتصال بالإنترنت أو رفع صوت السورة يدوياً.",
+            variant: "destructive",
+          });
+          return;
+        }
+        tried++;
+        audioRef.current!.src = candidates[tried - 1];
+        audioRef.current!.load();
+        audioRef.current!.play().then(() => setIsPlaying(true)).catch(tryNext);
+      };
+      tryNext();
+    };
+    audioRef.current.addEventListener("error", handleAudioError);
+    return () => audioRef.current?.removeEventListener("error", handleAudioError);
+  }, [selectedSurahNum]);
+
   const activeBoxColorHex = selectedBox?.color || customColor;
   const activeBg = hexToRgba(activeBoxColorHex, opacity);
   const activeBorder = hexToRgba(activeBoxColorHex, 0.95);
@@ -874,11 +964,14 @@ export default function SurahShadingPage() {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
-      {/* مشغل الصوت الخفي */}
+      {/* مشغل الصوت */}
       <audio
         ref={audioRef}
+        key={`audio-${selectedSurahNum}`}
         src={getSurahAudioUrl(selectedSurahNum)}
         onEnded={() => setIsPlaying(false)}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
       />
 
       {/* الشريط الجانبي (الأدوات والإعدادات) */}
@@ -929,7 +1022,7 @@ export default function SurahShadingPage() {
                   
                   for (const src of allPages) {
                     let label = "";
-                    if (src.includes("0.jpg") || src.includes("fatiha")) label = "📖 الفاتحة";
+                    if (src.includes("0.jpg") || src.includes("fatiha")) label = "📖 الفاتحة (صفحة 0)";
                     else if (src.startsWith("custom:")) {
                       const cp = getCustomPages().find((p) => p.src === src);
                       if (cp && cp.name) {
@@ -960,6 +1053,44 @@ export default function SurahShadingPage() {
                 })()}
               </select>
               <Layers className="w-4 h-4 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:text-amber-500 transition-colors" />
+            </div>
+          </div>
+
+          {/* Section: Audio Playback */}
+          <div className="space-y-2">
+            <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-wider flex items-center gap-1.5">
+              <Volume2 className="w-3.5 h-3.5 text-amber-500" /> تلاوة السورة
+            </h2>
+            <div className="bg-black/35 border border-white/5 rounded-xl p-3 flex items-center justify-between gap-2.5 shadow-inner">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <button
+                  onClick={togglePlay}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all shadow-md ${
+                    isPlaying
+                      ? "bg-amber-500 text-black shadow-amber-500/30 ring-2 ring-amber-400/50"
+                      : "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30"
+                  }`}
+                  title={isPlaying ? "إيقاف مؤقت" : "تشغيل التلاوة"}
+                >
+                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                </button>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-stone-200 truncate">
+                    سورة {currentSurah?.name || selectedSurahNum}
+                  </div>
+                  <div className="text-[10px] text-stone-400 flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-emerald-400 animate-ping' : 'bg-stone-500'}`} />
+                    <span>{isPlaying ? "جاري الاستماع الآن 🎧" : "جاهز للتشغيل"}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate(`/sync-audio?surah=${selectedSurahNum}`)}
+                className="px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 text-[10px] font-bold text-purple-300 border border-purple-500/30 transition-colors shrink-0"
+                title="توقيت ومزامنة الآيات مع الصوت"
+              >
+                مزامنة ⏱️
+              </button>
             </div>
           </div>
 
@@ -1078,7 +1209,14 @@ export default function SurahShadingPage() {
             <Save className="w-4 h-4" />
             {isSaving ? "جاري مزامنة التظليل..." : "حفظ التظليل بالسيرفر"}
           </button>
-          <button onClick={() => openDefineSurah()} className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-stone-400 text-xs font-medium flex items-center justify-center gap-2 transition-all hover:text-stone-200">
+          <button 
+            onClick={() => navigate(`/sync-audio?surah=${selectedSurahNum}`)}
+            className="w-full py-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-bold flex items-center justify-center gap-2 transition-all hover:text-white shadow-sm"
+            title="الانتقال إلى استوديو ضبط توقيت الصوت ومواقع التظليل بالثواني"
+          >
+            <Volume2 className="w-3.5 h-3.5 text-purple-400" /> استوديو ربط التظليل بالصوت 🎧
+          </button>
+          <button onClick={() => openDefineSurah()} className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-stone-400 text-xs font-medium flex items-center justify-center gap-2 transition-all hover:text-stone-200">
             <Server className="w-3.5 h-3.5" /> تعريف السورة في السجل
           </button>
         </div>
@@ -1129,21 +1267,35 @@ export default function SurahShadingPage() {
 
           {showBoxes && boxes.map((box, index) => {
             const isSelected = index === selectedIndex;
+            const isSingleHighlight = singleAyahHighlight && singleAyahHighlight.surah === box.surah && singleAyahHighlight.ayah === box.ayah;
             const boxColorHex = box.color || customColor;
-            const boxBg = isSelected ? hexToRgba(boxColorHex, opacity) : hexToRgba(boxColorHex, 0.15);
-            const boxBorder = isSelected ? hexToRgba(boxColorHex, 0.95) : hexToRgba(boxColorHex, 0.4);
+            const boxBg = isSingleHighlight ? hexToRgba(boxColorHex, 0.85) : (isSelected ? hexToRgba(boxColorHex, opacity) : hexToRgba(boxColorHex, 0.15));
+            const boxBorder = isSingleHighlight ? hexToRgba(boxColorHex, 1.0) : (isSelected ? hexToRgba(boxColorHex, 0.95) : hexToRgba(boxColorHex, 0.4));
             return (
               <div
                 key={`box-${box.surah}-${box.ayah}-${index}`}
-                onPointerDown={(e) => handlePointerDownDrag(e, index)}
-                style={{ left: box.x * scale, top: box.y * scale, width: box.width * scale, height: box.height * scale, backgroundColor: boxBg, borderColor: boxBorder, boxShadow: isSelected && glowEnabled ? `0 0 20px ${hexToRgba(boxColorHex, 0.5)}, inset 0 0 10px ${hexToRgba(boxColorHex, 0.3)}` : "none" }}
-                className={`absolute z-20 rounded-lg border-2 cursor-move touch-none select-none transition-shadow ${isSelected ? "border-solid ring-1 ring-white/30" : "border-dashed hover:border-white/40"}`}
+                onPointerDown={(e) => {
+                  handlePointerDownDrag(e, index);
+                  handleSingleAyahHighlight(box.surah, box.ayah);
+                }}
+                style={{ left: box.x * scale, top: box.y * scale, width: box.width * scale, height: box.height * scale, backgroundColor: boxBg, borderColor: boxBorder, boxShadow: isSingleHighlight ? `0 0 30px ${hexToRgba(boxColorHex, 0.8)}, inset 0 0 15px ${hexToRgba(boxColorHex, 0.5)}` : (isSelected && glowEnabled ? `0 0 20px ${hexToRgba(boxColorHex, 0.5)}, inset 0 0 10px ${hexToRgba(boxColorHex, 0.3)}` : "none") }}
+                className={`absolute z-20 rounded-lg border-2 cursor-move touch-none select-none transition-shadow ${isSingleHighlight ? "border-solid ring-2 ring-white/50" : (isSelected ? "border-solid ring-1 ring-white/30" : "border-dashed hover:border-white/40 hover:bg-white/5")}`}
               >
-                <span style={{ backgroundColor: isSelected ? boxColorHex : "rgba(0, 0, 0, 0.75)" }} className={`absolute -top-3.5 right-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-md flex items-center gap-1 backdrop-blur-sm ${isSelected ? 'text-black' : 'text-stone-200'}`}>
+                <span style={{ backgroundColor: isSingleHighlight ? "#fff" : (isSelected ? boxColorHex : "rgba(0, 0, 0, 0.75)") }} className={`absolute -top-3.5 right-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-md flex items-center gap-1 backdrop-blur-sm ${isSingleHighlight ? 'text-black font-extrabold' : (isSelected ? 'text-black' : 'text-stone-200')}`}>
                   {box.ayah === 0 ? "🕌 بسملة" : `آية ${box.ayah}`}
                 </span>
-                
-                {isSelected && !isDrawMode && (
+
+                {isSingleHighlight && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); clearSingleAyahHighlight(); }}
+                    className="absolute -top-8 right-2 w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+                    title="إلغاء تظليل الآية"
+                  >
+                    ✕
+                  </button>
+                )}
+
+                {isSelected && !isDrawMode && !isSingleHighlight && (
                   <>
                     <div onPointerDown={(e) => handlePointerDownResize("se", e)} className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full cursor-se-resize shadow-lg touch-none hover:scale-125 transition-transform" />
                     <div onPointerDown={(e) => handlePointerDownResize("sw", e)} className="absolute -bottom-1.5 -left-1.5 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full cursor-sw-resize shadow-lg touch-none hover:scale-125 transition-transform" />
@@ -1244,13 +1396,18 @@ export default function SurahShadingPage() {
                   className="w-full h-10 rounded-xl bg-background border border-border px-3 font-bold text-sm focus:outline-none focus:border-violet-500"
                 >
                   <option value="">— اختر الصفحة —</option>
-                  {allPages.map((src) => (
-                    <option key={src} value={src}>
-                      {src.startsWith("custom:")
-                        ? `صفحة مخصصة: ${src.replace("custom:", "")}`
-                        : src.replace("/pages/", "صفحة ").replace(".jpg", "")}
-                    </option>
-                  ))}
+                  {Array.from(new Set(allPages.map(s => (s.includes("fatiha") || s.includes("0.jpg")) ? "/pages/0.jpg" : s))).map((src) => {
+                    const label = (src.includes("0.jpg") || src.includes("fatiha"))
+                      ? "📖 الفاتحة (صفحة 0)"
+                      : src.startsWith("custom:")
+                        ? `🖼️ صفحة مخصصة: ${src.replace("custom:", "")}`
+                        : `📄 صفحة ${src.replace("/pages/", "").replace(".jpg", "")}`;
+                    return (
+                      <option key={src} value={src}>
+                        {label}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 

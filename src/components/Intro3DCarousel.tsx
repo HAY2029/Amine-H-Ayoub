@@ -76,6 +76,7 @@ export const Intro3DCarousel: React.FC<{
 }> = ({ forceShow = false, onFinish }) => {
   const [visible, setVisible] = useState(() => {
     if (forceShow) return true;
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 768px), (prefers-reduced-motion: reduce)").matches) return false;
     return !hasSeenIntro();
   });
 
