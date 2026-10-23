@@ -1334,10 +1334,18 @@ export default function QuranReader() {
              startT = box.audioStart;
              nextT = box.audioEnd;
              foundTimingInBox = true;
-         } else if (sp === "kids" && box.kidsStart !== undefined && box.kidsEnd !== undefined) {
-             startT = box.kidsStart;
-             nextT = box.kidsEnd;
-             foundTimingInBox = true;
+         } else if (sp === "kids") {
+             if (box.kidsStart !== undefined && box.kidsEnd !== undefined) {
+                 startT = box.kidsStart;
+                 nextT = box.kidsEnd;
+                 foundTimingInBox = true;
+             } else if (box.audioEnd !== undefined) {
+                 // إذا لم تُحدد توقيتات الطفل بشكل منفصل، فإن تلاوة الطفل تبدأ مباشرة بعد انتهاء تلاوة المعلم
+                 startT = box.audioEnd;
+                 const nextBox = surahBoxes.find(b => b.ayah === (box.ayah + 1) && b.audioStart !== undefined);
+                 nextT = nextBox?.audioStart ?? (box.audioEnd + 15);
+                 foundTimingInBox = true;
+             }
          }
       }
 
@@ -1349,57 +1357,81 @@ export default function QuranReader() {
           if (seg) {
             startT = seg.start;
             nextT = seg.end;
-          } else {
-            setIsPlaying(false);
-            return;
-          }
-        } else {
-          const list = sp === "kids" && timings?.kids ? timings.kids : timings?.teacher || [];
-          const segIdx = ayahNum > 0 ? ayahNum - 1 : 0;
-          
-          if (list[segIdx] !== undefined) {
-            startT = list[segIdx];
-            nextT = list[segIdx + 1] !== undefined ? list[segIdx + 1] : a.duration || 1e9;
-            
-            // Split-file format: Teacher stops when the entire Kids section starts
-            if (sp === "teacher" && timings?.kidsStart !== undefined && nextT > timings.kidsStart) {
-              nextT = timings.kidsStart;
-            }
-            
-            // Interleaved format: Teacher stops when the Kid starts for the SAME ayah
-            if (sp === "teacher" && timings?.kids && timings.kids[segIdx] !== undefined) {
-              const kidStartT = timings.kids[segIdx];
-              if (kidStartT > startT && kidStartT < nextT) {
-                nextT = kidStartT;
-              }
-            }
-
-            // Interleaved format: Kid stops when the Teacher starts for the NEXT ayah
-            if (sp === "kids" && timings?.teacher && timings.teacher[segIdx + 1] !== undefined) {
-              const nextTeacherStart = timings.teacher[segIdx + 1];
-              if (nextTeacherStart > startT && nextTeacherStart < nextT) {
-                nextT = nextTeacherStart;
-              }
+          } else if (sp === "kids") {
+            // مقاطع المعلم موجودة ولكن لم يتم استخراج مقاطع الطفل بعد: الطفل يتلو بعد مقطع المعلم
+            const teacherSegments = segments.filter(s => s.speaker === "teacher").sort((a, b) => a.start - b.start);
+            const tSeg = teacherSegments.find(s => s.ayah === ayahNum) || teacherSegments[segIdx];
+            if (tSeg) {
+              startT = tSeg.end;
+              const nextTSeg = teacherSegments.find(s => s.ayah === ayahNum + 1) || teacherSegments[teacherSegments.indexOf(tSeg) + 1];
+              nextT = nextTSeg ? nextTSeg.start : (a.duration || (tSeg.end + 15));
+            } else {
+              const total = surah.ayahCount || 1;
+              const dur = a.duration && isFinite(a.duration) ? a.duration : 60;
+              const ayahDur = dur / total;
+              startT = segIdx * ayahDur + (ayahDur * 0.45);
+              nextT = Math.min(dur, (segIdx + 1) * ayahDur);
             }
           } else {
-            // Linear estimation fallback when no manual timing exists
             const total = surah.ayahCount || 1;
             const dur = a.duration && isFinite(a.duration) ? a.duration : 60;
             const ayahDur = dur / total;
             startT = segIdx * ayahDur;
             nextT = Math.min(dur, (segIdx + 1) * ayahDur);
           }
+        } else {
+          const segIdx = ayahNum > 0 ? ayahNum - 1 : 0;
+          if (sp === "kids") {
+            if (timings?.kids && timings.kids.length > 0 && timings.kids[segIdx] !== undefined) {
+              startT = timings.kids[segIdx];
+              nextT = timings.kids[segIdx + 1] !== undefined ? timings.kids[segIdx + 1] : (timings.teacher?.[segIdx + 1] ?? (a.duration || 1e9));
+            } else if (timings?.kidsStart !== undefined && timings.teacher) {
+              const t0 = timings.teacher[0] || 0;
+              const curT = timings.teacher[segIdx] || 0;
+              startT = timings.kidsStart + (curT - t0);
+              const nextTeacher = timings.teacher[segIdx + 1];
+              nextT = nextTeacher !== undefined ? (timings.kidsStart + (nextTeacher - t0)) : (a.duration || 1e9);
+            } else if (timings?.teacher && timings.teacher[segIdx] !== undefined) {
+              const tStart = timings.teacher[segIdx];
+              const tNext = timings.teacher[segIdx + 1] ?? (a.duration || (tStart + 15));
+              startT = tStart + (tNext - tStart) * 0.45;
+              nextT = tNext;
+            } else {
+              const total = surah.ayahCount || 1;
+              const dur = a.duration && isFinite(a.duration) ? a.duration : 60;
+              const ayahDur = dur / total;
+              startT = segIdx * ayahDur + (ayahDur * 0.45);
+              nextT = Math.min(dur, (segIdx + 1) * ayahDur);
+            }
+          } else {
+            const list = timings?.teacher || [];
+            if (list[segIdx] !== undefined) {
+              startT = list[segIdx];
+              nextT = list[segIdx + 1] !== undefined ? list[segIdx + 1] : a.duration || 1e9;
+              if (timings?.kidsStart !== undefined && nextT > timings.kidsStart) {
+                nextT = timings.kidsStart;
+              }
+              if (timings?.kids && timings.kids[segIdx] !== undefined) {
+                const kidStartT = timings.kids[segIdx];
+                if (kidStartT > startT && kidStartT < nextT) {
+                  nextT = kidStartT;
+                }
+              }
+            } else {
+              const total = surah.ayahCount || 1;
+              const dur = a.duration && isFinite(a.duration) ? a.duration : 60;
+              const ayahDur = dur / total;
+              startT = segIdx * ayahDur;
+              nextT = Math.min(dur, (segIdx + 1) * ayahDur);
+            }
+          }
         }
       }
 
       currentAyahStartRef.current = startT;
-      // في وضع التشغيل المتواصل وبدون تكرار الآية، لا نوقف الصوت بين الآيات أبداً
-      // بل يتدفق الصوت طبيعياً ويتولى trackAudio تظليل كل آية بدقة عالية
-      if (continuousPlayRef.current && repeatCountRef.current === 0 && !alternatingMode) {
-        stopAtRef.current = null;
-      } else {
-        stopAtRef.current = nextT;
-      }
+      // ضبط stopAtRef دائماً على نهاية المقطع (nextT) لضمان إيقاف أو انتقال الصوت فور انتهاء تلاوة المتحدث المختار
+      // وبذلك لا يتسرب الصوت أبداً إلى المتحدث الآخر (عدم تشغيل الأطفال بعد المعلم، أو العكس)
+      stopAtRef.current = nextT;
       isSeekingRef.current = true;
       expectedStartTimeRef.current = startT;
       a.currentTime = startT;
@@ -1593,11 +1625,9 @@ export default function QuranReader() {
           currentRepeatRef.current = 0;
           if (continuousPlayRef.current) {
             stopAtRef.current = null;
-            if (alternatingMode) {
-              segmentEndGuardRef.current = true;
-              handleAyahSegmentEndRef.current();
-              return;
-            }
+            segmentEndGuardRef.current = true;
+            handleAyahSegmentEndRef.current();
+            return;
           } else {
             a.pause();
             setIsPlaying(false);
@@ -1609,11 +1639,9 @@ export default function QuranReader() {
 
       if (continuousPlayRef.current) {
         stopAtRef.current = null;
-        if (alternatingMode) {
-          segmentEndGuardRef.current = true;
-          handleAyahSegmentEndRef.current();
-          return;
-        }
+        segmentEndGuardRef.current = true;
+        handleAyahSegmentEndRef.current();
+        return;
       } else {
         a.pause();
         setIsPlaying(false);
@@ -1638,9 +1666,18 @@ export default function QuranReader() {
       for (let i = 0; i < pageBoxes.length; i++) {
         const box = pageBoxes[i];
         if (box.surah !== activeSurah.number) continue;
-        if (box.kidsStart !== undefined && box.kidsEnd !== undefined) {
-          const endThreshold = box.kidsEnd + 0.15;
-          if (a.currentTime >= (box.kidsStart - 0.05) && a.currentTime <= endThreshold) {
+
+        let kStart = box.kidsStart;
+        let kEnd = box.kidsEnd;
+        if ((kStart === undefined || kEnd === undefined) && box.audioEnd !== undefined) {
+          kStart = box.audioEnd;
+          const nextBox = pageBoxes.find(b => b.surah === activeSurah.number && b.ayah === box.ayah + 1 && b.audioStart !== undefined);
+          kEnd = nextBox?.audioStart ?? (box.audioEnd + 15);
+        }
+
+        if (kStart !== undefined && kEnd !== undefined) {
+          const endThreshold = kEnd + 0.15;
+          if (a.currentTime >= (kStart - 0.05) && a.currentTime <= endThreshold) {
             activeBox = box;
             foundSpeaker = "kids";
             activeBoxGlobalIndex = i;
@@ -1704,6 +1741,39 @@ export default function QuranReader() {
             currentBoxIndexRef.current = -1;
             clearAllHighlights();
           }
+        }
+      } else if (currentSp === "kids" && allSegments.some(s => s.speaker === "teacher")) {
+        const teacherSegs = allSegments.filter(s => s.speaker === "teacher").sort((a, b) => a.start - b.start);
+        let foundKidSeg = false;
+        for (let i = 0; i < teacherSegs.length; i++) {
+          const tSeg = teacherSegs[i];
+          const nextTSeg = teacherSegs[i + 1];
+          const kStart = tSeg.end;
+          const kEnd = nextTSeg ? nextTSeg.start : (a.duration || (tSeg.end + 20));
+          if (a.currentTime >= (kStart - 0.05) && a.currentTime <= (kEnd + 0.15)) {
+            const segAyah = tSeg.ayah;
+            let ayahNumber: number;
+            if (segAyah !== undefined) {
+              ayahNumber = segAyah;
+            } else {
+              const sortedBoxes = [...surahBoxes].sort((a, b) => a.ayah - b.ayah);
+              ayahNumber = sortedBoxes[i]?.ayah ?? (i + 1);
+            }
+            if (ayahNumber !== currentAyahRef.current || currentSpeakerRef.current !== "kids" || currentBoxIndexRef.current !== -1) {
+              currentAyahRef.current = ayahNumber;
+              currentBoxIndexRef.current = -1;
+              currentSpeakerRef.current = "kids";
+              currentBoxLabelRef.current = null;
+              highlightAyah(activeSurah.number, ayahNumber, "kids");
+            }
+            foundKidSeg = true;
+            break;
+          }
+        }
+        if (!foundKidSeg && currentAyahRef.current !== -1) {
+          currentAyahRef.current = -1;
+          currentBoxIndexRef.current = -1;
+          clearAllHighlights();
         }
       } else {
         const speaker: Speaker = currentSp;

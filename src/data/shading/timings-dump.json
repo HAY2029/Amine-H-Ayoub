@@ -1,1 +1,184 @@
-{"1":{"teacher":[15.18,27.8,40.28,40.28,49.04,56.72,69.72,80.11,80.11,90.21,90.21],"segments":[{"id":"seg_teacher_1_0","start":15.18,"end":20.62,"speaker":"teacher","ayah":0,"label":"بسملة"},{"id":"seg_teacher_1_1","start":27.8,"end":33.37,"speaker":"teacher","ayah":1,"label":"الآية 1"},{"id":"seg_teacher_1_2","start":40.28,"end":43.99,"speaker":"teacher","ayah":2,"label":"الآية 2"},{"id":"seg_teacher_1_2","start":40.28,"end":43.99,"speaker":"teacher","ayah":2,"label":"الآية 2"},{"id":"seg_teacher_1_3","start":49.04,"end":52.23,"speaker":"teacher","ayah":3,"label":"الآية 3"},{"id":"seg_teacher_1_4","start":56.72,"end":62.56,"speaker":"teacher","ayah":4,"label":"الآية 4"},{"id":"seg_teacher_1_5","start":69.72,"end":74.52,"speaker":"teacher","ayah":5,"label":"الآية 5"},{"id":"seg_teacher_1_6","start":80.11,"end":84.89,"speaker":"teacher","ayah":6,"label":"الآية 6"},{"id":"seg_teacher_1_6","start":80.11,"end":84.89,"speaker":"teacher","ayah":6,"label":"الآية 6"},{"id":"seg_teacher_1_7","start":90.21,"end":100.56,"speaker":"teacher","ayah":7,"label":"الآية 7"},{"id":"seg_teacher_1_7","start":90.21,"end":100.56,"speaker":"teacher","ayah":7,"label":"الآية 7"}],"kids":[]}}
+{
+  "1": {
+    "teacher": [
+      15.18,
+      27.8,
+      40.28,
+      40.28,
+      49.04,
+      56.72,
+      69.72,
+      80.11,
+      80.11,
+      90.21,
+      90.21
+    ],
+    "segments": [
+      {
+        "id": "seg_teacher_1_0",
+        "start": 15.18,
+        "end": 20.62,
+        "speaker": "teacher",
+        "ayah": 0,
+        "label": "بسملة"
+      },
+      {
+        "id": "seg_teacher_1_1",
+        "start": 27.8,
+        "end": 33.37,
+        "speaker": "teacher",
+        "ayah": 1,
+        "label": "الآية 1"
+      },
+      {
+        "id": "seg_teacher_1_2",
+        "start": 40.28,
+        "end": 43.99,
+        "speaker": "teacher",
+        "ayah": 2,
+        "label": "الآية 2"
+      },
+      {
+        "id": "seg_teacher_1_2",
+        "start": 40.28,
+        "end": 43.99,
+        "speaker": "teacher",
+        "ayah": 2,
+        "label": "الآية 2"
+      },
+      {
+        "id": "seg_teacher_1_3",
+        "start": 49.04,
+        "end": 52.23,
+        "speaker": "teacher",
+        "ayah": 3,
+        "label": "الآية 3"
+      },
+      {
+        "id": "seg_teacher_1_4",
+        "start": 56.72,
+        "end": 62.56,
+        "speaker": "teacher",
+        "ayah": 4,
+        "label": "الآية 4"
+      },
+      {
+        "id": "seg_teacher_1_5",
+        "start": 69.72,
+        "end": 74.52,
+        "speaker": "teacher",
+        "ayah": 5,
+        "label": "الآية 5"
+      },
+      {
+        "id": "seg_teacher_1_6",
+        "start": 80.11,
+        "end": 84.89,
+        "speaker": "teacher",
+        "ayah": 6,
+        "label": "الآية 6"
+      },
+      {
+        "id": "seg_teacher_1_6",
+        "start": 80.11,
+        "end": 84.89,
+        "speaker": "teacher",
+        "ayah": 6,
+        "label": "الآية 6"
+      },
+      {
+        "id": "seg_teacher_1_7",
+        "start": 90.21,
+        "end": 100.56,
+        "speaker": "teacher",
+        "ayah": 7,
+        "label": "الآية 7"
+      },
+      {
+        "id": "seg_teacher_1_7",
+        "start": 90.21,
+        "end": 100.56,
+        "speaker": "teacher",
+        "ayah": 7,
+        "label": "الآية 7"
+      },
+      {
+        "id": "seg_kids_1_0",
+        "start": 20.62,
+        "end": 27.8,
+        "speaker": "kids",
+        "ayah": 0,
+        "label": "بسملة (أطفال)"
+      },
+      {
+        "id": "seg_kids_1_1",
+        "start": 33.37,
+        "end": 40.28,
+        "speaker": "kids",
+        "ayah": 1,
+        "label": "الآية 1 (أطفال)"
+      },
+      {
+        "id": "seg_kids_1_2",
+        "start": 43.99,
+        "end": 49.04,
+        "speaker": "kids",
+        "ayah": 2,
+        "label": "الآية 2 (أطفال)"
+      },
+      {
+        "id": "seg_kids_1_3",
+        "start": 52.23,
+        "end": 56.72,
+        "speaker": "kids",
+        "ayah": 3,
+        "label": "الآية 3 (أطفال)"
+      },
+      {
+        "id": "seg_kids_1_4",
+        "start": 62.56,
+        "end": 69.72,
+        "speaker": "kids",
+        "ayah": 4,
+        "label": "الآية 4 (أطفال)"
+      },
+      {
+        "id": "seg_kids_1_5",
+        "start": 74.52,
+        "end": 80.11,
+        "speaker": "kids",
+        "ayah": 5,
+        "label": "الآية 5 (أطفال)"
+      },
+      {
+        "id": "seg_kids_1_6",
+        "start": 84.89,
+        "end": 90.21,
+        "speaker": "kids",
+        "ayah": 6,
+        "label": "الآية 6 (أطفال)"
+      },
+      {
+        "id": "seg_kids_1_7",
+        "start": 100.56,
+        "end": 118,
+        "speaker": "kids",
+        "ayah": 7,
+        "label": "الآية 7 (أطفال)"
+      }
+    ],
+    "kids": [
+      20.62,
+      33.37,
+      43.99,
+      43.99,
+      52.23,
+      62.56,
+      74.52,
+      84.89,
+      84.89,
+      100.56,
+      100.56
+    ]
+  }
+}
