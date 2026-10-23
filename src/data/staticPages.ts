@@ -37,8 +37,10 @@ function buildSurahs(pageSrc: string, surahNumbers: number[]): SurahAudioInfo[] 
 
   if (regions && regions.length > 0) {
     const list: SurahAudioInfo[] = [];
+    const seenSurahs = new Set<number>();
     regions.forEach((r) => {
-      if (r.surah) {
+      if (r.surah && !seenSurahs.has(r.surah)) {
+        seenSurahs.add(r.surah);
         const sMeta = surahs.find((s) => s.number === r.surah);
         const count = boxes.filter((b) => b.surah === r.surah).length || sMeta?.ayahCount || 0;
         list.push({
@@ -105,26 +107,41 @@ export const PAGE_TO_SURAHS: Record<number, number[]> = {
 
 const pageFiles = import.meta.glob('/صفحة قران/*.{jpg,jpeg,png}', { eager: true, query: '?url', import: 'default' });
 
-export const CODE_QURAN_PAGES: StaticQuranPage[] = Object.keys(pageFiles).map((path) => {
-  // Extract filename without extension for page number (e.g. '581' from '/صفحة قران/581.jpg')
-  const fileName = path.split('/').pop() || '';
-  const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
-  
-  // If it's a number, use it. Fatiha is 0.
-  const numMatch = nameWithoutExt.match(/\d+/);
-  const num = numMatch ? parseInt(numMatch[0], 10) : 1;
-  const pageNumber = num === 0 ? 1 : num;
-  
-  const standardizedSrc = `/pages/${fileName}`;
-  const defaultSurahs = PAGE_TO_SURAHS[num] || PAGE_TO_SURAHS[pageNumber] || (num === 0 ? [1] : [78]);
-  const sList = buildSurahs(standardizedSrc, defaultSurahs);
-  const surahTitles = sList.map(s => s.name).join(" • ");
-  const pageName = num === 0 ? "سورة الفاتحة" : surahTitles ? `${surahTitles} (ص ${pageNumber})` : `صفحة ${pageNumber}`;
-  
-  return {
-    name: pageName,
-    pageNumber: pageNumber,
-    src: standardizedSrc,
-    surahs: sList,
-  };
-}).sort((a, b) => a.pageNumber - b.pageNumber);
+export const CODE_QURAN_PAGES: StaticQuranPage[] = (() => {
+  const seenPages = new Set<string>();
+  const seenPageNumbers = new Set<number>();
+  const list: StaticQuranPage[] = [];
+
+  Object.keys(pageFiles).forEach((path) => {
+    // Extract filename without extension for page number (e.g. '581' from '/صفحة قران/581.jpg')
+    const fileName = path.split('/').pop() || '';
+    const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
+    
+    // If it's a number, use it. Fatiha is 0.
+    const numMatch = nameWithoutExt.match(/\d+/);
+    const num = numMatch ? parseInt(numMatch[0], 10) : 1;
+    const pageNumber = num === 0 ? 1 : num;
+    const standardizedSrc = `/pages/${fileName}`;
+
+    // منع تكرار أي صفحة في المصحف الشريف نهائياً (الفاتحة وسائر صفحات جزء عم والقرآن)
+    if (seenPageNumbers.has(pageNumber)) return;
+    if (seenPages.has(standardizedSrc)) return;
+
+    seenPages.add(standardizedSrc);
+    seenPageNumbers.add(pageNumber);
+    
+    const defaultSurahs = PAGE_TO_SURAHS[num] || PAGE_TO_SURAHS[pageNumber] || (num === 0 ? [1] : [78]);
+    const sList = buildSurahs(standardizedSrc, defaultSurahs);
+    const surahTitles = sList.map(s => s.name).join(" • ");
+    const pageName = (num === 0 || pageNumber === 1) ? "سورة الفاتحة" : surahTitles ? `${surahTitles} (ص ${pageNumber})` : `صفحة ${pageNumber}`;
+    
+    list.push({
+      name: pageName,
+      pageNumber: pageNumber,
+      src: standardizedSrc,
+      surahs: sList,
+    });
+  });
+
+  return list.sort((a, b) => a.pageNumber - b.pageNumber);
+})();

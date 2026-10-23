@@ -35,6 +35,8 @@ const AdminReleasesPanel = lazy(() => import("./pages/AdminReleasesPanel.tsx"));
 const LegendaryDownloadHub = lazy(() => import("./components/LegendaryDownloadHub.tsx"));
 // ===== أدوات المعلّم والمصحف (معايرة التظليل / التوقيت / التقسيم / الربط) =====
 const TeacherTools = lazy(() => import("./pages/TeacherTools.tsx"));
+const QuranStudent = lazy(() => import("./pages/QuranStudent.tsx"));
+const QuizPage = lazy(() => import("./pages/QuizPage.tsx"));
 const AyahCalibration = lazy(() => import("./pages/AyahCalibration.tsx"));
 const TimingsRecorder = lazy(() => import("./pages/TimingsRecorder.tsx"));
 const ShadingPage = lazy(() => import("./pages/ShadingPage.tsx"));
@@ -78,16 +80,23 @@ const PageTransition = ({ children }: { children: ReactNode }) => {
 // 🔇 عند الانتقال بين الصفحات: يوقف أي صوت يعمل (المصحف/التلاوات/الألعاب)
 // حتى لا يستمرّ التشغيل في الخلفية عند مغادرة الصفحة، ويستثني الصفحات
 // التي يُفترض أن يستمرّ فيها الصوت (المصحف والتلاوات) عند التنقل بينهما.
-const AUDIO_PERSIST_ROUTES = ["/", "/audio", "/mushaf"];
+const AUDIO_PERSIST_ROUTES = ["/", "/audio", "/mushaf", "/sync-audio", "/surah-shading", "/timings", "/link-audio"];
 
 const NavigationAudioGuard = () => {
   const location = useLocation();
   useEffect(() => {
     const path = location.pathname;
-    const el = (window as unknown as { __globalAudioEl?: HTMLAudioElement }).__globalAudioEl;
-    // إيقاف المشغّل العام (المصحف/التلاوات) إن كنا خارج صفحات الاستمرار
-    if (el && !AUDIO_PERSIST_ROUTES.includes(path)) {
-      try { el.pause(); } catch { /* ignore */ }
+    // إيقاف المشغّل العام وعناصر الصوت فقط إن كنا خارج صفحات الاستمرار (المصحف والتلاوات)
+    if (!AUDIO_PERSIST_ROUTES.includes(path)) {
+      const el = (window as unknown as { __globalAudioEl?: HTMLAudioElement }).__globalAudioEl;
+      if (el) {
+        try { el.pause(); } catch { /* ignore */ }
+      }
+      try {
+        document.querySelectorAll("audio").forEach((a) => {
+          if (!a.paused) a.pause();
+        });
+      } catch { /* ignore */ }
     }
     // إيقاف أصوات التشجيع في الألعاب
     try {
@@ -98,12 +107,6 @@ const NavigationAudioGuard = () => {
     // إيقاف النطق المحلي (Web Speech API) حتى لا يستمر الكلام في الخلفية
     try {
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    } catch { /* ignore */ }
-    // إيقاف أي عنصر <audio> يعمل داخل الصفحة السابقة
-    try {
-      document.querySelectorAll("audio").forEach((a) => {
-        if (!a.paused) a.pause();
-      });
     } catch { /* ignore */ }
   }, [location.pathname]);
   return null;
@@ -353,6 +356,9 @@ const App = () => {
                 <Route path="/admin/releases" element={<PageTransition><AdminReleasesPanel /></PageTransition>} />
                 {/* ===== أدوات المعلّم (بدون كلمة مرور — للوالدين والمعلّم) ===== */}
                 <Route path="/teacher-tools" element={<PageTransition><TeacherTools /></PageTransition>} />
+                <Route path="/student" element={<PageTransition><QuranStudent /></PageTransition>} />
+                <Route path="/quiz" element={<PageTransition><QuizPage /></PageTransition>} />
+                <Route path="/exam" element={<PageTransition><QuizPage /></PageTransition>} />
                 <Route path="/ayah-calibrate" element={<PageTransition><AyahCalibration /></PageTransition>} />
                 <Route path="/calibrate" element={<PageTransition><LinkAudioPage /></PageTransition>} />
                 <Route path="/timings" element={<PageTransition><TimingsRecorder /></PageTransition>} />

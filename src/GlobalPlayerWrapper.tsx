@@ -17,6 +17,9 @@ export function GlobalPlayerWrapper() {
   const location = useLocation();
 
   useEffect(() => {
+    // لا نتدخل إذا كان المصدر هو المصحف لأن المصحف يدير مشغله وتلاوته ذاتياً
+    if (!currentTrack || currentTrack.source === "mushaf") return;
+
     // إخفاء المشغل وإيقاف الصوت تلقائياً عند الدخول لأي صفحة أخرى (مثل الألعاب أو الإعدادات)
     const allowedPaths = ["/audio", "/"];
     if (!allowedPaths.includes(location.pathname) && currentTrack) {
@@ -24,7 +27,8 @@ export function GlobalPlayerWrapper() {
     }
   }, [location.pathname, currentTrack, setCurrentTrack]);
 
-  if (!currentTrack) return null;
+  // المشغل العام مخصص فقط للتلاوات الخارجية وليس لصفحات المصحف
+  if (!currentTrack || currentTrack.source === "mushaf") return null;
 
   return (
     <CustomPlayer

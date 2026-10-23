@@ -3,7 +3,7 @@
  */
 import { supabase, hasValidSupabaseKey } from "../lib/supabase";
 
-export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "catchstar" | "ayahmath" | "listenkids" | "makkimadani" | "oddword";
+export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "catchstar" | "ayahmath" | "listenkids" | "makkimadani" | "oddword" | "orchard";
 
 export interface GameDef {
   id: string;
@@ -117,7 +117,7 @@ const isValid = (g: unknown): g is GameDef => {
   const d = g as GameDef;
   if (!d || typeof d.id !== "string" || typeof d.title !== "string" || typeof d.cost !== "number") return false;
   if (BANNED_NON_QURAN_IDS.has(d.id)) return false;
-  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "catchstar", "ayahmath", "listenkids", "makkimadani", "oddword"];
+  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "catchstar", "ayahmath", "listenkids", "makkimadani", "oddword", "orchard"];
   if (!engines.includes(d.engine)) return false;
   return true;
 };
@@ -140,12 +140,9 @@ export const getGameCatalog = (): GameDef[] => {
     if (!BANNED_NON_QURAN_IDS.has(g.id)) map.set(g.id, { tint: "bg-slate-500/20 text-slate-200", icon: "Gamepad2", ageMin: 5, ...g, custom: true });
   }
   
-  // Apply price overrides for built-in games
-  const overrides = getPriceOverrides();
+  // جميع الألعاب مجانية تماماً ومفتوحة (cost: 0)
   for (const g of map.values()) {
-    if (overrides[g.id] !== undefined) {
-      map.set(g.id, { ...g, cost: overrides[g.id] });
-    }
+    map.set(g.id, { ...g, cost: 0 });
   }
   
   return Array.from(map.values()).filter(g => !BANNED_NON_QURAN_IDS.has(g.id));
@@ -233,42 +230,43 @@ export const BUILTIN_GAMES: GameDef[] = [
   G("listenkids", "استمع ← أكمِل ← سجِّل", "listenkids", 4, 16, 0, "Mic", FULL, 4),
 
   // ── ألعاب الذاكرة ──
-  G("memory", "بطاقات السور الذكية", "memory", 4, 16, 500, "LayoutGrid", { pairs: 6 }, 1),
+  G("memory", "بطاقات السور الذكية", "memory", 4, 16, 0, "LayoutGrid", { pairs: 6 }, 1),
 
   // ── ألعاب الاكتشاف ──
-  G("whichsurah", "اكتشف السورة", "whichsurah", 4, 16, 600, "Sparkles", FULL, 2),
+  G("whichsurah", "اكتشف السورة", "whichsurah", 4, 16, 0, "Sparkles", FULL, 2),
 
   // ── ألعاب الترتيب ──
-  G("order", "ترتيب الآيات", "order", 4, 16, 650, "ListOrdered", FULL, 3),
-  G("surahorder", "ترتيب السور", "surahorder", 4, 16, 750, "ListOrdered", FULL, 4),
+  G("order", "ترتيب الآيات", "order", 4, 16, 0, "ListOrdered", FULL, 3),
+  G("surahorder", "ترتيب السور", "surahorder", 4, 16, 0, "ListOrdered", FULL, 4),
 
   // ── ألعاب العد ──
-  G("count", "عدّ الآيات", "count", 4, 16, 450, "Hash", FULL, 5),
+  G("count", "عدّ الآيات", "count", 4, 16, 0, "Hash", FULL, 5),
 
   // ── ألعاب الكلمات ──
-  G("missingword", "الكلمة الضائعة", "missingword", 4, 16, 800, "Puzzle", FULL, 0),
+  G("missingword", "الكلمة الضائعة", "missingword", 4, 16, 0, "Puzzle", FULL, 0),
 
   // ── ألعاب الاختبار ──
-  G("quiz", "اختبار السور", "quiz", 4, 16, 850, "Trophy", FULL, 1),
-  G("server_quiz", "أسئلة السيرفر الذكية", "server_quiz", 4, 16, 500, "Brain", FULL, 2),
+  G("quiz", "اختبار السور", "quiz", 4, 16, 0, "Trophy", FULL, 1),
+  G("server_quiz", "أسئلة السيرفر الذكية", "server_quiz", 4, 16, 0, "Brain", FULL, 2),
 
   // ── ألعاب المقارنة ──
-  G("which", "السورة الأطول", "which", 4, 16, 900, "Scale", FULL, 2),
-  G("ayahlonger", "أي آية أطول؟", "ayahlonger", 4, 16, 950, "Scale", FULL, 3),
+  G("which", "السورة الأطول", "which", 4, 16, 0, "Scale", FULL, 2),
+  G("ayahlonger", "أي آية أطول؟", "ayahlonger", 4, 16, 0, "Scale", FULL, 3),
 
   // ── ألعاب الإكمال ──
-  G("nextayah", "أكمل الآية", "nextayah", 4, 16, 550, "BookOpen", FULL, 4),
-  G("prevayah", "الآية التي قبلها", "prevayah", 4, 16, 600, "BookOpen", FULL, 5),
+  G("nextayah", "أكمل الآية", "nextayah", 4, 16, 0, "BookOpen", FULL, 4),
+  G("prevayah", "الآية التي قبلها", "prevayah", 4, 16, 0, "BookOpen", FULL, 5),
 
   // ── ألعاب التعرف ──
-  G("ayahsurah", "من أي سورة؟", "ayahsurah", 4, 16, 1000, "BookOpen", FULL, 6),
-  G("surahnum", "رقم السورة", "surahnum", 4, 16, 1050, "Hash", FULL, 7),
+  G("ayahsurah", "من أي سورة؟", "ayahsurah", 4, 16, 0, "BookOpen", FULL, 6),
+  G("surahnum", "رقم السورة", "surahnum", 4, 16, 0, "Hash", FULL, 7),
 
   // ── الألعاب القرآنية الأسطورية الذكية ──
-  G("detective", "المحقق القرآني", "detective", 4, 16, 300, "Sparkles", FULL, 0),
-  G("wordbuilder", "رتّب كلمات القرآن", "wordbuilder", 4, 16, 250, "Puzzle", FULL, 1),
-  G("catchstar", "صائد النجوم والكلمات", "catchstar", 4, 16, 200, "Star", FULL, 2),
-  G("ayahmath", "أرقام وحساب الآيات", "ayahmath", 4, 16, 350, "Hash", FULL, 3),
-  G("makkimadani", "سفينة السور: مكية أم مدنية؟", "makkimadani", 4, 16, 200, "Landmark", FULL, 4),
-  G("oddword", "الكلمة القرآنية المختلفة", "oddword", 4, 16, 250, "Sparkles", FULL, 5),
+  G("detective", "المحقق القرآني", "detective", 4, 16, 0, "Sparkles", FULL, 0),
+  G("wordbuilder", "رتّب كلمات القرآن", "wordbuilder", 4, 16, 0, "Puzzle", FULL, 1),
+  G("catchstar", "صائد النجوم والكلمات", "catchstar", 4, 16, 0, "Star", FULL, 2),
+  G("ayahmath", "أرقام وحساب الآيات", "ayahmath", 4, 16, 0, "Hash", FULL, 3),
+  G("makkimadani", "سفينة السور: مكية أم مدنية؟", "makkimadani", 4, 16, 0, "Landmark", FULL, 4),
+  G("oddword", "الكلمة القرآنية المختلفة", "oddword", 4, 16, 0, "Sparkles", FULL, 5),
+  G("orchard", "بستان معاني القرآن", "orchard", 4, 16, 0, "Trees", FULL, 3),
 ];

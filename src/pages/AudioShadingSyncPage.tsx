@@ -5,15 +5,19 @@ import {
   Volume2, VolumeX, Eye, EyeOff, ZoomIn, ZoomOut, Check, ChevronLeft,
   ChevronRight, Scissors, Upload, Download, RefreshCw, Zap, CheckCircle2,
   Clock, FastForward, Rewind, Layers, Sliders, Music, FileAudio, Bookmark,
-  SlidersHorizontal, Radio, Sun, Moon
+  SlidersHorizontal, Radio, Sun, Moon, GraduationCap, Baby, Link2, HardDrive,
+  Cloud, Info, CheckCheck, Repeat, Headphones, Wand2
 } from "lucide-react";
 import { getAllSurahs, getSurahByNumber, SurahInfo } from "@/data/quranData";
-import { getSurahAudioUrl } from "@/data/audioUrls";
+import { getSurahAudioUrl, getFallbackAudioUrl } from "@/data/audioUrls";
 import {
   getPageAyahBoxes, savePageAyahBoxes, AyahBox, getAllPageSources,
   PAGE_IMAGE_SIZE, getSavedAyahCoordinates
 } from "@/data/ayahCoordinates";
-import { getSurahTimings, saveSurahTimings, AudioSegment } from "@/data/ayahTimings";
+import { getSurahTimings, saveSurahTimings, getSavedTimings, AudioSegment } from "@/data/ayahTimings";
+import { getSurahLink, saveSurahLink } from "@/data/surahLink";
+import { saveAudioToCache, resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
+import { saveSurahInfo, getSavedSurahInfo, syncSurahInfoFromServer, SurahMeta } from "@/data/surahInfo";
 import { getCustomPages } from "@/data/customPages";
 import { toast } from "@/hooks/use-toast";
 import AppNav from "@/components/AppNav";
@@ -36,17 +40,30 @@ export default function AudioShadingSyncPage() {
   const [selectedSurahNum, setSelectedSurahNum] = useState<number>(initialSurah);
   const selectedSurah = useMemo(() => getSurahByNumber(selectedSurahNum), [selectedSurahNum]);
 
-  // مصدر الصوت: إما سحابة التطبيق (افتراضي وموصى به) أو ملف مخصص يرفعه المستخدم
-  const [audioSourceType, setAudioSourceType] = useState<"app" | "custom">("app");
-  const [customAudioFile, setCustomAudioFile] = useState<File | null>(null);
-  const [customAudioUrl, setCustomAudioUrl] = useState<string>("");
+  // وضع المزامنة النشط: إما المعلم أو الطفل
+  const [activeSyncSpeaker, setActiveSyncSpeaker] = useState<"teacher" | "kids">("teacher");
 
-  // مشغل الصوت الرئيسي
+  // مصادر الصوت المستقلة: للمعلم وللطفل
+  const [teacherSourceType, setTeacherSourceType] = useState<"app" | "custom">("app");
+  const [teacherCustomFile, setTeacherCustomFile] = useState<File | null>(null);
+  const [teacherCustomUrl, setTeacherCustomUrl] = useState<string>("");
+
+  const [kidsSourceType, setKidsSourceType] = useState<"app" | "custom">("app");
+  const [kidsCustomFile, setKidsCustomFile] = useState<File | null>(null);
+  const [kidsCustomUrl, setKidsCustomUrl] = useState<string>("");
+
+  // مشغل الصوت الرئيسي مع نقطة الإيقاف المحددة (تمنع إيقاف الصوت التلقائي عند التشغيل العادي)
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const boxStopAtRef = useRef<number | null>(null);
+  const loopingBoxRef = useRef<{ start: number; end: number } | null>(null);
+  const [isLooping, setIsLooping] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState<number>(1.0);
+
+  // نظام الربط التلقائي المتسلسل بين الآيات (عند نهاية الآية N تُضبط بداية N+1 فوراً لمطابقة نفس اللحظة)
+  const [autoChain, setAutoChain] = useState<boolean>(true);
 
   // صفحات ومربعات التظليل الخاصة بالسورة
   const [allPages, setAllPages] = useState<string[]>([]);
@@ -56,13 +73,15 @@ export default function AudioShadingSyncPage() {
   const [previewNightMode, setPreviewNightMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // معلومات السورة المحفوظة (المحلية والسحابية)
+  const [savedMeta, setSavedMeta] = useState<SurahMeta | null>(null);
+
   // مقياس معاينة صفحة المصحف
   const [scale, setScale] = useState(0.42);
 
-  // جلب كافة مصادر الصفحات المتوفرة
+  // جلب كافة مصادر الصفحات والبيانات المحفوظة
   useEffect(() => {
     try {
-      // جلب صفحات مجلد "صفحة قران"
       fetch("/api/quran-pages")
         .then(r => r.ok ? r.json() : [])
         .then((folderPages: string[]) => {
@@ -113,6 +132,48 @@ export default function AudioShadingSyncPage() {
     }
   }, [selectedSurahNum]);
 
+  // جلب روابط الصوت ومعلومات السورة المسجلة سابقاً للسورة الحالية
+  useEffect(() => {
+    // 1. جلب معلومات السورة المحفوظة
+    const info = getSavedSurahInfo(selectedSurahNum);
+    setSavedMeta(info);
+
+    const timings = getSavedTimings()[selectedSurahNum];
+    const link = getSurahLink(selectedSurahNum);
+
+    // 2. استرجاع صوت المعلم
+    if (timings?.teacherAudioUrl) {
+      setTeacherCustomUrl(timings.teacherAudioUrl);
+      setTeacherSourceType("custom");
+    } else if (link?.teacherUrl && !link.teacherUrl.includes("your-server.com")) {
+      setTeacherCustomUrl(link.teacherUrl);
+      setTeacherSourceType("custom");
+    } else {
+      resolvePlayableAudioUrl(selectedSurahNum, "", "teacher").then((resolved) => {
+        if (resolved && resolved.startsWith("blob:")) {
+          setTeacherCustomUrl(resolved);
+          setTeacherSourceType("custom");
+        }
+      }).catch(() => {});
+    }
+
+    // 3. استرجاع صوت الطفل
+    if (timings?.kidsAudioUrl) {
+      setKidsCustomUrl(timings.kidsAudioUrl);
+      setKidsSourceType("custom");
+    } else if (link?.kidsUrl && !link.kidsUrl.includes("your-server.com")) {
+      setKidsCustomUrl(link.kidsUrl);
+      setKidsSourceType("custom");
+    } else {
+      resolvePlayableAudioUrl(selectedSurahNum, "", "kids").then((resolved) => {
+        if (resolved && resolved.startsWith("blob:")) {
+          setKidsCustomUrl(resolved);
+          setKidsSourceType("custom");
+        }
+      }).catch(() => {});
+    }
+  }, [selectedSurahNum]);
+
   // تحديث مربعات الصفحة عند تبديل الصفحة
   const handlePageChange = (src: string) => {
     setActivePageSrc(src);
@@ -122,26 +183,97 @@ export default function AudioShadingSyncPage() {
     setSelectedBoxIndex(firstMatch >= 0 ? firstMatch : 0);
   };
 
-  // رابط الصوت الفعال
+  // رابط الصوت الفعال حالياً حسب وضع المتحدث النشط - إلزام تشغيل الملف المختار فقط عند وضع ملف مخصص
   const activeAudioUrl = useMemo(() => {
-    if (audioSourceType === "custom" && customAudioUrl) {
-      return customAudioUrl;
+    if (activeSyncSpeaker === "kids") {
+      if (kidsSourceType === "custom") {
+        return kidsCustomUrl || "";
+      }
+      return getSurahAudioUrl(selectedSurahNum);
+    } else {
+      if (teacherSourceType === "custom") {
+        return teacherCustomUrl || "";
+      }
+      return getSurahAudioUrl(selectedSurahNum);
     }
-    return getSurahAudioUrl(selectedSurahNum);
-  }, [audioSourceType, customAudioUrl, selectedSurahNum]);
+  }, [activeSyncSpeaker, teacherSourceType, teacherCustomUrl, kidsSourceType, kidsCustomUrl, selectedSurahNum]);
 
-  // معالجة رفع ملف صوتي مخصص
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // تبديل المتحدث النشط للمزامنة مع التبديل الفوري للملف المخصص
+  const handleSwitchSpeaker = (speaker: "teacher" | "kids") => {
+    boxStopAtRef.current = null;
+    loopingBoxRef.current = null;
+    setIsLooping(false);
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    setActiveSyncSpeaker(speaker);
+    setCurrentTime(0);
+
+    const targetUrl = speaker === "kids"
+      ? (kidsSourceType === "custom" ? (kidsCustomUrl || "") : getSurahAudioUrl(selectedSurahNum))
+      : (teacherSourceType === "custom" ? (teacherCustomUrl || "") : getSurahAudioUrl(selectedSurahNum));
+
+    if (audioRef.current && targetUrl) {
+      audioRef.current.src = targetUrl;
+      audioRef.current.load();
+    }
+  };
+
+  // معالجة رفع ملف صوتي للمعلم - يعمل فوراً وبشكل حصري
+  const handleTeacherFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (customAudioUrl) {
-      URL.revokeObjectURL(customAudioUrl);
+    if (teacherCustomUrl && teacherCustomUrl.startsWith("blob:")) {
+      try { URL.revokeObjectURL(teacherCustomUrl); } catch { /* ignore */ }
     }
     const url = URL.createObjectURL(f);
-    setCustomAudioFile(f);
-    setCustomAudioUrl(url);
-    setAudioSourceType("custom");
-    toast({ title: "📁 تم تحميل الملف الصوتي", description: `${f.name} (${(f.size / (1024 * 1024)).toFixed(2)} MB)` });
+    setTeacherCustomFile(f);
+    setTeacherCustomUrl(url);
+    setTeacherSourceType("custom");
+    boxStopAtRef.current = null;
+    loopingBoxRef.current = null;
+    setIsLooping(false);
+
+    if (activeSyncSpeaker === "teacher" && audioRef.current) {
+      audioRef.current.src = url;
+      audioRef.current.load();
+      audioRef.current.currentTime = 0;
+      setCurrentTime(0);
+      setIsPlaying(false);
+    }
+    toast({
+      title: "🎓 تم تحميل وتفعيل ملف المعلم المختار حصرياً",
+      description: `${f.name} (${(f.size / (1024 * 1024)).toFixed(2)} MB) - جاهز للتشغيل والمزامنة الفورية`,
+    });
+  };
+
+  // معالجة رفع ملف صوتي للطفل - يعمل فوراً وبشكل حصري
+  const handleKidsFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (kidsCustomUrl && kidsCustomUrl.startsWith("blob:")) {
+      try { URL.revokeObjectURL(kidsCustomUrl); } catch { /* ignore */ }
+    }
+    const url = URL.createObjectURL(f);
+    setKidsCustomFile(f);
+    setKidsCustomUrl(url);
+    setKidsSourceType("custom");
+    boxStopAtRef.current = null;
+    loopingBoxRef.current = null;
+    setIsLooping(false);
+
+    if (activeSyncSpeaker === "kids" && audioRef.current) {
+      audioRef.current.src = url;
+      audioRef.current.load();
+      audioRef.current.currentTime = 0;
+      setCurrentTime(0);
+      setIsPlaying(false);
+    }
+    toast({
+      title: "👶 تم تحميل وتفعيل ملف الطفل المختار حصرياً",
+      description: `${f.name} (${(f.size / (1024 * 1024)).toFixed(2)} MB) - جاهز للتشغيل والمزامنة الفورية`,
+    });
   };
 
   // المربعات التابعة للسورة المحددة في الصفحة الحالية
@@ -153,114 +285,365 @@ export default function AudioShadingSyncPage() {
 
   const selectedBox = pageBoxes[selectedBoxIndex] || null;
 
-  // إحصائيات الربط
+  // إحصائيات الربط لكل من المعلم والطفل مبنية على الآيات الفريدة (يحسب نفس رقم الآية والسورة كوحدة واحدة)
   const syncStats = useMemo(() => {
-    const total = surahBoxes.length;
-    const synced = surahBoxes.filter(({ box }) => box.audioStart !== undefined && box.audioEnd !== undefined).length;
-    return { total, synced, remaining: total - synced, percent: total > 0 ? Math.round((synced / total) * 100) : 0 };
-  }, [surahBoxes]);
+    const totalBoxes = surahBoxes.length;
+    // قائمة الآيات الفريدة الموجودة في السورة
+    const uniqueAyahs = Array.from(new Set(surahBoxes.map(({ box }) => box.ayah)));
+    const totalAyahs = uniqueAyahs.length;
 
-  // التحكم في تشغيل الصوت
+    const teacherSyncedAyahs = uniqueAyahs.filter(ayahNum =>
+      surahBoxes.some(({ box }) => box.ayah === ayahNum && box.audioStart !== undefined && box.audioEnd !== undefined)
+    );
+
+    const kidsSyncedAyahs = uniqueAyahs.filter(ayahNum =>
+      surahBoxes.some(({ box }) => box.ayah === ayahNum && box.kidsStart !== undefined && box.kidsEnd !== undefined)
+    );
+
+    const currentSynced = activeSyncSpeaker === "kids" ? kidsSyncedAyahs.length : teacherSyncedAyahs.length;
+    const currentPercent = totalAyahs > 0 ? Math.round((currentSynced / totalAyahs) * 100) : 0;
+
+    return {
+      totalBoxes,
+      totalAyahs,
+      teacherSyncedCount: teacherSyncedAyahs.length,
+      kidsSyncedCount: kidsSyncedAyahs.length,
+      currentSynced,
+      currentPercent,
+      teacherSyncedAyahs,
+      kidsSyncedAyahs,
+    };
+  }, [surahBoxes, activeSyncSpeaker]);
+
+  // التحكم في تشغيل الصوت الكامل دون توقف مع التحقق من وجود الملف عند تفعيل الوضع المخصص
   const togglePlay = () => {
     if (!audioRef.current) return;
+    const isCustomMode = activeSyncSpeaker === "kids" ? kidsSourceType === "custom" : teacherSourceType === "custom";
+    const hasCustomUrl = activeSyncSpeaker === "kids" ? !!kidsCustomUrl : !!teacherCustomUrl;
+
+    if (isCustomMode && !hasCustomUrl) {
+      toast({
+        title: "⚠️ يرجى اختيار ملف الصوت أولاً",
+        description: `لقد اخترت وضع الملف المخصص لـ${activeSyncSpeaker === "kids" ? "الطفل" : "المعلم"}. انقر على "رفع ملف" لاختيار الملف ليعمل حصرياً.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // مسح أي توقيت إيقاف مؤقت أو تكرار حتى يستمر الصوت بالكامل دون انقطاع
+    boxStopAtRef.current = null;
+    loopingBoxRef.current = null;
+    setIsLooping(false);
+
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      audioRef.current.play().then(() => setIsPlaying(true)).catch((e) => {
+        console.warn("Play error:", e);
+      });
     }
   };
 
   const seek = (time: number) => {
     if (!audioRef.current) return;
+    boxStopAtRef.current = null;
     const clamped = Math.max(0, Math.min(duration || 9999, time));
     audioRef.current.currentTime = clamped;
     setCurrentTime(clamped);
   };
 
-  // تحديث وقت المربع المحدد
-  const updateBoxTiming = (index: number, start?: number, end?: number) => {
-    setPageBoxes((prev) => {
-      const copy = [...prev];
-      if (!copy[index]) return prev;
-      copy[index] = {
-        ...copy[index],
-        audioStart: start !== undefined ? Number(start.toFixed(2)) : copy[index].audioStart,
-        audioEnd: end !== undefined ? Number(end.toFixed(2)) : copy[index].audioEnd,
-      };
-      return copy;
-    });
-  };
-
-  // تسجيل بداية التوقيت للمربع الحالي عند اللحظة الحالية في الصوت
-  const stampCurrentBoxStart = () => {
-    if (!selectedBox) return;
-    const stampTime = Number(currentTime.toFixed(2));
-    updateBoxTiming(selectedBoxIndex, stampTime, selectedBox.audioEnd);
-    toast({
-      title: "📍 تم تسجيل البداية",
-      description: `${selectedBox.label || `الآية ${selectedBox.ayah}`} بدأت عند ${formatTimestamp(stampTime)}`,
-    });
-  };
-
-  // تسجيل نهاية التوقيت للمربع الحالي
-  const stampCurrentBoxEnd = () => {
-    if (!selectedBox) return;
-    const stampTime = Number(currentTime.toFixed(2));
-    updateBoxTiming(selectedBoxIndex, selectedBox.audioStart, stampTime);
-    toast({
-      title: "⏹️ تم تسجيل النهاية",
-      description: `${selectedBox.label || `الآية ${selectedBox.ayah}`} انتهت عند ${formatTimestamp(stampTime)}`,
-    });
-
-    // الانتقال التلقائي للمربع التالي إن وجد
-    const currentPos = surahBoxes.findIndex((sb) => sb.originalIndex === selectedBoxIndex);
-    if (currentPos >= 0 && currentPos < surahBoxes.length - 1) {
-      const nextIndex = surahBoxes[currentPos + 1].originalIndex;
-      setSelectedBoxIndex(nextIndex);
+  // تغيير سرعة التشغيل لتسهيل الضبط فائق الدقة
+  const handlePlaybackRateChange = (r: number) => {
+    setPlaybackRate(r);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = r;
     }
   };
 
-  // تشغيل مقطع المربع فقط للتأكد من دقته
-  const playBoxAudio = (box: AyahBox) => {
+  // تحديث وقت المربع: عند وجود نفس رقم الآية والسورة يعمم التوقيت على جميع مربعات تلك الآية
+  const updateBoxTiming = (index: number, start?: number, end?: number, speakerOverride?: "teacher" | "kids") => {
+    const sp = speakerOverride || activeSyncSpeaker;
+    setPageBoxes((prev) => {
+      const copy = [...prev];
+      const targetBox = copy[index];
+      if (!targetBox) return prev;
+
+      const targetSurah = targetBox.surah;
+      const targetAyah = targetBox.ayah;
+
+      // تعميم التوقيت على كل مربع يحمل نفس رقم السورة والآية (سواء مقاطع متعددة أو آية ممتدة)
+      return copy.map((b) => {
+        if (b.surah === targetSurah && b.ayah === targetAyah) {
+          if (sp === "kids") {
+            return {
+              ...b,
+              kidsStart: start !== undefined ? Number(start.toFixed(2)) : b.kidsStart,
+              kidsEnd: end !== undefined ? Number(end.toFixed(2)) : b.kidsEnd,
+            };
+          } else {
+            return {
+              ...b,
+              audioStart: start !== undefined ? Number(start.toFixed(2)) : b.audioStart,
+              audioEnd: end !== undefined ? Number(end.toFixed(2)) : b.audioEnd,
+            };
+          }
+        }
+        return b;
+      });
+    });
+  };
+
+  // تسجيل بداية التوقيت للمربع الحالي عند اللحظة الحالية في الصوت (وتعميمها على نفس الآية)
+  const stampCurrentBoxStart = () => {
+    if (!selectedBox) return;
+    const stampTime = Number(currentTime.toFixed(2));
+    const isKid = activeSyncSpeaker === "kids";
+    updateBoxTiming(selectedBoxIndex, stampTime, isKid ? selectedBox.kidsEnd : selectedBox.audioEnd, activeSyncSpeaker);
+    toast({
+      title: isKid ? "👶 تم تسجيل بداية تلاوة الطفل" : "🎓 تم تسجيل بداية تلاوة المعلم",
+      description: `${selectedBox.label || `الآية ${selectedBox.ayah}`} بدأت عند ${formatTimestamp(stampTime)} (مطبقة على كل مقاطع الآية)`,
+    });
+  };
+
+  // تسجيل نهاية التوقيت للمربع الحالي والانتقال للآية التالية مع دعم الربط التلقائي المتسلسل (0ms فواصل)
+  const stampCurrentBoxEnd = () => {
+    if (!selectedBox) return;
+    const stampTime = Number(currentTime.toFixed(2));
+    const isKid = activeSyncSpeaker === "kids";
+    const currentAyah = selectedBox.ayah;
+
+    // 1. تسجيل نهاية الآية الحالية
+    updateBoxTiming(selectedBoxIndex, isKid ? selectedBox.kidsStart : selectedBox.audioStart, stampTime, activeSyncSpeaker);
+
+    // 2. البحث عن الآية التالية
+    const nextItem = surahBoxes.find(({ box }) => box.ayah > currentAyah);
+
+    // 3. الربط المتسلسل التلقائي (ربط نهاية هذه الآية مع بداية الآية التالية فوراً دون أي فراغ زمني)
+    if (autoChain && nextItem) {
+      updateBoxTiming(nextItem.originalIndex, stampTime, isKid ? nextItem.box.kidsEnd : nextItem.box.audioEnd, activeSyncSpeaker);
+      toast({
+        title: isKid ? "🔗 ربط متسلسل للطفل" : "🔗 ربط متسلسل للمعلم",
+        description: `تم وسم نهاية آية ${currentAyah} وربط بداية آية ${nextItem.box.ayah} تلقائياً عند ${formatTimestamp(stampTime)} (فاصل 0ms)`,
+      });
+    } else {
+      toast({
+        title: isKid ? "👶 تم تسجيل نهاية تلاوة الطفل" : "🎓 تم تسجيل نهاية تلاوة المعلم",
+        description: `${selectedBox.label || `الآية ${currentAyah}`} انتهت عند ${formatTimestamp(stampTime)}`,
+      });
+    }
+
+    // 4. الانتقال التلقائي للآية التالية
+    if (nextItem) {
+      setSelectedBoxIndex(nextItem.originalIndex);
+    }
+  };
+
+  // سد الفواصل والربط التلقائي بين كل الآيات المتعاقبة في السورة
+  const bridgeAllAyahs = () => {
+    const isKid = activeSyncSpeaker === "kids";
+    const sorted = [...surahBoxes].sort((a, b) => a.box.ayah - b.box.ayah);
+    if (sorted.length < 2) {
+      toast({
+        title: "تنبيه",
+        description: "يلزم وجود آيتين على الأقل للربط بينهما",
+      });
+      return;
+    }
+
+    let bridgedCount = 0;
+    setPageBoxes((prev) => {
+      const copy = [...prev];
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const curBox = sorted[i].box;
+        const nextBox = sorted[i + 1].box;
+
+        const curEnd = isKid ? curBox.kidsEnd : curBox.audioEnd;
+        const curStart = isKid ? curBox.kidsStart : curBox.audioStart;
+        const nextStart = isKid ? nextBox.kidsStart : nextBox.audioStart;
+
+        if (curEnd !== undefined && curEnd > 0) {
+          if (nextStart === undefined || Math.abs(nextStart - curEnd) > 0.01) {
+            // سد الفاصل: جعل بداية الآية التالية مساوية تماماً لنهاية الآية الحالية
+            copy.forEach((b, idx) => {
+              if (b.surah === nextBox.surah && b.ayah === nextBox.ayah) {
+                copy[idx] = isKid ? { ...b, kidsStart: curEnd } : { ...b, audioStart: curEnd };
+              }
+            });
+            bridgedCount++;
+          }
+        } else if (curEnd === undefined && nextStart !== undefined && curStart !== undefined && nextStart > curStart) {
+          // إذا كانت بداية التالية محددة ونهاية الحالية فارغة: إكمال النهاية
+          copy.forEach((b, idx) => {
+            if (b.surah === curBox.surah && b.ayah === curBox.ayah) {
+              copy[idx] = isKid ? { ...b, kidsEnd: nextStart } : { ...b, audioEnd: nextStart };
+            }
+          });
+          bridgedCount++;
+        }
+      }
+      return copy;
+    });
+
+    toast({
+      title: "⚡ تم سد الفواصل والربط التلقائي بنجاح!",
+      description: `تم ربط ومحاذاة ${bridgedCount} فاصل بين آيات سورة ${selectedSurah?.name || selectedSurahNum} لسماع متصل بلا انقطاع!`,
+    });
+  };
+
+  // الضبط الدقيق بالأجزاء من الثانية (±0.05s, ±0.1s, ±0.5s)
+  const adjustTiming = (index: number, field: "start" | "end", delta: number) => {
+    const isKid = activeSyncSpeaker === "kids";
+    const box = pageBoxes[index];
+    if (!box) return;
+
+    const curStart = isKid ? box.kidsStart : box.audioStart;
+    const curEnd = isKid ? box.kidsEnd : box.audioEnd;
+
+    if (field === "start") {
+      const base = curStart !== undefined ? curStart : currentTime;
+      const newVal = Math.max(0, Number((base + delta).toFixed(2)));
+      updateBoxTiming(index, newVal, curEnd, activeSyncSpeaker);
+      seek(newVal);
+    } else {
+      const base = curEnd !== undefined ? curEnd : currentTime;
+      const newVal = Math.max(0, Number((base + delta).toFixed(2)));
+      updateBoxTiming(index, curStart, newVal, activeSyncSpeaker);
+      seek(Math.max(0, Number((newVal - 0.4).toFixed(2))));
+    }
+  };
+
+  // تكرار الآية المحددة للاستماع المتكرر والتأكد من مخارج الحروف والوقف
+  const toggleLoopSelectedBox = (box: AyahBox) => {
     if (!audioRef.current) return;
-    const start = box.audioStart ?? 0;
-    const end = box.audioEnd;
+    const isKid = activeSyncSpeaker === "kids";
+    const start = isKid ? (box.kidsStart ?? 0) : (box.audioStart ?? 0);
+    const end = isKid ? box.kidsEnd : box.audioEnd;
+
+    if (isLooping) {
+      loopingBoxRef.current = null;
+      setIsLooping(false);
+      boxStopAtRef.current = null;
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    if (end === undefined || end <= start) {
+      toast({
+        title: "تنبيه",
+        description: "يجب تحديد نهاية الآية أولاً لتتمكن من تكرارها",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    loopingBoxRef.current = { start, end };
+    setIsLooping(true);
+    boxStopAtRef.current = null;
+    audioRef.current.currentTime = start;
+    setCurrentTime(start);
+    audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+  };
+
+  // استماع لنقطة الوصل والربط بين الآية الحالية والآية التالية
+  const previewBoxTransition = (box: AyahBox) => {
+    if (!audioRef.current) return;
+    const isKid = activeSyncSpeaker === "kids";
+    const end = isKid ? box.kidsEnd : box.audioEnd;
+
+    if (end === undefined || end <= 0) {
+      toast({
+        title: "تنبيه",
+        description: "يرجى وسم نهاية الآية الحالية أولاً لسماع وصلة الربط",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    loopingBoxRef.current = null;
+    setIsLooping(false);
+    const previewStart = Math.max(0, Number((end - 1.5).toFixed(2)));
+    const previewStop = Number((end + 1.5).toFixed(2));
+
+    boxStopAtRef.current = previewStop;
+    audioRef.current.currentTime = previewStart;
+    setCurrentTime(previewStart);
+    audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+
+    toast({
+      title: "🎧 معاينة الربط بين الآيتين",
+      description: `يتم الاستماع من ${formatTimestamp(previewStart)} إلى ${formatTimestamp(previewStop)} لاختبار سلاسة الانتقال.`,
+    });
+  };
+
+  // تشغيل مقطع المربع فقط للتأكد من دقته
+  const playBoxAudio = (box: AyahBox, speakerOverride?: "teacher" | "kids") => {
+    if (!audioRef.current) return;
+    const sp = speakerOverride || activeSyncSpeaker;
+    const start = sp === "kids" ? (box.kidsStart ?? 0) : (box.audioStart ?? 0);
+    const end = sp === "kids" ? box.kidsEnd : box.audioEnd;
+
+    loopingBoxRef.current = null;
+    setIsLooping(false);
+
+    // تعيين نقطة إيقاف فقط عند طلب الاستماع لمقطع مخصص
+    boxStopAtRef.current = (end !== undefined && end > start) ? end : null;
+
     audioRef.current.currentTime = start;
     setCurrentTime(start);
     audioRef.current.play().then(() => {
       setIsPlaying(true);
-      if (end !== undefined && end > start) {
-        const checkEnd = () => {
-          if (!audioRef.current) return;
-          if (audioRef.current.currentTime >= end) {
-            audioRef.current.pause();
-            setIsPlaying(false);
-            audioRef.current.removeEventListener("timeupdate", checkEnd);
-          }
-        };
-        audioRef.current.addEventListener("timeupdate", checkEnd);
-      }
     }).catch(() => {});
   };
 
-  // حفظ التوقيتات والمربعات في السيرفر والمشروع
+  // حفظ التوقيتات والمربعات ومعلومات السورة في الحاسوب والسيرفر
   const handleSaveSync = async () => {
     setIsSaving(true);
     try {
-      // 1. حفظ المربعات المحدثة لصفحة المصحف الحالية
+      // 1. تعميم التوقيتات على جميع المربعات الحاملة لنفس السورة والآية في كل الصفحات
+      const allSavedCoords = getSavedAyahCoordinates();
+      for (const pageKey of Object.keys(allSavedCoords)) {
+        allSavedCoords[pageKey] = allSavedCoords[pageKey].map(b => {
+          if (b.surah === selectedSurahNum) {
+            const match = pageBoxes.find(pb => pb.surah === b.surah && pb.ayah === b.ayah);
+            if (match) {
+              return {
+                ...b,
+                audioStart: match.audioStart !== undefined ? match.audioStart : b.audioStart,
+                audioEnd: match.audioEnd !== undefined ? match.audioEnd : b.audioEnd,
+                kidsStart: match.kidsStart !== undefined ? match.kidsStart : b.kidsStart,
+                kidsEnd: match.kidsEnd !== undefined ? match.kidsEnd : b.kidsEnd,
+              };
+            }
+          }
+          return b;
+        });
+      }
+
+      // حفظ الصفحة الحالية والمربعات المحدثة
       await savePageAyahBoxes(activePageSrc, pageBoxes);
 
-      // 2. تجميع التوقيتات وحفظها في بنية توقيتات السورة
+      // 2. تخزين الملفات المرفوعة في كاش IndexedDB لتعمل على الحاسوب دون إنترنت
+      if (teacherCustomFile) {
+        await saveAudioToCache(activeAudioUrl, selectedSurahNum, teacherCustomFile, "teacher");
+      }
+      if (kidsCustomFile) {
+        await saveAudioToCache(activeAudioUrl, selectedSurahNum, kidsCustomFile, "kids");
+      }
+
+      // 3. تجميع توقيتات المعلم والطفل كلّ على حدة حسب الآية
       const sortedBoxes = [...surahBoxes].sort((a, b) => a.box.ayah - b.box.ayah);
       const teacherTimes: number[] = [];
+      const kidsTimes: number[] = [];
       const segments: AudioSegment[] = [];
 
       sortedBoxes.forEach(({ box }) => {
+        // توقيت المعلم
         if (box.audioStart !== undefined) {
           teacherTimes.push(box.audioStart);
           segments.push({
-            id: `seg_${box.surah}_${box.ayah}_${Date.now()}`,
+            id: `seg_teacher_${box.surah}_${box.ayah}`,
             start: box.audioStart,
             end: box.audioEnd ?? (box.audioStart + 3),
             speaker: "teacher",
@@ -268,18 +651,59 @@ export default function AudioShadingSyncPage() {
             label: box.label || (box.ayah === 0 ? "البسملة" : `آية ${box.ayah}`),
           });
         }
+        // توقيت الطفل
+        if (box.kidsStart !== undefined) {
+          kidsTimes.push(box.kidsStart);
+          segments.push({
+            id: `seg_kids_${box.surah}_${box.ayah}`,
+            start: box.kidsStart,
+            end: box.kidsEnd ?? (box.kidsStart + 3),
+            speaker: "kids",
+            ayah: box.ayah,
+            label: box.label || (box.ayah === 0 ? "البسملة" : `آية ${box.ayah}`),
+          });
+        }
       });
 
-      if (teacherTimes.length > 0) {
-        await saveSurahTimings(selectedSurahNum, {
-          teacher: teacherTimes,
-          segments,
-        });
-      }
+      // 4. حفظ التوقيتات في الحاسوب (ملف_التظليل) وسيرفر Supabase
+      await saveSurahTimings(selectedSurahNum, {
+        teacher: teacherTimes,
+        kids: kidsTimes,
+        segments,
+        teacherAudioUrl: teacherSourceType === "custom" ? (teacherCustomUrl || undefined) : undefined,
+        kidsAudioUrl: kidsSourceType === "custom" ? (kidsCustomUrl || undefined) : undefined,
+      });
+
+      // 5. حفظ رابط السورة
+      saveSurahLink({
+        surah: selectedSurahNum,
+        audioUrl: teacherCustomUrl || getSurahAudioUrl(selectedSurahNum),
+        teacherUrl: teacherCustomUrl || getSurahAudioUrl(selectedSurahNum),
+        kidsUrl: kidsCustomUrl || undefined,
+        timings: teacherTimes,
+        kidsTimings: kidsTimes,
+        updatedAt: Date.now(),
+      });
+
+      // 6. حفظ معلومات السورة الكاملة (على الحاسوب والسيرفر)
+      const surahInfoPayload: SurahMeta = {
+        surahNumber: selectedSurahNum,
+        surahName: selectedSurah?.name || `سورة ${selectedSurahNum}`,
+        ayahCount: selectedSurah?.ayahCount || 7,
+        revelationType: selectedSurah?.revelationType || "مكية",
+        teacherAudioUrl: teacherSourceType === "custom" ? teacherCustomUrl : undefined,
+        kidsAudioUrl: kidsSourceType === "custom" ? kidsCustomUrl : undefined,
+        teacherSyncedAyahs: syncStats.teacherSyncedAyahs,
+        kidsSyncedAyahs: syncStats.kidsSyncedAyahs,
+        pageSrc: activePageSrc,
+        updatedAt: Date.now(),
+      };
+      await saveSurahInfo(surahInfoPayload);
+      setSavedMeta(surahInfoPayload);
 
       toast({
-        title: "✅ تم حفظ التوقيت والربط بنجاح!",
-        description: `تم حفظ ${syncStats.synced} توقيت لمربعات سورة ${selectedSurah?.name || selectedSurahNum} في ملفات المشروع والسيرفر.`,
+        title: "✅ تم الحفظ الشامل في الحاسوب والسيرفر!",
+        description: `تم حفظ ${syncStats.teacherSyncedCount} آية للمعلم و ${syncStats.kidsSyncedCount} آية للطفل، مع حفظ معلومات سورة ${selectedSurah?.name || selectedSurahNum} في ملفات المشروع وسيرفر التخزين.`,
       });
     } catch (e) {
       toast({
@@ -295,26 +719,26 @@ export default function AudioShadingSyncPage() {
   // اختصارات لوحة المفاتيح
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // تجنب تفعيل الاختصارات داخل حقول الإدخال
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
       } else if (e.key === "b" || e.key === "B" || e.key === "لا") {
-        // مفتاح البداية
         e.preventDefault();
         stampCurrentBoxStart();
       } else if (e.key === "e" || e.key === "E" || e.key === "ث") {
-        // مفتاح النهاية
         e.preventDefault();
         stampCurrentBoxEnd();
+      } else if (e.key === "l" || e.key === "L" || e.key === "م") {
+        e.preventDefault();
+        if (selectedBox) toggleLoopSelectedBox(selectedBox);
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        seek(currentTime - 1);
+        seek(currentTime - (e.altKey ? 0.05 : 1));
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        seek(currentTime + 1);
+        seek(currentTime + (e.altKey ? 0.05 : 1));
       }
     };
 
@@ -326,19 +750,60 @@ export default function AudioShadingSyncPage() {
     <div className="min-h-screen bg-[#0a0f0d] text-stone-200 font-sans select-none flex flex-col" dir="rtl">
       <AppNav />
 
-      {/* عنصر الصوت الخفي */}
+      {/* عنصر الصوت المباشر مع استمرارية التشغيل والتحكم الحصري بالملفات */}
       <audio
         ref={audioRef}
         src={activeAudioUrl}
         onTimeUpdate={() => {
-          if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
+          if (!audioRef.current) return;
+          const cur = audioRef.current.currentTime;
+          setCurrentTime(cur);
+
+          // 1. تكرار المقطع إن كان وضع التكرار الدقيق نشطاً
+          if (loopingBoxRef.current) {
+            if (cur >= loopingBoxRef.current.end) {
+              audioRef.current.currentTime = loopingBoxRef.current.start;
+              return;
+            }
+          }
+          // 2. إيقاف الصوت فقط إذا كان المشغل في وضع استماع مقطع أو وصلة ربط محددة
+          else if (boxStopAtRef.current !== null && cur >= boxStopAtRef.current) {
+            audioRef.current.pause();
+            boxStopAtRef.current = null;
+            setIsPlaying(false);
+          }
         }}
         onLoadedMetadata={() => {
           if (audioRef.current) setDuration(audioRef.current.duration);
         }}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => {
+          boxStopAtRef.current = null;
+          loopingBoxRef.current = null;
+          setIsLooping(false);
+          setIsPlaying(false);
+        }}
+        onError={() => {
+          const audio = audioRef.current;
+          if (!audio) return;
+          const isCustomMode = activeSyncSpeaker === "kids" ? kidsSourceType === "custom" : teacherSourceType === "custom";
+          if (isCustomMode) {
+            console.warn("Custom audio file decode/load error:", audio.src);
+            toast({
+              title: "⚠️ تنبيه في ملف الصوت المختار",
+              description: "تعذر تشغيل الملف المختار أو انتهت صلاحية الجلسة، يرجى إعادة اختيار الملف.",
+              variant: "destructive",
+            });
+            return;
+          }
+          const fallback = getFallbackAudioUrl(selectedSurahNum);
+          if (fallback && fallback !== audio.src) {
+            audio.src = fallback;
+            audio.load();
+            if (isPlaying) audio.play().catch(() => {});
+          }
+        }}
       />
 
       {/* شريط الرأس الفاخر */}
@@ -352,53 +817,97 @@ export default function AudioShadingSyncPage() {
             <span>لوحة التظليل</span>
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <Scissors className="w-5 h-5" />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all ${
+              activeSyncSpeaker === "kids"
+                ? "bg-sky-500/15 border-sky-500/30 text-sky-400"
+                : "bg-amber-500/15 border-amber-500/30 text-amber-400"
+            }`}>
+              {activeSyncSpeaker === "kids" ? <Baby className="w-5 h-5" /> : <GraduationCap className="w-5 h-5" />}
             </div>
             <div>
               <h1 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
                 <span>استوديو ربط التظليل بموقع الصوت</span>
-                <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-mono">
-                  Sync Studio
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono border ${
+                  activeSyncSpeaker === "kids"
+                    ? "bg-sky-500/20 text-sky-300 border-sky-500/30"
+                    : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                }`}>
+                  {activeSyncSpeaker === "kids" ? "Kid Sync" : "Teacher Sync"}
                 </span>
               </h1>
               <p className="text-[11px] text-stone-400">
-                اربط كل مربع تظليل بتوقيت بدايته ونهايته في التلاوة الصوتية بسلاسة
+                حفظ متزامن في الحاسوب والسيرفر مع توحيد توقيتات الآيات المتكررة
               </p>
             </div>
           </div>
         </div>
 
-        {/* أزرار الحفظ والإجراءات السريعة */}
-        <div className="flex items-center gap-2">
-          <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>{syncStats.synced} من {syncStats.total} مربعات مربوطة ({syncStats.percent}%)</span>
+        {/* أزرار الحفظ وتبديل المعلم / الطفل السريعة */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* شارات الحفظ على الحاسوب والسيرفر */}
+          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1.5 rounded-xl border border-emerald-500/30">
+            <HardDrive className="w-3.5 h-3.5" />
+            <span>حاسوب</span>
+            <span>+</span>
+            <Cloud className="w-3.5 h-3.5" />
+            <span>سيرفر</span>
+          </div>
+
+          {/* تبديل المعلم / الطفل */}
+          <div className="flex items-center bg-black/50 p-1 rounded-xl border border-white/10">
+            <button
+              onClick={() => handleSwitchSpeaker("teacher")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                activeSyncSpeaker === "teacher"
+                  ? "bg-amber-500 text-black shadow-lg shadow-amber-500/25"
+                  : "text-stone-400 hover:text-white"
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>المعلم ({syncStats.teacherSyncedCount}/{syncStats.totalAyahs} آية)</span>
+            </button>
+            <button
+              onClick={() => handleSwitchSpeaker("kids")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                activeSyncSpeaker === "kids"
+                  ? "bg-sky-500 text-black shadow-lg shadow-sky-500/25"
+                  : "text-stone-400 hover:text-white"
+              }`}
+            >
+              <Baby className="w-3.5 h-3.5" />
+              <span>الطفل ({syncStats.kidsSyncedCount}/{syncStats.totalAyahs} آية)</span>
+            </button>
           </div>
 
           <button
             onClick={handleSaveSync}
             disabled={isSaving}
-            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-lg shadow-amber-500/25 active:scale-95 disabled:opacity-50"
+            className={`px-4 py-2 rounded-xl text-black font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-lg active:scale-95 disabled:opacity-50 ${
+              activeSyncSpeaker === "kids"
+                ? "bg-sky-400 hover:bg-sky-300 shadow-sky-500/25"
+                : "bg-amber-500 hover:bg-amber-400 shadow-amber-500/25"
+            }`}
           >
             <Save className="w-4 h-4" />
-            <span>{isSaving ? "جاري الحفظ..." : "حفظ التوقيتات والمربعات"}</span>
+            <span>{isSaving ? "جاري الحفظ..." : "حفظ الكل (حاسوب + سيرفر)"}</span>
           </button>
         </div>
       </header>
 
-      {/* المحتوى الرئيسي: عمودان (المشغل وأدوات الوسم باليمين + معاينة المصحف باليسار) */}
+      {/* المحتوى الرئيسي */}
       <main className="flex-1 p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-[1700px] mx-auto w-full">
         
         {/* العمود الأيمن (لوحة التحكم، إعدادات الصوت، وأزرار الوسم) */}
         <section className="lg:col-span-7 flex flex-col gap-4">
           
-          {/* كارت اختيار السورة ومصدر الصوت */}
+          {/* كارت معلومات السورة الموثقة ومصدر الصوت */}
           <div className="bg-stone-900/80 border border-white/10 rounded-2xl p-4 shadow-xl space-y-3.5">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <span className={`text-xs font-bold flex items-center gap-1.5 ${
+                activeSyncSpeaker === "kids" ? "text-sky-400" : "text-amber-400"
+              }`}>
                 <Sliders className="w-4 h-4" />
-                <span>إعدادات السورة ومصدر الصوت:</span>
+                <span>إعدادات مزامنة {activeSyncSpeaker === "kids" ? "تلاوة الطفل 👶" : "تلاوة المعلم 🎓"}:</span>
               </span>
               <span className="text-[11px] text-stone-400">
                 الصفحة الحالية: <span className="font-mono text-white">{activePageSrc}</span>
@@ -445,15 +954,20 @@ export default function AudioShadingSyncPage() {
                 </select>
               </div>
 
-              {/* مصدر الصوت */}
+              {/* مصدر الصوت للمتحدث الحالي */}
               <div>
-                <label className="block text-[11px] text-stone-400 mb-1 font-bold">مصدر الصوت:</label>
+                <label className="block text-[11px] text-stone-400 mb-1 font-bold">
+                  مصدر صوت {activeSyncSpeaker === "kids" ? "الطفل" : "المعلم"}:
+                </label>
                 <div className="flex gap-1.5">
                   <button
-                    onClick={() => setAudioSourceType("app")}
+                    onClick={() => {
+                      if (activeSyncSpeaker === "kids") setKidsSourceType("app");
+                      else setTeacherSourceType("app");
+                    }}
                     className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      audioSourceType === "app"
-                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow"
+                      (activeSyncSpeaker === "kids" ? kidsSourceType : teacherSourceType) === "app"
+                        ? (activeSyncSpeaker === "kids" ? "bg-sky-500/20 text-sky-300 border-sky-500/40 shadow" : "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow")
                         : "bg-white/5 border-white/10 text-stone-400 hover:text-white"
                     }`}
                   >
@@ -461,8 +975,8 @@ export default function AudioShadingSyncPage() {
                   </button>
                   <label
                     className={`flex-1 py-2 rounded-xl text-xs font-bold border text-center cursor-pointer transition-all ${
-                      audioSourceType === "custom"
-                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow"
+                      (activeSyncSpeaker === "kids" ? kidsSourceType : teacherSourceType) === "custom"
+                        ? (activeSyncSpeaker === "kids" ? "bg-sky-500/20 text-sky-300 border-sky-500/40 shadow" : "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow")
                         : "bg-white/5 border-white/10 text-stone-400 hover:text-white"
                     }`}
                   >
@@ -470,7 +984,7 @@ export default function AudioShadingSyncPage() {
                     <input
                       type="file"
                       accept="audio/*,.mp3,.wav,.m4a"
-                      onChange={handleFileUpload}
+                      onChange={activeSyncSpeaker === "kids" ? handleKidsFileUpload : handleTeacherFileUpload}
                       className="hidden"
                     />
                   </label>
@@ -478,35 +992,136 @@ export default function AudioShadingSyncPage() {
               </div>
             </div>
 
-            {/* نصيحة ذهبية لتوضيح اقتراح المستخدم بخصوص المقطع المقسم */}
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs leading-relaxed text-amber-200/90 flex items-start gap-2.5">
-              <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-amber-300">💡 نصيحة واقتراح احترافي: </span>
-                <span>
-                  <strong>لا داعي لتقطيع الصوت لملفات منفصلة!</strong> الأفضل والأنقى دائماً هو استخدام ملف تلاوة كامل للسورة وتحديد وقت البداية والنهاية لكل آية هنا بنقرة زر واحدة. هذا يضمن تلاوة متصلة وعذبة بدون أي تقطيع بين الآيات.
+            {/* بطاقة معلومات السورة المحفوظة (حاسوب + سيرفر) */}
+            <div className="bg-black/40 border border-white/10 rounded-xl p-3 flex items-center justify-between gap-3 flex-wrap text-xs">
+              <div className="flex items-center gap-3">
+                <span className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                  <Info className="w-4 h-4" />
+                </span>
+                <div>
+                  <div className="font-bold text-white flex items-center gap-2">
+                    <span>سورة {selectedSurah?.name} ({selectedSurah?.revelationType || "مكية"})</span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono">
+                      {selectedSurah?.ayahCount} آيات
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-stone-400 flex items-center gap-2 mt-0.5">
+                    <span>مزامنة المعلم: <strong className="text-amber-400">{syncStats.teacherSyncedCount} آية</strong></span>
+                    <span>•</span>
+                    <span>مزامنة الطفل: <strong className="text-sky-400">{syncStats.kidsSyncedCount} آية</strong></span>
+                    {savedMeta?.updatedAt && (
+                      <>
+                        <span>•</span>
+                        <span className="text-stone-500">آخر حفظ: {new Date(savedMeta.updatedAt).toLocaleTimeString("ar")}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20 flex items-center gap-1">
+                  <CheckCheck className="w-3 h-3" />
+                  <span>تزامن الآيات المتكررة مُفعّل</span>
                 </span>
               </div>
             </div>
+
+            {/* حالة الملف المخصص إن وُجد */}
+            {((activeSyncSpeaker === "kids" && kidsCustomUrl) || (activeSyncSpeaker === "teacher" && teacherCustomUrl)) && (
+              <div className={`p-2.5 rounded-xl border text-xs flex items-center justify-between ${
+                activeSyncSpeaker === "kids"
+                  ? "bg-sky-500/10 border-sky-500/20 text-sky-300"
+                  : "bg-amber-500/10 border-amber-500/20 text-amber-300"
+              }`}>
+                <div className="flex items-center gap-2">
+                  <FileAudio className="w-4 h-4 shrink-0" />
+                  <span>
+                    تم تعيين ملف صوتي مخصص لـ{activeSyncSpeaker === "kids" ? "الطفل" : "المعلم"}:{" "}
+                    <strong className="font-mono">
+                      {(activeSyncSpeaker === "kids" ? kidsCustomFile?.name : teacherCustomFile?.name) || "ملف محفوظ محلياً"}
+                    </strong>
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    if (activeSyncSpeaker === "kids") {
+                      setKidsCustomUrl("");
+                      setKidsCustomFile(null);
+                      setKidsSourceType("app");
+                    } else {
+                      setTeacherCustomUrl("");
+                      setTeacherCustomFile(null);
+                      setTeacherSourceType("app");
+                    }
+                  }}
+                  className="text-stone-400 hover:text-red-400 text-[11px] font-bold"
+                >
+                  استعادة الافتراضي ✕
+                </button>
+              </div>
+            )}
           </div>
 
           {/* مشغل الصوت والمسطرة الزمنية التفاعلية */}
           <div className="bg-stone-900/80 border border-white/10 rounded-2xl p-4 shadow-xl space-y-4">
             
             {/* رأس المشغل والوقت */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Volume2 className="w-5 h-5 text-amber-400 animate-pulse" />
+            {/* رأس المشغل والوقت مع مؤشر الملف الحصري ومبدل السرعات */}
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Volume2 className={`w-5 h-5 animate-pulse ${
+                  activeSyncSpeaker === "kids" ? "text-sky-400" : "text-amber-400"
+                }`} />
                 <span className="text-sm font-bold text-white">
                   {selectedSurah?.name || `سورة ${selectedSurahNum}`}
                 </span>
-                <span className="text-[11px] font-mono text-stone-400 bg-black/40 px-2 py-0.5 rounded-lg border border-white/5">
-                  سرعة التشغيل: {playbackRate}x
+                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg border ${
+                  activeSyncSpeaker === "kids"
+                    ? "bg-sky-500/20 text-sky-300 border-sky-500/30"
+                    : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                }`}>
+                  {activeSyncSpeaker === "kids" ? "صوت الطفل 👶" : "صوت المعلم 🎓"}
                 </span>
+
+                {/* شارة الملف الحصري */}
+                {((activeSyncSpeaker === "kids" && kidsSourceType === "custom" && kidsCustomUrl) ||
+                  (activeSyncSpeaker === "teacher" && teacherSourceType === "custom" && teacherCustomUrl)) ? (
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 shadow-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span>ملف مخصص نشط حصرياً</span>
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-stone-400 border border-white/10">
+                    صوت التطبيق الافتراضي
+                  </span>
+                )}
+
+                {/* أزرار سرعة التلاوة لتسهيل التقسيم والوسم الدقيق */}
+                <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-lg border border-white/10 text-[10px] font-mono">
+                  {[0.5, 0.75, 1.0, 1.25].map((rate) => (
+                    <button
+                      key={`rate-${rate}`}
+                      onClick={() => handlePlaybackRateChange(rate)}
+                      className={`px-1.5 py-0.5 rounded transition-all font-bold ${
+                        playbackRate === rate
+                          ? "bg-amber-500 text-black shadow"
+                          : "text-stone-400 hover:text-white"
+                      }`}
+                      title={`سرعة التلاوة ${rate}x`}
+                    >
+                      {rate}x
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* عداد التوقيت الدقيق */}
-              <div className="flex items-center gap-1 font-mono text-base sm:text-lg font-bold text-amber-300 bg-black/50 px-3 py-1 rounded-xl border border-amber-500/20 shadow-inner">
+              <div className={`flex items-center gap-1 font-mono text-base sm:text-lg font-bold bg-black/50 px-3 py-1 rounded-xl border shadow-inner ${
+                activeSyncSpeaker === "kids"
+                  ? "text-sky-300 border-sky-500/20"
+                  : "text-amber-300 border-amber-500/20"
+              }`}>
                 <span>{formatTimestamp(currentTime)}</span>
                 <span className="text-stone-500 text-xs">/ {formatTimestamp(duration)}</span>
               </div>
@@ -521,7 +1136,9 @@ export default function AudioShadingSyncPage() {
                 step="0.05"
                 value={currentTime}
                 onChange={(e) => seek(parseFloat(e.target.value))}
-                className="w-full h-2.5 bg-stone-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                className={`w-full h-2.5 bg-stone-700 rounded-lg appearance-none cursor-pointer ${
+                  activeSyncSpeaker === "kids" ? "accent-sky-500" : "accent-amber-500"
+                }`}
               />
               <div className="flex justify-between text-[10px] font-mono text-stone-500 px-1">
                 <span>00:00.00</span>
@@ -554,11 +1171,15 @@ export default function AudioShadingSyncPage() {
                 -0.2s
               </button>
 
-              {/* زر التشغيل والإيقاف الكبير */}
+              {/* زر التشغيل والإيقاف الكبير المستمر */}
               <button
                 onClick={togglePlay}
-                className="w-14 h-14 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center font-bold shadow-xl shadow-amber-500/25 transition-all active:scale-95"
-                title="تشغيل / إيقاف (مسافة Space)"
+                className={`w-14 h-14 rounded-2xl text-black flex items-center justify-center font-bold shadow-xl transition-all active:scale-95 ${
+                  activeSyncSpeaker === "kids"
+                    ? "bg-sky-400 hover:bg-sky-300 shadow-sky-500/25"
+                    : "bg-amber-500 hover:bg-amber-400 shadow-amber-500/25"
+                }`}
+                title="تشغيل / إيقاف مستمر (مسافة Space)"
               >
                 {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
               </button>
@@ -586,37 +1207,191 @@ export default function AudioShadingSyncPage() {
               </button>
             </div>
 
+            {/* أدوات الربط الهندسي وسد الفواصل */}
+            <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap">
+              <button
+                onClick={() => setAutoChain(v => !v)}
+                className={`px-3 py-2 rounded-xl border text-xs font-extrabold flex items-center gap-2 transition-all active:scale-95 shadow-sm ${
+                  autoChain
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-emerald-500/10 ring-1 ring-emerald-500/30"
+                    : "bg-white/5 text-stone-400 border-white/10 hover:text-white"
+                }`}
+                title="عند وسم نهاية أي آية، يتم تلقائياً ضبط بداية الآية التالية لتكون مطابقة لنفس التوقيت (فاصل 0ms)"
+              >
+                <Link2 className={`w-4 h-4 ${autoChain ? "text-emerald-400 animate-pulse" : ""}`} />
+                <span>الربط المتسلسل التلقائي: {autoChain ? "مُفعّل (0ms فاصل)" : "معطّل"}</span>
+              </button>
+
+              <button
+                onClick={bridgeAllAyahs}
+                className="px-3.5 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-extrabold flex items-center gap-1.5 transition-all active:scale-95 shadow-lg shadow-purple-500/10"
+                title="سد كافة الفواصل بين الآيات المتتالية وجعل نهاية كل آية مطابقة لبداية الآية التالية"
+              >
+                <Zap className="w-4 h-4 text-purple-400" />
+                <span>⚡ سد فواصل السورة والربط الشامل</span>
+              </button>
+            </div>
+
             {/* أزرار الوسم السريعة بنقرة واحدة (One-Tap Live Stamping) */}
-            <div className="pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={stampCurrentBoxStart}
                 className="py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 active:scale-95 transition-all"
-                title="تسجيل توقيت البداية للمربع المحدد عند الثانية الحالية (مفتاح B)"
+                title="تسجيل توقيت البداية للآية عند الثانية الحالية (مفتاح B)"
               >
-                <span>📍 وسم بداية المربع هنا</span>
+                <span>📍 وسم بداية {activeSyncSpeaker === "kids" ? "الطفل" : "المعلم"} هنا</span>
                 <span className="text-[10px] bg-black/30 px-2 py-0.5 rounded font-mono">B</span>
               </button>
 
               <button
                 onClick={stampCurrentBoxEnd}
-                className="py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-900/30 active:scale-95 transition-all"
-                title="تسجيل توقيت النهاية والانتقال للمربع التالي (مفتاح E)"
+                className={`py-3 px-4 rounded-xl text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all ${
+                  activeSyncSpeaker === "kids"
+                    ? "bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 shadow-sky-900/30"
+                    : "bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 shadow-amber-900/30"
+                }`}
+                title="تسجيل توقيت النهاية والانتقال للآية التالية والربط التلقائي (مفتاح E)"
               >
-                <span>⏹️ وسم نهاية المربع والانتقال للتالي</span>
+                <span>⏹️ وسم نهاية {activeSyncSpeaker === "kids" ? "الطفل" : "المعلم"} والتالي</span>
                 <span className="text-[10px] bg-black/30 text-white px-2 py-0.5 rounded font-mono">E</span>
               </button>
             </div>
           </div>
+
+          {/* وحدة الضبط الدقيق والربط الهندسي بين الآيات */}
+          {selectedBox && (
+            <div className="bg-gradient-to-b from-stone-900 to-stone-950 border border-white/15 rounded-2xl p-4 shadow-2xl space-y-3.5">
+              <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
+                    activeSyncSpeaker === "kids" ? "bg-sky-500/20 text-sky-300 border border-sky-500/30" : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  }`}>
+                    {selectedBox.ayah === 0 ? "0" : selectedBox.ayah}
+                  </span>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-extrabold text-white flex items-center gap-2">
+                      <span>الضبط الدقيق لـ {selectedBox.label || (selectedBox.ayah === 0 ? "🕌 البسملة" : `الآية ${selectedBox.ayah}`)}</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-stone-300">
+                        {formatTimestamp(activeSyncSpeaker === "kids" ? selectedBox.kidsStart : selectedBox.audioStart)} → {formatTimestamp(activeSyncSpeaker === "kids" ? selectedBox.kidsEnd : selectedBox.audioEnd)}
+                      </span>
+                    </h3>
+                    <p className="text-[11px] text-stone-400">
+                      أزرار التحريك الدقيق بالأجزاء من الثانية لضبط مخارج الحروف والوقف وسد الفواصل
+                    </p>
+                  </div>
+                </div>
+
+                {/* أزرار العمليات والاختبار السريعة للآية */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => toggleLoopSelectedBox(selectedBox)}
+                    className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-sm ${
+                      isLooping
+                        ? "bg-emerald-500 text-black border-emerald-400 animate-pulse font-black"
+                        : "bg-white/5 hover:bg-white/10 text-emerald-400 border-emerald-500/30"
+                    }`}
+                    title="تكرار الآية بشكل حلقي مستمر لاختبار الدقة (مفتاح L)"
+                  >
+                    <Repeat className={`w-3.5 h-3.5 ${isLooping ? "animate-spin" : ""}`} />
+                    <span>{isLooping ? "إيقاف التكرار ⏹️" : "🔁 تكرار الآية للاختبار"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => previewBoxTransition(selectedBox)}
+                    className="px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                    title="استماع لنقطة الوصل بين هذه الآية والآية التالية"
+                  >
+                    <Headphones className="w-3.5 h-3.5 text-purple-400" />
+                    <span>🎧 استماع لوصلة الربط</span>
+                  </button>
+
+                  <button
+                    onClick={() => playBoxAudio(selectedBox)}
+                    className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-sm ${
+                      activeSyncSpeaker === "kids"
+                        ? "bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border-sky-500/40"
+                        : "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/40"
+                    }`}
+                    title="تشغيل هذه الآية فقط من البداية للنهاية"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>تشغيل الآية</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* صفوف الضبط الدقيق بالأجزاء من الثانية */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* ضبط البداية */}
+                <div className="bg-black/40 border border-white/5 rounded-xl p-3 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-emerald-400 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>توقيت البداية:</span>
+                    </span>
+                    <span className="font-mono text-white bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                      {formatTimestamp(activeSyncSpeaker === "kids" ? selectedBox.kidsStart : selectedBox.audioStart)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] text-stone-500 font-bold ml-1">تعديل:</span>
+                    {[-0.5, -0.1, -0.05, 0.05, 0.1, 0.5].map((delta) => (
+                      <button
+                        key={`start-nudge-${delta}`}
+                        onClick={() => adjustTiming(selectedBoxIndex, "start", delta)}
+                        className={`px-2 py-1 rounded-lg text-[11px] font-mono font-bold border transition-all active:scale-90 ${
+                          delta < 0
+                            ? "bg-white/5 hover:bg-white/10 text-stone-300 border-white/10"
+                            : "bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/30"
+                        }`}
+                      >
+                        {delta > 0 ? `+${delta}s` : `${delta}s`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ضبط النهاية */}
+                <div className="bg-black/40 border border-white/5 rounded-xl p-3 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-amber-400 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>توقيت النهاية:</span>
+                    </span>
+                    <span className="font-mono text-white bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                      {formatTimestamp(activeSyncSpeaker === "kids" ? selectedBox.kidsEnd : selectedBox.audioEnd)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] text-stone-500 font-bold ml-1">تعديل:</span>
+                    {[-0.5, -0.1, -0.05, 0.05, 0.1, 0.5].map((delta) => (
+                      <button
+                        key={`end-nudge-${delta}`}
+                        onClick={() => adjustTiming(selectedBoxIndex, "end", delta)}
+                        className={`px-2 py-1 rounded-lg text-[11px] font-mono font-bold border transition-all active:scale-90 ${
+                          delta < 0
+                            ? "bg-white/5 hover:bg-white/10 text-stone-300 border-white/10"
+                            : "bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/30"
+                        }`}
+                      >
+                        {delta > 0 ? `+${delta}s` : `${delta}s`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* جدول مربعات التظليل وتوقيتاتها الخاصة بالسورة */}
           <div className="bg-stone-900/80 border border-white/10 rounded-2xl p-4 shadow-xl space-y-3 flex-1 flex flex-col">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-white flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-amber-400" />
-                <span>مربعات تظليل السورة الحالية ({surahBoxes.length} مربع):</span>
+                <span>مربعات وآيات السورة ({surahBoxes.length} مربع · {syncStats.totalAyahs} آيات):</span>
               </span>
               <span className="text-[10px] text-stone-400 font-mono">
-                اضغط على المربع لتحديده وتعديل توقيته
+                المتحدث النشط: {activeSyncSpeaker === "kids" ? "👶 الطفل" : "🎓 المعلم"}
               </span>
             </div>
 
@@ -632,12 +1407,14 @@ export default function AudioShadingSyncPage() {
               ) : (
                 surahBoxes.map(({ box, originalIndex }) => {
                   const isSelected = originalIndex === selectedBoxIndex;
-                  const isSynced = box.audioStart !== undefined && box.audioEnd !== undefined;
+                  const isTeacherSynced = box.audioStart !== undefined && box.audioEnd !== undefined;
+                  const isKidsSynced = box.kidsStart !== undefined && box.kidsEnd !== undefined;
+                  const isSynced = activeSyncSpeaker === "kids" ? isKidsSynced : isTeacherSynced;
+
                   const isCurrentlyPlaying = isPlaying && (
-                    box.audioStart !== undefined &&
-                    box.audioEnd !== undefined &&
-                    currentTime >= box.audioStart &&
-                    currentTime <= box.audioEnd
+                    activeSyncSpeaker === "kids"
+                      ? (box.kidsStart !== undefined && box.kidsEnd !== undefined && currentTime >= box.kidsStart && currentTime <= box.kidsEnd)
+                      : (box.audioStart !== undefined && box.audioEnd !== undefined && currentTime >= box.audioStart && currentTime <= box.audioEnd)
                   );
 
                   return (
@@ -646,7 +1423,7 @@ export default function AudioShadingSyncPage() {
                       onClick={() => setSelectedBoxIndex(originalIndex)}
                       className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                         isSelected
-                          ? "bg-amber-500/15 border-amber-400 shadow-lg ring-1 ring-amber-400/40"
+                          ? (activeSyncSpeaker === "kids" ? "bg-sky-500/15 border-sky-400 shadow-lg ring-1 ring-sky-400/40" : "bg-amber-500/15 border-amber-400 shadow-lg ring-1 ring-amber-400/40")
                           : isCurrentlyPlaying
                           ? "bg-emerald-500/20 border-emerald-400 shadow-md ring-1 ring-emerald-400"
                           : isSynced
@@ -654,9 +1431,9 @@ export default function AudioShadingSyncPage() {
                           : "bg-red-500/5 border-red-500/20 hover:bg-red-500/10"
                       }`}
                     >
-                      {/* معلومات المربع */}
-                      <div className="flex items-center gap-2.5 min-w-[140px]">
-                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isSynced ? "bg-emerald-400" : "bg-amber-500/60"}`} />
+                      {/* معلومات المربع ورقم الآية */}
+                      <div className="flex items-center gap-2.5 min-w-[130px]">
+                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isSynced ? "bg-emerald-400" : "bg-stone-500"}`} />
                         <div>
                           <div className="text-xs font-bold text-white flex items-center gap-1.5">
                             <span>{box.label || (box.ayah === 0 ? "🕌 بسملة" : `الآية ${box.ayah}`)}</span>
@@ -670,48 +1447,132 @@ export default function AudioShadingSyncPage() {
                         </div>
                       </div>
 
-                      {/* حقول التوقيت اليدوي */}
-                      <div className="flex items-center gap-2 text-xs font-mono" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1 bg-black/40 px-2 py-1 rounded-lg border border-white/5">
-                          <span className="text-[10px] text-stone-400">البداية:</span>
+                      {/* حقول التوقيت: المعلم والطفل معاً بوضوح تام */}
+                      <div className="flex items-center gap-2.5 text-xs font-mono flex-wrap" onClick={(e) => e.stopPropagation()}>
+                        {/* توقيت المعلم */}
+                        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all ${
+                          activeSyncSpeaker === "teacher"
+                            ? "bg-amber-500/15 border-amber-400/50 text-amber-300"
+                            : "bg-black/40 border-white/5 text-stone-400"
+                        }`}>
+                          <span className="text-[10px] font-bold">🎓 المعلم:</span>
                           <input
                             type="number"
                             step="0.05"
                             value={box.audioStart ?? ""}
-                            placeholder="00.00"
-                            onChange={(e) => updateBoxTiming(originalIndex, parseFloat(e.target.value) || 0, box.audioEnd)}
-                            className="w-16 bg-transparent text-amber-300 font-bold outline-none text-left"
+                            placeholder="بدء"
+                            onChange={(e) => updateBoxTiming(originalIndex, parseFloat(e.target.value) || 0, box.audioEnd, "teacher")}
+                            className="w-14 bg-transparent text-amber-300 font-bold outline-none text-left"
                           />
-                        </div>
-
-                        <span className="text-stone-600">→</span>
-
-                        <div className="flex items-center gap-1 bg-black/40 px-2 py-1 rounded-lg border border-white/5">
-                          <span className="text-[10px] text-stone-400">النهاية:</span>
+                          <span>→</span>
                           <input
                             type="number"
                             step="0.05"
                             value={box.audioEnd ?? ""}
-                            placeholder="00.00"
-                            onChange={(e) => updateBoxTiming(originalIndex, box.audioStart, parseFloat(e.target.value) || 0)}
-                            className="w-16 bg-transparent text-amber-300 font-bold outline-none text-left"
+                            placeholder="نهاية"
+                            onChange={(e) => updateBoxTiming(originalIndex, box.audioStart, parseFloat(e.target.value) || 0, "teacher")}
+                            className="w-14 bg-transparent text-amber-300 font-bold outline-none text-left"
                           />
                         </div>
+
+                        {/* توقيت الطفل */}
+                        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all ${
+                          activeSyncSpeaker === "kids"
+                            ? "bg-sky-500/15 border-sky-400/50 text-sky-300"
+                            : "bg-black/40 border-white/5 text-stone-400"
+                        }`}>
+                          <span className="text-[10px] font-bold">👶 الطفل:</span>
+                          <input
+                            type="number"
+                            step="0.05"
+                            value={box.kidsStart ?? ""}
+                            placeholder="بدء"
+                            onChange={(e) => updateBoxTiming(originalIndex, parseFloat(e.target.value) || 0, box.kidsEnd, "kids")}
+                            className="w-14 bg-transparent text-sky-300 font-bold outline-none text-left"
+                          />
+                          <span>→</span>
+                          <input
+                            type="number"
+                            step="0.05"
+                            value={box.kidsEnd ?? ""}
+                            placeholder="نهاية"
+                            onChange={(e) => updateBoxTiming(originalIndex, box.kidsStart, parseFloat(e.target.value) || 0, "kids")}
+                            className="w-14 bg-transparent text-sky-300 font-bold outline-none text-left"
+                          />
+                        </div>
+
+                        {/* مؤشر الربط وسد الفواصل مع الآية السابقة */}
+                        {(() => {
+                          const isKid = activeSyncSpeaker === "kids";
+                          const curStart = isKid ? box.kidsStart : box.audioStart;
+                          const curEnd = isKid ? box.kidsEnd : box.audioEnd;
+                          // البحث عن الآية السابقة مباشرة
+                          const prevSorted = [...surahBoxes]
+                            .sort((a, b) => a.box.ayah - b.box.ayah)
+                            .find(item => item.box.ayah === box.ayah - 1);
+                          if (!prevSorted) return null;
+                          const prevEnd = isKid ? prevSorted.box.kidsEnd : prevSorted.box.audioEnd;
+                          if (curStart === undefined || prevEnd === undefined) return null;
+
+                          const gap = Number((curStart - prevEnd).toFixed(2));
+                          if (Math.abs(gap) <= 0.02) {
+                            return (
+                              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/30 flex items-center gap-1" title="متصلة مباشرة بفاصل 0ms">
+                                <Link2 className="w-3 h-3" />
+                                <span>متصلة</span>
+                              </span>
+                            );
+                          } else if (gap > 0.02) {
+                            return (
+                              <button
+                                onClick={() => updateBoxTiming(originalIndex, prevEnd, curEnd, activeSyncSpeaker)}
+                                className="text-[10px] font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 px-2 py-1 rounded-lg border border-amber-500/40 flex items-center gap-1 transition-all shadow-sm"
+                                title="انقر لسد الفاصل الزمني وربط بداية هذه الآية بنهاية الآية السابقة فوراً"
+                              >
+                                <span>فاصل {gap}s</span>
+                                <Zap className="w-3 h-3 text-amber-400" />
+                                <span>سد الربط</span>
+                              </button>
+                            );
+                          }
+                          return null;
+                        })()}
                       </div>
 
                       {/* أزرار العمليات للمربع */}
                       <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => playBoxAudio(box)}
-                          className="p-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all text-xs"
-                          title="استمع لهذا المربع فقط"
+                          className={`p-1.5 rounded-lg border transition-all text-xs ${
+                            activeSyncSpeaker === "kids"
+                              ? "bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border-sky-500/30"
+                              : "bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/30"
+                          }`}
+                          title={`استمع لمقطع ${activeSyncSpeaker === "kids" ? "الطفل" : "المعلم"}`}
                         >
                           <Play className="w-3.5 h-3.5" />
                         </button>
+
                         <button
-                          onClick={() => updateBoxTiming(originalIndex, undefined, undefined)}
+                          onClick={() => toggleLoopSelectedBox(box)}
+                          className="p-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 transition-all text-xs"
+                          title="تكرار الآية للاختبار الدقيق"
+                        >
+                          <Repeat className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          onClick={() => previewBoxTransition(box)}
+                          className="p-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/25 transition-all text-xs"
+                          title="استماع لوصلة الربط مع الآية التالية"
+                        >
+                          <Headphones className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          onClick={() => updateBoxTiming(originalIndex, undefined, undefined, activeSyncSpeaker)}
                           className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all text-xs"
-                          title="مسح توقيت هذا المربع"
+                          title={`مسح توقيت ${activeSyncSpeaker === "kids" ? "الطفل" : "المعلم"} لهذا المربع`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -727,9 +1588,11 @@ export default function AudioShadingSyncPage() {
         {/* العمود الأيسر (معاينة حية لصفحة المصحف ومربعات التظليل أثناء النطق) */}
         <section className="lg:col-span-5 flex flex-col gap-3">
           <div className="bg-stone-900/80 border border-white/10 rounded-2xl p-3 shadow-xl flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+            <span className={`text-xs font-bold flex items-center gap-1.5 ${
+              activeSyncSpeaker === "kids" ? "text-sky-400" : "text-amber-400"
+            }`}>
               <Eye className="w-4 h-4" />
-              <span>معاينة حية للمصحف مع الصوت:</span>
+              <span>معاينة حية لتظليل {activeSyncSpeaker === "kids" ? "الطفل 👶" : "المعلم 🎓"}:</span>
             </span>
 
             <div className="flex items-center gap-2">
@@ -785,19 +1648,28 @@ export default function AudioShadingSyncPage() {
               {/* مربعات التظليل على الصفحة */}
               {pageBoxes.map((box, idx) => {
                 const isSelected = idx === selectedBoxIndex;
+                const isKid = activeSyncSpeaker === "kids";
+
                 const isBoxActiveWithAudio = isPlaying && (
-                  box.audioStart !== undefined &&
-                  box.audioEnd !== undefined &&
-                  currentTime >= box.audioStart &&
-                  currentTime <= box.audioEnd
+                  isKid
+                    ? (box.kidsStart !== undefined && box.kidsEnd !== undefined && currentTime >= box.kidsStart && currentTime <= box.kidsEnd)
+                    : (box.audioStart !== undefined && box.audioEnd !== undefined && currentTime >= box.audioStart && currentTime <= box.audioEnd)
                 );
+
+                const activeBg = isKid ? "rgba(14, 165, 233, 0.55)" : "rgba(245, 158, 11, 0.55)";
+                const selectedBg = isKid ? "rgba(14, 165, 233, 0.35)" : "rgba(245, 158, 11, 0.35)";
+                const idleBg = isKid ? "rgba(14, 165, 233, 0.15)" : "rgba(245, 158, 11, 0.15)";
+                const activeBorder = isKid ? "#0ea5e9" : "#f59e0b";
+                const activeShadow = isKid
+                  ? "0 0 30px rgba(14, 165, 233, 0.9), inset 0 0 15px rgba(14, 165, 233, 0.5)"
+                  : "0 0 30px rgba(245, 158, 11, 0.9), inset 0 0 15px rgba(245, 158, 11, 0.5)";
 
                 return (
                   <div
                     key={`canvas-box-${box.surah}-${box.ayah}-${idx}`}
                     onClick={() => {
                       setSelectedBoxIndex(idx);
-                      playBoxAudio(box);
+                      // تحديد المربع فقط دون إيقاف أو قطع التلاوة المستمرة
                     }}
                     style={{
                       left: box.x * scale,
@@ -805,39 +1677,40 @@ export default function AudioShadingSyncPage() {
                       width: box.width * scale,
                       height: box.height * scale,
                       backgroundColor: isBoxActiveWithAudio
-                        ? "rgba(245, 158, 11, 0.55)"
+                        ? activeBg
                         : isSelected
-                        ? "rgba(245, 158, 11, 0.35)"
-                        : "rgba(245, 158, 11, 0.15)",
+                        ? selectedBg
+                        : idleBg,
                       borderColor: isBoxActiveWithAudio
-                        ? "#f59e0b"
+                        ? activeBorder
                         : isSelected
                         ? "#ffffff"
-                        : "rgba(245, 158, 11, 0.5)",
+                        : isKid ? "rgba(14, 165, 233, 0.5)" : "rgba(245, 158, 11, 0.5)",
                       boxShadow: isBoxActiveWithAudio
-                        ? "0 0 30px rgba(245, 158, 11, 0.9), inset 0 0 15px rgba(245, 158, 11, 0.5)"
+                        ? activeShadow
                         : isSelected
                         ? "0 0 20px rgba(255, 255, 255, 0.5)"
                         : "none",
                     }}
                     className={`absolute z-20 rounded-lg border-2 cursor-pointer transition-all ${
                       isBoxActiveWithAudio
-                        ? "ring-4 ring-amber-400 scale-[1.02] animate-pulse"
+                        ? (isKid ? "ring-4 ring-sky-400 scale-[1.02] animate-pulse" : "ring-4 ring-amber-400 scale-[1.02] animate-pulse")
                         : isSelected
                         ? "ring-2 ring-white"
                         : "hover:border-white"
                     }`}
                   >
-                    {/* شارة رقم الآية / اسم المربع */}
+                    {/* شارة رقم الآية / اسم المربع مع شارة المتحدث */}
                     <span
                       className={`absolute -top-3.5 right-2 px-2 py-0.5 rounded-full text-[9px] font-bold shadow-md flex items-center gap-1 ${
                         isBoxActiveWithAudio
-                          ? "bg-amber-500 text-black animate-bounce font-black"
+                          ? (isKid ? "bg-sky-400 text-black animate-bounce font-black" : "bg-amber-500 text-black animate-bounce font-black")
                           : isSelected
                           ? "bg-white text-black"
                           : "bg-black/80 text-white"
                       }`}
                     >
+                      {isKid ? "👶 " : "🎓 "}
                       {box.label || (box.ayah === 0 ? "بسملة" : `آية ${box.ayah}`)}
                     </span>
                   </div>

@@ -138,7 +138,7 @@ export async function downloadSurahOffline(
         received = buf.byteLength;
       }
       const blobParts = chunks.map(chunk => chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) as ArrayBuffer);
-      const blob = new Blob(blobParts, { type: response.headers.get("Content-Type") || "audio/mpeg" });
+      const blob = new Blob(blobParts, { type: "audio/mpeg" });
       if (!blob.size) throw new Error("Downloaded audio file is empty");
       await saveAudioToCache(resolvedUrl, surahNumber, blob);
       onProgress?.({

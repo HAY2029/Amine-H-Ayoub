@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Play, RefreshCw, BookOpen, Lock, Settings, Bell, Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Gift, Star, Hash, Grid3x3, Flame, Sparkles, Gamepad2, Puzzle, X, Crown, Brain, Camera, Award, Download, Clock, Mic, Landmark } from "lucide-react";
+import { ArrowRight, Play, RefreshCw, BookOpen, Lock, Settings, Bell, Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Gift, Star, Hash, Grid3x3, Flame, Sparkles, Gamepad2, Puzzle, X, Crown, Brain, Camera, Award, Download, Clock, Mic, Landmark, Trees } from "lucide-react";
 import { getAllSurahs } from "../data/quranData";
 import { getSurahAudioUrl, hasCloudAudio, getFallbackAudioUrl } from "../data/audioUrls";
 import { getProfile, getProgress, getProfiles, getCoins, addCoins, kidsRouteBlocked, setCurrentSurah, addPlayMinutes, setAppMode, ownItem, unlockItem, getActiveId, getAppMode, isPureMode, formatCoins } from "../data/kidsProfile";
@@ -23,6 +23,7 @@ import AyahMathGame from "../games/AyahMathGame";
 import ListenKidsGame from "../games/ListenKidsGame";
 import MakkiMadaniGame from "../games/MakkiMadaniGame";
 import OddQuranWordGame from "../games/OddQuranWordGame";
+import QuranOrchardGame from "../games/QuranOrchardGame";
 import RemoteGameFrame from "../components/RemoteGameFrame";
 import Avatar, { getAvatarSrc } from "../components/Avatar";
 import { drawQRCodeOnCanvas } from "../utils/qrCode";
@@ -1909,8 +1910,9 @@ const ENGINES: Record<GameEngine, (p: { def: GameDef; minSurah: number }) => JSX
   listenkids: ({ def, minSurah }) => <ListenKidsGame def={def} minSurah={minSurah} onExit={() => window.dispatchEvent(new Event("mushaf:listenkids:exit"))} />,
   makkimadani: ({ def, minSurah }) => <MakkiMadaniGame def={def} minSurah={minSurah} />,
   oddword: ({ def, minSurah }) => <OddQuranWordGame def={def} minSurah={minSurah} />,
+  orchard: ({ def, minSurah }) => <QuranOrchardGame def={def} minSurah={minSurah} />,
 };
-const ICONS: Record<string, typeof Headphones> = { Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Hash, Grid3x3, Gamepad2, BookOpen, Sparkles, Puzzle, Brain, Mic, Landmark };
+const ICONS: Record<string, typeof Headphones> = { Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Hash, Grid3x3, Gamepad2, BookOpen, Sparkles, Puzzle, Brain, Mic, Landmark, Trees };
 const iconFor = (key: string) => ICONS[key] || Gamepad2;
 
 /* ───────────────── ركن الأطفال ───────────────── */
@@ -2090,9 +2092,9 @@ export default function KidsGames() {
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showLockGateModal, setShowLockGateModal] = useState(false);
 
-  // نظام فتح الألعاب بالنجوم (المال): لعبة واحدة مجانية والبقية تُفتح بالنجوم المكتسبة
+  // نظام الألعاب: جميع الألعاب مفتوحة ومجانية تماماً مؤقتاً
   const [unlockDef, setUnlockDef] = useState<GameDef | null>(null);
-  const isGameOwned = (g: GameDef) => g.cost <= 0 || ownItem(g.id);
+  const isGameOwned = (_g: GameDef) => true;
   useEffect(() => {
     const h = () => setActive(null);
     window.addEventListener("mushaf:remotegame:exit", h);
@@ -2190,10 +2192,10 @@ export default function KidsGames() {
     }
   }, [progress.minutes]);
 
-  // قفل واحد فقط: «اقرأ لتفتح الألعاب» — بلا حدّ لوقت اللعب وبلا شراء
-  const unlocked = progress.unlocked || profile.goalMinutes <= 0;
+  // الألعاب مجانية ومفتوحة تماماً ومتاحة للعب المباشر
+  const unlocked = true;
   const scheduleCheck = isTimeAllowed();
-  const canPlay = unlocked && scheduleCheck.allowed;
+  const canPlay = true;
 
   const myGames = catalog.filter(g => g.ageMin <= profile.age && profile.age <= (g.ageMax ?? 16));
   const def = active ? catalog.find(g => g.id === active) : null;
@@ -2257,17 +2259,8 @@ export default function KidsGames() {
   };
 
   const tapGame = (id: string) => {
-    if (!canPlay) {
-      if (!scheduleCheck.allowed) {
-        toast({ title: "مغلق بالجدول ⏰", description: scheduleCheck.reason, variant: "destructive" });
-        return;
-      }
-      setShowLockGateModal(true);
-      return;
-    }
     const gg = catalog.find(x => x.id === id);
     if (!gg) return;
-    if (!isGameOwned(gg)) { setUnlockDef(gg); return; }   // مقفلة بالنجوم — تظهر نافذة الفتح
     setActive(id);
   };
 
@@ -3072,6 +3065,16 @@ export default function KidsGames() {
               <span className="flex-1 text-right"><span className="block font-extrabold text-foreground">خصّص شخصيتك</span><span className="block text-[11px] text-muted-foreground">افتح وجوهاً وألواناً جديدة بنجومك</span></span>
               <span className="inline-flex items-center gap-1 text-accent font-extrabold text-xs sm:text-sm bg-accent/15 px-2.5 py-1 rounded-full"><Star className="w-4 h-4 fill-current" /> {formatCoins(coins)} نجمة</span>
             </button>
+
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-l from-emerald-500/15 via-teal-500/15 to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-2 shadow-sm animate-fade-in">
+              <span className="flex items-center gap-2 text-xs sm:text-sm font-black text-emerald-400 dark:text-emerald-300">
+                <Sparkles className="w-4 h-4 text-amber-400 animate-bounce shrink-0" />
+                <span>جميع الألعاب مفتوحة ومجانية بالكامل للجميع! 🎉</span>
+              </span>
+              <span className="bg-emerald-500/20 px-2.5 py-1 rounded-full text-[11px] font-extrabold text-emerald-300 shrink-0">
+                دخول مباشر • بلا نجوم
+              </span>
+            </div>
 
             <div className="flex items-center justify-between mt-8 mb-3 px-1">
               <h3 className="font-extrabold text-xl text-foreground flex items-center gap-2"><Trophy className="w-6 h-6 text-accent" /> الألعاب الأسطورية</h3>

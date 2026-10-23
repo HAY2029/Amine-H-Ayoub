@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, Headphones, BookOpen, KeyRound, X, Clock, Sparkles, Star, Play, Timer } from "lucide-react";
+import { Lock, Headphones, X, Clock, Star, Timer, Check } from "lucide-react";
 import { getProgress, getProfile, unlockToday, formatCoins, getCoins } from "@/data/kidsProfile";
 import { hasKidsPin } from "@/data/kidsLock";
 import ParentalGateModal from "./ParentalGateModal";
@@ -44,6 +44,15 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   // هدف القراءة (افتراضياً 5 دقائق إن لم يحدد)
@@ -60,7 +69,8 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
 
   const handleStartReading = () => {
     onClose();
-    navigate("/audio");
+    if (isCompleted) navigate(targetName === "المتجر" ? "/shop" : "/games");
+    else navigate("/audio");
   };
 
     // رسائل ذكية عند انتهاء وقت اللعب
@@ -80,95 +90,103 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
   return (
     <>
       <div 
-        className="fixed inset-0 z-[250] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in"
+        className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-3 sm:p-5 animate-fade-in"
         onClick={onClose}
         dir="rtl"
       >
         <div 
-          className="relative w-full max-w-sm bg-card rounded-3xl shadow-2xl border-2 border-amber-500/50 p-5 sm:p-6 text-center space-y-4 animate-fade-up overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="quran-gate-title"
+          className="relative w-full max-w-[360px] bg-[#10231d] text-white rounded-[28px] shadow-[0_24px_90px_rgba(0,0,0,.55)] border border-amber-400/35 p-4 sm:p-5 text-center space-y-3.5 animate-fade-up overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* هالات خلفية ذهبية خفيفة */}
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-amber-500/15 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+          <div aria-hidden="true" className="absolute -top-16 -right-12 w-40 h-40 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+          <div aria-hidden="true" className="absolute -bottom-16 -left-12 w-40 h-40 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
 
           <button 
             onClick={onClose}
-            className="absolute top-4 left-4 p-1.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute top-3 left-3 z-10 p-2 rounded-full bg-white/5 text-white/55 hover:bg-white/10 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
             title="إغلاق"
           >
             <X className="w-4 h-4" />
           </button>
 
           {/* شارة القفل الذهبية المتوهجة */}
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500/25 via-amber-500/15 to-transparent border border-amber-500/40 flex items-center justify-center text-amber-500 shadow-inner">
-            <Lock className="w-8 h-8 animate-pulse text-amber-500" />
+          <div className={`relative mx-auto w-14 h-14 rounded-[20px] border flex items-center justify-center shadow-inner ${isCompleted ? "bg-emerald-400/10 border-emerald-300/30 text-emerald-300" : "bg-amber-400/10 border-amber-300/25 text-amber-300"}`}>
+            {isCompleted ? <Check className="w-7 h-7" /> : <Lock className="w-7 h-7" />}
+            <span className={`absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black ${isCompleted ? "bg-emerald-400 text-emerald-950" : "bg-amber-400 text-amber-950"}`}>
+              {isCompleted ? "✓" : "!"}
+            </span>
           </div>
 
           <div className="space-y-1">
-            <span className="inline-flex items-center gap-1 text-[11px] font-black bg-amber-500/15 text-amber-600 dark:text-amber-400 px-3 py-0.5 rounded-full border border-amber-500/30">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-amber-200/90 px-3 py-1 rounded-full bg-amber-300/10 border border-amber-300/15">
               <Timer className="w-3.5 h-3.5" /> وقت مدارسة القرآن الكريم
             </span>
-            <h3 className="text-xl font-black text-foreground">
-              {targetName} مقفلة حتى تكمل وردك
+            <h3 id="quran-gate-title" className="text-lg sm:text-xl font-black text-white leading-snug">
+              {isCompleted ? `أحسنت! فُتحت ${targetName}` : `${targetName} مقفلة حتى تكمل وردك`}
             </h3>
-            <p className="text-xs text-muted-foreground font-bold">
-              {isPlayExpired
+            <p className="text-[11px] text-white/60 font-medium leading-relaxed">
+              {isCompleted
+                ? "أكملت وقت الاستماع اليومي، استمتع بوقتك!"
+                : isPlayExpired
                 ? "انتهى وقت اللعب لليوم، حان وقت تلاوة كتاب الله"
-                : "أنت في وقت مدارسة القرآن! أكمل الوقت لفتح الألعاب تلقائياً"}
+                : "استمع للقرآن لإكمال وقتك وفتح الألعاب تلقائياً"}
             </p>
           </div>
 
           {/* ── العداد التنازلي الرقمي الحي (ساعة إلكترونية فخمة) ── */}
-          <div className="p-4 rounded-2xl bg-gradient-to-b from-secondary/80 to-secondary/40 border border-border/80 shadow-inner space-y-3">
-            <span className="text-[11px] font-bold text-muted-foreground flex items-center justify-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-accent animate-pulse" />
-              <span>العداد التنازلي المتبقي لفتح الألعاب:</span>
+          <div className="p-3.5 rounded-[22px] bg-white/[0.045] border border-white/[0.08] shadow-inner space-y-3">
+            <span className="text-[10px] font-bold text-white/55 flex items-center justify-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-amber-300" />
+              <span>{isCompleted ? `اكتمل وقت ${targetName}` : "الوقت المتبقي لإكمال وردك"}</span>
             </span>
 
             {/* أرقام العداد التنازلي الضخمة (دقائق وثوانٍ) */}
             <div className="flex items-center justify-center gap-3 py-1" dir="rtl">
               {/* الدقائق */}
               <div className="flex flex-col items-center">
-                <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-black/70 border-2 border-amber-500/60 flex items-center justify-center shadow-lg">
-                  <span className="font-mono text-3xl sm:text-4xl font-black text-amber-400 tracking-wider">
+                <div className={`w-[58px] h-[58px] sm:w-16 sm:h-16 rounded-[18px] bg-[#06130f] border-2 flex items-center justify-center shadow-lg ${isCompleted ? "border-emerald-300/45" : "border-amber-400/55"}`}>
+                  <span className={`font-mono text-3xl sm:text-4xl font-black tracking-wider tabular-nums ${isCompleted ? "text-emerald-300" : "text-amber-300"}`}>
                     {String(remMinutes).padStart(2, "0")}
                   </span>
                 </div>
-                <span className="text-[11px] font-black text-muted-foreground mt-1">دقائق</span>
+                <span className="text-[10px] font-bold text-white/50 mt-1">دقائق</span>
               </div>
 
               {/* نقطتا الفصل الوامضتان */}
-              <div className="text-3xl font-black text-amber-500 animate-pulse pb-4">:</div>
+              <div className="text-3xl font-black text-amber-300/70 pb-4">:</div>
 
               {/* الثواني */}
               <div className="flex flex-col items-center">
-                <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-black/70 border-2 border-amber-500/60 flex items-center justify-center shadow-lg">
-                  <span className="font-mono text-3xl sm:text-4xl font-black text-amber-400 tracking-wider">
+                <div className={`w-[58px] h-[58px] sm:w-16 sm:h-16 rounded-[18px] bg-[#06130f] border-2 flex items-center justify-center shadow-lg ${isCompleted ? "border-emerald-300/45" : "border-amber-400/55"}`}>
+                  <span className={`font-mono text-3xl sm:text-4xl font-black tracking-wider tabular-nums ${isCompleted ? "text-emerald-300" : "text-amber-300"}`}>
                     {String(remSeconds).padStart(2, "0")}
                   </span>
                 </div>
-                <span className="text-[11px] font-black text-muted-foreground mt-1">ثوانٍ</span>
+                <span className="text-[10px] font-bold text-white/50 mt-1">ثوانٍ</span>
               </div>
             </div>
 
             {/* شريط الإنجاز */}
             <div className="space-y-1 pt-1" dir="rtl">
-              <div className="h-2.5 rounded-full bg-card border border-border/50 overflow-hidden p-0.5">
+              <div className="h-2 rounded-full bg-black/30 overflow-hidden" role="progressbar" aria-label="تقدم وقت الاستماع" aria-valuemin={0} aria-valuemax={goal} aria-valuenow={Math.min(goal, minutesRead)}>
                 <div 
-                  className="h-full rounded-full bg-gradient-to-l from-emerald-500 to-teal-400 transition-all duration-500 shadow-sm"
+                  className="h-full rounded-full bg-gradient-to-l from-emerald-300 to-emerald-500 transition-all duration-500 shadow-[0_0_12px_rgba(52,211,153,.25)]"
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <div className="flex justify-between text-[11px] font-bold text-muted-foreground px-1">
-                <span>استمعت: <b className="text-emerald-500 font-black">{minutesRead}</b> د</span>
-                <span>الهدف: <b className="text-foreground font-black">{goal}</b> د</span>
+              <div className="flex justify-between text-[10px] font-bold text-white/45 px-0.5">
+                <span>استمعت: <b className="text-emerald-300 font-black">{minutesRead}</b> د</span>
+                <span>الهدف: <b className="text-white/80 font-black">{goal}</b> د</span>
               </div>
             </div>
 
-            <div className="pt-0.5 flex items-center justify-center gap-1 text-[11px] text-amber-500 font-bold">
-              <Star className="w-3.5 h-3.5 fill-amber-500" />
-              <span>تربح 2 نجمة عن كل دقيقة استماع للقرآن ⭐</span>
+            <div className="pt-0.5 flex items-center justify-center gap-1.5 text-[10px] text-amber-200/80 font-bold">
+              <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+              <span>نجمتان لكل دقيقة استماع</span>
             </div>
           </div>
 
@@ -176,15 +194,15 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
           <div className="flex flex-col gap-2 pt-1">
             <button
               onClick={handleStartReading}
-              className="w-full p-3.5 rounded-2xl bg-gradient-to-l from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg"
+              className="w-full min-h-11 px-4 py-2.5 rounded-2xl bg-gradient-to-l from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-[#06251b] font-black text-sm flex items-center justify-center gap-2 active:scale-[.98] transition-all shadow-lg shadow-emerald-950/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#10231d]"
             >
-              <Headphones className="w-5 h-5" />
-              <span>استمع الآن للقرآن لتشغيل العداد 📖</span>
+              {isCompleted ? <Check className="w-5 h-5" /> : <Headphones className="w-5 h-5" />}
+              <span>{isCompleted ? `انتقل إلى ${targetName}` : "استمع الآن للقرآن"}</span>
             </button>
 
             <button
               onClick={onClose}
-              className="w-full p-2.5 rounded-xl bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 border border-border/60"
+              className="w-full min-h-10 p-2.5 rounded-xl bg-white/[0.045] hover:bg-white/[0.08] text-white/55 hover:text-white/85 font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-[.98] border border-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
             >
               <span>متابعة التصفح</span>
             </button>

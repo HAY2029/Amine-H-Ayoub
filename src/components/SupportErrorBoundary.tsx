@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { RefreshCw, Trash2, HeartHandshake, WifiOff, Wifi, Sparkles, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { RefreshCw, Trash2, HeartHandshake, WifiOff, Wifi, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "./ui/button";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { openWhatsAppSupport, SUPPORT_WHATSAPP_DISPLAY } from "@/services/resendService";
 import { getProfile } from "@/data/kidsProfile";
 import { CURRENT_VERSION } from "@/utils/updateChecker";
+import { classifyAppError } from "@/utils/errorClassification";
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== "undefined" ? navigator.onLine : true);
   const [showTechDetails, setShowTechDetails] = useState<boolean>(false);
   const [isReconnecting, setIsReconnecting] = useState<boolean>(false);
+  const rawErrMsg = error ? (error.message || String(error)) : "";
+  const errorKind = classifyAppError(error, isOnline);
 
   // استماع مباشر لتغير حالة الشبكة (أونلاين / أوفلاين)
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      setIsReconnecting(true);
-      setTimeout(() => {
-        resetErrorBoundary();
-      }, 1200);
+      if (errorKind === "offline") {
+        setIsReconnecting(true);
+        setTimeout(() => resetErrorBoundary(), 1200);
+      }
     };
 
     const handleOffline = () => {
@@ -33,9 +36,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [resetErrorBoundary]);
-
-  const rawErrMsg = error ? (error.message || String(error)) : "";
+  }, [errorKind, resetErrorBoundary]);
 
   // استعادة تلقائية فورية إذا كان الخطأ مجرد توقف مؤقت أثناء تحميل صفحة (React Suspense Transition)
   useEffect(() => {
@@ -50,13 +51,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
     }
   }, [rawErrMsg, resetErrorBoundary]);
 
-  const isNetworkIssue =
-    !isOnline ||
-    rawErrMsg.toLowerCase().includes("fetch") ||
-    rawErrMsg.toLowerCase().includes("network") ||
-    rawErrMsg.toLowerCase().includes("offline") ||
-    rawErrMsg.toLowerCase().includes("internet") ||
-    rawErrMsg.toLowerCase().includes("failed to load");
+  const isConnectionIssue = errorKind !== "application";
 
   const handleWhatsAppContact = () => {
     const activeProfile = getProfile();
@@ -66,7 +61,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
       `أحتاج مساعدة من الدعم الفني لتطبيق القرآن للأطفال:\n` +
       `• اسم المستخدم: ${profileName}\n` +
       `• إصدار التطبيق: ${CURRENT_VERSION}\n` +
-      `• نوع الحالة: ${isNetworkIssue ? "انقطاع مؤقت في الاتصال بالإنترنت" : "توقف مؤقت في التطبيق"}\n` +
+      `• نوع الحالة: ${errorKind === "offline" ? "الجهاز غير متصل بالإنترنت" : errorKind === "service" ? "تعذّر الوصول إلى خدمة الشبكة" : "خطأ داخل التطبيق"}\n` +
       `• التفاصيل: ${rawErrMsg.slice(0, 200) || "توقف مؤقت"}\n` +
       `أرجو المساعدة والمتابعة، بارك الله فيكم.`;
 
@@ -103,7 +98,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
       <div className="max-w-md w-full bg-[#121816]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-emerald-500/20 flex flex-col items-center text-center gap-6 animate-in zoom-in-95 duration-300">
         
         {/* أيقونة الحالة الدالة */}
-        {isNetworkIssue ? (
+        {isConnectionIssue ? (
           <div className="relative">
             <div className="w-20 h-20 bg-amber-500/15 text-amber-400 rounded-3xl flex items-center justify-center ring-8 ring-amber-500/10 shadow-inner">
               <WifiOff className="w-10 h-10 animate-pulse" />
@@ -126,12 +121,14 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
         {/* الرسالة التوضيحية */}
         <div className="space-y-2.5">
           <h2 className="text-xl sm:text-2xl font-black text-white">
-            {isNetworkIssue ? "انقطاع مؤقت في الاتصال بالإنترنت 📡" : "نعتذر منك، حدث توقف مؤقت بسيط 🌸"}
+            {errorKind === "offline" ? "لا يوجد اتصال بالإنترنت 📡" : errorKind === "service" ? "تعذّر الوصول إلى الخدمة" : "حدث خطأ داخل التطبيق"}
           </h2>
           <p className="text-stone-300 text-xs sm:text-sm leading-relaxed max-w-xs mx-auto font-medium">
-            {isNetworkIssue
-              ? "يبدو أن اتصال الإنترنت ضعيف أو منقطع مؤقتاً. التطبيق يستمع لعودة الشبكة وسيعاود العمل تلقائياً فور توفرها."
-              : "لا تقلق، جميع محفوظاتك ونجومك وبياناتك في أمان تام. نحن هنا لمساعدتك في أي لحظة."}
+            {errorKind === "offline"
+              ? "جهازك غير متصل بالشبكة حالياً. عند عودة الاتصال سنحاول استعادة التطبيق تلقائياً."
+              : errorKind === "service"
+                ? "الجهاز متصل بالإنترنت، لكن تعذّر الوصول إلى الخدمة. قد يكون السبب عطلاً مؤقتاً في الخادم أو بطئاً في الشبكة."
+                : "يبدو أن المشكلة من التطبيق وليست من اتصال الإنترنت. بياناتك المحفوظة آمنة؛ أعد المحاولة أو أرسل التفاصيل للدعم الفني."}
           </p>
         </div>
 
@@ -143,7 +140,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
           </span>
           <span className={`font-bold flex items-center gap-1.5 ${isOnline ? "text-emerald-400" : "text-amber-400"}`}>
             <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-emerald-400" : "bg-amber-400 animate-ping"}`} />
-            <span>{isOnline ? "متصل (جاري الاستعادة...)" : "غير متصل حالياً"}</span>
+            <span>{isOnline ? "متصل بالإنترنت" : "غير متصل حالياً"}</span>
           </span>
         </div>
 

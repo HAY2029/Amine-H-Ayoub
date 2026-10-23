@@ -1104,7 +1104,15 @@ const RecitationMethods = ({ onBack }: { onBack?: () => void }) => {
   const [leadingSegments, setLeadingSegments] = useState<number>(1);
   // رابط خدمة التقسيم (Python على Hugging Face Spaces) — يُحفظ محلياً
   const SERVICE_URL_KEY = "quran:splitServiceUrl";
+  const SERVICE_API_KEY_STORAGE = "quran:splitServiceKey";
   const DEFAULT_SERVICE_URL = "https://hammoualiyoucef20-quran-audio.hf.space";
+  const getServiceApiKey = (): string => {
+    try {
+      return localStorage.getItem(SERVICE_API_KEY_STORAGE) || "";
+    } catch {
+      return "";
+    }
+  };
   const [serviceUrl, setServiceUrl] = useState<string>(() => {
     try { return localStorage.getItem(SERVICE_URL_KEY) || DEFAULT_SERVICE_URL; } catch { return DEFAULT_SERVICE_URL; }
   });
@@ -1256,6 +1264,8 @@ const RecitationMethods = ({ onBack }: { onBack?: () => void }) => {
     const filePath = engine === "gemini" ? "/split-gemini" : "/split";
     const engName = engine === "gemini" ? "Gemini" : "الخدمة";
     setSplitting(true); setProgressPct(30);
+    const apiKey = engine === "gemini" ? getServiceApiKey() : "";
+    const authHeaders: Record<string, string> = apiKey ? { "X-API-Key": apiKey } : {};
     try {
       let res: Response;
       if (hasCloudAudio(surahNum)) {
@@ -1263,7 +1273,7 @@ const RecitationMethods = ({ onBack }: { onBack?: () => void }) => {
         setProgress(`${engName}: جلب الصوت السحابي وتقسيمه...`);
         res = await fetch(`${base}${urlPath}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...authHeaders },
           body: JSON.stringify({ audioUrl: getSurahAudioUrl(surahNum), leading: leadingSegments, surahLabel: label, style: recitationStyle, ayahCount: getSurahAyahCount(surahNum) }),
         });
       } else {
@@ -1277,7 +1287,7 @@ const RecitationMethods = ({ onBack }: { onBack?: () => void }) => {
         form.append("surahLabel", label);
         form.append("style", recitationStyle);
         form.append("ayahCount", String(getSurahAyahCount(surahNum)));
-        res = await fetch(`${base}${filePath}`, { method: "POST", body: form });
+        res = await fetch(`${base}${filePath}`, { method: "POST", headers: authHeaders, body: form });
       }
       if (!res.ok) {
         const txt = await res.text().catch(() => "");

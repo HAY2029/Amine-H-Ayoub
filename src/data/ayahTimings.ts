@@ -59,12 +59,32 @@ const TIMINGS_STORAGE_KEY = "mushaf:ayahTimings:v1";
 
 export const syncTimingsFromServer = async () => {
   if (typeof window === "undefined") return;
+  
+  // 1. مزامنة من ملفات السيرفر المحلي أولاً (الحاسوب)
+  try {
+    const res = await fetch("/api/save-timings", { cache: "no-store" });
+    if (res.ok) {
+      const localData = await res.json();
+      if (localData && Object.keys(localData).length > 0) {
+        const cur = getSavedTimings();
+        const merged = { ...cur, ...localData };
+        localStorage.setItem(TIMINGS_STORAGE_KEY, JSON.stringify(merged));
+        window.dispatchEvent(new Event("mushaf:sync_complete"));
+      }
+    }
+  } catch (err) {
+    console.debug("Local timings fetch skipped:", err);
+  }
+
+  // 2. مزامنة من Supabase السحابي
   if (typeof navigator !== "undefined" && !navigator.onLine) return; // offline
   if (!hasValidSupabaseKey()) return; // skip sync when no valid API key
   try {
-    const { data, error } = await supabase.from("store").select("value").eq("key", TIMINGS_STORAGE_KEY).maybeSingle();
+    const { data } = await supabase.from("store").select("value").eq("key", TIMINGS_STORAGE_KEY).maybeSingle();
     if (data && data.value) {
-      localStorage.setItem(TIMINGS_STORAGE_KEY, JSON.stringify(data.value));
+      const cur = getSavedTimings();
+      const merged = { ...cur, ...data.value };
+      localStorage.setItem(TIMINGS_STORAGE_KEY, JSON.stringify(merged));
       window.dispatchEvent(new Event("mushaf:sync_complete"));
     }
   } catch (e) {
@@ -80,12 +100,27 @@ export function getSavedTimings(): Record<number, SurahTimings> {
   } catch { return {}; }
 }
 
-export async function saveSurahTimings(surahNumber: number, timings: SurahTimings) {
+export async function saveSurahTimings(surahNumber: number, timings: Partial<SurahTimings>) {
   if (typeof window === "undefined") return;
   const all = getSavedTimings();
-  all[surahNumber] = timings;
+  all[surahNumber] = {
+    ...(all[surahNumber] || { teacher: [] }),
+    ...timings,
+  };
   localStorage.setItem(TIMINGS_STORAGE_KEY, JSON.stringify(all));
   
+  // 1. الحفظ في ملفات الحاسوب والمشروع عبر السيرفر المحلي
+  try {
+    await fetch("/api/save-timings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(all),
+    });
+  } catch (err) {
+    console.debug("Local server timings save skipped:", err);
+  }
+
+  // 2. الحفظ في سيرفر Supabase السحابي
   try {
     await supabase.from("store").upsert({ key: TIMINGS_STORAGE_KEY, value: all });
   } catch (e) {
@@ -141,7 +176,7 @@ function normalize(entry: SurahTimings | number[] | undefined): SurahTimings | n
 /** Resolve timings: prefer saved (LocalStorage) over hardcoded. */
 function resolveTimings(surahNumber: number): SurahTimings | null {
   const saved = getSavedTimings()[surahNumber];
-  if (saved && saved.teacher && saved.teacher.length > 0) return saved;
+  if (saved && ((saved.teacher && saved.teacher.length > 0) || (saved.kids && saved.kids.length > 0) || (saved.segments && saved.segments.length > 0))) return saved;
   return normalize(AYAH_TIMINGS[surahNumber]);
 }
 

@@ -1,0 +1,1 @@
+﻿src/App.tsx(39,36): error TS2307: Cannot find module './pages/QuizPage.tsx' or its corresponding type declarations.

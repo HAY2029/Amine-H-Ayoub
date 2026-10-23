@@ -12,6 +12,7 @@ import {
   getPageAyahBoxes, savePageAyahBoxes, AyahBox, getAllPageSources,
   PAGE_IMAGE_SIZE, AYAH_COORDINATES, syncCoordinatesFromServer
 } from "@/data/ayahCoordinates";
+import { getSurahTimings, getAyahStartTime } from "@/data/ayahTimings";
 import {
   SurahRegion, getSurahRegistry, getSurahRegistryEntry,
   upsertSurahRegistryEntry, syncSurahRegistryFromServer
@@ -708,14 +709,51 @@ export default function SurahShadingPage() {
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
 
-  // تعيين تظليل فردي للآية المضغوطة (حتى لو كانت على سطرين)
-  const handleSingleAyahHighlight = (surah: number, ayah: number) => {
-    setSingleAyahHighlight({ surah, ayah });
+  // تعيين تظليل فردي للآية المضغوطة + تشغيل صوتها مباشرة (حتى لو كانت الآية على سطرين)
+  const playAyahAtTime = (startAt: number) => {
+    if (!audioRef.current) return;
+    const a = audioRef.current;
+    const candidates = getSurahAudioCandidates(selectedSurahNum);
+    let idx = 0;
+    const fail = () => {
+      idx++;
+      if (idx >= candidates.length) {
+        setIsPlaying(false);
+        toast({ title: "تعذر تشغيل صوت الآية", description: "لم يتم العثور على مصدر صوتي متاح.", variant: "destructive" });
+        return;
+      }
+      a.src = candidates[idx];
+      a.load();
+      a.currentTime = startAt;
+      a.play().then(() => setIsPlaying(true)).catch(fail);
+    };
+    const url = getSurahAudioUrl(selectedSurahNum);
+    if (a.src !== url && !a.src.endsWith(url)) {
+      a.src = url;
+      a.load();
+    }
+    const begin = () => {
+      try { a.currentTime = startAt; } catch { /* metadata not ready yet */ }
+      a.play().then(() => setIsPlaying(true)).catch(fail);
+    };
+    if (a.readyState >= 1) begin();
+    else a.addEventListener("loadedmetadata", begin, { once: true });
   };
 
-  // إلغاء تظليل الآية الفردية
+  const handleSingleAyahHighlight = (surah: number, ayah: number) => {
+    setSingleAyahHighlight({ surah, ayah });
+    // تشغيل الآية من توقيتها الصحيح عند الضغط على المربع
+    const startAt = getAyahStartTime(surah, Math.max(ayah, 1), audioRef.current?.duration || 0, "teacher");
+    playAyahAtTime(startAt);
+  };
+
+  // إلغاء تظليل الآية الفردية + إيقاف الصوت
   const clearSingleAyahHighlight = () => {
     setSingleAyahHighlight(null);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
   };
 
   // تغيير أبعاد المربع بالمقابض (Resize)
@@ -1275,7 +1313,12 @@ export default function SurahShadingPage() {
               <div
                 key={`box-${box.surah}-${box.ayah}-${index}`}
                 onPointerDown={(e) => {
-                  handlePointerDownDrag(e, index);
+                  // الضغط على مربع الآية: تظليل + تشغيل صوت الآية من توقيتها
+                  if (isDrawMode) {
+                    handlePointerDownDrag(e, index);
+                    return;
+                  }
+                  setSelectedIndex(index);
                   handleSingleAyahHighlight(box.surah, box.ayah);
                 }}
                 style={{ left: box.x * scale, top: box.y * scale, width: box.width * scale, height: box.height * scale, backgroundColor: boxBg, borderColor: boxBorder, boxShadow: isSingleHighlight ? `0 0 30px ${hexToRgba(boxColorHex, 0.8)}, inset 0 0 15px ${hexToRgba(boxColorHex, 0.5)}` : (isSelected && glowEnabled ? `0 0 20px ${hexToRgba(boxColorHex, 0.5)}, inset 0 0 10px ${hexToRgba(boxColorHex, 0.3)}` : "none") }}

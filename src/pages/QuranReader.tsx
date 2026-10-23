@@ -322,18 +322,26 @@ export default function QuranReader() {
       
       const ordered: PageInfo[] = [];
       const added = new Set<string>();
+      const addedPageNums = new Set<number>();
       
       for (const src of cleanOrder) {
         if (pageMap.has(src) && !added.has(src)) {
-          ordered.push(pageMap.get(src)!);
+          const page = pageMap.get(src)!;
+          const pNum = page.pageNumber || pageNumForKey(src);
+          if (pNum && pNum !== Number.MAX_SAFE_INTEGER && addedPageNums.has(pNum)) continue;
+          ordered.push(page);
           added.add(src);
+          if (pNum && pNum !== Number.MAX_SAFE_INTEGER) addedPageNums.add(pNum);
         }
       }
       
       for (const p of allPages) {
         if (!added.has(p.src)) {
+          const pNum = p.pageNumber || pageNumForKey(p.src);
+          if (pNum && pNum !== Number.MAX_SAFE_INTEGER && addedPageNums.has(pNum)) continue;
           ordered.push(p);
           added.add(p.src);
+          if (pNum && pNum !== Number.MAX_SAFE_INTEGER) addedPageNums.add(pNum);
         }
       }
       
@@ -344,15 +352,19 @@ export default function QuranReader() {
   };
 
   const pages = useMemo<PageInfo[]>(() => {
-    // بناءً على طلبك: نعتمد فقط على الصفحات الموجودة في مجلد `صفحة قران` ونلغي أي صفحات مضافة/مستعادة سابقاً
+    // منع تكرار أي صفحة في المصحف نهائياً (الفاتحة وسائر صفحات جزء عم والقرآن)
     const dedupeMap = new Map<string, PageInfo>();
+    const seenPageNums = new Set<number>();
     const normKey = (p: PageInfo) => normalizeImageKey(p.src) || p.src;
     
     CODE_QURAN_PAGES.forEach(p => {
       if (p && p.src) {
         const k = normKey(p);
+        const pNum = p.pageNumber || pageNumForKey(k);
+        if (pNum && pNum !== Number.MAX_SAFE_INTEGER && seenPageNums.has(pNum)) return;
         if (!dedupeMap.has(k)) {
           dedupeMap.set(k, p);
+          if (pNum && pNum !== Number.MAX_SAFE_INTEGER) seenPageNums.add(pNum);
         }
       }
     });
@@ -407,6 +419,7 @@ export default function QuranReader() {
   // === الآية النشطة + المتكلم + السورة النشطة (رسم التظليل من React state مباشرة) ===
   const [activeSurahNum, setActiveSurahNum] = useState(-1);
   const [activeAyahNum, setActiveAyahNum] = useState(-1);
+  const [activeBoxIndex, setActiveBoxIndex] = useState(-1);
   const [playMode, _setPlayMode] = useState<PlayMode>("teacher");
   const [continuousPlay, _setContinuousPlay] = useState(true);
   const [repeatCount, _setRepeatCount] = useState(0);
@@ -683,6 +696,12 @@ export default function QuranReader() {
   const audioRef2 = useRef<HTMLAudioElement>(null);
   const [isSimultaneousPlaying, setIsSimultaneousPlaying] = useState(false);
 
+  const stopSimultaneous = useCallback(() => {
+    const a2 = audioRef2.current;
+    if (a2) { a2.pause(); a2.currentTime = 0; }
+    setIsSimultaneousPlaying(false);
+  }, []);
+
   // Get the actual page index (shuffle > custom order > identity)
   const getActualPageIndex = useCallback((displayIdx: number) => {
     if (isShuffled && shuffledPageOrder.length > 0) {
@@ -705,8 +724,14 @@ export default function QuranReader() {
 
   // ── قائمة كل السور للانتقال المباشر ──
   const allSurahsList = useMemo(() => {
+    const seen = new Set<number>();
     const out: { number: number; name: string; pageIdx: number; surahIdx: number }[] = [];
-    pages.forEach((p, pi) => p.surahs.forEach((s, si) => out.push({ number: s.number, name: s.name, pageIdx: pi, surahIdx: si })));
+    pages.forEach((p, pi) => p.surahs.forEach((s, si) => {
+      if (!seen.has(s.number)) {
+        seen.add(s.number);
+        out.push({ number: s.number, name: s.name, pageIdx: pi, surahIdx: si });
+      }
+    }));
     return out;
   }, [pages]);
   const jumpToSurah = (pageIdx: number, surahIdx: number) => {
@@ -911,13 +936,29 @@ export default function QuranReader() {
 
   const resolveAudioSrc = useCallback(async (surah: SurahAudio, speaker: Speaker = "teacher") => {
     try {
-      // جلب رابط الصوت من السيرفر للتسريع على الهاتف
-      const serverUrl = getSurahServerUrl(surah.number);
+      // 1. الأولوية القصوى للتوقيتات وروابط الصوت المحددة في استوديو الربط /sync-audio
+      const savedTimings = getSavedTimings()[surah.number];
       const link = getSurahLink(surah.number);
-      const speakerUrl = speaker === "kids" ? link?.kidsUrl : link?.teacherUrl || serverUrl;
-      const preferredUrl = speakerUrl || serverUrl || audioPath(surah.number, speaker) || surah.src;
-      const resolved = await resolvePlayableAudioUrl(surah.number, preferredUrl);
+
+      let syncAudioUrl = "";
+      if (speaker === "kids") {
+        syncAudioUrl = savedTimings?.kidsAudioUrl || link?.kidsUrl || "";
+      } else {
+        syncAudioUrl = savedTimings?.teacherAudioUrl || link?.teacherUrl || link?.audioUrl || "";
+      }
+
+      // إذا وُجد صوت مخصص تم ضبطه في /sync-audio، تشغيله فوراً أو من الذاكرة المحلية
+      if (syncAudioUrl) {
+        const resolved = await resolvePlayableAudioUrl(surah.number, syncAudioUrl, speaker);
+        if (resolved) return resolved;
+        return syncAudioUrl;
+      }
+
+      // 2. إذا لم يُحدد صوت مخصص في /sync-audio، الاعتماد على الصوت الافتراضي للسورة
+      const defaultUrl = audioPath(surah.number, speaker) || surah.src;
+      const resolved = await resolvePlayableAudioUrl(surah.number, defaultUrl, speaker);
       if (resolved) return resolved;
+      return defaultUrl;
     } catch (e) {
       console.warn("Offline audio resolution fallback:", e);
     }
@@ -964,6 +1005,7 @@ export default function QuranReader() {
   const isHandlingSegmentEndRef = useRef(false);
   const isSeekingRef = useRef(false);
   const expectedStartTimeRef = useRef(0);
+  const currentAyahStartRef = useRef(0);
   const internalPauseRef = useRef(false); // guards against external pause listener firing on internal pauses
   const autoFollowRef = useRef(false); // true عندما يتغيّر الصفحة بسبب متابعة التشغيل لسورة ممتدّة على صفحتين (يمنع إيقاف الصوت)
 
@@ -972,13 +1014,15 @@ export default function QuranReader() {
   const clearAllHighlights = useCallback(() => {
     setActiveAyahNum(-1);
     setActiveSurahNum(-1);
+    setActiveBoxIndex(-1);
   }, []);
 
-  const highlightAyah = useCallback((surahNum: number, ayahNum: number, speaker: Speaker, _boxIndex?: number) => {
+  const highlightAyah = useCallback((surahNum: number, ayahNum: number, speaker: Speaker, boxIndex?: number) => {
     if (hideShadingRef.current) return;
     setActiveSpeaker(speaker);
     setActiveSurahNum(prev => (prev === surahNum ? prev : surahNum));
     setActiveAyahNum(prev => (prev === ayahNum ? prev : ayahNum));
+    setActiveBoxIndex(boxIndex !== undefined ? boxIndex : -1);
   }, []);
 
   // تشغيل المقطع الحالي بالتناوب بين المعلم والطفل
@@ -988,14 +1032,23 @@ export default function QuranReader() {
     // تحديد المتحدث
     setCurrentSpeaker(segment.speaker);
     
-    // جلب رابط الصوت حسب المتحدث
+    // جلب رابط الصوت حسب المتحدث مع دعم الملفات المحملة أوفلاين
     const link = getSurahLink(segment.surah);
-    const audioUrl = segment.speaker === "kids" 
+    const rawAudioUrl = segment.speaker === "kids" 
       ? (link?.kidsUrl || getSurahServerUrl(segment.surah))
       : (link?.teacherUrl || getSurahServerUrl(segment.surah));
     
-    // تعيين مصدر الصوت والتشغيل من توقيت البداية
-    audioRef.current.src = audioUrl;
+    let audioUrl = rawAudioUrl;
+    try {
+      audioUrl = await resolvePlayableAudioUrl(segment.surah, rawAudioUrl);
+    } catch {
+      /* ignore */
+    }
+    
+    // تعيين مصدر الصوت فقط إذا تغيّر لتجنب التقطيع
+    if (audioRef.current.src !== audioUrl) {
+      audioRef.current.src = audioUrl;
+    }
     audioRef.current.currentTime = segment.startTime;
     audioRef.current.play().catch(() => {});
     
@@ -1162,13 +1215,25 @@ export default function QuranReader() {
 
     pageSrcRestoredRef.current = true;
   }, [pages, currentPage]);
+  const lastPageRef = useRef(currentPage);
   useEffect(() => {
-    // تغيُّر الصفحة بسبب متابعة التشغيل لسورة ممتدّة على صفحتين: لا توقف الصوت ولا تُصفّر الحالة
+    if (lastPageRef.current === currentPage) return;
+    lastPageRef.current = currentPage;
+
+    // تغيُّر الصفحة بسبب متابعة التشغيل لسورة ممتدّة على صفحتين أو متابعة تلاوة: لا توقف الصوت
     if (autoFollowRef.current) { autoFollowRef.current = false; return; }
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
-    setActiveSurah(null); setIsPlaying(false); currentAyahRef.current = -1; currentBoxIndexRef.current = -1;
-    setSelectedSurahIdx(0); setSelectedAyah(-1);
-    stopAtRef.current = null; currentRepeatRef.current = 0;
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
+    setActiveSurah(null);
+    currentAyahRef.current = -1;
+    currentBoxIndexRef.current = -1;
+    setSelectedSurahIdx(0);
+    setSelectedAyah(-1);
+    stopAtRef.current = null;
+    currentRepeatRef.current = 0;
     setEditingPageName(false);
     clearAllHighlights();
   }, [currentPage, clearAllHighlights]);
@@ -1209,13 +1274,20 @@ export default function QuranReader() {
 
   const playAyah = useCallback(async (surah: SurahAudio, ayahNum: number, forceSpeaker?: Speaker, boxIndex?: number) => {
     const a = audioRef.current; if (!a) return;
-    const targetSrc = await resolveAudioSrc(surah, forceSpeaker ?? "teacher");
+    const sp: Speaker = forceSpeaker ?? (playModeRef.current === "kids" ? "kids" : "teacher");
+    currentSpeakerRef.current = sp;
+    setActiveSpeaker(sp);
+
+    const targetSrc = await resolveAudioSrc(surah, sp);
     const sameSrc = a.src === targetSrc || (a.src && a.src.endsWith(surah.src.split("/").pop() || surah.src));
 
     setActiveSurah(surah);
+    setSelectedAyah(ayahNum);
     currentAyahRef.current = ayahNum;
     currentBoxIndexRef.current = boxIndex ?? -1;
     stopAtRef.current = null;
+    // تظليل فوري ومباشر للآية في واجهة المصحف
+    highlightAyah(surah.number, ayahNum, sp, boxIndex);
 
     // متابعة عبر الصفحات: إن كان صندوق هذه الآية في صفحة غير المعروضة، اقلب إليها دون إيقاف الصوت
     // (لا يقع هذا للسور المضمّنة لأن كل سورة على صفحة واحدة — يُفعَّل فقط لسورة موزّعة على صفحتين)
@@ -1243,8 +1315,8 @@ export default function QuranReader() {
     }
 
     const startPlayback = () => {
-      const sp: Speaker = forceSpeaker ?? "teacher";
       currentSpeakerRef.current = sp;
+      setActiveSpeaker(sp);
 
       const timings = getSurahTimings(surah.number);
       const segments = timings?.segments || [];
@@ -1320,17 +1392,18 @@ export default function QuranReader() {
         }
       }
 
-      stopAtRef.current = nextT;
+      currentAyahStartRef.current = startT;
+      // في وضع التشغيل المتواصل وبدون تكرار الآية، لا نوقف الصوت بين الآيات أبداً
+      // بل يتدفق الصوت طبيعياً ويتولى trackAudio تظليل كل آية بدقة عالية
+      if (continuousPlayRef.current && repeatCountRef.current === 0 && !alternatingMode) {
+        stopAtRef.current = null;
+      } else {
+        stopAtRef.current = nextT;
+      }
       isSeekingRef.current = true;
       expectedStartTimeRef.current = startT;
       a.currentTime = startT;
-      
-      setCurrentTrack({
-        surahNumber: surah.number,
-        surahName: surah.name,
-        audioSrc: targetSrc,
-        source: "mushaf"
-      });
+      highlightAyah(surah.number, ayahNum, sp, boxIndex);
       
       a.play().then(() => {
         setIsPlaying(true);
@@ -1450,8 +1523,11 @@ export default function QuranReader() {
 
       for (let i = currentIndex + 1; i < sortedBoxesWithIndex.length; i++) {
         const candidate = sortedBoxesWithIndex[i];
-        // أجزاء الآية الواحدة (نفس رقم الآية) تُعدّ وحدة واحدة — تخطَّها وانتقل للآية التالية
-        if (candidate.box.ayah === currentAyahRef.current) continue;
+        // إذا كان الصندوق يمثل سطراً آخر له توقيت مستقل، انتقل إليه، وإلا انتقل للآية التالية
+        const curBox = currentIndex >= 0 ? sortedBoxesWithIndex[currentIndex]?.box : null;
+        const isSameTiming = curBox && candidate.box.ayah === curBox.ayah &&
+          candidate.box.audioStart === curBox.audioStart && candidate.box.audioEnd === curBox.audioEnd;
+        if (isSameTiming) continue;
         nextItem = candidate;
         break;
       }
@@ -1460,14 +1536,22 @@ export default function QuranReader() {
         setSelectedAyah(nextItem.box.ayah);
         playAyah(activeSurah, nextItem.box.ayah, sp, nextItem.globalIndex);
       } else {
-        advanceSurah(sp);
+        const totalAyahs = activeSurah.ayahCount || 7;
+        const curAyah = currentAyahRef.current > 0 ? currentAyahRef.current : 1;
+        if (curAyah < totalAyahs) {
+          const nextAyah = curAyah + 1;
+          setSelectedAyah(nextAyah);
+          playAyah(activeSurah, nextAyah, sp);
+        } else {
+          advanceSurah(sp);
+        }
       }
     };
 
     // "teacher" or "kids" only mode
     const speakerForMode: Speaker = mode === "kids" ? "kids" : "teacher";
 
-    if (currentRepeatRef.current < repeat) {
+    if (repeat === 999 || currentRepeatRef.current < repeat) {
       currentRepeatRef.current++;
       playAyah(activeSurah, currentAyahRef.current, speakerForMode, currentBoxIndexRef.current !== -1 ? currentBoxIndexRef.current : undefined);
     } else {
@@ -1476,7 +1560,6 @@ export default function QuranReader() {
         advanceToNextSegment(speakerForMode);
       } else {
         setIsPlaying(false);
-        clearAllHighlights();
       }
     }
   }, [activeSurah, playAyah, actualPage, advanceSurah, clearAllHighlights]);
@@ -1485,21 +1568,58 @@ export default function QuranReader() {
     const a = audioRef.current;
     if (!a || !activeSurah) return;
 
-    if (a.seeking) return;
+    if (a.seeking) {
+      if (!a.paused) requestRef.current = requestAnimationFrame(trackAudio);
+      return;
+    }
     if (isSeekingRef.current) {
-      if (Math.abs(a.currentTime - expectedStartTimeRef.current) < 0.15) {
+      if (Math.abs(a.currentTime - expectedStartTimeRef.current) < 0.35 || a.currentTime >= expectedStartTimeRef.current) {
         isSeekingRef.current = false;
       } else {
+        if (!a.paused) requestRef.current = requestAnimationFrame(trackAudio);
         return;
       }
     }
 
     if (stopAtRef.current !== null && a.currentTime >= stopAtRef.current - 0.05) {
-      a.pause();
-      setIsPlaying(false);
-      segmentEndGuardRef.current = true;
-      handleAyahSegmentEndRef.current();
-      return;
+      if (repeatCountRef.current > 0) {
+        if (repeatCountRef.current === 999 || currentRepeatRef.current < repeatCountRef.current) {
+          currentRepeatRef.current++;
+          isSeekingRef.current = true;
+          expectedStartTimeRef.current = currentAyahStartRef.current;
+          a.currentTime = currentAyahStartRef.current;
+          return;
+        } else {
+          currentRepeatRef.current = 0;
+          if (continuousPlayRef.current) {
+            stopAtRef.current = null;
+            if (alternatingMode) {
+              segmentEndGuardRef.current = true;
+              handleAyahSegmentEndRef.current();
+              return;
+            }
+          } else {
+            a.pause();
+            setIsPlaying(false);
+            stopAtRef.current = null;
+            return;
+          }
+        }
+      }
+
+      if (continuousPlayRef.current) {
+        stopAtRef.current = null;
+        if (alternatingMode) {
+          segmentEndGuardRef.current = true;
+          handleAyahSegmentEndRef.current();
+          return;
+        }
+      } else {
+        a.pause();
+        setIsPlaying(false);
+        stopAtRef.current = null;
+        return;
+      }
     }
 
     const pageBoxes = pages.flatMap(p => getPageAyahBoxes(p.src));
@@ -1509,21 +1629,38 @@ export default function QuranReader() {
     let foundSpeaker: Speaker | null = null;
     let activeBoxGlobalIndex = -1;
 
-    for (let i = 0; i < pageBoxes.length; i++) {
-      const box = pageBoxes[i];
-      if (box.surah !== activeSurah.number) continue;
+    const currentSp = currentSpeakerRef.current;
 
-      if (box.audioStart !== undefined && box.audioEnd !== undefined && a.currentTime >= box.audioStart && a.currentTime <= box.audioEnd) {
-        activeBox = box;
-        foundSpeaker = "teacher";
-        activeBoxGlobalIndex = i;
-        break;
+    // فصل تام بين المعلم والطفل في التظليل:
+    // إذا كان المتحدث الحالي طفلاً، لا يُفحص سوى توقيت الطفل (kidsStart/End).
+    // وإذا كان المتحدث معلماً، لا يُفحص سوى توقيت المعلم (audioStart/End).
+    if (currentSp === "kids") {
+      for (let i = 0; i < pageBoxes.length; i++) {
+        const box = pageBoxes[i];
+        if (box.surah !== activeSurah.number) continue;
+        if (box.kidsStart !== undefined && box.kidsEnd !== undefined) {
+          const endThreshold = box.kidsEnd + 0.15;
+          if (a.currentTime >= (box.kidsStart - 0.05) && a.currentTime <= endThreshold) {
+            activeBox = box;
+            foundSpeaker = "kids";
+            activeBoxGlobalIndex = i;
+            break;
+          }
+        }
       }
-      if (box.kidsStart !== undefined && box.kidsEnd !== undefined && a.currentTime >= box.kidsStart && a.currentTime <= box.kidsEnd) {
-        activeBox = box;
-        foundSpeaker = "kids";
-        activeBoxGlobalIndex = i;
-        break;
+    } else {
+      for (let i = 0; i < pageBoxes.length; i++) {
+        const box = pageBoxes[i];
+        if (box.surah !== activeSurah.number) continue;
+        if (box.audioStart !== undefined && box.audioEnd !== undefined) {
+          const endThreshold = box.audioEnd + 0.15;
+          if (a.currentTime >= (box.audioStart - 0.05) && a.currentTime <= endThreshold) {
+            activeBox = box;
+            foundSpeaker = "teacher";
+            activeBoxGlobalIndex = i;
+            break;
+          }
+        }
       }
     }
 
@@ -1537,9 +1674,10 @@ export default function QuranReader() {
       }
     } else {
       const timings = getSurahTimings(activeSurah.number);
-      const segments = timings?.segments || [];
-      if (segments.length > 0) {
-        const activeSeg = segments.find(s => a.currentTime >= s.start && a.currentTime <= s.end);
+      const allSegments = timings?.segments || [];
+      const speakerSegments = allSegments.filter(s => s.speaker === currentSp);
+      if (speakerSegments.length > 0) {
+        const activeSeg = speakerSegments.find(s => a.currentTime >= s.start && a.currentTime <= s.end);
         if (activeSeg) {
           // Use segment's own ayah field if available, fallback to index-based lookup
           const segAyah = activeSeg.ayah;
@@ -1547,8 +1685,8 @@ export default function QuranReader() {
           if (segAyah !== undefined) {
             ayahNumber = segAyah;
           } else {
-            const speakerSegments = segments.filter(s => s.speaker === activeSeg.speaker).sort((a, b) => a.start - b.start);
-            const ayahIdx = speakerSegments.findIndex(s => s.id === activeSeg.id);
+            const sortedSpeakerSegs = [...speakerSegments].sort((a, b) => a.start - b.start);
+            const ayahIdx = sortedSpeakerSegs.findIndex(s => s.id === activeSeg.id);
             const sortedBoxes = [...surahBoxes].sort((a, b) => a.ayah - b.ayah);
             ayahNumber = sortedBoxes[ayahIdx]?.ayah ?? (ayahIdx + 1);
           }
@@ -1568,12 +1706,9 @@ export default function QuranReader() {
           }
         }
       } else {
-        if (timings && timings.teacher.length > 0) {
-          let speaker: Speaker = "teacher";
-          if (timings.kidsStart !== undefined && a.currentTime >= timings.kidsStart) {
-            speaker = "kids";
-          }
-          const list = speaker === "kids" && timings.kids ? timings.kids : timings.teacher;
+        const speaker: Speaker = currentSp;
+        const list = speaker === "kids" && timings?.kids ? timings.kids : timings?.teacher || [];
+        if (list.length > 0) {
           let idx = 0;
           for (let i = 0; i < list.length; i++) {
             if (list[i] <= a.currentTime + 0.05) idx = i;
@@ -1644,22 +1779,51 @@ export default function QuranReader() {
   }, [handleAyahSegmentEnd]);
 
 
-  const togglePlayPause = () => {
-    const a = audioRef.current; if (!a || !activeSurah) return;
-    if (isPlaying) {
-      a.pause();
-      setIsPlaying(false);
-    } else {
-      if (currentAyahRef.current === -1) {
-        const pageBoxes = pages.flatMap(p => getPageAyahBoxes(p.src));
-        const surahBoxes = pageBoxes.filter(b => b.surah === activeSurah.number).sort((a,b) => a.ayah - b.ayah);
-        const firstAyah = surahBoxes[0]?.ayah ?? 1;
-        playAyah(activeSurah, firstAyah, playMode === "kids" ? "kids" : "teacher");
-      } else {
-        a.play().then(() => setIsPlaying(true)).catch(() => { });
-      }
+  const [audioTime, setAudioTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const onTime = () => setAudioTime(a.currentTime);
+    const onLoaded = () => setAudioDuration(a.duration || 0);
+    a.addEventListener("timeupdate", onTime);
+    a.addEventListener("loadedmetadata", onLoaded);
+    a.addEventListener("durationchange", onLoaded);
+    return () => {
+      a.removeEventListener("timeupdate", onTime);
+      a.removeEventListener("loadedmetadata", onLoaded);
+      a.removeEventListener("durationchange", onLoaded);
+    };
+  }, [audioRef]);
+
+  const handleSpeedChange = (speed: number) => {
+    setPlaybackSpeed(speed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
     }
   };
+
+  const cycleRepeatCount = useCallback(() => {
+    setRepeatCount(prev => {
+      if (prev === 0) return 1;
+      if (prev === 1) return 2;
+      if (prev === 2) return 3;
+      if (prev === 3) return 5;
+      if (prev === 5) return 999;
+      return 0;
+    });
+  }, [setRepeatCount]);
+
+  const formatTime = (secs: number) => {
+    if (isNaN(secs) || secs < 0) return "00:00";
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m < 10 ? "0" : ""}${m}:${s < 10 ? "0" : ""}${s}`;
+  };
+
+
 
   // Swipe page turning gestures
   const touchStartXRef = useRef<number | null>(null);
@@ -1683,13 +1847,36 @@ export default function QuranReader() {
     touchStartXRef.current = null;
   };
 
-  const step = isDesktop ? 2 : 1;
   const totalDisplayPages = isShuffled ? shuffledPageOrder.length : pages.length;
   useEffect(() => {
     if (!pageDataReady || totalDisplayPages === 0 || currentPage < totalDisplayPages) return;
     setCurrentPage(totalDisplayPages - 1);
   }, [currentPage, pageDataReady, totalDisplayPages]);
 
+  const visiblePages = useMemo(() => {
+    // إذا كان الفهرس المحفوظ أعلى من الصفحات المحلية المتاحة حالياً، اعرض
+    // صفحة مؤقتة إلى أن تصل قائمة السيرفر، مع إبقاء currentPage لاستعادته لاحقاً.
+    const displayPage = pageDataReady
+      ? currentPage
+      : Math.min(currentPage, Math.max(0, (isShuffled ? shuffledPageOrder.length : pages.length) - 1));
+    const p1 = pages[getActualPageIndex(displayPage)];
+    if (!p1) return [];
+    if (!isDesktop) return [p1];
+
+    // سورة الفاتحة (الصفحة 1 أو 0.jpg) صفحة افتتاحية مقدسة مستقلة دائماً، لا تُقرن بأي صفحة أخرى نهائياً
+    const isFatiha = p1.pageNumber === 1 || p1.src.includes("0.jpg") || p1.surahs.some(s => s.number === 1);
+    if (isFatiha) return [p1];
+
+    // في الحاسوب، نعرض صفحتين متجاورتين فقط إذا كانتا متتاليتين في المصحف
+    const nextIdx = displayPage + 1;
+    const p2 = nextIdx < totalDisplayPages ? pages[getActualPageIndex(nextIdx)] : null;
+    if (p2 && p2.pageNumber === p1.pageNumber + 1 && !p2.surahs.some(s => s.number === 1)) {
+      return [p1, p2];
+    }
+    return [p1];
+  }, [currentPage, getActualPageIndex, isDesktop, isShuffled, pageDataReady, pages, shuffledPageOrder.length, totalDisplayPages]);
+
+  const allBoxes = useMemo(() => pages.flatMap(p => getPageAyahBoxes(p.src)), [pages]);
 
   // ── اتجاه قلب الصفحة: يُستخدم لتحريك المجموعة كلها (صفحة/صفحتين) معاً ──
   const [turnDir, setTurnDir] = useState<1 | -1>(1);
@@ -1709,14 +1896,25 @@ export default function QuranReader() {
   }, [totalDisplayPages]);
   
   const goPrev = useCallback(() => {
-    let prevPage = currentPage - step;
+    // إذا كانت الصفحة الحالية هي صفحة 1 (أول صفحة بعد الفاتحة)، فالرجوع خطوة واحدة يعيدنا للفاتحة
+    let prevStep = 1;
+    if (isDesktop) {
+      if (currentPage === 1) {
+        prevStep = 1;
+      } else {
+        prevStep = 2;
+      }
+    }
+    let prevPage = currentPage - prevStep;
     goToPage(Math.max(0, prevPage));
-  }, [currentPage, goToPage, step]);
+  }, [currentPage, goToPage, isDesktop]);
   
   const goNext = useCallback(() => {
-    let nextPage = currentPage + step;
+    // إذا كانت الصفحة الحالية معروضة بمفردها (كالفاتحة)، ننتقل خطوة واحدة للأمام
+    const currentStep = (isDesktop && visiblePages.length > 1) ? 2 : 1;
+    let nextPage = currentPage + currentStep;
     goToPage(Math.min(totalDisplayPages - 1, nextPage));
-  }, [currentPage, totalDisplayPages, goToPage, step]);
+  }, [currentPage, totalDisplayPages, goToPage, isDesktop, visiblePages.length]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -1778,27 +1976,83 @@ export default function QuranReader() {
     return () => { cancelled = true; };
   }, [currentPage, totalDisplayPages, getActualPageIndex, customImgs, pages, isDesktop]);
 
-  const visiblePages = useMemo(() => {
-    // إذا كان الفهرس المحفوظ أعلى من الصفحات المحلية المتاحة حالياً، اعرض
-    // صفحة مؤقتة إلى أن تصل قائمة السيرفر، مع إبقاء currentPage لاستعادته لاحقاً.
-    const displayPage = pageDataReady
-      ? currentPage
-      : Math.min(currentPage, Math.max(0, (isShuffled ? shuffledPageOrder.length : pages.length) - 1));
-    const p1 = pages[getActualPageIndex(displayPage)];
-    if (!isDesktop) return [p1].filter(Boolean) as PageInfo[];
-    
-    // في الحاسوب، نعرض صفحتين متجاورتين
-    const nextIdx = displayPage + 1;
-    const p2 = nextIdx < totalDisplayPages ? pages[getActualPageIndex(nextIdx)] : null;
-    return [p1, p2].filter(Boolean) as PageInfo[];
-  }, [currentPage, getActualPageIndex, isDesktop, isShuffled, pageDataReady, pages, shuffledPageOrder.length, totalDisplayPages]);
-
   const currentPageSurahs = useMemo(() => {
-    return visiblePages.flatMap(p => p.surahs);
+    const seen = new Set<number>();
+    const out: SurahAudio[] = [];
+    visiblePages.flatMap(p => p.surahs).forEach(s => {
+      if (!seen.has(s.number)) {
+        seen.add(s.number);
+        out.push(s);
+      }
+    });
+    return out;
   }, [visiblePages]);
   
   const selectedSurah = currentPageSurahs[selectedSurahIdx] || currentPageSurahs[0];
   const ayahCount = selectedSurah ? getActualAyahCount(selectedSurah.number, selectedSurah.ayahCount) : 0;
+
+  const playNextAyah = useCallback(() => {
+    const s = activeSurah || selectedSurah || currentPageSurahs[0];
+    if (!s) return;
+    const allVisibleBoxes = visiblePages.flatMap(p => getPageAyahBoxes(p.src));
+    const surahBoxes = allVisibleBoxes.filter(b => b.surah === s.number).sort((a, b) => a.ayah - b.ayah);
+    const total = surahBoxes.length > 0 ? Math.max(...surahBoxes.map(b => b.ayah)) : (s.ayahCount || 7);
+    const cur = currentAyahRef.current > 0 ? currentAyahRef.current : (selectedAyah > 0 ? selectedAyah : 1);
+    if (cur < total) {
+      currentRepeatRef.current = 0;
+      playAyah(s, cur + 1, playModeRef.current === "kids" ? "kids" : "teacher");
+    } else {
+      advanceSurah(playModeRef.current === "kids" ? "kids" : "teacher");
+    }
+  }, [activeSurah, selectedSurah, currentPageSurahs, visiblePages, selectedAyah, playAyah, advanceSurah]);
+
+  const playPrevAyah = useCallback(() => {
+    const s = activeSurah || selectedSurah || currentPageSurahs[0];
+    if (!s) return;
+    const cur = currentAyahRef.current > 0 ? currentAyahRef.current : (selectedAyah > 0 ? selectedAyah : 1);
+    if (cur > 1) {
+      currentRepeatRef.current = 0;
+      playAyah(s, cur - 1, playModeRef.current === "kids" ? "kids" : "teacher");
+    }
+  }, [activeSurah, selectedSurah, currentPageSurahs, selectedAyah, playAyah]);
+
+  const handleSwitchSpeaker = useCallback((targetMode: "teacher" | "kids") => {
+    if (isSimultaneousPlaying) { stopSimultaneous(); }
+    setPlayMode(targetMode);
+    playModeRef.current = targetMode;
+    setActiveSpeaker(targetMode);
+    currentSpeakerRef.current = targetMode;
+    saveShadingToServer({ speaker: targetMode }).catch(() => {});
+
+    const s = activeSurah || selectedSurah || currentPageSurahs[0];
+    if (!s) return;
+
+    const curAyah = currentAyahRef.current > 0 ? currentAyahRef.current : (selectedAyah > 0 ? selectedAyah : 1);
+    currentRepeatRef.current = 0;
+    playAyah(s, curAyah, targetMode, currentBoxIndexRef.current >= 0 ? currentBoxIndexRef.current : undefined);
+  }, [activeSurah, selectedSurah, currentPageSurahs, selectedAyah, playAyah, setPlayMode, isSimultaneousPlaying, stopSimultaneous]);
+
+  const togglePlayPause = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    const targetSurah = activeSurah || selectedSurah || currentPageSurahs[0];
+    if (!targetSurah) return;
+
+    if (isPlaying) {
+      a.pause();
+      setIsPlaying(false);
+    } else {
+      const sp: Speaker = playModeRef.current === "kids" ? "kids" : "teacher";
+      if (currentAyahRef.current === -1 || !activeSurah) {
+        const pageBoxes = pages.flatMap(p => getPageAyahBoxes(p.src));
+        const surahBoxes = pageBoxes.filter(b => b.surah === targetSurah.number).sort((a,b) => a.ayah - b.ayah);
+        const targetAyah = selectedAyah > 0 ? selectedAyah : (surahBoxes[0]?.ayah ?? 1);
+        playAyah(targetSurah, targetAyah, sp);
+      } else {
+        a.play().then(() => setIsPlaying(true)).catch(() => { });
+      }
+    }
+  };
 
   // ========== Simultaneous Play (Teacher + Kids at the same time) ==========
   const playSimultaneous = useCallback(async (surah: SurahAudio) => {
@@ -1846,20 +2100,22 @@ export default function QuranReader() {
     a2.addEventListener("loadedmetadata", onLoad, { once: true });
   }, [resolveAudioSrc, requestPlay]);
 
-  const stopSimultaneous = useCallback(() => {
-    const a2 = audioRef2.current;
-    if (a2) { a2.pause(); a2.currentTime = 0; }
-    setIsSimultaneousPlaying(false);
-  }, []);
-
   // ========== Split View Surah Data ==========
   const allPageSurahs = useMemo(() => {
-    return pages.flatMap(p => p.surahs.map(s => ({
-      number: s.number,
-      name: s.name,
-      audioSrc: s.src,
-    })));
-  }, []);
+    const seen = new Set<number>();
+    const out: { number: number; name: string; audioSrc: string }[] = [];
+    pages.forEach(p => p.surahs.forEach(s => {
+      if (!seen.has(s.number)) {
+        seen.add(s.number);
+        out.push({
+          number: s.number,
+          name: s.name,
+          audioSrc: s.src,
+        });
+      }
+    }));
+    return out;
+  }, [pages]);
 
   const handleSplitViewSelect = useCallback((surah: { number: number; name: string; audioSrc: string }) => {
     // Find which page this surah belongs to
@@ -1895,19 +2151,19 @@ export default function QuranReader() {
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onEnded={() => {
-          setIsPlaying(false);
           stopSimultaneous();
           if (segmentEndGuardRef.current) {
             segmentEndGuardRef.current = false;
             return;
           }
-          handleAyahSegmentEndRef.current();
+          if (continuousPlayRef.current) {
+            advanceSurah(playModeRef.current === "kids" ? "kids" : "teacher");
+          } else {
+            setIsPlaying(false);
+          }
         }}
         onSeeked={() => {
-          const a = audioRef.current;
-          if (a && Math.abs(a.currentTime - expectedStartTimeRef.current) < 0.15) {
-            isSeekingRef.current = false;
-          }
+          isSeekingRef.current = false;
         }}
         onError={() => {
           const audio = audioRef.current;
@@ -2002,8 +2258,16 @@ export default function QuranReader() {
                     </filter>
                   </defs>
                   {getPageAyahBoxes(page.src).map((box, i) => {
-                    const isAct = activeSurahNum === box.surah && activeAyahNum === box.ayah;
-                    const isSelected = selectedSurah?.number === box.surah && selectedAyah === box.ayah && !isAct;
+                    const globalBoxIdx = allBoxes.indexOf(box);
+                    const hasSpecificBox = activeBoxIndex >= 0;
+                    const isBoxMatch = hasSpecificBox && activeBoxIndex === globalBoxIdx;
+                    const isAyahMatch = activeSurahNum === box.surah && activeAyahNum === box.ayah;
+
+                    // تظليل السطر بدقة: إذا حُدّد سطر محدد نشط نظلله، وإلا نظلل الآية
+                    const isAct = hasSpecificBox ? isBoxMatch : isAyahMatch;
+
+                    // التظليل اليدوي بالاختيار لا يظهر أبداً أثناء تشغيل الصوت (يمنع أي تداخل بين سورتين أو تظليلتين كلياً)
+                    const isSelected = !isPlaying && activeAyahNum <= 0 && selectedSurah?.number === box.surah && selectedAyah === box.ayah;
                     if (!isAct && !isSelected) return null;
                     const currentColor = activeSpeaker === "kids"
                       ? (shadingSettings.kidsColor || "#0ea5e9")
@@ -2013,7 +2277,7 @@ export default function QuranReader() {
                     const selectedStroke = hexToRgba(currentColor, 0.65);
                     return (
                       <rect
-                        key={`ayah-rect-${box.surah}-${box.ayah}-${i}`}
+                        key={`ayah-rect-${box.surah}-${box.ayah}-${globalBoxIdx >= 0 ? globalBoxIdx : i}`}
                         className={`ayah-highlight-smooth ${isAct ? "ayah-current" : ""} ${isSelected ? "ayah-selected" : ""}`}
                         x={box.x} y={box.y} width={box.width} height={box.height} rx="20" ry="16"
                         fill={isAct ? actStyle.fill : selectedFill}
@@ -2043,10 +2307,10 @@ export default function QuranReader() {
                           if (sIdx !== -1) setSelectedSurahIdx(sIdx);
                           setSelectedAyah(box.ayah);
                           currentRepeatRef.current = 0;
-                          setControlsOpen(true);
+                          // ربط التظليل مباشرة بالتشغيل السلس دون فتح مشغل يحجب المصحف
                           if (isSimultaneousPlaying) { stopSimultaneous(); }
-                          // بلا فهرس صندوق: يجد الجزء الأول للآية بالرقم (يعالج الآيات متعددة الأجزاء)
-                          playAyah(surah, box.ayah, playModeRef.current === "kids" ? "kids" : "teacher");
+                          const globalIdx = allBoxes.indexOf(box);
+                          playAyah(surah, box.ayah, playModeRef.current === "kids" ? "kids" : "teacher", globalIdx >= 0 ? globalIdx : undefined);
                         }}
                         className="absolute rounded-md outline-none transition-colors hover:bg-accent/10 active:bg-accent/20"
                         style={{
@@ -2079,28 +2343,113 @@ export default function QuranReader() {
         )}
       </div>
 
+      {/* ── الشريط العائم الذكي للمشغل (أسفل المصحف مباشرة) مع اختيار مباشر للمعلم والطفل ── */}
       {!controlsOpen && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-0.5 opacity-50 cursor-pointer hover:opacity-100 transition-opacity" onClick={() => setControlsOpen(true)}>
-          <div className="w-10 h-1 rounded-full bg-foreground/60" />
-          <span className="text-[10px] font-bold text-foreground/70">افتح الإعدادات</span>
-        </div>
-      )}
-
-      {activeSurah && isPlaying && currentAyahRef.current >= 0 && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-fade-in">
-          <div className={`backdrop-blur-xl border px-5 py-2 rounded-2xl shadow-xl flex items-center gap-3 ${
-            activeSpeaker === "kids"
-              ? "bg-sky-500/15 border-sky-400/30"
-              : "bg-amber-500/15 border-amber-400/30"
-          }`}>
-            <div className="flex items-center gap-[3px] h-4 shrink-0">
-              {[0, 1, 2].map((i) => (
-                <span key={i} className={`w-[2.5px] rounded-full animate-wave ${activeSpeaker === "kids" ? "bg-sky-500" : "bg-amber-500"}`} style={{ animationDelay: `${i * 0.12}s` }} />
-              ))}
+        <div className="absolute bottom-[calc(4.2rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-40 w-[96vw] max-w-xl animate-slide-up-short pointer-events-auto" dir="rtl">
+          <div className="backdrop-blur-2xl bg-white/95 dark:bg-[#121915]/95 border border-amber-500/30 dark:border-amber-400/20 shadow-2xl rounded-2xl px-3 py-2 flex items-center justify-between gap-2 text-foreground">
+            {/* معلومات السورة والآية */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 text-right">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/30 border border-amber-400/30 flex items-center justify-center shrink-0">
+                {isPlaying ? (
+                  <div className="flex items-center gap-[2px] h-4">
+                    {[0, 1, 2].map((i) => (
+                      <span key={i} className={`w-[2.5px] rounded-full animate-wave ${activeSpeaker === "kids" ? "bg-sky-500" : "bg-amber-500"}`} style={{ animationDelay: `${i * 0.15}s` }} />
+                    ))}
+                  </div>
+                ) : (
+                  <Headphones className="w-4 h-4 text-amber-500" />
+                )}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="font-amiri font-bold text-sm text-foreground truncate">
+                  {activeSurah?.name || selectedSurah?.name || currentPageSurahs[0]?.name || "القرآن الكريم"}
+                </span>
+                <span className="text-[11px] text-muted-foreground truncate">
+                  {currentBoxLabelRef.current || `﴿ الآية ${currentAyahRef.current > 0 ? currentAyahRef.current : (selectedAyah > 0 ? selectedAyah : 1)} ﴾`}
+                </span>
+              </div>
             </div>
-            <span className={`font-amiri font-bold text-base ${activeSpeaker === "kids" ? "text-sky-800 dark:text-sky-200" : "text-amber-800 dark:text-amber-200"}`}>
-              {activeSurah.name} — {currentBoxLabelRef.current ? currentBoxLabelRef.current : `آية ${currentAyahRef.current}`}
-            </span>
+
+            {/* زرا التبديل والاختيار المباشر بين المعلم والطفل */}
+            <div className="flex items-center gap-1 bg-foreground/5 dark:bg-white/5 p-1 rounded-xl border border-border/40 shrink-0">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSwitchSpeaker("teacher");
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 ${
+                  playMode === "teacher"
+                    ? "bg-amber-500 text-black shadow-md shadow-amber-500/25 font-extrabold ring-1 ring-amber-400"
+                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                }`}
+                title="تشغيل صوت الشيخ المعلم مع التوقيت والتظليل الخاص به"
+              >
+                <span>🎓</span>
+                <span>المعلم</span>
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSwitchSpeaker("kids");
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 ${
+                  playMode === "kids"
+                    ? "bg-sky-500 text-white shadow-md shadow-sky-500/25 font-extrabold ring-1 ring-sky-400"
+                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                }`}
+                title="تشغيل صوت الطفل مع التوقيت والتظليل الخاص به"
+              >
+                <span>👶</span>
+                <span>الطفل</span>
+              </button>
+            </div>
+
+            {/* أزرار التحكم بالتشغيل والآيات والتكرار */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={playPrevAyah}
+                aria-label="الآية السابقة"
+                title="الآية السابقة"
+                className="w-8 h-8 rounded-full bg-foreground/5 hover:bg-foreground/10 text-foreground flex items-center justify-center active:scale-90 transition-transform"
+              >
+                <SkipForward className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={togglePlayPause}
+                aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+                className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all ${
+                  isPlaying
+                    ? (activeSpeaker === "kids" ? "bg-sky-500 text-white shadow-sky-500/30" : "bg-amber-500 text-black shadow-amber-500/30")
+                    : (activeSpeaker === "kids" ? "bg-sky-400 text-white shadow-sky-400/20" : "bg-amber-400 text-black shadow-amber-400/20")
+                }`}
+              >
+                {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+              </button>
+
+              <button
+                onClick={playNextAyah}
+                aria-label="الآية التالية"
+                title="الآية التالية"
+                className="w-8 h-8 rounded-full bg-foreground/5 hover:bg-foreground/10 text-foreground flex items-center justify-center active:scale-90 transition-transform"
+              >
+                <SkipBack className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={cycleRepeatCount}
+                className={`px-2 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-all border ${
+                  repeatCount > 0
+                    ? "bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300"
+                    : "bg-foreground/5 border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+                title="تبديل تكرار الآية"
+              >
+                <Repeat className="w-3 h-3" />
+                <span>{repeatCount === 0 ? "بدون" : repeatCount === 999 ? "♾️" : `${repeatCount}x`}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -2530,166 +2879,50 @@ export default function QuranReader() {
               </div>
             )}
 
-            <div className="mb-4 bg-foreground/5 dark:bg-white/5 p-3 rounded-xl border border-border/50 dark:border-white/10">
-              <p className="text-xs font-bold mb-2 text-muted-foreground">وضع التشغيل</p>
-              
-              {/* Play mode buttons - 2x2 grid for clarity */}
-              <div className="grid grid-cols-2 gap-1.5 mb-3">
-                {([
-                  { mode: "teacher" as PlayMode, label: "معلم فقط", Icon: Mic, desc: "تشغيل المعلم وحده", activeColor: "bg-amber-400/20 border-amber-400/50 text-amber-800 dark:text-amber-300" },
-                  { mode: "kids" as PlayMode, label: "طفل فقط", Icon: Baby, desc: "تشغيل الطفل وحده", activeColor: "bg-sky-400/20 border-sky-400/50 text-sky-800 dark:text-sky-300" },
-                ]).map(({ mode, label, Icon, desc, activeColor }) => (
-                  <button
-                    key={mode}
-                    onClick={() => { 
-                      if (isSimultaneousPlaying) { stopSimultaneous(); const a = audioRef.current; if (a) { a.pause(); } setIsPlaying(false); }
-                      setPlayMode(mode); 
-                    }}
-                    className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all border flex flex-col items-center gap-0.5 ${
-                      playMode === mode && !isSimultaneousPlaying
-                        ? `${activeColor} shadow ring-1 ring-black/5`
-                        : "bg-card/80 dark:bg-card/40 border-border/60 text-foreground/80 hover:bg-card"
-                    }`}
-                    title={desc}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span>{label}</span>
-                  </button>
-                ))}
 
-                {/* Alternating teacher↔kids mode */}
-                {selectedSurah && (
-                  <button
-                    onClick={toggleAlternatingMode}
-                    className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all border border-2 flex flex-col items-center gap-0.5 ${alternatingMode ? "bg-amber-500/20 border-amber-500/50 text-amber-700 shadow ring-1 ring-black/5" : "bg-card/80 dark:bg-card/40 border-border/60 text-foreground/80 hover:bg-card"}`}
-                    title={alternatingMode ? "إيقاف التناوب بين المعلم والطفل" : "التناوب بين المعلم والطفل (كل 3 آيات)"}
-                  >
-                    <ToggleRight className="w-5 h-5" />
-                    <span>التبادل بين المعلم والطفل</span>
-                  </button>
-                )}
 
-                {/* Simultaneous (Together) mode */}
-                {selectedSurah && (() => {
-                  const timings = getSavedTimings()[selectedSurah.number];
-                  const hasKids = timings?.kidsStart !== undefined || (timings?.kids && timings.kids.length > 0);
-                  if (!hasKids) return (
-                    <div className="py-2.5 px-2 rounded-xl text-xs font-bold border border-dashed border-border/40 flex flex-col items-center gap-0.5 text-foreground/30 cursor-not-allowed" title="لا يتوفر صوت الطفل">
-                      <VolumeX className="w-5 h-5 opacity-40" />
-                      <span>تشغيل متزامن</span>
-                    </div>
-                  );
-                  return (
-                    <button
-                      onClick={() => {
-                        if (isSimultaneousPlaying) {
-                          stopSimultaneous();
-                          const a = audioRef.current;
-                          if (a) { a.pause(); }
-                          setIsPlaying(false);
-                        } else {
-                          playSimultaneous(selectedSurah);
-                        }
-                      }}
-                      className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all border flex flex-col items-center gap-0.5 ${
-                        isSimultaneousPlaying
-                          ? "bg-emerald-400/20 border-emerald-400/50 text-emerald-800 dark:text-emerald-300 shadow ring-1 ring-emerald-400/20 animate-pulse"
-                          : "bg-card/80 dark:bg-card/40 border-border/60 text-foreground/80 hover:border-amber-400/40"
-                      }`}
-                      title="تشغيل المعلم والطفل في نفس الوقت"
-                    >
-                      <Volume2 className="w-5 h-5" />
-                      <span>تشغيل متزامن</span>
-                    </button>
-                  );
-                })()}
-              </div>
-
-              {/* Now playing indicator */}
-              {isPlaying && activeSurah && !isSimultaneousPlaying && (
-                <div className={`flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg mb-3 text-xs font-bold animate-fade-in ${
-                  currentSpeakerRef.current === "kids" 
-                    ? "bg-sky-100/50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200/50 dark:border-sky-800/30" 
-                    : "bg-amber-100/50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/30"
-                }`}>
-                  {currentSpeakerRef.current === "kids" ? <Baby className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  <span>يتحدث الآن: {currentSpeakerRef.current === "kids" ? "الطفل" : "المعلم"}</span>
-                  <div className="flex items-center gap-[2px] h-3">
-                    {[0, 1, 2].map((i) => (
-                      <span key={i} className="w-[2px] bg-current rounded-full animate-wave" style={{ animationDelay: `${i * 0.12}s` }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {isSimultaneousPlaying && (
-                <div className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg mb-3 text-xs font-bold bg-emerald-100/50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/30 animate-fade-in">
-                  <Volume2 className="w-4 h-4" />
-                  <span>تشغيل المعلم والطفل المتزامن</span>
-                  <div className="flex items-center gap-[2px] h-3">
-                    {[0, 1, 2].map((i) => (
-                      <span key={i} className="w-[2px] bg-current rounded-full animate-wave" style={{ animationDelay: `${i * 0.12}s` }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <label className="flex items-center gap-3 text-sm font-bold cursor-pointer text-foreground/80 select-none">
-                <span className="switch">
-                  <input
-                    type="checkbox"
-                    checked={continuousPlay}
-                    onChange={(e) => setContinuousPlay(e.target.checked)}
-                  />
-                  <span className="slider"></span>
-                </span>
-                <span>تشغيل متواصل</span>
-              </label>
-
-              <div className="flex items-center gap-2 text-sm font-bold text-foreground/80 mt-2">
-                <span className="inline-flex items-center gap-1"><Repeat className="w-4 h-4" /> تكرار الآية:</span>
-                <select
-                  value={repeatCount}
-                  onChange={(e) => setRepeatCount(Number(e.target.value))}
-                  className="bg-background border border-border text-foreground rounded-md px-2 py-1 text-sm outline-none cursor-pointer"
-                >
-                  <option value={0}>بدون</option>
-                  <option value={1}>مرة</option>
-                  <option value={2}>مرتين</option>
-                  <option value={3}>3 مرات</option>
-                  <option value={5}>5 مرات</option>
-                  <option value={999}>مستمر</option>
-                </select>
-              </div>
-
-              {/* زر الانتقال لإعدادات التظليل الكاملة (حسب طلب إزالة التحكم بالتظليل من هذه الواجهة) */}
-              <button
-                onClick={() => safeNavigate("/settings")}
-                className="w-full mt-3 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 text-accent bg-accent/10 border border-accent/20 hover:bg-accent/20 transition-all active:scale-95"
-              >
-                <Palette className="w-4 h-4" /> إعدادات المظهر والتظليل
-              </button>
-            </div>
-
+            {/* سورة الاختيار في الصفحات التي تضم أكثر من سورة */}
             {currentPageSurahs.length > 1 && (
               <div className="mb-3">
+                <p className="text-[11px] font-bold text-muted-foreground mb-1.5">السور في هذه الصفحة:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {currentPageSurahs.map((s, i) => {
                     const allVisibleBoxes = visiblePages.flatMap(p => getPageAyahBoxes(p.src));
                     const firstA = allVisibleBoxes.filter(b => b.surah === s.number).sort((a,b)=>a.ayah-b.ayah)[0]?.ayah ?? 1;
                     return (
-                    <button key={`${s.number}-${i}`} onClick={() => { setSelectedSurahIdx(i); setSelectedAyah(firstA); }} className={`px-3 py-1.5 rounded-full text-sm font-amiri border transition-all ${selectedSurahIdx === i ? "bg-accent text-accent-foreground shadow" : "bg-card/80 dark:bg-card/40 border-border/60 text-foreground"}`}>
-                      {s.name}
-                    </button>
+                      <button
+                        key={`${s.number}-${i}`}
+                        onClick={() => { setSelectedSurahIdx(i); setSelectedAyah(firstA); }}
+                        className={`px-3 py-1.5 rounded-full text-sm font-amiri border transition-all ${
+                          selectedSurahIdx === i
+                            ? "bg-accent text-accent-foreground shadow font-bold"
+                            : "bg-card/80 dark:bg-card/40 border-border/60 text-foreground"
+                        }`}
+                      >
+                        {s.name}
+                      </button>
                     );
                   })}
                 </div>
               </div>
             )}
 
+            {/* شبكة اختيار الآيات مع التظليل الفوري ومؤشر الآية النشطة */}
             <div className="mb-3">
-              <p className="text-xs font-bold mb-1.5 text-muted-foreground">اختر الآية</p>
-              <div className="grid grid-cols-7 gap-1.5">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-foreground/90 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>اختر الآية للاستماع مع التظليل الفوري:</span>
+                </p>
+                {activeAyahNum > 0 && isPlaying && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 flex items-center gap-1 animate-pulse">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    جاري تلاوة آية {activeAyahNum}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-9 gap-1.5 max-h-52 overflow-y-auto pr-1 custom-scrollbar">
                 {(() => {
                   const allVisibleBoxes = visiblePages.flatMap(p => getPageAyahBoxes(p.src));
                   const surahBoxes = allVisibleBoxes.filter(b => b.surah === selectedSurah?.number);
@@ -2698,9 +2931,45 @@ export default function QuranReader() {
                     : Array.from({ length: ayahCount }, (_, i) => i + 1);
                   return numbers.map(n => {
                     const box = surahBoxes.find(b => b.ayah === n);
+                    const isCurrentActive = activeSurah?.number === selectedSurah?.number && activeAyahNum === n && isPlaying;
+                    const isSelected = selectedAyah === n;
                     return (
-                      <button key={n} onClick={() => { setSelectedAyah(n); currentRepeatRef.current = 0; playAyah(selectedSurah, n, playMode === "kids" ? "kids" : "teacher"); }} className={`aspect-square rounded-lg text-sm font-bold transition-all flex items-center justify-center ${selectedAyah === n ? "bg-accent text-accent-foreground shadow scale-105" : "bg-card/80 dark:bg-card/40 hover:bg-card text-foreground"}`}>
-                        {box?.label ? <span className="text-[10px] leading-tight block truncate px-1">{box.label}</span> : n}
+                      <button
+                        key={n}
+                        onClick={() => {
+                          setSelectedAyah(n);
+                          currentRepeatRef.current = 0;
+                          playAyah(selectedSurah, n, playMode === "kids" ? "kids" : "teacher");
+                        }}
+                        className={`relative py-2 px-1 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 border ${
+                          isCurrentActive
+                            ? "bg-gradient-to-b from-emerald-500/25 to-teal-500/20 border-emerald-500/60 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/40 shadow-md shadow-emerald-500/15"
+                            : isSelected
+                            ? "bg-accent/20 border-accent/60 text-accent-foreground font-extrabold shadow-xs"
+                            : "bg-card/80 dark:bg-card/40 border-border/50 hover:bg-card hover:border-amber-400/40 text-foreground"
+                        }`}
+                      >
+                        {n === 0 || box?.label ? (
+                          <span className="text-[10px] font-amiri leading-tight block truncate max-w-full px-0.5">
+                            {box?.label || "البسملة"}
+                          </span>
+                        ) : (
+                          <span className="font-amiri text-sm leading-none">﴿ {n} ﴾</span>
+                        )}
+
+                        {isCurrentActive ? (
+                          <div className="flex items-center gap-[2px] h-2 mt-0.5">
+                            {[0, 1, 2].map((i) => (
+                              <span
+                                key={i}
+                                className="w-[2px] bg-emerald-600 dark:bg-emerald-400 rounded-full animate-wave"
+                                style={{ animationDelay: `${i * 0.12}s`, height: "8px" }}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-[8px] text-muted-foreground/70">آية</span>
+                        )}
                       </button>
                     );
                   });
@@ -2708,12 +2977,39 @@ export default function QuranReader() {
               </div>
             </div>
 
-            {activeSurah && (
-              <button onClick={togglePlayPause} className="mt-3 w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-foreground/10 hover:bg-foreground/15 font-bold text-sm">
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                <span>{isPlaying ? "إيقاف مؤقت" : "متابعة"}</span>
+            {/* أدوات سريعة أسفل اللوحة: التحكم بالتظليل + العلامة المرجعية + الإعدادات */}
+            <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+              <button
+                onClick={() => persistHideShading(!hideShading)}
+                className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all active:scale-95 ${
+                  hideShading
+                    ? "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20"
+                    : "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
+                }`}
+                title={hideShading ? "انقر لإظهار تظليل الآيات" : "انقر لإخفاء تظليل الآيات"}
+              >
+                {hideShading ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                <span>{hideShading ? "إظهار التظليل" : "إخفاء التظليل"}</span>
               </button>
-            )}
+
+              <button
+                onClick={addCurrentBookmark}
+                className="flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition-all active:scale-95"
+                title="حفظ موضع الآية الحالية في العلامات المرجعية"
+              >
+                <BookmarkIcon className="w-3.5 h-3.5" />
+                <span>حفظ علامة</span>
+              </button>
+
+              <button
+                onClick={() => safeNavigate("/settings")}
+                className="py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-border/60 bg-foreground/5 hover:bg-foreground/10 text-muted-foreground transition-all active:scale-95"
+                title="فتح إعدادات ألوان ونمط التظليل الكاملة"
+              >
+                <Palette className="w-3.5 h-3.5" />
+                <span>الإعدادات</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

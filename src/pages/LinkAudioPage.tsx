@@ -12,6 +12,16 @@ import { saveCalibrationCjsSnapshot, downloadCalibrationCjsSnapshot } from "../d
 
 const DEFAULT_SERVICE_URL = "https://hammoualiyoucef20-quran-audio.hf.space";
 const SERVICE_URL_KEY = "quran:splitServiceUrl";
+const SERVICE_API_KEY_STORAGE = "quran:splitServiceKey";
+
+/** مفتاح المصادقة لـ Gemini (إن ضُبط) — يُرسل كترويسة X-API-Key ولا يظهر في الرابط. */
+const getServiceApiKey = (): string => {
+  try {
+    return localStorage.getItem(SERVICE_API_KEY_STORAGE) || "";
+  } catch {
+    return "";
+  }
+};
 
 export default function LinkAudioPage() {
   const surahs = getAllSurahs();
@@ -120,7 +130,15 @@ export default function LinkAudioPage() {
       form.append("leading", "1");
       form.append("surahLabel", label);
 
-      const res = await fetch(`${base}${engine === "gemini" ? "/split-gemini" : "/split"}`, { method: "POST", body: form });
+      const headers: Record<string, string> = {};
+      const apiKey = engine === "gemini" ? getServiceApiKey() : "";
+      if (apiKey) headers["X-API-Key"] = apiKey;
+
+      const res = await fetch(`${base}${engine === "gemini" ? "/split-gemini" : "/split"}`, {
+        method: "POST",
+        headers,
+        body: form,
+      });
       if (!res.ok) {
         const t = await res.text().catch(() => "");
         throw new Error(`الخدمة ردّت ${res.status} ${t.slice(0, 120)}`);

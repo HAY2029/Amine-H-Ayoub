@@ -170,6 +170,18 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
             if (progressInfo.status === "completed") {
               setOfflineSaved(true);
               setIsDownloading(false);
+              // التحويل الفوري لتشغيل الملف المحلي المحمّل بسلاسة فائقة
+              void resolvePlayableAudioUrl(surahNumber, audioSrc).then((localUrl) => {
+                const a = audioRef.current;
+                if (a && localUrl && localUrl !== a.src && localUrl.startsWith("blob:")) {
+                  const savedTime = a.currentTime;
+                  const wasPlaying = !a.paused;
+                  currentLoadedSrcRef.current = localUrl;
+                  a.src = localUrl;
+                  a.currentTime = savedTime;
+                  if (wasPlaying) a.play().catch(() => {});
+                }
+              });
             }
           },
           downloadAbortRef.current.signal
@@ -220,7 +232,7 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
       pause: () => audioRef.current?.pause(),
     }));
 
-    // Audio Source loader with instant direct streaming (prevents mid-playback cutoff)
+    // Audio Source loader with instant direct streaming and offline priority
     useEffect(() => {
       let active = true;
       const a = audioRef.current;
@@ -239,8 +251,8 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
 
       const initAudio = async () => {
         let streamUrl = audioSrc;
-        // If offline and not a blob, try loading from local offline cache
-        if (!navigator.onLine && !audioSrc.startsWith("blob:")) {
+        // الأولوية القصوى للملف المحلي المحمّل: تشغيل فوري 0ms وبدون استهلاك للإنترنت
+        if (!audioSrc.startsWith("blob:")) {
           try {
             const cached = await resolvePlayableAudioUrl(surahNumber, audioSrc);
             if (cached) streamUrl = cached;
@@ -252,8 +264,6 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
 
         if (a.src !== streamUrl) {
           a.src = streamUrl;
-          a.volume = isMuted ? 0 : volume;
-          a.playbackRate = playbackRate;
         }
 
         requestPlay("audio-list", a);
@@ -267,7 +277,7 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
       return () => {
         active = false;
       };
-    }, [audioSrc, surahNumber, mode, audioRef, requestPlay, isMuted, volume, playbackRate]);
+    }, [audioSrc, surahNumber, mode, audioRef, requestPlay]);
 
     // Apply audio properties reactively
     useEffect(() => {

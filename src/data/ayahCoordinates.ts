@@ -160,7 +160,7 @@ export const JUZ_AMMA_PAGE_SECTIONS: Record<number, PageSectionInfo[]> = {
 export function generateDefaultBoxesForPage(pageSrc: string): AyahBox[] {
   const match = pageSrc.match(/(\d+)/);
   const pageNum = match ? parseInt(match[1], 10) : 0;
-  // القرآن بدون تظليل إلا الفاتحة — فقط الفاتحة تحمل تظليلاً افتراضياً
+  // الفاتحة: صفحة 0 أو 1
   if (pageNum === 0 || pageNum === 1 || pageSrc.includes("fatiha") || pageSrc.includes("0.jpg") || pageSrc.includes("1.jpg")) {
     return [
       { surah: 1, ayah: 0, x: 340, y: 516, width: 580, height: 95, label: "البسملة", color: "#eab308" },
@@ -174,20 +174,110 @@ export function generateDefaultBoxesForPage(pageSrc: string): AyahBox[] {
     ];
   }
 
-  // سائر صفحات القرآن الكريم بدون تظليل افتراضي
+  // سائر صفحات المصحف الشريف (جزء عم وسائر القرآن)
+  const sections = JUZ_AMMA_PAGE_SECTIONS[pageNum];
+  if (sections && sections.length > 0) {
+    const boxes: AyahBox[] = [];
+    const PAGE_TOP = 220;
+    const PAGE_BOTTOM = 1750;
+    const TOTAL_HEIGHT = PAGE_BOTTOM - PAGE_TOP;
+    const CONTENT_WIDTH = 980;
+    const CONTENT_X = 140;
+
+    let totalItems = 0;
+    sections.forEach(s => {
+      if (s.hasBasmalah) totalItems += 1;
+      const count = Math.max(1, s.endAyah - s.startAyah + 1);
+      totalItems += count;
+    });
+
+    const isDense = totalItems > 15;
+    if (isDense) {
+      let currentY = PAGE_TOP;
+      sections.forEach(s => {
+        if (s.hasBasmalah) {
+          boxes.push({
+            surah: s.surah,
+            ayah: 0,
+            x: 310,
+            y: Math.round(currentY),
+            width: 640,
+            height: 70,
+            label: "البسملة",
+            color: "#eab308"
+          });
+          currentY += 75;
+        }
+
+        const count = s.endAyah - s.startAyah + 1;
+        const remainingH = Math.max(400, PAGE_BOTTOM - currentY);
+        const rows = Math.ceil(count / 2);
+        const rowH = Math.min(80, Math.max(48, remainingH / rows));
+        const colW = (CONTENT_WIDTH - 20) / 2;
+
+        for (let a = s.startAyah; a <= s.endAyah; a++) {
+          const idx = a - s.startAyah;
+          const r = Math.floor(idx / 2);
+          const c = idx % 2; // 0 = right (RTL), 1 = left
+          const x = c === 0 ? CONTENT_X + colW + 20 : CONTENT_X;
+          const y = currentY + r * rowH;
+
+          boxes.push({
+            surah: s.surah,
+            ayah: a,
+            x: Math.round(x),
+            y: Math.round(y),
+            width: Math.round(colW),
+            height: Math.round(rowH - 6),
+            label: `الآية ${a}`,
+            color: "#eab308"
+          });
+        }
+        currentY += rows * rowH + 10;
+      });
+    } else {
+      const rowHeight = Math.min(100, Math.max(55, TOTAL_HEIGHT / Math.max(10, totalItems)));
+      let currentY = PAGE_TOP + Math.max(0, (TOTAL_HEIGHT - (totalItems * rowHeight)) / 2);
+
+      sections.forEach(s => {
+        if (s.hasBasmalah) {
+          boxes.push({
+            surah: s.surah,
+            ayah: 0,
+            x: 310,
+            y: Math.round(currentY),
+            width: 640,
+            height: Math.round(rowHeight - 8),
+            label: "البسملة",
+            color: "#eab308"
+          });
+          currentY += rowHeight;
+        }
+
+        for (let a = s.startAyah; a <= s.endAyah; a++) {
+          boxes.push({
+            surah: s.surah,
+            ayah: a,
+            x: CONTENT_X,
+            y: Math.round(currentY),
+            width: CONTENT_WIDTH,
+            height: Math.round(rowHeight - 8),
+            label: `الآية ${a}`,
+            color: "#eab308"
+          });
+          currentY += rowHeight;
+        }
+      });
+    }
+
+    return boxes;
+  }
+
   return [];
 }
 
 // سيتم الاعتماد كلياً على المجلد المحلي `public/pages/`
 export const AYAH_COORDINATES: Record<string, AyahBox[]> = (defaultBoxes as Record<string, AyahBox[]>) || {};
-
-// صفحات المصحف المحلية التي أضافها المستخدم
-const LOCAL_PAGES = [0, 581, 582, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604];
-
-for (const p of LOCAL_PAGES) {
-  const key = `/pages/${p}.jpg`;
-  if (!(key in AYAH_COORDINATES)) AYAH_COORDINATES[key] = [];
-}
 
 const cloneBoxes = (boxes: AyahBox[]) => boxes.map((box) => ({ ...box }));
 

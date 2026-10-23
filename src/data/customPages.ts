@@ -183,16 +183,17 @@ export function sanitizePageOrder(srcs: string[], opts?: { numericSort?: boolean
       return d !== 0 ? d : a.localeCompare(b);
     });
   }
-  // ترتيب الصفحات: 0 أولاً، ثم الفاتحة، ثم الباقي
-  const zeroes = out.filter(k => pageNumForKey(k) === 0);
-  const fatiha = out.filter(k => pageNumForKey(k) === 1 || /fatiha/i.test(k));
-  const rest = out.filter(k => pageNumForKey(k) !== 0 && pageNumForKey(k) !== 1 && !/fatiha/i.test(k));
-  return [...zeroes, ...fatiha, ...rest];
+  // ترتيب الصفحات: الفاتحة أولاً (صفحة واحدة فقط لا غير)، ثم الباقي
+  const isFatihaKey = (k: string) => pageNumForKey(k) === 1 || /fatiha|(\b|\/)0\.jpg$/i.test(k);
+  const fatiha = out.filter(isFatihaKey);
+  const rest = out.filter(k => !isFatihaKey(k));
+  const singleFatiha = fatiha.slice(0, 1);
+  return [...singleFatiha, ...rest];
 }
 
-/** رقم الصفحة من مفتاح موحّد — الفاتحة = 1، بلا رقم/مخصّص = النهاية، "0" = 0 (خاطئة) */
+/** رقم الصفحة من مفتاح موحّد — الفاتحة = 1 (سواء 0.jpg أو 1.jpg أو fatiha)، بلا رقم/مخصّص = النهاية */
 export function pageNumForKey(src: string): number {
-  if (/fatiha/i.test(src)) return 1;
+  if (/fatiha|(\b|\/)0\.jpg$/i.test(src)) return 1;
   // الصفحات المخصّصة معرّفها طابع زمني (custom:1700000000000)
   if (/^custom:/i.test(String(src || ""))) {
     const allCustom = getCustomPages();
@@ -207,7 +208,7 @@ export function pageNumForKey(src: string): number {
   const m = String(src || "").match(/(\d+)/);
   if (!m) return Number.MAX_SAFE_INTEGER;
   const n = parseInt(m[1], 10);
-  return n;
+  return n === 0 ? 1 : n;
 }
 
 /** تنظيف قائمة صور/صفحات: توحيد + حذف الخاطئ والمكرّر + ترتيب رقمي (للقوائم غير المرتّبة يدوياً) */

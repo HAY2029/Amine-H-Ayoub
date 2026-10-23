@@ -5,6 +5,7 @@ import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { openWhatsAppSupport, SUPPORT_WHATSAPP_DISPLAY } from "@/services/resendService";
 import { getProfile } from "@/data/kidsProfile";
 import { CURRENT_VERSION } from "@/utils/updateChecker";
+import { classifyAppError } from "@/utils/errorClassification";
 
 export default function ErrorPage() {
   const navigate = useNavigate();
@@ -23,16 +24,16 @@ export default function ErrorPage() {
   }, []);
 
   const rawMsg = routeError ? (routeError.message || String(routeError)) : "";
-  const isNetworkIssue = !isOnline || rawMsg.toLowerCase().includes("fetch") || rawMsg.toLowerCase().includes("network");
+  const errorKind = classifyAppError(routeError, isOnline);
 
   const handleWhatsAppContact = () => {
     const profile = getProfile();
-    const errMsg = rawMsg || (isNetworkIssue ? "انقطاع اتصال بالإنترنت" : "توقف غير متوقع");
+    const errMsg = rawMsg || (errorKind === "offline" ? "الجهاز غير متصل بالإنترنت" : errorKind === "service" ? "تعذّر الوصول إلى الخدمة" : "خطأ داخل التطبيق");
     const msg =
       `السلام عليكم ورحمة الله تعالى وبركاته\n` +
       `أنا أواجه مشكلة في شاشة الخطأ وتوقف التطبيق مؤقتاً.\n` +
       `الإصدار: ${CURRENT_VERSION}\n` +
-      `الحالة: ${isNetworkIssue ? "انقطاع شبكة" : "توقف مؤقت"}\n` +
+      `الحالة: ${errorKind === "offline" ? "الجهاز غير متصل بالإنترنت" : errorKind === "service" ? "تعذّر الوصول إلى الخدمة" : "خطأ داخل التطبيق"}\n` +
       `وصف الخطأ: ${errMsg}`;
     void openWhatsAppSupport(msg);
   };
@@ -50,17 +51,19 @@ export default function ErrorPage() {
 
       <div className="card-nour relative z-10 w-full max-w-lg px-8 py-10 text-center shadow-2xl border border-emerald-100/80 rounded-3xl bg-white/95 backdrop-blur-md space-y-6 animate-in zoom-in-95 duration-200">
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/10 text-emerald-600 ring-8 ring-emerald-500/5 shadow-inner">
-          {isNetworkIssue ? <WifiOff className="w-10 h-10 text-amber-600 animate-pulse" /> : <HeartHandshake className="w-10 h-10 text-emerald-600" />}
+          {errorKind !== "application" ? <WifiOff className="w-10 h-10 text-amber-600 animate-pulse" /> : <HeartHandshake className="w-10 h-10 text-emerald-600" />}
         </div>
 
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-black text-slate-800">
-            {isNetworkIssue ? "انقطاع مؤقت في الاتصال بالإنترنت 📡" : "نعتذر منك، حدث توقف مؤقت 🌸"}
+            {errorKind === "offline" ? "لا يوجد اتصال بالإنترنت 📡" : errorKind === "service" ? "تعذّر الوصول إلى الخدمة" : "حدث خطأ داخل التطبيق"}
           </h1>
           <p className="text-sm text-slate-600 leading-relaxed font-medium max-w-sm mx-auto">
-            {isNetworkIssue
-              ? "يبدو أن اتصال الإنترنت ضعيف أو منقطع مؤقتاً. التطبيق سيستأنف العمل تلقائياً فور توفر الشبكة."
-              : "لا تقلق، جميع محفوظاتك وبياناتك في أمان تام. يمكنك مراسلة الدعم الفني فوراً عبر واتساب أو إعادة المحاولة."}
+            {errorKind === "offline"
+              ? "جهازك غير متصل بالشبكة حالياً. أعد المحاولة عند عودة الاتصال."
+              : errorKind === "service"
+                ? "جهازك متصل، لكن الخدمة لم تستجب. قد يكون هناك عطل مؤقت بالخادم أو مشكلة في الطلب."
+                : "المشكلة تبدو داخل التطبيق وليست في اتصال الإنترنت. بياناتك المحفوظة آمنة؛ أعد المحاولة أو تواصل مع الدعم."}
           </p>
         </div>
 

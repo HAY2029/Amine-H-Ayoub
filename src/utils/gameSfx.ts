@@ -213,3 +213,40 @@ export function playComboStreakSfx(streak: number) {
     /* ignore */
   }
 }
+
+/**
+ * صوت قطرات الماء وسقاية الشجرة المباركة (فقاعات ونغمات مائية لطيفة)
+ */
+export function playWaterSplashSfx() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    const drops = [
+      { f1: 580, f2: 880, delay: 0 },
+      { f1: 720, f2: 1100, delay: 0.08 },
+      { f1: 640, f2: 950, delay: 0.16 },
+    ];
+
+    drops.forEach(({ f1, f2, delay }) => {
+      const t = now + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(f1, t);
+      osc.frequency.exponentialRampToValueAtTime(f2, t + 0.09);
+
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.12);
+    });
+  } catch {
+    /* ignore */
+  }
+}

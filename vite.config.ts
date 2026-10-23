@@ -190,6 +190,110 @@ export default defineConfig(({ mode }) => ({
           res.statusCode = 405;
           res.end('Method Not Allowed');
         });
+
+        // 3. واجهة برمجية لحفظ توقيتات السور في ملفات المشروع والحاسوب
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        server.middlewares.use('/api/save-timings', (req: any, res: any) => {
+          if (req.method === 'GET') {
+            res.setHeader('Content-Type', 'application/json');
+            try {
+              if (fs.existsSync('ملف_التظليل/timings_data.json')) {
+                const content = fs.readFileSync('ملف_التظليل/timings_data.json', 'utf-8');
+                res.statusCode = 200;
+                res.end(content || '{}');
+              } else if (fs.existsSync('src/data/shading/timings-dump.json')) {
+                const content = fs.readFileSync('src/data/shading/timings-dump.json', 'utf-8');
+                res.statusCode = 200;
+                res.end(content || '{}');
+              } else {
+                res.statusCode = 200;
+                res.end('{}');
+              }
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+            return;
+          }
+
+          if (req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk: any) => body += chunk);
+            req.on('end', () => {
+              try {
+                if (!fs.existsSync('ملف_التظليل')) {
+                  fs.mkdirSync('ملف_التظليل', { recursive: true });
+                }
+                fs.writeFileSync('ملف_التظليل/timings_data.json', body);
+                if (fs.existsSync('src/data/shading')) {
+                  fs.writeFileSync('src/data/shading/timings-dump.json', body);
+                }
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 200;
+                res.end(JSON.stringify({ success: true, message: 'timings saved in project files' }));
+              } catch (err: any) {
+                res.statusCode = 500;
+                res.end(JSON.stringify({ error: err.message }));
+              }
+            });
+            return;
+          }
+
+          res.statusCode = 405;
+          res.end('Method Not Allowed');
+        });
+
+        // 4. واجهة برمجية لحفظ معلومات السور في ملفات المشروع والحاسوب
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        server.middlewares.use('/api/save-surah-info', (req: any, res: any) => {
+          if (req.method === 'GET') {
+            res.setHeader('Content-Type', 'application/json');
+            try {
+              if (fs.existsSync('ملف_التظليل/surah_info_data.json')) {
+                const content = fs.readFileSync('ملف_التظليل/surah_info_data.json', 'utf-8');
+                res.statusCode = 200;
+                res.end(content || '{}');
+              } else if (fs.existsSync('src/data/shading/surah-info-dump.json')) {
+                const content = fs.readFileSync('src/data/shading/surah-info-dump.json', 'utf-8');
+                res.statusCode = 200;
+                res.end(content || '{}');
+              } else {
+                res.statusCode = 200;
+                res.end('{}');
+              }
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+            return;
+          }
+
+          if (req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk: any) => body += chunk);
+            req.on('end', () => {
+              try {
+                if (!fs.existsSync('ملف_التظليل')) {
+                  fs.mkdirSync('ملف_التظليل', { recursive: true });
+                }
+                fs.writeFileSync('ملف_التظليل/surah_info_data.json', body);
+                if (fs.existsSync('src/data/shading')) {
+                  fs.writeFileSync('src/data/shading/surah-info-dump.json', body);
+                }
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 200;
+                res.end(JSON.stringify({ success: true, message: 'surah info saved in project files' }));
+              } catch (err: any) {
+                res.statusCode = 500;
+                res.end(JSON.stringify({ error: err.message }));
+              }
+            });
+            return;
+          }
+
+          res.statusCode = 405;
+          res.end('Method Not Allowed');
+        });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         server.middlewares.use('/api/send-email', async (req: any, res: any) => {
           if (req.method === 'POST') {
