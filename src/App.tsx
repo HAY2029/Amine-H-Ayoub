@@ -288,11 +288,9 @@ const App = () => {
       }).catch(() => { /* ignore */ });
     }, 2000);
 
-    // Send localStorage data to Vite plugin (dev-only, silent fail)
-    const data = localStorage.getItem("mushaf:ayahCoordinates:v1");
-    if (data) {
-      fetch('/api/save-boxes', { method: 'POST', body: data }).catch(() => {});
-    }
+    // ملاحظة: أُزيل الرفع التلقائي لملف الإحداثيات عند الإقلاع.
+    // كان يستبدل ملف التظليل على السيرفر بمحتوى المتصفح (وقد يمسح تظليل صفحات كاملة عند أول فتح)،
+    // كما كان يُعيد تحميل الصفحة مراراً في وضع التطوير (HMR). الحفظ الآن فقط من زر «حفظ التظليل بالسيرفر».
 
     // تم إزالة فحص التحديثات التلقائي
 

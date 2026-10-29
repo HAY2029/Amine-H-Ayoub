@@ -1,10 +1,39 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronLeft, ChevronRight, Play, Pause, Maximize2, Minimize2, X, Pencil, Check, Shuffle, Mic, Headphones, Baby } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Pause,
+  Maximize2,
+  Minimize2,
+  X,
+  Pencil,
+  Check,
+  Shuffle,
+  Mic,
+  Headphones,
+  Baby,
+  Menu,
+  Volume2,
+  VolumeX,
+  Sun,
+  Moon,
+  LayoutGrid,
+  Settings,
+  BookOpen,
+  Folder,
+  Search,
+  LogOut,
+} from "lucide-react";
 import { getSavedTimings, getSurahTimings, getAyahStartTime, hasKidsSection } from "@/data/ayahTimings";
 import { getSurahAudioUrl, hasCloudAudio, getFallbackAudioUrl } from "@/data/audioUrls";
-import { getPageAyahBoxes, PAGE_IMAGE_SIZE } from "@/data/ayahCoordinates";
+import { getPageAyahBoxes, PAGE_IMAGE_SIZE, AyahBox, getSavedAyahCoordinates } from "@/data/ayahCoordinates";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import { getLocalShadingSettings, getAyahShadingStyle, hexToRgba, PRESET_SHADING_COLORS, type ShadingSettings } from "@/services/shadingSyncService";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 
 const audioPath = (n: number) => (hasCloudAudio(n) ? getSurahAudioUrl(n) : getFallbackAudioUrl(n));
 
@@ -92,9 +121,19 @@ const MushafPage = ({ onBack }: Props) => {
     const s = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
     return isNaN(s) || s < 0 || s >= pages.length ? 0 : s;
   });
+
+  // شاشة مزدوجة (صفحتان) على الشاشات الكبيرة — تصفح أسرع PageImageunner
+  const [twoPageMode, setTwoPageMode] = useState(true);
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : false);
   const [controlsOpen, setControlsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // الآية النشطة والتظليل المتصل بالصوت (مستمد من LocalStorage + السيرفر)
+  const [activeAyah, setActiveAyah] = useState<number | null>(null);
+  const [activeSpeaker, setActiveSpeaker] = useState<Speaker>("teacher");
+  const [shadingSettings, setShadingSettings] = useState<ShadingSettings>(() => getLocalShadingSettings());
+  const [hideShading, setHideShading] = useState<boolean>(() => getLocalShadingSettings().hidden);
+  const [shadingOpacity, setShadingOpacity] = useState<number>(() => getLocalShadingSettings().opacity);
 
   // Audio state
   const [activeSurah, setActiveSurah] = useState<SurahAudio | null>(null);
@@ -175,6 +214,33 @@ const MushafPage = ({ onBack }: Props) => {
   useEffect(() => {
     const r = () => setIsDesktop(window.innerWidth >= 1024);
     window.addEventListener("resize", r); return () => window.removeEventListener("resize", r);
+  }, []);
+
+  // مزامنة إعدادات التظليل من السيرفر عند التحميل والتركيز وبعد كل مزامنة مكتملة
+  useEffect(() => {
+    const syncShading = async () => {
+      try {
+        const synced = await getLocalShadingSettings && typeof window !== "undefined"
+          ? (await import("@/services/shadingSyncService")).syncShadingFromServer()
+          : undefined;
+        if (synced) {
+          setShadingSettings(synced);
+          setHideShading(synced.hidden);
+          setShadingOpacity(synced.opacity);
+          setActiveSpeaker((synced.speaker ?? "teacher") as Speaker);
+        }
+      } catch (e) {
+        console.debug("Shading server sync skipped:", e);
+      }
+    };
+    syncShading();
+    const handler = () => syncShading();
+    window.addEventListener("mushaf:sync_complete", handler);
+    window.addEventListener("focus", handler);
+    return () => {
+      window.removeEventListener("mushaf:sync_complete", handler);
+      window.removeEventListener("focus", handler);
+    };
   }, []);
 
   // Re-render immediately when Supabase server sync completes
@@ -311,7 +377,7 @@ const MushafPage = ({ onBack }: Props) => {
   }, []);
 
   const highlightAyah = useCallback((surah: number, ayah: number, speaker: Speaker) => {
-    clearAllHighlights();
+    setActiveAyah(ayah);
     const selector = `.ayah-rect-${surah}-${ayah}`;
     const boxes = document.querySelectorAll(selector);
     boxes.forEach(r => {
@@ -321,7 +387,7 @@ const MushafPage = ({ onBack }: Props) => {
       el.style.strokeWidth = "5";
       el.classList.add('animate-pulse');
     });
-  }, [clearAllHighlights]);
+  }, []);
 
   // ---- Ayah-by-ayah playback ----
   // forceSpeaker: override speaker for this particular play call (used in "both" mode)
@@ -727,9 +793,13 @@ const MushafPage = ({ onBack }: Props) => {
 
 
   const visiblePages = useMemo(() => {
-    if (isDesktop) return [pages[currentPage], pages[currentPage + 1]].filter(Boolean) as PageInfo[];
+    const useTwo = isDesktop && twoPageMode;
+    if (useTwo) return [pages[currentPage], pages[currentPage + 1]].filter(Boolean) as PageInfo[];
     return [pages[currentPage]];
-  }, [currentPage, isDesktop]);
+  }, [currentPage, isDesktop, twoPageMode]);
+
+  // Quick nav bar visible only on mobile (small width < 768px)
+  const isMobile = typeof window !== "undefined" ? window.innerWidth < 768 : false;
 
   // Preload neighbors
   useEffect(() => {
@@ -782,28 +852,59 @@ const MushafPage = ({ onBack }: Props) => {
                 draggable={false}
               />
 
-              <svg
-                className="absolute inset-0 h-full w-full"
-                viewBox={`0 0 ${PAGE_IMAGE_SIZE.width} ${PAGE_IMAGE_SIZE.height}`}
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                {getPageAyahBoxes(page.src).map((box, i) => (
-                  <rect
-                    key={`ayah-rect-${box.surah}-${box.ayah}-${i}`}
-                    className={`ayah-rect ayah-rect-${box.surah}-${box.ayah} ayah-rect-idx-${i}`}
-                    x={box.x}
-                    y={box.y}
-                    width={box.width}
-                    height={box.height}
-                    rx="10"
-                    fill={previewHighlight}
-                    stroke={previewStroke}
-                    strokeWidth={1.5}
-                    style={{ mixBlendMode: "multiply", transition: "all 0.1s linear" }}
-                  />
-                ))}
-              </svg>
+              {(() => {
+                const pageBoxes = getPageAyahBoxes(page.src);
+                const activeColor =
+                  !hideShading && activeAyah !== null
+                    ? activeSpeaker === "kids"
+                      ? shadingSettings.kidsColor || DEFAULT_SETTINGS.kidsColor
+                      : shadingSettings.teacherColor || DEFAULT_SETTINGS.teacherColor
+                    : "";
+                return (
+                  <svg
+                    className="absolute inset-0 h-full w-full"
+                    viewBox={`0 0 ${PAGE_IMAGE_SIZE.width} ${PAGE_IMAGE_SIZE.height}`}
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                  >
+                    {pageBoxes.map((box, i) => {
+                      const isActive =
+                        !hideShading &&
+                        activeAyah !== null &&
+                        activeAyah === box.ayah &&
+                        box.surah === selectedSurah?.number;
+                      // نمط التظليل للآية غير النشطة: خلفية خفيفة جداً لا تشوش على الصفحة
+                      const inactiveStyle = getAyahShadingStyle(
+                        activeColor || DEFAULT_SETTINGS.teacherColor,
+                        Math.min(0.25, shadingOpacity * 0.4)
+                      );
+                      // نمط التظليل للآية النشطة المتصلة بالصوت: لون كامل مع أنيميشن نبضي
+                      const activeStyle = isActive
+                        ? getAyahShadingStyle(activeColor || DEFAULT_SETTINGS.teacherColor, shadingOpacity)
+                        : inactiveStyle;
+                      return (
+                        <rect
+                          key={`ayah-rect-${box.surah}-${box.ayah}-${i}`}
+                          className={`ayah-rect ayah-rect-${box.surah}-${box.ayah} ayah-rect-idx-${i}`}
+                          x={box.x}
+                          y={box.y}
+                          width={box.width}
+                          height={box.height}
+                          rx="10"
+                          fill={activeStyle.fill}
+                          stroke={activeStyle.stroke}
+                          strokeWidth={isActive ? 3 : 1.5}
+                          style={{
+                            mixBlendMode: "multiply",
+                            transition: "all 0.15s linear",
+                            ...(isActive ? { animation: "ayahPulse 1.2s infinite" } : {}),
+                          }}
+                        />
+                      );
+                    })}
+                  </svg>
+                );
+              })()}
 
               <div className="absolute inset-0">
                 {getPageAyahBoxes(page.src).map((box, i) => {
@@ -990,6 +1091,21 @@ const MushafPage = ({ onBack }: Props) => {
                   <option value={999}>مستمر</option>
                 </select>
               </div>
+
+              {/* زر تبديل عرض صفحتين/صفحة واحدة */}
+              <div className="mt-3 flex items-center gap-2 border-t border-white/40 pt-3">
+                <label className="flex items-center gap-2 text-sm font-bold cursor-pointer text-foreground/80 select-none">
+                  <span className="switch">
+                    <input
+                      type="checkbox"
+                      checked={twoPageMode}
+                      onChange={(e) => setTwoPageMode(e.target.checked)}
+                    />
+                    <span className="slider"></span>
+                  </span>
+                  <span>عرض صفحتين (الشاشات الكبيرة)</span>
+                </label>
+              </div>
             </div>
 
             {/* Surah selector (if more than one on page) */}
@@ -1022,7 +1138,7 @@ const MushafPage = ({ onBack }: Props) => {
               <p className="text-xs font-bold mb-1.5 text-muted-foreground">
                 اختر الآية ({selectedAyah} / {ayahCount})
               </p>
-              <div className="grid grid-cols-7 gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5 md:grid-cols-7">
                 {Array.from({ length: ayahCount }, (_, i) => i + 1).map(n => (
                   <button
                     key={n}

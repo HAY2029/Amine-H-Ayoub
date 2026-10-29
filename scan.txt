@@ -1,0 +1,1035 @@
+===== PACKAGE 
+{
+  "name": "quran-amine-h-ayoub",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "homepage": "https://learn-quran-kids.pages.dev",
+  "scripts": {
+    "dev": "vite",
+    "dev:lan": "vite --host 0.0.0.0 --port 5173",
+    "preview:lan": "vite preview --host 0.0.0.0 --port 4173",
+    "serve:lan": "vite preview --host 0.0.0.0 --port 5173",
+    "fast:lan": "npm run build && npm run serve:lan",
+    "build": "vite build && node ./scripts/prune-dist.mjs",
+    "build:sw-inject": "node ./scripts/inject-sw.mjs",
+    "build:dev": "vite build --mode development",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:order": "node ./tools/test-order-logic.cjs",
+    "deploy": "npm run build && node ./tools/prepare-gh-pages.cjs && npx gh-pages -d dist -m \"deploy: update site [skip ci]\"",
+    "deploy:vercel": "npm run build && node ./tools/vercel-deploy.cjs",
+    "tauri": "tauri",
+    "send-push": "node ./scripts/send-push.mjs",
+    "upload:hf": "node ./scripts/upload-hf-assets.mjs",
+    "sync:hf": "node ./scripts/sync-releases-to-hf.mjs",
+    "deploy:safe": "powershell -ExecutionPolicy Bypass -File ./tools/deploy-safe.ps1",
+    "deploy:edge": "powershell -ExecutionPolicy Bypass -File ./tools/deploy-edge-function.ps1",
+    "deploy:kids": "powershell -ExecutionPolicy Bypass -File ./tools/deploy-kids-voice.ps1"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
+    "@lovable.dev/cloud-auth-js": "^1.1.2",
+    "@lovable.dev/mcp-js": "^0.23.0",
+    "@radix-ui/react-accordion": "^1.2.11",
+    "@radix-ui/react-alert-dialog": "^1.1.14",
+    "@radix-ui/react-aspect-ratio": "^1.1.7",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-checkbox": "^1.3.2",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-context-menu": "^2.2.15",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-dropdown-menu": "^2.1.15",
+    "@radix-ui/react-hover-card": "^1.1.14",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-menubar": "^1.1.15",
+    "@radix-ui/react-navigation-menu": "^1.2.13",
+    "@radix-ui/react-popover": "^1.1.14",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-radio-group": "^1.3.7",
+    "@radix-ui/react-scroll-area": "^1.2.9",
+    "@radix-ui/react-select": "^2.2.5",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slider": "^1.3.5",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.5",
+    "@radix-ui/react-tabs": "^1.1.12",
+    "@radix-ui/react-toast": "^1.2.14",
+    "@radix-ui/react-toggle": "^1.1.9",
+    "@radix-ui/react-toggle-group": "^1.1.10",
+    "@radix-ui/react-tooltip": "^1.2.7",
+    "@ricky0123/vad-web": "^0.0.30",
+    "@supabase/supabase-js": "^2.106.2",
+    "@tanstack/react-query": "^5.83.0",
+    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/plugin-notification": "^2.4.0",
+    "archiver": "^8.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "date-fns": "^3.6.0",
+    "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.4.2",
+    "lucide-react": "^0.462.0",
+    "next-themes": "^0.3.0",
+    "onnxruntime-web": "^1.26.0",
+    "puppeteer-core": "^25.10.0",
+    "react": "^18.3.1",
+    "react-day-picker": "^8.10.1",
+    "react-dom": "^18.3.1",
+    "react-error-boundary": "^6.1.2",
+    "react-hook-form": "^7.61.1",
+    "react-resizable-panels": "^2.1.9",
+    "react-router-dom": "^6.30.1",
+    "recharts": "^2.15.4",
+    "sonner": "^1.7.4",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7",
+    "vaul": "^0.9.9",
+    "vite-plugin-pwa": "^1.2.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@huggingface/hub": "^2.13.0",
+    "@playwright/test": "^1.57.0",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tauri-apps/cli": "^2.11.0",
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/react": "^16.0.0",
+    "@types/node": "^22.16.5",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react-swc": "^3.11.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.32.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "gh-pages": "^6.3.0",
+    "globals": "^15.15.0",
+    "jimp": "^1.6.1",
+    "jpeg-js": "^0.4.4",
+    "jsdom": "^20.0.3",
+    "lovable-tagger": "^1.1.13",
+    "pngjs": "^7.0.0",
+    "postcss": "^8.5.6",
+    "rollup-plugin-visualizer": "^7.1.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0",
+    "vite": "^5.4.19",
+    "vitest": "^3.2.4",
+    "web-push": "^3.5.0"
+  }
+}
+===== AUDIOURLS 
+// Public audio delivery: Hugging Face first, with Internet Archive as a resilient fallback.
+const HF_BASE = "https://huggingface.co/datasets/hammoualiyoucef20/quran-audio/resolve/main";
+const DIRECT_STORAGE_BASE = "https://ia803201.us.archive.org/34/items/quran-audio-files-for-kids";
+const GENERAL_DOWNLOAD_BASE = "https://archive.org/download/quran-audio-files-for-kids";
+const RECOVERY_COOLDOWN_MS = 60_000;
+const MAX_RETRY_DELAY_MS = 10_000;
+
+type AudioProvider = "huggingface" | "archive";
+let activeProvider: AudioProvider = "huggingface";
+let nextHfProbeAt = 0;
+let recoveryBackoffMs = RECOVERY_COOLDOWN_MS;
+let recoveryProbe: Promise<void> | null = null;
+
+const archiveUrls = (number: number): string[] => [
+  `${DIRECT_STORAGE_BASE}/${number}.mp3`,
+  `${GENERAL_DOWNLOAD_BASE}/${number}.mp3`,
+];
+
+export const getHuggingFaceAudioUrl = (number: number): string => `${HF_BASE}/${number}.mp3`;
+
+/**
+ * رابط الصوت الأساسي المباشر والسريع من سيرفر التخزين السحابي الخارجي.
+ */
+export const getSurahAudioUrl = (number: number): string => {
+  if (activeProvider === "archive") return archiveUrls(number)[0];
+  return getHuggingFaceAudioUrl(number);
+};
+
+/**
+ * رابط احتياطي عبر بوابة التحميل العامة.
+ */
+export const getFallbackAudioUrl = (number: number): string => {
+  return archiveUrls(number)[0];
+};
+
+export const getArchiveGatewayAudioUrl = (number: number): string => archiveUrls(number)[1];
+
+/** URLs to try in order for a durable download from external servers. */
+export function getSurahAudioCandidates(number: number): string[] {
+  const preferred = getSurahAudioUrl(number);
+  const candidates = activeProvider === "huggingface"
+    ? [preferred, ...archiveUrls(number)]
+    : [...archiveUrls(number), getHuggingFaceAudioUrl(number)];
+  return [...new Set(candidates)];
+}
+
+export const getAudioProvider = (): AudioProvider => activeProvider;
+
+const retryableStatus = (status: number) => status === 408 || status === 425 || status === 429 || status >= 500;
+
+function retryDelay(response: Response | undefined, attempt: number): number {
+  const retryAfter = response?.headers.get("Retry-After");
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    const dateDelay = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - Date.now();
+    if (Number.isFinite(dateDelay) && dateDelay >= 0) return Math.min(dateDelay, MAX_RETRY_DELAY_MS);
+  }
+  return Math.min(500 * 2 ** attempt, MAX_RETRY_DELAY_MS);
+}
+
+const wait = (ms: number, signal?: AbortSignal) => new Promise<void>((resolve, reject) => {
+  if (signal?.aborted) return reject(new DOMException("Aborted", "AbortError"));
+  const timer = setTimeout(resolve, ms);
+  signal?.addEventListener("abort", () => { clearTimeout(timer); reject(new DOMException("Aborted", "AbortError")); }, { once: true });
+});
+
+function scheduleHfRecovery(): void {
+  if (recoveryProbe || typeof fetch === "undefined") return;
+  if (!nextHfProbeAt) nextHfProbeAt = Date.now() + recoveryBackoffMs;
+  const probeAt = nextHfProbeAt;
+  recoveryProbe = (async () => {
+    await wait(Math.max(0, probeAt - Date.now())).catch(() => {});
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(getHuggingFaceAudioUrl(1), {
+        method: "HEAD", signal: controller.signal, cache: "no-store",
+      });
+      if (response.ok) {
+        // Only affects future URL resolutions; an active media element is never reloaded.
+        activeProvider = "huggingface";
+        recoveryBackoffMs = RECOVERY_COOLDOWN_MS;
+        nextHfProbeAt = 0;
+      } else {
+        recoveryBackoffMs = Math.min(recoveryBackoffMs * 2, 15 * 60_000);
+        nextHfProbeAt = Date.now() + recoveryBackoffMs;
+      }
+    } catch {
+      recoveryBackoffMs = Math.min(recoveryBackoffMs * 2, 15 * 60_000);
+      nextHfProbeAt = Date.now() + recoveryBackoffMs;
+    } finally {
+      clearTimeout(timeout);
+      recoveryProbe = null;
+      if (activeProvider === "archive" && nextHfProbeAt > Date.now()) scheduleHfRecovery();
+    }
+  })();
+}
+
+/** Media elements hide HTTP status; use this when an HF media source errors. */
+export function reportHuggingFaceFailure(): void {
+  if (activeProvider !== "archive") {
+    activeProvider = "archive";
+    recoveryBackoffMs = RECOVERY_COOLDOWN_MS;
+    nextHfProbeAt = 0;
+    scheduleHfRecovery();
+  }
+}
+
+async function fetchWithAttempts(url: string, signal?: AbortSignal, retries = 1): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    const controller = new AbortController();
+    const forwardAbort = () => controller.abort();
+    signal?.addEventListener("abort", forwardAbort, { once: true });
+    const timeout = setTimeout(() => controller.abort(), 20_000);
+    try {
+      const response = await fetch(url, { signal: controller.signal, cache: "default" });
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", forwardAbort);
+      if (response.ok || !retryableStatus(response.status) || attempt === retries) return response;
+      lastError = new Error(`Audio request failed: HTTP ${response.status}`);
+      await wait(retryDelay(response, attempt), signal);
+    } catch (error) {
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", forwardAbort);
+      if (signal?.aborted) throw error;
+      lastError = error;
+      if (attempt === retries) break;
+      await wait(retryDelay(undefined, attempt), signal);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Audio request failed");
+}
+
+/** Fetch a Surah from HF first, then Archive's direct and gateway endpoints. */
+export async function fetchSurahAudio(number: number, signal?: AbortSignal): Promise<{ response: Response; url: string }> {
+  const hfUrl = getHuggingFaceAudioUrl(number);
+  if (activeProvider === "archive" && Date.now() >= nextHfProbeAt) scheduleHfRecovery();
+
+  if (activeProvider === "huggingface") {
+    try {
+      const response = await fetchWithAttempts(hfUrl, signal, 1);
+      if (response.ok) return { response, url: hfUrl };
+      if (response.status !== 404 && !retryableStatus(response.status)) return { response, url: hfUrl };
+      // A 404 can mean this particular Surah is absent from the incomplete HF dataset.
+      if (response.status !== 404) reportHuggingFaceFailure();
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      reportHuggingFaceFailure();
+    }
+  }
+
+  let lastResponse: Response | undefined;
+  let lastUrl = "";
+  let lastError: unknown;
+  const urls = archiveUrls(number);
+  for (const url of urls) {
+    try {
+      const response = await fetchWithAttempts(url, signal, 1);
+      if (response.ok || (response.status !== 404 && !retryableStatus(response.status))) return { response, url };
+      lastResponse = response;
+      lastUrl = url;
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      lastError = error;
+    }
+  }
+  if (lastResponse) return { response: lastResponse, url: lastUrl };
+  throw lastError instanceof Error ? lastError : new Error("Audio unavailable from Hugging Face and Internet Archive");
+}
+
+/**
+ * خريطة تحويل قديمة (جزء عم المعكوس) — أُبقيَت للتوافق مع كود سابق فقط،
+ * لم تعد تُستخدم لتحديد الصوت لأن سيرفر Hugging Face أصبح بالترقيم القياسي.
+ */
+export const LEGACY_AMMA_MAP: Record<number, number> = {};
+
+// قائمة السور المتوفرة حالياً في التخزين السحابي (يتم تعبئتها ديناميكياً عند بدء التطبيق)
+export const CLOUD_AVAILABLE_SURAHS = new Set<number>();
+
+export const hasCloudAudio = (number: number): boolean => {
+  if (CLOUD_AVAILABLE_SURAHS.size > 0) {
+    return CLOUD_AVAILABLE_SURAHS.has(number);
+  }
+  return number >= 1 && number <= 114;
+};
+
+// التحقق من توفر الصوت
+export const isAudioAvailable = (number: number): boolean => {
+  return number >= 1 && number <= 114;
+};
+
+const CLOUD_CACHE_KEY = "mushaf:cloud_surahs_cache_v1";
+const CLOUD_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 ساعة
+
+/**
+ * Archive metadata preserves the current supported coverage even when HF is incomplete.
+ * Uses localStorage cache to avoid repeated 2MB network requests on every startup.
+ */
+export async function initCloudAudioAvailability() {
+  try {
+    // 1. محاولة استرجاع السور من التخزين المحلي فوراً بدون طلب شبكة
+    if (typeof localStorage !== "undefined") {
+      try {
+        const cached = localStorage.getItem(CLOUD_CACHE_KEY);
+        if (cached) {
+          const { data, ts } = JSON.parse(cached);
+          if (Date.now() - ts < CLOUD_CACHE_TTL && Array.isArray(data) && data.length > 0) {
+            data.forEach((num: number) => CLOUD_AVAILABLE_SURAHS.add(num));
+            return;
+          }
+        }
+      } catch { /* ignore */ }
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch("https://archive.org/metadata/quran-audio-files-for-kids", { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) return;
+    const data = await res.json();
+    const list: number[] = [];
+    if (data && data.files) {
+      data.files.forEach((item: any) => {
+        if (item.name && item.name.endsWith('.mp3')) {
+          const num = parseInt(item.name.replace('.mp3', ''), 10);
+          if (!isNaN(num)) {
+            CLOUD_AVAILABLE_SURAHS.add(num);
+            list.push(num);
+          }
+        }
+      });
+    }
+    if (typeof localStorage !== "undefined" && list.length > 0) {
+      try {
+        localStorage.setItem(CLOUD_CACHE_KEY, JSON.stringify({ data: list, ts: Date.now() }));
+      } catch { /* ignore */ }
+    }
+  } catch (err) {
+    // نتجاهل بهدوء ولا نعطل التطبيق
+  }
+}
+export async function fetchAudioWithRetry(url: string, signal?: AbortSignal, maxRetries = 3): Promise<Response> {
+  return fetchWithAttempts(url, signal, Math.max(0, maxRetries - 1));
+}
+
+/**
+ * Get custom audio URL for a surah if uploaded manually.
+ */
+export const getCustomAudioUrl = (number: number, speaker: "teacher" | "kids" = "teacher"): string | null => {
+  if (typeof localStorage === 'undefined') return null;
+  return localStorage.getItem(`mushaf:customAudio:${speaker}:${number}`)
+    || (speaker === "teacher" ? localStorage.getItem(`mushaf:customAudio:${number}`) : null);
+};
+
+/**
+ * Save custom audio URL for a surah.
+ */
+export const setCustomAudioUrl = (number: number, url: string, speaker: "teacher" | "kids" = "teacher") => {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(`mushaf:customAudio:${speaker}:${number}`, url);
+    if (speaker === "teacher") localStorage.setItem(`mushaf:customAudio:${number}`, url);
+  }
+};
+
+/**
+ * Get the final audio path for playback. Prioritizes custom audio if set.
+ */
+export const getAudioPath = (number: number, speaker: "teacher" | "kids" = "teacher"): string => {
+  const custom = getCustomAudioUrl(number, speaker);
+  if (custom) return custom;
+  return getSurahAudioUrl(number);
+};
+
+/** رابط الصوت للمعلم من المسار المحلي على القرص H */
+export const getTeacherAudioUrl = (number: number): string => {
+  return `/audio/teacher/${number}.mp3`;
+};
+
+/** رابط الصوت للطفل من المسار المحلي على القرص H */
+export const getKidsAudioUrl = (number: number): string => {
+  return `/audio/kids/${number}.mp3`;
+};
+
+/** الحصول على رابط الصوت النهائي مع دعم المعلم والطفل */
+export const getSurahAudioBySpeaker = (
+  number: number,
+  speaker: "teacher" | "kids" = "teacher"
+): string => {
+  const custom = getCustomAudioUrl(number, speaker);
+  if (custom) return custom;
+
+  if (speaker === "kids") {
+    return getKidsAudioUrl(number);
+  }
+  return getTeacherAudioUrl(number);
+};
+
+/** مسارات الصوت على القرص H للملفات المحلية */
+export const H_DISK_AUDIO_PATHS = {
+  teacher: "H:/Amine-H-Ayoub/audio/teacher",
+  kids: "H:/Amine-H-Ayoub/audio/kids",
+  surahs: "H:/Amine-H-Ayoub/audio/surahs",
+} as const;
+===== TSC 
+src/components/MushafPage.tsx(227,30): error TS2345: Argument of type 'Promise<ShadingSettings>' is not assignable to parameter of type 'SetStateAction<ShadingSettings>'.
+src/components/MushafPage.tsx(228,33): error TS2339: Property 'hidden' does not exist on type 'Promise<ShadingSettings>'.
+src/components/MushafPage.tsx(229,36): error TS2339: Property 'opacity' does not exist on type 'Promise<ShadingSettings>'.
+src/components/MushafPage.tsx(230,36): error TS2339: Property 'speaker' does not exist on type 'Promise<ShadingSettings>'.
+src/components/MushafPage.tsx(860,54): error TS2304: Cannot find name 'DEFAULT_SETTINGS'.
+src/components/MushafPage.tsx(861,57): error TS2304: Cannot find name 'DEFAULT_SETTINGS'.
+src/components/MushafPage.tsx(878,40): error TS2304: Cannot find name 'DEFAULT_SETTINGS'.
+src/components/MushafPage.tsx(883,62): error TS2304: Cannot find name 'DEFAULT_SETTINGS'.
+src/pages/AudioShadingSyncPage.tsx(693,40): error TS2339: Property 'revelationType' does not exist on type 'SurahInfo'.
+src/pages/AudioShadingSyncPage.tsx(1003,71): error TS2339: Property 'revelationType' does not exist on type 'SurahInfo'.
+src/pages/QuranReader.tsx(330,29): error TS2339: Property 'pageNumber' does not exist on type 'PageInfo'.
+src/pages/QuranReader.tsx(330,43): error TS2304: Cannot find name 'pageNumForKey'.
+src/pages/QuranReader.tsx(340,26): error TS2339: Property 'pageNumber' does not exist on type 'PageInfo'.
+src/pages/QuranReader.tsx(340,40): error TS2304: Cannot find name 'pageNumForKey'.
+src/pages/QuranReader.tsx(363,38): error TS2304: Cannot find name 'pageNumForKey'.
+src/pages/QuranReader.tsx(1937,25): error TS2339: Property 'pageNumber' does not exist on type 'PageInfo'.
+src/pages/QuranReader.tsx(1943,18): error TS2339: Property 'pageNumber' does not exist on type 'PageInfo'.
+src/pages/QuranReader.tsx(1943,36): error TS2339: Property 'pageNumber' does not exist on type 'PageInfo'.
+src/pages/SurahShadingPage.tsx(1086,28): error TS2488: Type 'SurahTimings' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pages/SurahShadingPage.tsx(1095,9): error TS2552: Cannot find name 'setSelectedBox'. Did you mean 'selectedBox'?
+===== ESLINT 
+
+H:\Amine-H-Ayoub\src\App.tsx
+  103:7  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\ai\speakerRecognition.ts
+  279:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\components\Avatar.tsx
+   20:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  185:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  226:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\DownloadModal.tsx
+  13:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\Intro3DCarousel.tsx
+   9:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  19:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  28:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  47:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\ProfilePicker.tsx
+  12:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  13:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\SurahDownloadModal.tsx
+  71:17  error  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+H:\Amine-H-Ayoub\src\components\WelcomeOverlay.tsx
+  48:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\kids\CharacterDialogue.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\components\kids\KidsCharacterSelector.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\components\kids\mascot\MascotFigure.tsx
+  1:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\components\ui\badge.tsx
+  29:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\ui\button.tsx
+  57:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\ui\form.tsx
+  129:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\ui\navigation-menu.tsx
+  111:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\ui\sidebar.tsx
+  636:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\ui\sonner.tsx
+  27:19  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\components\ui\toggle.tsx
+  37:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\contexts\CloudAudioContext.tsx
+  67:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\contexts\audioContext.tsx
+  123:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+H:\Amine-H-Ayoub\src\data\gameCatalog.ts
+  20:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  90:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  95:5  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  97:5  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\hooks\useKidsCharacter.ts
+  5:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\hooks\useKidsCharacterVoice.ts
+  7:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\lib\supabase.ts
+  18:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  24:7  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  26:7  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  28:7  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  31:7  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\main.tsx
+  6:1  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  7:1  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+H:\Amine-H-Ayoub\src\pages\QuranReader.tsx
+  400:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  468:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+H:\Amine-H-Ayoub\src\pages\RecitationMethods.tsx
+  139:5  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  338:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\pages\SurahShadingPage.tsx
+  333:52  error  Unnecessary escape character: \/  no-useless-escape
+
+H:\Amine-H-Ayoub\src\pages\TimingsRecorder.tsx
+  28:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\service-worker.ts
+  1:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+H:\Amine-H-Ayoub\src\services\shadingSyncService.ts
+  46:28  error  Unnecessary escape character: \.  no-useless-escape
+
+H:\Amine-H-Ayoub\src\utils\gameVoice.ts
+  305:5  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+✖ 48 problems (5 errors, 43 warnings)
+  0 errors and 23 warnings potentially fixable with the `--fix` option.
+
+===== TESTS 
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/Amine-H-Ayoub[39m
+
+ [32m✓[39m src/data/audioUrls.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 100[2mms[22m[39m
+ [32m✓[39m src/data/offlineDownload.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 119[2mms[22m[39m
+ [32m✓[39m src/data/kidsCharacters.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/services/resendService.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [31m❯[39m src/data/ayahCoordinates.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 53[2mms[22m[39m
+[31m   [31m×[31m Ayah Shading & Boxes Tests[2m > [22mgenerates full 8 boxes for Al-Fatiha (page 0 / fatiha)[39m[32m 10[2mms[22m[39m
+[31m     → expected 11 to be 8 // Object.is equality[39m
+   [32m✓[39m Ayah Shading & Boxes Tests[2m > [22mprovides boxes for Surah An-Naba on page 582[32m 1[2mms[22m[39m
+[31m   [31m×[31m Ayah Shading & Boxes Tests[2m > [22mprovides boxes for Surahs 112, 113, and 114 on page 603 and 604[39m[32m 1[2mms[22m[39m
+[31m     → expected false to be true // Object.is equality[39m
+   [32m✓[39m Ayah Shading & Boxes Tests[2m > [22mensures all loaded Quran pages have valid, non-empty boxes and surahs[32m 40[2mms[22m[39m
+ [32m✓[39m src/utils/errorClassification.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/test/example.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/hooks/useSurahData.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/data/ayahCoordinates.test.ts[2m > [22mAyah Shading & Boxes Tests[2m > [22mgenerates full 8 boxes for Al-Fatiha (page 0 / fatiha)
+[31m[1mAssertionError[22m: expected 11 to be 8 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 8[39m
+[31m+ 11[39m
+
+[36m [2m❯[22m src/data/ayahCoordinates.test.ts:[2m8:26[22m[39m
+    [90m  6| [39m  [34mit[39m([32m"generates full 8 boxes for Al-Fatiha (page 0 / fatiha)"[39m[33m,[39m () [33m=>[39m {
+    [90m  7| [39m    [35mconst[39m boxes [33m=[39m [34mgetPageAyahBoxes[39m([32m"/pages/0.jpg"[39m)[33m;[39m
+    [90m  8| [39m    [34mexpect[39m(boxes[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m8[39m)[33m;[39m
+    [90m   | [39m                         [31m^[39m
+    [90m  9| [39m    [35mconst[39m ayahs [33m=[39m boxes[33m.[39m[34mmap[39m((b) [33m=>[39m b[33m.[39mayah)[33m;[39m
+    [90m 10| [39m    [34mexpect[39m(ayahs)[33m.[39m[34mtoEqual[39m([[34m0[39m[33m,[39m [34m1[39m[33m,[39m [34m2[39m[33m,[39m [34m3[39m[33m,[39m [34m4[39m[33m,[39m [34m5[39m[33m,[39m [34m6[39m[33m,[39m [34m7[39m])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/data/ayahCoordinates.test.ts[2m > [22mAyah Shading & Boxes Tests[2m > [22mprovides boxes for Surahs 112, 113, and 114 on page 603 and 604
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/data/ayahCoordinates.test.ts:[2m25:31[22m[39m
+    [90m 23| [39m      [35mconst[39m boxes [33m=[39m [34mgetPageAyahBoxes[39m(src)[33m;[39m
+    [90m 24| [39m      [35mconst[39m surahs [33m=[39m [35mnew[39m [33mSet[39m(boxes[33m.[39m[34mmap[39m((b) [33m=>[39m b[33m.[39msurah))[33m;[39m
+    [90m 25| [39m      [34mexpect[39m(surahs[33m.[39m[34mhas[39m([34m112[39m))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m   | [39m                              [31m^[39m
+    [90m 26| [39m      [34mexpect[39m(surahs[33m.[39m[34mhas[39m([34m113[39m))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m 27| [39m      [34mexpect[39m(surahs[33m.[39m[34mhas[39m([34m114[39m))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m7 passed[39m[22m[90m (8)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m20 passed[39m[22m[90m (22)[39m
+[2m   Start at [22m 22:38:13
+[2m   Duration [22m 26.20s[2m (transform 456ms, setup 11.52s, collect 2.21s, tests 294ms, environment 57.47s, prepare 3.39s)[22m
+
+===== BUILD 
+
+> quran-amine-h-ayoub@1.0.0 build
+> vite build && node ./scripts/prune-dist.mjs
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 1882 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mmanifest.webmanifest                    [39m[1m[2m  0.46 kB[22m[1m[22m
+[2mdist/[22m[32mindex.html                              [39m[1m[2m  3.03 kB[22m[1m[22m[2m │ gzip:  1.18 kB[22m
+[2mdist/[22m[32massets/603-CIWjNpBW.jpg                 [39m[1m[2m559.07 kB[22m[1m[22m
+[2mdist/[22m[32massets/599-CJZZxU-f.jpg                 [39m[1m[2m578.31 kB[22m[1m[22m
+[2mdist/[22m[32massets/594-B7e6dVQl.jpg                 [39m[1m[2m584.17 kB[22m[1m[22m
+[2mdist/[22m[32massets/601-DIdOdAXI.jpg                 [39m[1m[2m585.34 kB[22m[1m[22m
+[2mdist/[22m[32massets/586-F7w19DjL.jpg                 [39m[1m[2m586.33 kB[22m[1m[22m
+[2mdist/[22m[32massets/592-BiqFh7hi.jpg                 [39m[1m[2m589.05 kB[22m[1m[22m
+[2mdist/[22m[32massets/602-Bcu9F4Jw.jpg                 [39m[1m[2m589.35 kB[22m[1m[22m
+[2mdist/[22m[32massets/587-CNrYeBX1.jpg                 [39m[1m[2m591.02 kB[22m[1m[22m
+[2mdist/[22m[32massets/598-ClatRLRy.jpg                 [39m[1m[2m595.65 kB[22m[1m[22m
+[2mdist/[22m[32massets/597-CrB5sv8e.jpg                 [39m[1m[2m596.91 kB[22m[1m[22m
+[2mdist/[22m[32massets/591-82XEDrgd.jpg                 [39m[1m[2m597.60 kB[22m[1m[22m
+[2mdist/[22m[32massets/581-CbkPHiHZ.jpg                 [39m[1m[2m598.48 kB[22m[1m[22m
+[2mdist/[22m[32massets/590-DqB5xgPt.jpg                 [39m[1m[2m601.31 kB[22m[1m[22m
+[2mdist/[22m[32massets/582-DEpKRI0e.jpg                 [39m[1m[2m602.25 kB[22m[1m[22m
+[2mdist/[22m[32massets/588-5N3r9lj2.jpg                 [39m[1m[2m602.43 kB[22m[1m[22m
+[2mdist/[22m[32massets/600-Bh0zj0FX.jpg                 [39m[1m[2m606.64 kB[22m[1m[22m
+[2mdist/[22m[32massets/596-Ji9qAgmL.jpg                 [39m[1m[2m613.46 kB[22m[1m[22m
+[2mdist/[22m[32massets/595-iqRU32Xy.jpg                 [39m[1m[2m615.98 kB[22m[1m[22m
+[2mdist/[22m[32massets/583-BD1Hq_xi.jpg                 [39m[1m[2m623.38 kB[22m[1m[22m
+[2mdist/[22m[32massets/589-B-4O7lFF.jpg                 [39m[1m[2m625.56 kB[22m[1m[22m
+[2mdist/[22m[32massets/585-CokiXF__.jpg                 [39m[1m[2m627.90 kB[22m[1m[22m
+[2mdist/[22m[32massets/593-DUeSa1G7.jpg                 [39m[1m[2m629.55 kB[22m[1m[22m
+[2mdist/[22m[32massets/0-C2Zz970X.jpg                   [39m[1m[2m740.36 kB[22m[1m[22m
+[2mdist/[22m[35massets/SettingsPage-NRbF0xUd.css        [39m[1m[2m  4.79 kB[22m[1m[22m[2m │ gzip:  1.25 kB[22m
+[2mdist/[22m[35massets/index-BFwUANSK.css               [39m[1m[2m287.71 kB[22m[1m[22m[2m │ gzip: 43.77 kB[22m
+[2mdist/[22m[36mjs/AppFooter-Bk9lZgrp.js                [39m[1m[2m  0.04 kB[22m[1m[22m[2m │ gzip:  0.06 kB[22m
+[2mdist/[22m[36mjs/app-loader-BDvbaiNj.js               [39m[1m[2m  0.84 kB[22m[1m[22m[2m │ gzip:  0.55 kB[22m
+[2mdist/[22m[36mjs/surahLink-D2Tfaq4F.js                [39m[1m[2m  1.08 kB[22m[1m[22m[2m │ gzip:  0.59 kB[22m
+[2mdist/[22m[36mjs/wifi-loader-D5Bvg_uN.js              [39m[1m[2m  1.22 kB[22m[1m[22m[2m │ gzip:  0.58 kB[22m
+[2mdist/[22m[36mjs/NotFound-CIZ_F6Gr.js                 [39m[1m[2m  1.44 kB[22m[1m[22m[2m │ gzip:  0.78 kB[22m
+[2mdist/[22m[36mjs/playlistStore-CWZy6cts.js            [39m[1m[2m  1.62 kB[22m[1m[22m[2m │ gzip:  0.78 kB[22m
+[2mdist/[22m[36mjs/customAudioStore-rmAfgVRA.js         [39m[1m[2m  1.69 kB[22m[1m[22m[2m │ gzip:  0.66 kB[22m
+[2mdist/[22m[36mjs/remoteGames-zv4Fv5an.js              [39m[1m[2m  1.74 kB[22m[1m[22m[2m │ gzip:  0.87 kB[22m
+[2mdist/[22m[36mjs/useSurahData-CYpwcOCg.js             [39m[1m[2m  2.96 kB[22m[1m[22m[2m │ gzip:  1.49 kB[22m
+[2mdist/[22m[36mjs/shadingSyncService-Bu1WzYIW.js       [39m[1m[2m  2.98 kB[22m[1m[22m[2m │ gzip:  1.40 kB[22m
+[2mdist/[22m[36mjs/AnnouncementsPage-Da44jYyT.js        [39m[1m[2m  3.26 kB[22m[1m[22m[2m │ gzip:  1.50 kB[22m
+[2mdist/[22m[36mjs/SiteLinksOverlay-Dh7fqY9I.js         [39m[1m[2m  3.45 kB[22m[1m[22m[2m │ gzip:  1.54 kB[22m
+[2mdist/[22m[36mjs/ErrorPage-CkmkLX-P.js                [39m[1m[2m  4.09 kB[22m[1m[22m[2m │ gzip:  1.92 kB[22m
+[2mdist/[22m[36mjs/quran-data-CoJTLNr3.js               [39m[1m[2m  4.11 kB[22m[1m[22m[2m │ gzip:  0.95 kB[22m
+[2mdist/[22m[36mjs/TeacherTools-D-6STUGe.js             [39m[1m[2m  4.49 kB[22m[1m[22m[2m │ gzip:  2.11 kB[22m
+[2mdist/[22m[36mjs/NotificationsModal-C0xTHk9K.js       [39m[1m[2m  4.55 kB[22m[1m[22m[2m │ gzip:  1.96 kB[22m
+[2mdist/[22m[36mjs/AudioSplitterPage-CFDBBsNd.js        [39m[1m[2m  4.89 kB[22m[1m[22m[2m │ gzip:  2.57 kB[22m
+[2mdist/[22m[36mjs/kidsBadges-Dq0FMUQE.js               [39m[1m[2m  5.00 kB[22m[1m[22m[2m │ gzip:  2.28 kB[22m
+[2mdist/[22m[36mjs/gameCatalog-NhzlSx5W.js              [39m[1m[2m  5.17 kB[22m[1m[22m[2m │ gzip:  2.05 kB[22m
+[2mdist/[22m[36mjs/LegendaryDownloadHub-ChIKTXVx.js     [39m[1m[2m  5.44 kB[22m[1m[22m[2m │ gzip:  2.26 kB[22m
+[2mdist/[22m[36mjs/gameSfx-bb5IiUeS.js                  [39m[1m[2m  5.61 kB[22m[1m[22m[2m │ gzip:  2.07 kB[22m
+[2mdist/[22m[36mjs/workbox-window.prod.es5-BqEJf4Xk.js  [39m[1m[2m  5.71 kB[22m[1m[22m[2m │ gzip:  2.34 kB[22m
+[2mdist/[22m[36mjs/AdminReleasesPanel-DHkdQVs3.js       [39m[1m[2m  7.00 kB[22m[1m[22m[2m │ gzip:  2.73 kB[22m
+[2mdist/[22m[36mjs/QuranLockGateModal-PDpc8rjQ.js       [39m[1m[2m  7.29 kB[22m[1m[22m[2m │ gzip:  2.60 kB[22m
+[2mdist/[22m[36mjs/SupportModal-B4SouVum.js             [39m[1m[2m  7.43 kB[22m[1m[22m[2m │ gzip:  2.88 kB[22m
+[2mdist/[22m[36mjs/MushafUploadPage-8ifMbbBF.js         [39m[1m[2m  7.55 kB[22m[1m[22m[2m │ gzip:  3.07 kB[22m
+[2mdist/[22m[36mjs/ImageManager-CIAlqmha.js             [39m[1m[2m  7.70 kB[22m[1m[22m[2m │ gzip:  3.07 kB[22m
+[2mdist/[22m[36mjs/QuizPage-DLgKLOiL.js                 [39m[1m[2m  7.70 kB[22m[1m[22m[2m │ gzip:  2.73 kB[22m
+[2mdist/[22m[36mjs/huggingFaceService-9brM7kgB.js       [39m[1m[2m  7.73 kB[22m[1m[22m[2m │ gzip:  3.02 kB[22m
+[2mdist/[22m[36mjs/AppNav-DL2VXUmW.js                   [39m[1m[2m 10.10 kB[22m[1m[22m[2m │ gzip:  3.70 kB[22m
+[2mdist/[22m[36mjs/CustomAudioManager-BeTVC3nx.js       [39m[1m[2m 10.49 kB[22m[1m[22m[2m │ gzip:  4.09 kB[22m
+[2mdist/[22m[36mjs/UploadDeskPage-DZE-YB3x.js           [39m[1m[2m 10.58 kB[22m[1m[22m[2m │ gzip:  3.98 kB[22m
+[2mdist/[22m[36mjs/certificateGenerator-DVdNR6gD.js     [39m[1m[2m 10.64 kB[22m[1m[22m[2m │ gzip:  4.01 kB[22m
+[2mdist/[22m[36mjs/BadgesModal-MgWkXm5I.js              [39m[1m[2m 11.01 kB[22m[1m[22m[2m │ gzip:  3.95 kB[22m
+[2mdist/[22m[36mjs/LinkAudioPage-CKFHKUsL.js            [39m[1m[2m 11.38 kB[22m[1m[22m[2m │ gzip:  4.24 kB[22m
+[2mdist/[22m[36mjs/TimingsRecorder-DOkK3e_z.js          [39m[1m[2m 11.79 kB[22m[1m[22m[2m │ gzip:  4.30 kB[22m
+[2mdist/[22m[36mjs/ShadingSettingsPage-COB3obGu.js      [39m[1m[2m 12.57 kB[22m[1m[22m[2m │ gzip:  3.77 kB[22m
+[2mdist/[22m[36mjs/SortPagesPage-pdDNRBtd.js            [39m[1m[2m 12.78 kB[22m[1m[22m[2m │ gzip:  4.87 kB[22m
+[2mdist/[22m[36mjs/AudioUploadPage-BuCrq18d.js          [39m[1m[2m 13.50 kB[22m[1m[22m[2m │ gzip:  4.13 kB[22m
+[2mdist/[22m[36mjs/SupportPage-D7GsvS_F.js              [39m[1m[2m 13.72 kB[22m[1m[22m[2m │ gzip:  4.97 kB[22m
+[2mdist/[22m[36mjs/window-mu6AYAKc.js                   [39m[1m[2m 14.21 kB[22m[1m[22m[2m │ gzip:  3.56 kB[22m
+[2mdist/[22m[36mjs/ShadingPage-D0tHvrUZ.js              [39m[1m[2m 15.17 kB[22m[1m[22m[2m │ gzip:  5.45 kB[22m
+[2mdist/[22m[36mjs/QuranStudent-DSsvALhy.js             [39m[1m[2m 17.92 kB[22m[1m[22m[2m │ gzip:  6.16 kB[22m
+[2mdist/[22m[36mjs/KidsShop-BSBJPqhq.js                 [39m[1m[2m 19.03 kB[22m[1m[22m[2m │ gzip:  5.89 kB[22m
+[2mdist/[22m[36mjs/Index-BbOE6xPF.js                    [39m[1m[2m 21.42 kB[22m[1m[22m[2m │ gzip:  7.40 kB[22m
+[2mdist/[22m[36mjs/RecitationPage-mRxidecE.js           [39m[1m[2m 22.75 kB[22m[1m[22m[2m │ gzip:  9.04 kB[22m
+[2mdist/[22m[36mjs/vendor-tanstack-D55q92VL.js          [39m[1m[2m 28.27 kB[22m[1m[22m[2m │ gzip:  8.63 kB[22m
+[2mdist/[22m[36mjs/AyahCalibration-CmccB0bW.js          [39m[1m[2m 30.29 kB[22m[1m[22m[2m │ gzip:  8.77 kB[22m
+[2mdist/[22m[36mjs/quran-text-yXAdUGoj.js               [39m[1m[2m 35.62 kB[22m[1m[22m[2m │ gzip: 13.08 kB[22m
+[2mdist/[22m[36mjs/SurahShadingPage-BuJKozle.js         [39m[1m[2m 37.99 kB[22m[1m[22m[2m │ gzip: 11.69 kB[22m
+[2mdist/[22m[36mjs/AudioShadingSyncPage-BsRx4rLy.js     [39m[1m[2m 43.40 kB[22m[1m[22m[2m │ gzip: 11.68 kB[22m
+[2mdist/[22m[36mjs/SettingsPage-CMG8Ba7y.js             [39m[1m[2m 43.92 kB[22m[1m[22m[2m │ gzip: 12.58 kB[22m
+[2mdist/[22m[36mjs/RecitationMethods-Clh4gAlA.js        [39m[1m[2m 55.59 kB[22m[1m[22m[2m │ gzip: 17.74 kB[22m
+[2mdist/[22m[36mjs/vendor-radix-BUXS_TCz.js             [39m[1m[2m 59.93 kB[22m[1m[22m[2m │ gzip: 20.69 kB[22m
+[2mdist/[22m[36mjs/vendor-icons-WzfN3iCB.js             [39m[1m[2m 63.07 kB[22m[1m[22m[2m │ gzip: 12.51 kB[22m
+[2mdist/[22m[36mjs/QuranReader-CodZH-w2.js              [39m[1m[2m 77.09 kB[22m[1m[22m[2m │ gzip: 24.01 kB[22m
+[2mdist/[22m[36mjs/ParentDashboard-DsmteJ1A.js          [39m[1m[2m 98.64 kB[22m[1m[22m[2m │ gzip: 21.53 kB[22m
+[2mdist/[22m[36mjs/vendor-react-D-QACUcH.js             [39m[1m[2m163.86 kB[22m[1m[22m[2m │ gzip: 53.44 kB[22m
+[2mdist/[22m[36mjs/KidsGames-CUHPGPlg.js                [39m[1m[2m207.97 kB[22m[1m[22m[2m │ gzip: 58.42 kB[22m
+[2mdist/[22m[36mjs/vendor-supabase-C8W5_S3P.js          [39m[1m[2m210.53 kB[22m[1m[22m[2m │ gzip: 54.57 kB[22m
+[2mdist/[22m[36massets/index-SEROY-UC.js                [39m[1m[2m291.84 kB[22m[1m[22m[2m │ gzip: 85.74 kB[22m
+[32m✓ built in 18.90s[39m
+
+PWA v1.3.0
+Building src/service-worker.js service worker ("es" format)...
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 1 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[36mservice-worker.mjs  [39m[1m[2m0.58 kB[22m[1m[22m[2m │ gzip: 0.36 kB[22m
+[32m✓ built in 19ms[39m
+
+PWA v1.3.0
+mode      injectManifest
+format:   es
+precache  95 entries (2496.91 KiB)
+files generated
+  dist/service-worker.js
+Removed 145.1 MB of unused files from dist/.
+===== AUDIO CALLERS 
+src\components\CustomPlayer.tsx:7:import { isAudioCachedOffline, resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
+src\components\CustomPlayer.tsx:174:              void resolvePlayableAudioUrl(surahNumber, audioSrc).then((localUrl) => {
+src\components\CustomPlayer.tsx:257:            const cached = await resolvePlayableAudioUrl(surahNumber, audioSrc);
+src\data\offlineAudioCache.ts:37:export async function saveAudioToCache(url: string, surahNumber: number, blob: Blob, speaker?: "teacher" | "kids"): Promise<void> {
+src\data\offlineAudioCache.ts:181:export async function resolvePlayableAudioUrl(surahNumber: number, remoteUrl: string, speaker?: "teacher" | "kids"): Promise<string> {
+src\data\offlineAudioCache.ts:291:export async function cacheAudioInBackground(surahNumber: number, url: string): Promise<void> {
+src\data\offlineAudioCache.ts:299:      await saveAudioToCache(url, surahNumber, blob);
+src\data\offlineDownload.test.ts:3:const saveAudioToCacheMock = vi.fn();
+src\data\offlineDownload.test.ts:11:  saveAudioToCache: saveAudioToCacheMock,
+src\data\offlineDownload.test.ts:41:    expect(saveAudioToCacheMock).not.toHaveBeenCalled();
+src\data\offlineDownload.ts:8:import { isAudioCachedOffline, saveAudioToCache } from "./offlineAudioCache";
+src\data\offlineDownload.ts:143:      await saveAudioToCache(resolvedUrl, surahNumber, blob);
+src\pages\AudioShadingSyncPage.tsx:19:import { saveAudioToCache, resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
+src\pages\AudioShadingSyncPage.tsx:152:      resolvePlayableAudioUrl(selectedSurahNum, "", "teacher").then((resolved) => {
+src\pages\AudioShadingSyncPage.tsx:168:      resolvePlayableAudioUrl(selectedSurahNum, "", "kids").then((resolved) => {
+src\pages\AudioShadingSyncPage.tsx:629:        await saveAudioToCache(activeAudioUrl, selectedSurahNum, teacherCustomFile, "teacher");
+src\pages\AudioShadingSyncPage.tsx:632:        await saveAudioToCache(activeAudioUrl, selectedSurahNum, kidsCustomFile, "kids");
+src\pages\QuranReader.tsx:35:import { isAudioCachedOffline, resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
+src\pages\QuranReader.tsx:952:        const resolved = await resolvePlayableAudioUrl(surah.number, syncAudioUrl, speaker);
+src\pages\QuranReader.tsx:959:      const resolved = await resolvePlayableAudioUrl(surah.number, defaultUrl, speaker);
+src\pages\QuranReader.tsx:1043:      audioUrl = await resolvePlayableAudioUrl(segment.surah, rawAudioUrl);
+===== AUDIO ELEMENTS 
+src\components\CustomPlayer.tsx:526:        <audio
+src\components\DailyGateModal.tsx:309:        <audio ref={audioRef} src={audioUrl} preload="auto" onEnded={() => setPlaying(false)} className="hidden" />
+src\components\MushafPage.tsx:825:      <audio
+src\components\StickyPlayer.tsx:42:        <audio
+src\games\ListenKidsGame.tsx:266:      <audio ref={audioRef} src={audioUrl} preload="auto" onEnded={() => setPlaying(false)} className="hidden" />
+src\pages\AudioShadingSyncPage.tsx:754:      <audio
+src\pages\AudioUploadPage.tsx:289:                  <audio controls src={audioPreviewUrl} className="w-full" />
+src\pages\CustomAudioManager.tsx:250:      const newAudio = new Audio(url);
+src\pages\KidsGames.tsx:1149:    const audio = new Audio(primaryUrl);
+src\pages\QuranReader.tsx:2219:      <audio
+src\pages\QuranReader.tsx:2256:      <audio 
+src\pages\QuranStudent.tsx:190:      <audio ref={audioRef}
+src\pages\QuranViewer.tsx:169:            <audio
+src\pages\RecitationMethods.tsx:1612:          <audio ref={audioRef} src={audioPath(surahNum)} crossOrigin="anonymous"
+src\pages\RecitationPage.tsx:660:              <audio src={uploaded.url} controls className="w-full" />
+src\pages\ShadingPage.tsx:303:            <audio ref={audioRef} src={audioUrl || undefined} preload="metadata" className="hidden" />
+src\pages\SurahShadingPage.tsx:1142:      <audio
+src\pages\TimingsRecorder.tsx:281:          <audio
+src\pages\UploadDeskPage.tsx:352:                  <audio controls src={URL.createObjectURL(selectedFile)} className="w-full rounded-3xl" />
+src\services\kidsVoiceService.ts:137:    const el = new Audio(url);
+src\utils\gameVoice.ts:229:      el = new Audio(`${BASE}/${file}`);
+src\utils\gameVoice.ts:266:      el = new Audio(`${BASE}/${file}`);
+src\utils\gameVoice.ts:290:        const el = new Audio(`${BASE}/${file}`);
+===== SERVICE WORKERS 
+src\main.tsx:8:import { registerSW } from "virtual:pwa-register";
+src\main.tsx:26:  navigator.serviceWorker?.getRegistrations().then((registrations) => {
+src\main.tsx:32:if ('serviceWorker' in navigator && !isPreviewHost && !isInIframe) {
+src\main.tsx:33:  registerSW({ immediate: true });
+src\utils\notifications.ts:167:        if ("serviceWorker" in navigator) {
+src\utils\notifications.ts:168:          const reg = await navigator.serviceWorker.ready;
+src\utils\pushNotifications.ts:30:  if (typeof window === "undefined" || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+src\utils\pushNotifications.ts:36:    const registration = await navigator.serviceWorker.ready;
+src\vite-env.d.ts:12:  export function registerSW(options?: RegisterSWOptions): (reloadPage?: boolean) => Promise<void>;
+===== TRACKED SECRET FILES 
+certificates/hajj-ayoub-amine.cer
+certificates/hajj-ayoub-amine.pfx
+generate-keys.cjs
+ghp.txt
+ghp4.txt
+pk.txt
+.gitignore:74:.env*	.env
+.gitignore:74:.env*	.env.temp
+===== SECRET PATTERNS - FILE NAMES ONLY 
+.codex-chrome-settings-profile/Default/Cache/Cache_Data/f_000028
+.git-rewrite/t/supabase/migrations/20260602000000_secure_rls_policies.sql
+supabase/migrations/20260602000000_secure_rls_policies.sql
+===== ENV HISTORY 
+1afcfabb feat: implement audio playback features including shuffle, session persistence, and Supabase integration
+8f0882f1 feat: add audio upload page and integration with audio segmentation pipeline
+98b73d40 Changes
+===== NPM AUDIT 
+# npm audit report
+
+@babel/core  <=7.29.0
+@babel/core: Arbitrary File Read via sourceMappingURL Comment - https://github.com/advisories/GHSA-4x5r-pxfx-6jf8
+fix available via `npm audit fix`
+node_modules/@babel/core
+
+@modelcontextprotocol/sdk  <=1.31.0
+Severity: high
+MCP TypeScript SDK: OAuth client could send credentials to an authorization server chosen by the MCP server - https://github.com/advisories/GHSA-6qxp-vccf-f47h
+MCP TypeScript SDK: Experimental tasks were not tied to the session that created them - https://github.com/advisories/GHSA-22jm-h49p-29qw
+MCP TypeScript client SDK: HTTP client transports and OAuth requests followed cross-origin redirects and re-sent custom headers and request bodies - https://github.com/advisories/GHSA-6prh-2h8m-c8cw
+MCP TypeScript SDK: One HTTP request within the default size limit could exhaust server memory during validation - https://github.com/advisories/GHSA-46jr-4wx8-v453
+MCP TypeScript SDK: Server bearer authentication accepted tokens issued for another service - https://github.com/advisories/GHSA-rvq5-wwqv-78pq
+MCP TypeScript SDK: HTTP server transports and handlers did not limit request body size or JSON-RPC batch length - https://github.com/advisories/GHSA-f897-62hf-6gxq
+No fix available
+node_modules/@modelcontextprotocol/sdk
+  @lovable.dev/mcp-js  <=3.3.0
+  Depends on vulnerable versions of @modelcontextprotocol/sdk
+  node_modules/@lovable.dev/mcp-js
+
+@remix-run/router  1.3.0 - 1.23.2
+Severity: moderate
+React Router's same-origin redirect with path starting // causes open redirect via protocol-relative URL reinterpretation - https://github.com/advisories/GHSA-2j2x-hqr9-3h42
+fix available via `npm audit fix`
+node_modules/@remix-run/router
+  react-router  6.0.0 - 7.17.0
+  Depends on vulnerable versions of @remix-run/router
+  node_modules/react-router
+    react-router-dom  6.0.0-alpha.0 - 7.17.0
+    Depends on vulnerable versions of @remix-run/router
+    Depends on vulnerable versions of react-router
+    node_modules/react-router-dom
+
+baseline-browser-mapping  >=2.0.0 <2.11.0
+Severity: moderate
+baseline-browser-mapping process termination on invalid input causes denial of service - https://github.com/advisories/GHSA-w5vr-8v7q-w6rv
+fix available via `npm audit fix`
+node_modules/baseline-browser-mapping
+
+body-parser  2.0.0 - 2.3.0
+Severity: high
+body-parser vulnerable to Denial of Service via trailing bytes after a compressed request body - https://github.com/advisories/GHSA-27r3-jxmh-p828
+fix available via `npm audit fix`
+node_modules/body-parser
+
+brace-expansion  2.0.0 - 2.1.6 || 3.0.0 - 5.0.11
+Severity: high
+brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups - https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
+brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups - https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
+brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash - https://github.com/advisories/GHSA-mh99-v99m-4gvg
+brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash - https://github.com/advisories/GHSA-mh99-v99m-4gvg
+brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation - https://github.com/advisories/GHSA-rgw5-rvv9-x895
+brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation - https://github.com/advisories/GHSA-rgw5-rvv9-x895
+brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service - https://github.com/advisories/GHSA-q2hr-2g5m-vwhr
+brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service - https://github.com/advisories/GHSA-q2hr-2g5m-vwhr
+brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion - https://github.com/advisories/GHSA-qhr7-859c-m2p7
+brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion - https://github.com/advisories/GHSA-qhr7-859c-m2p7
+brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion - https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
+brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion - https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
+fix available via `npm audit fix`
+node_modules/filelist/node_modules/brace-expansion
+node_modules/glob/node_modules/brace-expansion
+node_modules/readdir-glob/node_modules/brace-expansion
+
+browserslist  <=4.28.6
+Severity: high
+Browserslist: Unbounded memory growth (no cache eviction) via distinct query results, leading to eventual OOM - https://github.com/advisories/GHSA-c83g-rgw3-j3cx
+Browserslist: Uncaught crash / prototype write via untrusted browserslist-stats.json custom stats (normalizeStats) - https://github.com/advisories/GHSA-73wf-gq98-2v4g
+fix available via `npm audit fix`
+node_modules/browserslist
+
+esbuild  <=0.24.2 || 0.27.3 - 0.28.0
+Severity: moderate
+esbuild enables any website to send any requests to the development server and read the response - https://github.com/advisories/GHSA-67mh-4wv8-2f99
+esbuild allows arbitrary file read when running the development server on Windows - https://github.com/advisories/GHSA-g7r4-m6w7-qqqr
+fix available via `npm audit fix --force`
+Will install vite@8.3.5, which is a breaking change
+node_modules/@lovable.dev/mcp-js/node_modules/esbuild
+node_modules/vite/node_modules/esbuild
+  vite  <=6.4.3
+  Depends on vulnerable versions of esbuild
+  node_modules/vite
+
+fast-uri  3.0.0 - 3.1.8
+Severity: high
+fast-uri vulnerable to host confusion via literal backslash authority delimiter - https://github.com/advisories/GHSA-v2hh-gcrm-f6hx
+fast-uri vulnerable to host confusion via backslash authority introducer - https://github.com/advisories/GHSA-7p8r-x3mc-p8w7
+fast-uri vulnerable to server-side request forgery via malformed IPv6 normalization - https://github.com/advisories/GHSA-f65p-4m7j-42xc
+fast-uri vulnerable to server-side request forgery via repeated hostname percent-decoding - https://github.com/advisories/GHSA-fph4-wmhf-6fwf
+fast-uri vulnerable to host confusion via percent-encoded scheme normalization - https://github.com/advisories/GHSA-jqff-g426-hqxp
+fast-uri vulnerable to host confusion via failed IDN canonicalization - https://github.com/advisories/GHSA-4c8g-83qw-93j6
+fast-uri vulnerable to authority injection via an unvalidated port in serialize - https://github.com/advisories/GHSA-qw65-cvwx-89v3
+fast-uri vulnerable to inconsistent host case normalization via percent-encoded octets - https://github.com/advisories/GHSA-hrr3-gc8f-f4qj
+fast-uri vulnerable to URI scheme spoofing via percent-encoded scheme decoding - https://github.com/advisories/GHSA-w74x-v6f9-j3xg
+fast-uri vulnerable to improper path equivalence in relative reference normalization - https://github.com/advisories/GHSA-xhq7-xmqj-769h
+fast-uri vulnerable to scheme injection via an unescaped first-segment colon in suffix references - https://github.com/advisories/GHSA-333x-w4r6-6crp
+fix available via `npm audit fix`
+node_modules/fast-uri
+
+hono  <=4.13.10
+Severity: moderate
+Hono: ReDoS in CORS middleware via Access-Control-Request-Headers - https://github.com/advisories/GHSA-8j4g-w8fx-2239
+Hono: `memo()` retains SSR output across requests, leading to cross-user data disclosure - https://github.com/advisories/GHSA-f23p-vx2j-j53r
+Hono: Proxy Helper does not remove response headers listed in the `Connection` header - https://github.com/advisories/GHSA-79qm-7rj5-m7r9
+Hono: Algorithmic Complexity DoS in Language Middleware - https://github.com/advisories/GHSA-54fx-42gc-7vw4
+Hono: Incomplete fix for CVE-2026-39408: `toSSG()` still writes files outside the output directory - https://github.com/advisories/GHSA-gqvv-2mrq-wpjv
+Hono: Unbounded dot-notation nesting in `parseBody()` can cause memory exhaustion - https://github.com/advisories/GHSA-g6gw-c38x-mqfc
+Hono: Query parser reads parameters after the URL fragment, causing cache-key and proxy interpretation differentials - https://github.com/advisories/GHSA-crvj-82cr-hjcx
+hono/jsx renders plain strings unescaped in boundary components, leading to XSS - https://github.com/advisories/GHSA-hxh3-vqpv-xpqv
+Hono: `serveStatic` decodes the request path a second time, leading to bypass of middleware on static paths - https://github.com/advisories/GHSA-5r4p-p66f-jhc7
+fix available via `npm audit fix`
+node_modules/hono
+
+ip-address  <=10.7.3
+Severity: moderate
+ip-address: Address6.isLinkLocal() recognizes fe80::/64 rather than fe80::/10, allowing SSRF and trust-boundary bypass to on-link hosts - https://github.com/advisories/GHSA-rpw4-54j3-4h4q
+ip-address: no classifier recognizes the NAT64 local-use range 64:ff9b:1::/48, allowing SSRF and trust-boundary bypass - https://github.com/advisories/GHSA-2vr4-cq9g-pvrc
+ip-address: isInSubnet() and isHostInSubnet() compare addresses of different families as if they shared an address space, allowing an allowlist check to admit an address outside its range - https://github.com/advisories/GHSA-j6r3-76f7-8jcv
+ip-address: Address6 builds a parse diagnostic proportional to the input with no length bound, allowing a single long string to stall or crash the process - https://github.com/advisories/GHSA-h3mg-xc3c-68pw
+ip-address: Address6 matches a zone identifier in quadratic time ahead of its length limit, allowing a single long string to stall the process - https://github.com/advisories/GHSA-rxp7-6hxx-x8q5
+fix available via `npm audit fix`
+node_modules/ip-address
+
+nanoid  <=3.3.17
+Severity: high
+nanoid: non-secure generators can loop indefinitely with negative size - https://github.com/advisories/GHSA-28wg-ghj8-5hjv
+nanoid: custom generators can loop indefinitely when size is zero - https://github.com/advisories/GHSA-2v37-7h3g-55p8
+fix available via `npm audit fix`
+node_modules/nanoid
+
+postcss  <=8.5.22
+Severity: high
+PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset - https://github.com/advisories/GHSA-fxqj-rqcc-2cmp
+PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure - https://github.com/advisories/GHSA-r28c-9q8g-f849
+fix available via `npm audit fix`
+node_modules/postcss
+
+postcss-selector-parser  <=6.1.4
+Severity: moderate
+postcss-selector-parser allows denial of service through uncontrolled AST recursion - https://github.com/advisories/GHSA-w9m9-85wc-3x92
+PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion - https://github.com/advisories/GHSA-rj75-hqrm-r3gf
+fix available via `npm audit fix`
+node_modules/postcss-nested/node_modules/postcss-selector-parser
+node_modules/tailwindcss/node_modules/postcss-selector-parser
+
+protobufjs  <=7.6.4
+Severity: moderate
+protobufjs : Schema-derived names can shadow runtime-significant properties - https://github.com/advisories/GHSA-f38q-mgvj-vph7
+protobufjs: Denial of Service via infinite loop in .proto option parsing - https://github.com/advisories/GHSA-j3f2-48v5-ccww
+fix available via `npm audit fix`
+node_modules/protobufjs
+
+proxy-addr  1.1.0 - 2.0.7
+Severity: critical
+proxy-addr vulnerable to IP spoofing via IPv4-mapped IPv6 trust subnet - https://github.com/advisories/GHSA-jqcg-44mw-7w3h
+fix available via `npm audit fix`
+node_modules/proxy-addr
+
+qs  2.2.5 - 6.16.0
+Severity: moderate
+qs array-limit bypass via bracket-key comma parsing - https://github.com/advisories/GHSA-x5fp-wj9c-mxmx
+qs: Denial of Service via Attacker Controlled isBuffer - https://github.com/advisories/GHSA-4mjr-xmp4-gh2g
+qs : qs.stringify with arrayFormat 'comma' throws an uncaught TypeError on array elements carrying a non-callable own toString (DoS) - https://github.com/advisories/GHSA-6pq8-jhm2-2vcw
+fix available via `npm audit fix`
+node_modules/qs
+
+
+
+serialize-javascript  <7.1.3
+Serialize JavaScript: Cross-site scripting (XSS) via unescaped </script at the end of a serialized function body - https://github.com/advisories/GHSA-m5mm-p8h7-m29v
+fix available via `npm audit fix`
+node_modules/serialize-javascript
+
+source-map-js  1.0.0 - 1.2.1
+Severity: high
+source-map-js allows event-loop denial of service through indexed source-map section offsets - https://github.com/advisories/GHSA-68fv-2mgg-jv7q
+fix available via `npm audit fix`
+node_modules/source-map-js
+
+
+zod  <4.6.6
+Severity: high
+Zod can exhaust memory while validating oversized constrained collections - https://github.com/advisories/GHSA-mrhx-c7xc-m3w5
+fix available via `npm audit fix --force`
+Will install zod@4.6.7, which is a breaking change
+node_modules/zod
+  chromium-bidi  0.5.13 - 157.0.8081-0
+  Depends on vulnerable versions of zod
+  node_modules/chromium-bidi
+    puppeteer-core  22.5.0 - 25.12.0
+    Depends on vulnerable versions of chromium-bidi
+    node_modules/puppeteer-core
+
+26 vulnerabilities (2 low, 10 moderate, 13 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+===== TODO 
+src\main.tsx:6:// @ts-ignore - virtual module
+src\main.tsx:7:// @ts-ignore - virtual:pwa-register is provided by vite-plugin-pwa at build time
+src\utils\gameVoice.ts:82:export const VOICE_TODO: { text: string; file: string; priority: 1 | 2 | 3 }[] = [
+src\utils\gameVoice.ts:115:export const listVoiceTodo = (): string[] => VOICE_TODO.map((v) => v.text);

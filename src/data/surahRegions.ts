@@ -9,7 +9,12 @@ export interface SurahRegistryEntry {
   surah: number;          // رقم السورة (1-114)
   name: string;           // اسم السورة
   ayahCount: number;      // عدد الآيات
-  pageSrc: string;        // صفحة المصحف المرتبطة (مثل /pages/604.jpg)
+  pageSrc: string;        // صفحة المصحف المرتبطة (مثل /pages/604.jpg) — أول صفحة للسورة
+  /**
+   * كل صفحات السورة بالترتيب — للسور الممتدة على صفحتين أو أكثر.
+   * إن لم تُحدَّد، تُعتبر السورة على صفحة واحدة (pageSrc).
+   */
+  pages?: string[];
   box?: {                 // موضع مربع السورة فوق الصفحة (إحداثيات 1260x1929)
     x: number;
     y: number;
