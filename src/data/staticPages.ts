@@ -1,6 +1,6 @@
 import { getAudioPath as audioPath } from "./audioUrls";
 import { surahs } from "./surahs";
-import { getPageAyahBoxes } from "./ayahCoordinates";
+import { getPageAyahBoxes, JUZ_AMMA_PAGE_SECTIONS } from "./ayahCoordinates";
 import { getPageSurahRegions } from "./surahRegions";
 
 export interface SurahAudioInfo {
@@ -76,34 +76,15 @@ function buildSurahs(pageSrc: string, surahNumbers: number[]): SurahAudioInfo[] 
 /**
  * خريطة ربط أرقام صفحات المصحف بالسور الموجودة فيها لجزء عمّ والفاتحة
  */
-export const PAGE_TO_SURAHS: Record<number, number[]> = {
-  0: [1],             // الفاتحة
-  1: [1],             // الفاتحة
-  581: [78],          // النبأ
-  582: [78],          // النبأ
-  583: [78, 79],      // النبأ، النازعات
-  584: [79],          // النازعات
-  585: [80],          // عبس
-  586: [81, 82],      // التكوير، الانفطار
-  587: [82, 83],      // الانفطار، المطففين
-  588: [83],          // المطففين
-  589: [84],          // الانشقاق
-  590: [85],          // البروج
-  591: [86, 87],      // الطارق، الأعلى
-  592: [87, 88],      // الأعلى، الغاشية
-  593: [89],          // الفجر
-  594: [90, 91],      // البلد، الشمس
-  595: [92, 93, 94],    // الليل، الضحى، الشرح
-  596: [95, 96],      // التين، العلق
-  597: [97, 98],      // القدر، البينة
-  598: [98, 99, 100],   // البينة، الزلزلة، العاديات
-  599: [101, 102, 103], // القارعة، التكاثر، العصر
-  600: [104, 105, 106], // الهمزة، الفيل، قريش
-  601: [107, 108, 109], // الماعون، الكوثر، الكافرون
-  602: [110, 111, 112], // النصر، المسد، الإخلاص
-  603: [112, 113, 114], // الإخلاص، الفلق، الناس
-  604: [112, 113, 114],// الإخلاص، الفلق، الناس
-};
+export const PAGE_TO_SURAHS: Record<number, number[]> = (() => {
+  const out: Record<number, number[]> = { 0: [1], 1: [1] };
+  Object.entries(JUZ_AMMA_PAGE_SECTIONS).forEach(([page, sections]) => {
+    const n = Number(page);
+    if (n <= 1) return;
+    out[n] = Array.from(new Set(sections.map((s) => s.surah)));
+  });
+  return out;
+})();
 
 const pageFiles = import.meta.glob('/صفحة قران/*.{jpg,jpeg,png}', { eager: true, query: '?url', import: 'default' });
 

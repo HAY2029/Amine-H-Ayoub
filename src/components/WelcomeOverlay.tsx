@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Check,
   Baby,
@@ -40,6 +40,7 @@ import {
   type AppMode
 } from "../data/kidsProfile";
 import { setKidsPin, setKidsLocked } from "../data/kidsLock";
+import { captureEvent } from "../utils/posthog";
 import Avatar from "./Avatar";
 import { openExternalUrl } from "../utils/tauriUtils";
 
@@ -71,6 +72,11 @@ export default function WelcomeOverlay({ onDone }: { onDone: () => void }) {
   const [pin, setPin] = useState("");
   const [pin2, setPin2] = useState("");
 
+  // بداية مسار التهيئة الأولى (أول فتح للتطبيق)
+  useEffect(() => {
+    captureEvent("onboarding_started");
+  }, []);
+
   // إذا أخفى المالك ركن الأطفال: إطلاق بالسماع فقط
   const kidsOff = kidsHidden() || isPureMode();
   const effMode: AppMode = kidsOff ? "parent" : mode;
@@ -89,6 +95,7 @@ export default function WelcomeOverlay({ onDone }: { onDone: () => void }) {
 
   const finalize = () => {
     const finalMode = effMode;
+    const namedKids = kids.filter((k) => k.name.trim()).length;
     setAppMode(finalMode);
     if (finalMode === "parent") {
       setPureMode(parentStyle === "pure");
@@ -121,6 +128,13 @@ export default function WelcomeOverlay({ onDone }: { onDone: () => void }) {
     } catch {
       /* ignore */
     }
+
+    // اكتمال التهيئة: نقطة التحويل الأولى في مسار الاستخدام
+    captureEvent("onboarding_completed", {
+      app_mode: finalMode,
+      ui_style: finalMode === "parent" ? parentStyle : "kids",
+      kids_count: finalMode === "parent" ? 0 : namedKids,
+    });
   };
 
   const finish = () => {

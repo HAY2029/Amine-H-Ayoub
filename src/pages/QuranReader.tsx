@@ -38,6 +38,7 @@ import { useAudioContext } from "@/contexts/audioContext";
 import SplitViewPanel from "@/components/SplitViewPanel";
 import NotificationsModal from "@/components/NotificationsModal";
 import SurahDownloadModal from "@/components/SurahDownloadModal";
+import AyahRangePlayer from "@/components/AyahRangePlayer";
 import { updateMediaSession, setMediaPlaybackState, isBackgroundAudioEnabled } from "@/utils/backgroundAudio";
 
 // ألوان التظليل — الثيمات الجاهزة أدناه تحمل القيم (ذهبي/نعناعي/وردي)
@@ -402,6 +403,7 @@ export default function QuranReader() {
 
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : false);
   const [controlsOpen, setControlsOpen] = useState(false);
+  const [rangePlayerOpen, setRangePlayerOpen] = useState(false);
   const [isGridOpen, setIsGridOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   // تنظيف أي قيمة سابقة لإعداد تخطي البسملة الخاطئ الذي كان يقفز من الفاتحة إلى النبأ
@@ -744,7 +746,6 @@ export default function QuranReader() {
 
   // ── نظام المربعات: تجميع كافة المربعات المسجلة مع أسمائها وصفحاتها ──
   const allMushafBoxes = useMemo(() => {
-    const coords = getSavedAyahCoordinates();
     const list: {
       box: AyahBox;
       pageSrc: string;
@@ -755,7 +756,8 @@ export default function QuranReader() {
     }[] = [];
 
     pages.forEach((p, pIdx) => {
-      const pageBoxes = coords[p.src] || getPageAyahBoxes(p.src);
+      // نمر دائماً عبر getPageAyahBoxes حتى تُستبعد أي مربعات لسور ليست على الصفحة
+      const pageBoxes = getPageAyahBoxes(p.src);
       pageBoxes.forEach((b) => {
         const surah = p.surahs?.find((s) => s.number === b.surah) || pages.flatMap(x => x.surahs || []).find(s => s.number === b.surah);
         const displayLabel = b.label || (b.ayah === 0 ? "بسملة" : `الآية ${b.ayah}`);
@@ -973,6 +975,8 @@ export default function QuranReader() {
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState<number>(0);
 
   const curSurah = activeSurah || pages[actualPage]?.surahs?.[selectedSurahIdx] || pages[actualPage]?.surahs?.[0];
+  // مصادر كل الصفحات لمشغّل المقطع (من آية → إلى آية) — ثابتة حتى لا يُعاد حسابها مع كل نقرة
+  const rangePageSrcs = useMemo(() => pages.map((p) => p.src), [pages]);
 
   // تحميل مقاطع السورة عند تغير السورة
   useEffect(() => {
@@ -2519,6 +2523,19 @@ export default function QuranReader() {
                 <Repeat className="w-3 h-3" />
                 <span>{repeatCount === 0 ? "بدون" : repeatCount === 999 ? "♾️" : `${repeatCount}x`}</span>
               </button>
+
+              <button
+                onClick={() => {
+                  audioRef.current?.pause();
+                  setIsPlaying(false);
+                  setRangePlayerOpen(true);
+                }}
+                className="px-2 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-all border bg-amber-500/10 border-amber-500/25 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+                title="تشغيل مقطع: من آية إلى آية بعدد مرات محدد"
+              >
+                <Layers className="w-3 h-3" />
+                <span>من ← إلى</span>
+              </button>
             </div>
           </div>
         </div>
@@ -3082,6 +3099,20 @@ export default function QuranReader() {
             </div>
           </div>
         </div>
+      )}
+
+      {rangePlayerOpen && curSurah && (
+        <AyahRangePlayer
+          open={rangePlayerOpen}
+          onClose={() => setRangePlayerOpen(false)}
+          surahNumber={curSurah.number}
+          pageSrcs={rangePageSrcs}
+          initialAyah={selectedAyah > 0 ? selectedAyah : 1}
+          onBeforePlay={() => {
+            audioRef.current?.pause();
+            setIsPlaying(false);
+          }}
+        />
       )}
 
       {showNotifications && <NotificationsModal onClose={() => setShowNotifications(false)} />}

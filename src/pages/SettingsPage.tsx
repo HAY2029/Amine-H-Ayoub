@@ -29,6 +29,7 @@ import { hasKidsPin, setKidsPin, removeKidsPin, setKidsLocked, isKidsMode } from
 import AppFooter from "../components/AppFooter";
 import AppNav from "../components/AppNav";
 import { isBackgroundAudioEnabled, setBackgroundAudioEnabled } from "../utils/backgroundAudio";
+import { hasAnalyticsConsent, setAnalyticsConsent } from "../utils/posthog";
 import { applyTheme, getTheme, THEME_KEY } from "../utils/theme";
 import DayNightSwitch from "../components/ui/DayNightSwitch";
 import Intro3DCarousel from "../components/Intro3DCarousel";
@@ -97,6 +98,7 @@ export default function SettingsPage() {
   const [pinFlow, setPinFlow] = useState<null | "verifyOld" | "setNew">(null);
   const [pendingMode, setPendingMode] = useState<AppMode | null>(null);
   const [bgAudio, setBgAudio] = useState(isBackgroundAudioEnabled);
+  const [analyticsOn, setAnalyticsOn] = useState(hasAnalyticsConsent);
   const [coins, setCoins] = useState(getCoins);
   const [rewardCode, setRewardCode] = useState("");
   const [rewardCodeMessage, setRewardCodeMessage] = useState("");
@@ -953,6 +955,30 @@ export default function SettingsPage() {
 
         {/* ===== التطبيق ===== */}
         <Section label="التطبيق">
+          <div className="flex items-center justify-between p-3">
+            <div className="flex items-center gap-3">
+              <span className="w-10 h-10 rounded-xl bg-secondary text-accent flex items-center justify-center">
+                <BarChart3 className="w-5 h-5" />
+              </span>
+              <div>
+                <span className="block font-bold">تحليلات الاستخدام (PostHog)</span>
+                <span className="block text-[11px] text-muted-foreground">أحداث مجهولة الهوية لتحسين الرحلة — بدون أسماء ولا تسجيل جلسات</span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                const next = !analyticsOn;
+                setAnalyticsOn(next);
+                setAnalyticsConsent(next);
+                toast({ title: next ? "تم تفعيل التحليلات ✅" : "تم إيقاف التحليلات" });
+              }}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all active:scale-95 shrink-0 ${
+                analyticsOn ? "bg-accent text-accent-foreground shadow-soft" : "bg-secondary text-muted-foreground"
+              }`}
+            >
+              {analyticsOn ? "مفعّل ✓" : "معطّل ✗"}
+            </button>
+          </div>
           <Item
             icon={<WhatsAppIcon className="w-5 h-5 text-[#25D366]" />}
             title={`تواصل مع الدعم الفني عبر واتساب (${SUPPORT_WHATSAPP_DISPLAY})`}

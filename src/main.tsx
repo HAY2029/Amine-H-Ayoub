@@ -8,6 +8,7 @@ import { SupportErrorBoundary } from "./components/SupportErrorBoundary";
 import { registerSW } from "virtual:pwa-register";
 import { initCloudAudioAvailability } from "./data/audioUrls";
 import { warmUpGameVoices } from "./utils/gameVoice";
+import { initAnalytics } from "./utils/posthog";
 
 // PWA: Guard against iframe/preview contexts
 const isInIframe = (() => {
@@ -40,6 +41,9 @@ function runBackgroundWarmup() {
 
   // جلب قائمة التلاوات المتوفرة من السيرفر يجري في الخلفية دون حجب فتح التطبيق
   initCloudAudioAvailability().catch(() => { /* ignore */ });
+
+  // تحليلات PostHog تُحمَّل في الخلفية بعد الموافقة فقط (بدون حجب العرض)
+  initAnalytics();
 }
 
 async function bootstrap() {

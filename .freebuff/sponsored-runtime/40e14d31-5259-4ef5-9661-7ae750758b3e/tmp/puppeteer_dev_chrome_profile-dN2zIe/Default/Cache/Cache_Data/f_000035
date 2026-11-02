@@ -1,0 +1,356 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/NotificationsModal.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=53f49c8c"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=53f49c8c"; const useState = __vite__cjsImport3_react["useState"]; const useEffect = __vite__cjsImport3_react["useEffect"];
+import { X, Bell, BellOff, Info, Megaphone, Loader2, Trophy } from "/node_modules/.vite/deps/lucide-react.js?v=53f49c8c";
+import { supabase } from "/src/lib/supabase.ts";
+import { getBadgesList } from "/src/data/kidsBadges.ts";
+export default function NotificationsModal({ onClose }) {
+    _s();
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    useEffect(()=>{
+        async function fetchNotifications() {
+            try {
+                const unlockedBadges = getBadgesList().filter((b)=>b.unlocked).map((b)=>({
+                        id: `badge-${b.id}`,
+                        title: `🏆 وسام محقق: ${b.title}`,
+                        body: `${b.description} (+${b.rewardCoins} نجمة 🌟)`,
+                        type: "badge",
+                        created_at: b.unlockedAt || new Date().toISOString()
+                    }));
+                let cloudAnnouncements = [];
+                const { data, error } = await supabase.from("announcements").select("*").order("created_at", {
+                    ascending: false
+                });
+                if (!error && data && Array.isArray(data)) {
+                    const active = data.filter((a)=>a.is_active !== false);
+                    cloudAnnouncements = active.length > 0 ? active : data;
+                }
+                const combined = [
+                    ...unlockedBadges,
+                    ...cloudAnnouncements
+                ].sort((a, b)=>new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                setNotifications(combined);
+            } catch (err) {
+                console.debug("Failed to fetch notifications", err);
+            } finally{
+                setLoading(false);
+            }
+        }
+        fetchNotifications();
+    }, []);
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: "fixed inset-0 z-[200] flex flex-col justify-end items-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-300",
+        dir: "rtl",
+        children: [
+            /*#__PURE__*/ _jsxDEV("div", {
+                className: "absolute inset-0",
+                onClick: onClose
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                lineNumber: 59,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("div", {
+                className: "relative bg-card w-full sm:max-w-xl h-[65vh] rounded-t-3xl sm:rounded-t-3xl shadow-2xl border border-border/50 overflow-hidden flex flex-col animate-in slide-in-from-bottom-full duration-300",
+                children: [
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "w-full flex justify-center pt-3 pb-1",
+                        children: /*#__PURE__*/ _jsxDEV("div", {
+                            className: "w-12 h-1.5 rounded-full bg-muted-foreground/30"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                            lineNumber: 64,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                        lineNumber: 63,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("header", {
+                        className: "flex-none flex items-center justify-between p-4 pb-3 border-b border-border/40",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("h2", {
+                                className: "font-extrabold text-xl text-foreground flex items-center gap-2",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "w-9 h-9 rounded-full bg-accent/15 flex items-center justify-center text-accent shadow-inner",
+                                        children: /*#__PURE__*/ _jsxDEV(Bell, {
+                                            className: "w-5 h-5 fill-accent/20"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                            lineNumber: 70,
+                                            columnNumber: 15
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                        lineNumber: 69,
+                                        columnNumber: 13
+                                    }, this),
+                                    "الإعلانات والإشعارات"
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                lineNumber: 68,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("button", {
+                                onClick: onClose,
+                                className: "w-9 h-9 rounded-full bg-secondary flex items-center justify-center hover:brightness-95 active:scale-95 text-secondary-foreground transition-all",
+                                children: /*#__PURE__*/ _jsxDEV(X, {
+                                    className: "w-5 h-5"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                    lineNumber: 75,
+                                    columnNumber: 13
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                lineNumber: 74,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                        lineNumber: 67,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "flex-1 overflow-y-auto p-4 space-y-3",
+                        children: loading ? /*#__PURE__*/ _jsxDEV("div", {
+                            className: "p-10 flex flex-col items-center justify-center text-center space-y-4",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(Loader2, {
+                                    className: "w-8 h-8 text-accent animate-spin"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                    lineNumber: 82,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("p", {
+                                    className: "text-sm text-muted-foreground",
+                                    children: "جاري جلب الإعلانات..."
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                    lineNumber: 83,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                            lineNumber: 81,
+                            columnNumber: 13
+                        }, this) : notifications.length === 0 ? /*#__PURE__*/ _jsxDEV("div", {
+                            className: "p-10 flex flex-col items-center justify-center text-center space-y-4",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("div", {
+                                    className: "w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center shadow-inner relative",
+                                    children: /*#__PURE__*/ _jsxDEV(BellOff, {
+                                        className: "w-10 h-10 text-muted-foreground/60"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                        lineNumber: 88,
+                                        columnNumber: 17
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                    lineNumber: 87,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("div", {
+                                    className: "space-y-1.5",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV("h3", {
+                                            className: "font-extrabold text-lg text-foreground",
+                                            children: "لا توجد إعلانات حالياً"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                            lineNumber: 91,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("p", {
+                                            className: "text-sm text-muted-foreground max-w-[280px] mx-auto leading-relaxed",
+                                            children: "أنت على اطلاع بكل جديد! أي إعلانات أو تحديثات ينشرها المشرف من لوحة التحكم ستظهر هنا فوراً."
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                            lineNumber: 92,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                    lineNumber: 90,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                            lineNumber: 86,
+                            columnNumber: 13
+                        }, this) : notifications.map((n)=>/*#__PURE__*/ _jsxDEV("div", {
+                                className: "bg-muted/40 hover:bg-muted/70 transition-colors border border-border/40 rounded-2xl p-4 shadow-sm relative overflow-hidden group",
+                                children: /*#__PURE__*/ _jsxDEV("div", {
+                                    className: "flex items-start gap-3.5",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV("div", {
+                                            className: "w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center text-accent shrink-0 mt-0.5 group-hover:scale-105 transition-transform",
+                                            children: n.type === "badge" ? /*#__PURE__*/ _jsxDEV(Trophy, {
+                                                className: "w-5 h-5 text-amber-500 fill-amber-500/20"
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                                lineNumber: 106,
+                                                columnNumber: 23
+                                            }, this) : n.type === "alert" ? /*#__PURE__*/ _jsxDEV(Megaphone, {
+                                                className: "w-5 h-5 text-amber-500"
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                                lineNumber: 108,
+                                                columnNumber: 23
+                                            }, this) : /*#__PURE__*/ _jsxDEV(Info, {
+                                                className: "w-5 h-5 text-accent"
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                                lineNumber: 110,
+                                                columnNumber: 23
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                            lineNumber: 104,
+                                            columnNumber: 19
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV("div", {
+                                            className: "flex-1 min-w-0 space-y-1",
+                                            children: [
+                                                /*#__PURE__*/ _jsxDEV("div", {
+                                                    className: "flex items-center justify-between gap-2",
+                                                    children: [
+                                                        /*#__PURE__*/ _jsxDEV("h4", {
+                                                            className: "font-bold text-base text-foreground leading-snug truncate",
+                                                            children: n.title
+                                                        }, void 0, false, {
+                                                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                                            lineNumber: 115,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        /*#__PURE__*/ _jsxDEV("span", {
+                                                            className: "text-[10px] text-muted-foreground/80 shrink-0 font-medium",
+                                                            children: new Date(n.created_at).toLocaleDateString("ar-SA", {
+                                                                month: "short",
+                                                                day: "numeric"
+                                                            })
+                                                        }, void 0, false, {
+                                                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                                            lineNumber: 118,
+                                                            columnNumber: 23
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                                    lineNumber: 114,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ _jsxDEV("p", {
+                                                    className: "text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap",
+                                                    children: n.body
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                                    lineNumber: 122,
+                                                    columnNumber: 21
+                                                }, this),
+                                                n.link && /*#__PURE__*/ _jsxDEV("div", {
+                                                    className: "pt-2",
+                                                    children: /*#__PURE__*/ _jsxDEV("a", {
+                                                        href: n.link,
+                                                        target: "_blank",
+                                                        rel: "noopener noreferrer",
+                                                        className: "inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline",
+                                                        children: "عرض التفاصيل ↗"
+                                                    }, void 0, false, {
+                                                        fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                                        lineNumber: 127,
+                                                        columnNumber: 25
+                                                    }, this)
+                                                }, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                                    lineNumber: 126,
+                                                    columnNumber: 23
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                            lineNumber: 113,
+                                            columnNumber: 19
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                    lineNumber: 103,
+                                    columnNumber: 17
+                                }, this)
+                            }, n.id, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                                lineNumber: 99,
+                                columnNumber: 15
+                            }, this))
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                        lineNumber: 79,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+                lineNumber: 61,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx",
+        lineNumber: 58,
+        columnNumber: 5
+    }, this);
+}
+_s(NotificationsModal, "b5Z8U3/R7VRYC3BVdCsp3rDTxkc=");
+_c = NotificationsModal;
+var _c;
+$RefreshReg$(_c, "NotificationsModal");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/NotificationsModal.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIk5vdGlmaWNhdGlvbnNNb2RhbC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgdXNlU3RhdGUsIHVzZUVmZmVjdCB9IGZyb20gXCJyZWFjdFwiO1xyXG5pbXBvcnQgeyBYLCBCZWxsLCBCZWxsT2ZmLCBJbmZvLCBNZWdhcGhvbmUsIExvYWRlcjIsIFRyb3BoeSB9IGZyb20gXCJsdWNpZGUtcmVhY3RcIjtcclxuaW1wb3J0IHsgc3VwYWJhc2UgfSBmcm9tIFwiQC9saWIvc3VwYWJhc2VcIjtcclxuaW1wb3J0IHsgZ2V0QmFkZ2VzTGlzdCB9IGZyb20gXCJAL2RhdGEva2lkc0JhZGdlc1wiO1xyXG5cclxuaW50ZXJmYWNlIEFubm91bmNlbWVudCB7XHJcbiAgaWQ6IHN0cmluZztcclxuICB0aXRsZTogc3RyaW5nO1xyXG4gIGJvZHk6IHN0cmluZztcclxuICB0eXBlPzogc3RyaW5nO1xyXG4gIGxpbms/OiBzdHJpbmc7XHJcbiAgY3JlYXRlZF9hdDogc3RyaW5nO1xyXG59XHJcblxyXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBOb3RpZmljYXRpb25zTW9kYWwoeyBvbkNsb3NlIH06IHsgb25DbG9zZTogKCkgPT4gdm9pZCB9KSB7XHJcbiAgY29uc3QgW25vdGlmaWNhdGlvbnMsIHNldE5vdGlmaWNhdGlvbnNdID0gdXNlU3RhdGU8QW5ub3VuY2VtZW50W10+KFtdKTtcclxuICBjb25zdCBbbG9hZGluZywgc2V0TG9hZGluZ10gPSB1c2VTdGF0ZSh0cnVlKTtcclxuXHJcbiAgdXNlRWZmZWN0KCgpID0+IHtcclxuICAgIGFzeW5jIGZ1bmN0aW9uIGZldGNoTm90aWZpY2F0aW9ucygpIHtcclxuICAgICAgdHJ5IHtcclxuICAgICAgICBjb25zdCB1bmxvY2tlZEJhZGdlcyA9IGdldEJhZGdlc0xpc3QoKVxyXG4gICAgICAgICAgLmZpbHRlcigoYikgPT4gYi51bmxvY2tlZClcclxuICAgICAgICAgIC5tYXAoKGIpID0+ICh7XHJcbiAgICAgICAgICAgIGlkOiBgYmFkZ2UtJHtiLmlkfWAsXHJcbiAgICAgICAgICAgIHRpdGxlOiBg8J+PhiDZiNiz2KfZhSDZhdit2YLZgjogJHtiLnRpdGxlfWAsXHJcbiAgICAgICAgICAgIGJvZHk6IGAke2IuZGVzY3JpcHRpb259ICgrJHtiLnJld2FyZENvaW5zfSDZhtis2YXYqSDwn4yfKWAsXHJcbiAgICAgICAgICAgIHR5cGU6IFwiYmFkZ2VcIixcclxuICAgICAgICAgICAgY3JlYXRlZF9hdDogYi51bmxvY2tlZEF0IHx8IG5ldyBEYXRlKCkudG9JU09TdHJpbmcoKSxcclxuICAgICAgICAgIH0pKTtcclxuXHJcbiAgICAgICAgbGV0IGNsb3VkQW5ub3VuY2VtZW50czogQW5ub3VuY2VtZW50W10gPSBbXTtcclxuICAgICAgICBjb25zdCB7IGRhdGEsIGVycm9yIH0gPSBhd2FpdCBzdXBhYmFzZVxyXG4gICAgICAgICAgLmZyb20oXCJhbm5vdW5jZW1lbnRzXCIpXHJcbiAgICAgICAgICAuc2VsZWN0KFwiKlwiKVxyXG4gICAgICAgICAgLm9yZGVyKFwiY3JlYXRlZF9hdFwiLCB7IGFzY2VuZGluZzogZmFsc2UgfSk7XHJcblxyXG4gICAgICAgIGlmICghZXJyb3IgJiYgZGF0YSAmJiBBcnJheS5pc0FycmF5KGRhdGEpKSB7XHJcbiAgICAgICAgICBjb25zdCBhY3RpdmUgPSBkYXRhLmZpbHRlcigoYTogYW55KSA9PiBhLmlzX2FjdGl2ZSAhPT0gZmFsc2UpO1xyXG4gICAgICAgICAgY2xvdWRBbm5vdW5jZW1lbnRzID0gYWN0aXZlLmxlbmd0aCA+IDAgPyBhY3RpdmUgOiBkYXRhO1xyXG4gICAgICAgIH1cclxuXHJcbiAgICAgICAgY29uc3QgY29tYmluZWQgPSBbLi4udW5sb2NrZWRCYWRnZXMsIC4uLmNsb3VkQW5ub3VuY2VtZW50c10uc29ydChcclxuICAgICAgICAgIChhLCBiKSA9PiBuZXcgRGF0ZShiLmNyZWF0ZWRfYXQpLmdldFRpbWUoKSAtIG5ldyBEYXRlKGEuY3JlYXRlZF9hdCkuZ2V0VGltZSgpXHJcbiAgICAgICAgKTtcclxuXHJcbiAgICAgICAgc2V0Tm90aWZpY2F0aW9ucyhjb21iaW5lZCk7XHJcbiAgICAgIH0gY2F0Y2ggKGVycikge1xyXG4gICAgICAgIGNvbnNvbGUuZGVidWcoXCJGYWlsZWQgdG8gZmV0Y2ggbm90aWZpY2F0aW9uc1wiLCBlcnIpO1xyXG4gICAgICB9IGZpbmFsbHkge1xyXG4gICAgICAgIHNldExvYWRpbmcoZmFsc2UpO1xyXG4gICAgICB9XHJcbiAgICB9XHJcbiAgICBmZXRjaE5vdGlmaWNhdGlvbnMoKTtcclxuICB9LCBbXSk7XHJcblxyXG4gIHJldHVybiAoXHJcbiAgICA8ZGl2IGNsYXNzTmFtZT1cImZpeGVkIGluc2V0LTAgei1bMjAwXSBmbGV4IGZsZXgtY29sIGp1c3RpZnktZW5kIGl0ZW1zLWNlbnRlciBiZy1ibGFjay81MCBiYWNrZHJvcC1ibHVyLXNtIGFuaW1hdGUtaW4gZmFkZS1pbiBkdXJhdGlvbi0zMDBcIiBkaXI9XCJydGxcIj5cclxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJhYnNvbHV0ZSBpbnNldC0wXCIgb25DbGljaz17b25DbG9zZX0gLz5cclxuICAgICAgXHJcbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmVsYXRpdmUgYmctY2FyZCB3LWZ1bGwgc206bWF4LXcteGwgaC1bNjV2aF0gcm91bmRlZC10LTN4bCBzbTpyb3VuZGVkLXQtM3hsIHNoYWRvdy0yeGwgYm9yZGVyIGJvcmRlci1ib3JkZXIvNTAgb3ZlcmZsb3ctaGlkZGVuIGZsZXggZmxleC1jb2wgYW5pbWF0ZS1pbiBzbGlkZS1pbi1mcm9tLWJvdHRvbS1mdWxsIGR1cmF0aW9uLTMwMFwiPlxyXG4gICAgICAgIFxyXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidy1mdWxsIGZsZXgganVzdGlmeS1jZW50ZXIgcHQtMyBwYi0xXCI+XHJcbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInctMTIgaC0xLjUgcm91bmRlZC1mdWxsIGJnLW11dGVkLWZvcmVncm91bmQvMzBcIiAvPlxyXG4gICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICA8aGVhZGVyIGNsYXNzTmFtZT1cImZsZXgtbm9uZSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4gcC00IHBiLTMgYm9yZGVyLWIgYm9yZGVyLWJvcmRlci80MFwiPlxyXG4gICAgICAgICAgPGgyIGNsYXNzTmFtZT1cImZvbnQtZXh0cmFib2xkIHRleHQteGwgdGV4dC1mb3JlZ3JvdW5kIGZsZXggaXRlbXMtY2VudGVyIGdhcC0yXCI+XHJcbiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInctOSBoLTkgcm91bmRlZC1mdWxsIGJnLWFjY2VudC8xNSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciB0ZXh0LWFjY2VudCBzaGFkb3ctaW5uZXJcIj5cclxuICAgICAgICAgICAgICA8QmVsbCBjbGFzc05hbWU9XCJ3LTUgaC01IGZpbGwtYWNjZW50LzIwXCIgLz5cclxuICAgICAgICAgICAgPC9zcGFuPiBcclxuICAgICAgICAgICAg2KfZhNil2LnZhNin2YbYp9iqINmI2KfZhNil2LTYudin2LHYp9iqXHJcbiAgICAgICAgICA8L2gyPlxyXG4gICAgICAgICAgPGJ1dHRvbiBvbkNsaWNrPXtvbkNsb3NlfSBjbGFzc05hbWU9XCJ3LTkgaC05IHJvdW5kZWQtZnVsbCBiZy1zZWNvbmRhcnkgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgaG92ZXI6YnJpZ2h0bmVzcy05NSBhY3RpdmU6c2NhbGUtOTUgdGV4dC1zZWNvbmRhcnktZm9yZWdyb3VuZCB0cmFuc2l0aW9uLWFsbFwiPlxyXG4gICAgICAgICAgICA8WCBjbGFzc05hbWU9XCJ3LTUgaC01XCIgLz5cclxuICAgICAgICAgIDwvYnV0dG9uPlxyXG4gICAgICAgIDwvaGVhZGVyPlxyXG4gICAgICAgIFxyXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleC0xIG92ZXJmbG93LXktYXV0byBwLTQgc3BhY2UteS0zXCI+XHJcbiAgICAgICAgICB7bG9hZGluZyA/IChcclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTEwIGZsZXggZmxleC1jb2wgaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRleHQtY2VudGVyIHNwYWNlLXktNFwiPlxyXG4gICAgICAgICAgICAgIDxMb2FkZXIyIGNsYXNzTmFtZT1cInctOCBoLTggdGV4dC1hY2NlbnQgYW5pbWF0ZS1zcGluXCIgLz5cclxuICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXNtIHRleHQtbXV0ZWQtZm9yZWdyb3VuZFwiPtis2KfYsdmKINis2YTYqCDYp9mE2KXYudmE2KfZhtin2KouLi48L3A+XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgKSA6IG5vdGlmaWNhdGlvbnMubGVuZ3RoID09PSAwID8gKFxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInAtMTAgZmxleCBmbGV4LWNvbCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgdGV4dC1jZW50ZXIgc3BhY2UteS00XCI+XHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LTIwIGgtMjAgcm91bmRlZC1mdWxsIGJnLW11dGVkLzUwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHNoYWRvdy1pbm5lciByZWxhdGl2ZVwiPlxyXG4gICAgICAgICAgICAgICAgPEJlbGxPZmYgY2xhc3NOYW1lPVwidy0xMCBoLTEwIHRleHQtbXV0ZWQtZm9yZWdyb3VuZC82MFwiIC8+XHJcbiAgICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTEuNVwiPlxyXG4gICAgICAgICAgICAgICAgPGgzIGNsYXNzTmFtZT1cImZvbnQtZXh0cmFib2xkIHRleHQtbGcgdGV4dC1mb3JlZ3JvdW5kXCI+2YTYpyDYqtmI2KzYryDYpdi52YTYp9mG2KfYqiDYrdin2YTZitin2Ys8L2gzPlxyXG4gICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1zbSB0ZXh0LW11dGVkLWZvcmVncm91bmQgbWF4LXctWzI4MHB4XSBteC1hdXRvIGxlYWRpbmctcmVsYXhlZFwiPlxyXG4gICAgICAgICAgICAgICAgICDYo9mG2Kog2LnZhNmJINin2LfZhNin2Lkg2KjZg9mEINis2K/ZitivISDYo9mKINil2LnZhNin2YbYp9iqINij2Ygg2KrYrdiv2YrYq9in2Kog2YrZhti02LHZh9inINin2YTZhdi02LHZgSDZhdmGINmE2YjYrdipINin2YTYqtit2YPZhSDYs9iq2LjZh9ixINmH2YbYpyDZgdmI2LHYp9mLLlxyXG4gICAgICAgICAgICAgICAgPC9wPlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICkgOiAoXHJcbiAgICAgICAgICAgIG5vdGlmaWNhdGlvbnMubWFwKChuKSA9PiAoXHJcbiAgICAgICAgICAgICAgPGRpdlxyXG4gICAgICAgICAgICAgICAga2V5PXtuLmlkfVxyXG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiYmctbXV0ZWQvNDAgaG92ZXI6YmctbXV0ZWQvNzAgdHJhbnNpdGlvbi1jb2xvcnMgYm9yZGVyIGJvcmRlci1ib3JkZXIvNDAgcm91bmRlZC0yeGwgcC00IHNoYWRvdy1zbSByZWxhdGl2ZSBvdmVyZmxvdy1oaWRkZW4gZ3JvdXBcIlxyXG4gICAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1zdGFydCBnYXAtMy41XCI+XHJcbiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidy0xMCBoLTEwIHJvdW5kZWQteGwgYmctYWNjZW50LzE1IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRleHQtYWNjZW50IHNocmluay0wIG10LTAuNSBncm91cC1ob3ZlcjpzY2FsZS0xMDUgdHJhbnNpdGlvbi10cmFuc2Zvcm1cIj5cclxuICAgICAgICAgICAgICAgICAgICB7bi50eXBlID09PSBcImJhZGdlXCIgPyAoXHJcbiAgICAgICAgICAgICAgICAgICAgICA8VHJvcGh5IGNsYXNzTmFtZT1cInctNSBoLTUgdGV4dC1hbWJlci01MDAgZmlsbC1hbWJlci01MDAvMjBcIiAvPlxyXG4gICAgICAgICAgICAgICAgICAgICkgOiBuLnR5cGUgPT09IFwiYWxlcnRcIiA/IChcclxuICAgICAgICAgICAgICAgICAgICAgIDxNZWdhcGhvbmUgY2xhc3NOYW1lPVwidy01IGgtNSB0ZXh0LWFtYmVyLTUwMFwiIC8+XHJcbiAgICAgICAgICAgICAgICAgICAgKSA6IChcclxuICAgICAgICAgICAgICAgICAgICAgIDxJbmZvIGNsYXNzTmFtZT1cInctNSBoLTUgdGV4dC1hY2NlbnRcIiAvPlxyXG4gICAgICAgICAgICAgICAgICAgICl9XHJcbiAgICAgICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXgtMSBtaW4tdy0wIHNwYWNlLXktMVwiPlxyXG4gICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIGdhcC0yXCI+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8aDQgY2xhc3NOYW1lPVwiZm9udC1ib2xkIHRleHQtYmFzZSB0ZXh0LWZvcmVncm91bmQgbGVhZGluZy1zbnVnIHRydW5jYXRlXCI+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHtuLnRpdGxlfVxyXG4gICAgICAgICAgICAgICAgICAgICAgPC9oND5cclxuICAgICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtWzEwcHhdIHRleHQtbXV0ZWQtZm9yZWdyb3VuZC84MCBzaHJpbmstMCBmb250LW1lZGl1bVwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICB7bmV3IERhdGUobi5jcmVhdGVkX2F0KS50b0xvY2FsZURhdGVTdHJpbmcoXCJhci1TQVwiLCB7IG1vbnRoOiBcInNob3J0XCIsIGRheTogXCJudW1lcmljXCIgfSl9XHJcbiAgICAgICAgICAgICAgICAgICAgICA8L3NwYW4+XHJcbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LW11dGVkLWZvcmVncm91bmQgbGVhZGluZy1yZWxheGVkIHdoaXRlc3BhY2UtcHJlLXdyYXBcIj5cclxuICAgICAgICAgICAgICAgICAgICAgIHtuLmJvZHl9XHJcbiAgICAgICAgICAgICAgICAgICAgPC9wPlxyXG4gICAgICAgICAgICAgICAgICAgIHtuLmxpbmsgJiYgKFxyXG4gICAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwdC0yXCI+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxhXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgaHJlZj17bi5saW5rfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIHRhcmdldD1cIl9ibGFua1wiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgcmVsPVwibm9vcGVuZXIgbm9yZWZlcnJlclwiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiaW5saW5lLWZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjUgdGV4dC14cyBmb250LWJvbGQgdGV4dC1hY2NlbnQgaG92ZXI6dW5kZXJsaW5lXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgINi52LHYtiDYp9mE2KrZgdin2LXZitmEIOKGl1xyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L2E+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgICAgICAgICApfVxyXG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICApKVxyXG4gICAgICAgICAgKX1cclxuICAgICAgICA8L2Rpdj5cclxuICAgICAgPC9kaXY+XHJcbiAgICA8L2Rpdj5cclxuICApO1xyXG59XHJcbiJdLCJuYW1lcyI6WyJ1c2VTdGF0ZSIsInVzZUVmZmVjdCIsIlgiLCJCZWxsIiwiQmVsbE9mZiIsIkluZm8iLCJNZWdhcGhvbmUiLCJMb2FkZXIyIiwiVHJvcGh5Iiwic3VwYWJhc2UiLCJnZXRCYWRnZXNMaXN0IiwiTm90aWZpY2F0aW9uc01vZGFsIiwib25DbG9zZSIsIm5vdGlmaWNhdGlvbnMiLCJzZXROb3RpZmljYXRpb25zIiwibG9hZGluZyIsInNldExvYWRpbmciLCJmZXRjaE5vdGlmaWNhdGlvbnMiLCJ1bmxvY2tlZEJhZGdlcyIsImZpbHRlciIsImIiLCJ1bmxvY2tlZCIsIm1hcCIsImlkIiwidGl0bGUiLCJib2R5IiwiZGVzY3JpcHRpb24iLCJyZXdhcmRDb2lucyIsInR5cGUiLCJjcmVhdGVkX2F0IiwidW5sb2NrZWRBdCIsIkRhdGUiLCJ0b0lTT1N0cmluZyIsImNsb3VkQW5ub3VuY2VtZW50cyIsImRhdGEiLCJlcnJvciIsImZyb20iLCJzZWxlY3QiLCJvcmRlciIsImFzY2VuZGluZyIsIkFycmF5IiwiaXNBcnJheSIsImFjdGl2ZSIsImEiLCJpc19hY3RpdmUiLCJsZW5ndGgiLCJjb21iaW5lZCIsInNvcnQiLCJnZXRUaW1lIiwiZXJyIiwiY29uc29sZSIsImRlYnVnIiwiZGl2IiwiY2xhc3NOYW1lIiwiZGlyIiwib25DbGljayIsImhlYWRlciIsImgyIiwic3BhbiIsImJ1dHRvbiIsInAiLCJoMyIsIm4iLCJoNCIsInRvTG9jYWxlRGF0ZVN0cmluZyIsIm1vbnRoIiwiZGF5IiwibGluayIsImhyZWYiLCJ0YXJnZXQiLCJyZWwiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLFNBQVNBLFFBQVEsRUFBRUMsU0FBUyxRQUFRLFFBQVE7QUFDNUMsU0FBU0MsQ0FBQyxFQUFF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

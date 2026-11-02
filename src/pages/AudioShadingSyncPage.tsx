@@ -12,10 +12,11 @@ import { getAllSurahs, getSurahByNumber, SurahInfo } from "@/data/quranData";
 import { getSurahAudioUrl, getFallbackAudioUrl } from "@/data/audioUrls";
 import {
   getPageAyahBoxes, savePageAyahBoxes, AyahBox, getAllPageSources,
-  PAGE_IMAGE_SIZE, getSavedAyahCoordinates
+  PAGE_IMAGE_SIZE, getSavedAyahCoordinates, getPageSections
 } from "@/data/ayahCoordinates";
 import { getSurahTimings, saveSurahTimings, getSavedTimings, AudioSegment } from "@/data/ayahTimings";
 import { getSurahLink, saveSurahLink } from "@/data/surahLink";
+import { detectSpeechSegments, alignSegmentsToCount, scoreSegments, type SpeechSegment } from "@/data/audioSilence";
 import { saveAudioToCache, resolvePlayableAudioUrl } from "@/data/offlineAudioCache";
 import { saveSurahInfo, getSavedSurahInfo, syncSurahInfoFromServer, SurahMeta } from "@/data/surahInfo";
 import { getCustomPages } from "@/data/customPages";
@@ -30,6 +31,22 @@ const formatTimestamp = (sec: number | undefined): string => {
   const ms = Math.floor((sec % 1) * 100);
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${String(ms).padStart(2, "0")}`;
 };
+
+interface DetectionRow {
+  ayah: number;
+  label: string;
+  start: number;
+  end: number;
+  boxCount: number;
+  /** جودة التقسيم 0..100 (عمق الصمت قبل الآية + انتظام طولها) */
+  confidence?: number;
+}
+
+interface DetectionPreview {
+  rows: DetectionRow[];
+  segments: number;
+  includeBasmalah: boolean;
+}
 
 export default function AudioShadingSyncPage() {
   const navigate = useNavigate();
@@ -72,6 +89,11 @@ export default function AudioShadingSyncPage() {
   const [selectedBoxIndex, setSelectedBoxIndex] = useState<number>(0);
   const [previewNightMode, setPreviewNightMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [detection, setDetection] = useState<DetectionPreview | null>(null);
+  const [detectedSpeech, setDetectedSpeech] = useState<SpeechSegment[] | null>(null);
+  // منحنى الطاقة الأخير — لحساب ثقة التقسيم عند إعادة توزيع المعاينة دون إعادة تحليل الصوت
+  const detectedRmsRef = useRef<number[] | null>(null);
 
   // معلومات السورة المحفوظة (المحلية والسحابية)
   const [savedMeta, setSavedMeta] = useState<SurahMeta | null>(null);
@@ -179,6 +201,8 @@ export default function AudioShadingSyncPage() {
     setActivePageSrc(src);
     const boxes = getPageAyahBoxes(src);
     setPageBoxes(boxes);
+    setDetection(null);
+    setDetectedSpeech(null);
     const firstMatch = boxes.findIndex((b) => b.surah === selectedSurahNum);
     setSelectedBoxIndex(firstMatch >= 0 ? firstMatch : 0);
   };
@@ -288,8 +312,10 @@ export default function AudioShadingSyncPage() {
   // إحصائيات الربط لكل من المعلم والطفل مبنية على الآيات الفريدة (يحسب نفس رقم الآية والسورة كوحدة واحدة)
   const syncStats = useMemo(() => {
     const totalBoxes = surahBoxes.length;
-    // قائمة الآيات الفريدة الموجودة في السورة
-    const uniqueAyahs = Array.from(new Set(surahBoxes.map(({ box }) => box.ayah)));
+    // قائمة الآيات الفريدة الموجودة في السورة (بلا البسملة/المربعات غير المرقّمة)
+    const uniqueAyahs = Array.from(new Set(surahBoxes.map(({ box }) => box.ayah)))
+      .filter((a) => a > 0)
+      .sort((a, b) => a - b);
     const totalAyahs = uniqueAyahs.length;
 
     const teacherSyncedAyahs = uniqueAyahs.filter(ayahNum =>
@@ -303,11 +329,41 @@ export default function AudioShadingSyncPage() {
     const currentSynced = activeSyncSpeaker === "kids" ? kidsSyncedAyahs.length : teacherSyncedAyahs.length;
     const currentPercent = totalAyahs > 0 ? Math.round((currentSynced / totalAyahs) * 100) : 0;
 
+    // ⏱ حساب مستقل لكل متحدث: مجموع المدة الزمنية المرصودة ومتوسط الآية
+    const sumDuration = (field: "teacher" | "kids") => {
+      let total = 0;
+      let counted = 0;
+      uniqueAyahs.forEach((ayahNum) => {
+        const hit = surahBoxes.find(({ box }) => {
+          if (box.ayah !== ayahNum) return false;
+          return field === "teacher"
+            ? box.audioStart !== undefined && box.audioEnd !== undefined
+            : box.kidsStart !== undefined && box.kidsEnd !== undefined;
+        });
+        if (!hit) return;
+        const s = field === "teacher" ? hit.box.audioStart! : hit.box.kidsStart!;
+        const e = field === "teacher" ? hit.box.audioEnd! : hit.box.kidsEnd!;
+        if (typeof s === "number" && typeof e === "number" && e > s) {
+          total += e - s;
+          counted++;
+        }
+      });
+      return { total, avg: counted > 0 ? total / counted : 0 };
+    };
+    const teacherTime = sumDuration("teacher");
+    const kidsTime = sumDuration("kids");
+
     return {
       totalBoxes,
       totalAyahs,
       teacherSyncedCount: teacherSyncedAyahs.length,
       kidsSyncedCount: kidsSyncedAyahs.length,
+      teacherPercent: totalAyahs > 0 ? Math.round((teacherSyncedAyahs.length / totalAyahs) * 100) : 0,
+      kidsPercent: totalAyahs > 0 ? Math.round((kidsSyncedAyahs.length / totalAyahs) * 100) : 0,
+      teacherSeconds: teacherTime.total,
+      kidsSeconds: kidsTime.total,
+      teacherAvg: teacherTime.avg,
+      kidsAvg: kidsTime.avg,
       currentSynced,
       currentPercent,
       teacherSyncedAyahs,
@@ -491,6 +547,189 @@ export default function AudioShadingSyncPage() {
     });
   };
 
+  /** يبني صفوف المعاينة من مقاطع التلاوة المكتشفة (بما فيها البسملة إن طُلبت) */
+  const buildDetectionRows = (speech: SpeechSegment[], includeBasmalah: boolean): DetectionRow[] => {
+    const boxAyahs = Array.from(new Set(surahBoxes.map(({ box }) => box.ayah))).sort((a, b) => a - b);
+    let targets = boxAyahs;
+    if (includeBasmalah && !targets.includes(0)) targets = [0, ...targets];
+    if (!includeBasmalah) targets = targets.filter((a) => a > 0);
+    const rms = detectedRmsRef.current;
+    const segments = alignSegmentsToCount(speech, targets.length, 0.02, rms ?? undefined);
+    // الثقة تُحسب على الآيات بعد المحاذاة نفسها (لا على المقاطع الخام) لتطابق الصفوف المعروضة
+    const scores = rms ? scoreSegments(rms, segments, { frameSec: 0.02 }) : [];
+    return targets.map((ayah, i) => ({
+      ayah,
+      label: ayah === 0 ? "البسملة" : `الآية ${ayah}`,
+      start: Number(segments[i].start.toFixed(2)),
+      end: Number(segments[i].end.toFixed(2)),
+      boxCount: pageBoxes.filter((b) => b.surah === selectedSurahNum && b.ayah === ayah).length,
+      confidence: scores.length ? Math.round((scores[i] ?? 0) * 100) : undefined,
+    }));
+  };
+
+  // 🎧 كشف الصمت وتوزيع الآيات تلقائياً — يعرض معاينة أولاً ثم يطبّقها المستخدم
+  const detectSilenceAndAlign = async () => {
+    if (surahBoxes.length === 0) {
+      toast({
+        title: "لا توجد آيات على هذه الصفحة",
+        description: "اختر صفحة تحتوي السورة المطلوبة ثم أعد المحاولة",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsDetecting(true);
+    try {
+      // 0) نُفضّل الملف المحفوظ في كاش الجهاز (أسرع وأكثر أماناً من الشبكة)
+      let url = activeAudioUrl;
+      if (!url) throw new Error("لا يوجد ملف صوت محدد");
+      if (!url.startsWith("blob:") && !url.startsWith("data:")) {
+        try {
+          const local = await resolvePlayableAudioUrl(
+            selectedSurahNum,
+            url,
+            activeSyncSpeaker === "kids" ? "kids" : "teacher",
+          );
+          if (local) url = local;
+        } catch { /* نُكمل بالرابط الأصلي */ }
+      }
+
+      // 1) تحميل الصوت وفك ترميزه بدون تشغيله إطلاقاً
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`تعذر تحميل الصوت (${res.status}). ارفع الملف من «رفع ملف» ثم أعد المحاولة.`);
+      const raw = await res.arrayBuffer();
+      const AudioCtxCtor: typeof AudioContext | undefined =
+        window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtxCtor) throw new Error("المتصفح لا يدعم تحليل الصوت");
+      const ctx = new AudioCtxCtor();
+      let audioBuffer: AudioBuffer;
+      try {
+        audioBuffer = await ctx.decodeAudioData(raw.slice(0));
+      } finally {
+        try { await ctx.close(); } catch { /* ignore */ }
+      }
+
+      // 2) حساب طاقة الصوت (RMS) كل 20 جزء من الثانية
+      const frameSec = 0.02;
+      const pcm = audioBuffer.getChannelData(0);
+      const frameSize = Math.max(1, Math.round(audioBuffer.sampleRate * frameSec));
+      const rms: number[] = [];
+      for (let i = 0; i + frameSize <= pcm.length; i += frameSize) {
+        let sum = 0;
+        for (let j = 0; j < frameSize; j++) {
+          const v = pcm[i + j];
+          sum += v * v;
+        }
+        rms.push(Math.sqrt(sum / frameSize));
+      }
+      if (rms.length < 5) throw new Error("ملف الصوت قصير جداً أو غير صالح");
+
+      const peak = rms.reduce((max, v) => (v > max ? v : max), 0);
+      if (peak <= 0) throw new Error("ملف الصوت صامت بالكامل");
+
+      // 3) مقاطع التلاوة = ما بين فترات الصمت (≥ 0.16 ثانية)
+      const speech = detectSpeechSegments(rms, { frameSec });
+      if (speech.length === 0) throw new Error("لم يُعثر على تلاوة في الملف");
+      detectedRmsRef.current = rms;
+
+      // 4) هل يبدأ التسجيل بالبسملة؟ نعتمد جدول الصفحة، وإن كان هناك مربع بسملة موجوداً فهو دليل راسخ
+      const boxAyahs = Array.from(new Set(surahBoxes.map(({ box }) => box.ayah)));
+      const section = getPageSections(activePageSrc).find((s) => s.surah === selectedSurahNum);
+      const includeBasmalah =
+        boxAyahs.includes(0) || (!!section?.hasBasmalah && selectedSurahNum !== 1 && selectedSurahNum !== 9);
+
+      const rows = buildDetectionRows(speech, includeBasmalah);
+      setDetectedSpeech(speech);
+      setDetection({ rows, segments: speech.length, includeBasmalah });
+
+      toast({
+        title: "🎧 نتيجة الكشف جاهزة للمعاينة",
+        description: `وجدنا ${speech.length} مقطع تلاوة ووزّعنا ${rows.length} آية. اسمع أي آية بزر ▶ ثم اضغط «تطبيق وحفظ».`,
+      });
+    } catch (e: any) {
+      toast({
+        title: "تعذر تحليل الصوت",
+        description: e?.message || "قد يمنع المتصفح قراءة الملف من الإنترنت — ارفع الملف من جهازك عبر «رفع ملف» ثم أعد المحاولة.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDetecting(false);
+    }
+  };
+
+  /** تبديل وضع البسملة يعيد توزيع المعاينة فوراً بدون إعادة تحليل الصوت */
+  const setDetectionBasmalah = (includeBasmalah: boolean) => {
+    if (!detectedSpeech) return;
+    setDetection({
+      rows: buildDetectionRows(detectedSpeech, includeBasmalah),
+      segments: detectedSpeech.length,
+      includeBasmalah,
+    });
+  };
+
+  const updateDetectionRow = (index: number, field: "start" | "end", value: number) => {
+    setDetection((prev) =>
+      prev ? { ...prev, rows: prev.rows.map((r, i) => (i === index ? { ...r, [field]: value } : r)) } : prev,
+    );
+  };
+
+  /** تطبيق نتيجة الكشف على مربعات التظليل، وإنشاء مربع البسملة الناقص، ثم الحفظ على السيرفر */
+  const applyDetection = async () => {
+    if (!detection) return;
+    const rows = [...detection.rows].sort((a, b) => a.ayah - b.ayah);
+    for (let i = 0; i < rows.length; i++) {
+      if (!isFinite(rows[i].start) || !isFinite(rows[i].end) || rows[i].end <= rows[i].start) {
+        toast({
+          title: "توقيت غير صالح",
+          description: `${rows[i].label}: النهاية يجب أن تكون بعد البداية.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      if (i > 0 && rows[i].start < rows[i - 1].end - 0.01) {
+        toast({
+          title: "ترتيب الآيات غير متسلسل",
+          description: `${rows[i].label} تبدأ قبل نهاية ${rows[i - 1].label}. عدّل الأرقام ثم أعد التطبيق.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const isKid = activeSyncSpeaker === "kids";
+    let nextBoxes = [...pageBoxes];
+
+    // 1) إنشاء مربع البسملة في مكانه فوق أول آية إن كان ناقصاً
+    if (rows.some((r) => r.ayah === 0) && !nextBoxes.some((b) => b.surah === selectedSurahNum && b.ayah === 0)) {
+      const firstAyahBox = nextBoxes
+        .filter((b) => b.surah === selectedSurahNum && b.ayah > 0)
+        .sort((a, b) => a.y - b.y)[0];
+      nextBoxes.push({
+        surah: selectedSurahNum,
+        ayah: 0,
+        x: 310,
+        y: Math.max(140, Math.round((firstAyahBox?.y ?? 320) - 76)),
+        width: 660,
+        height: 70,
+        label: "البسملة",
+      });
+    }
+
+    // 2) تطبيق الأزمنة على كل مربعات السورة في الصفحة
+    const timing = new Map(rows.map((r) => [r.ayah, r]));
+    nextBoxes = nextBoxes.map((b) => {
+      if (b.surah !== selectedSurahNum) return b;
+      const t = timing.get(b.ayah);
+      if (!t) return b;
+      return isKid
+        ? { ...b, kidsStart: Number(t.start.toFixed(2)), kidsEnd: Number(t.end.toFixed(2)) }
+        : { ...b, audioStart: Number(t.start.toFixed(2)), audioEnd: Number(t.end.toFixed(2)) };
+    });
+
+    setPageBoxes(nextBoxes);
+    setDetection(null);
+    await handleSaveSync(nextBoxes);
+  };
+
   // الضبط الدقيق بالأجزاء من الثانية (±0.05s, ±0.1s, ±0.5s)
   const adjustTiming = (index: number, field: "start" | "end", delta: number) => {
     const isKid = activeSyncSpeaker === "kids";
@@ -598,15 +837,30 @@ export default function AudioShadingSyncPage() {
   };
 
   // حفظ التوقيتات والمربعات ومعلومات السورة في الحاسوب والسيرفر
-  const handleSaveSync = async () => {
+  // يقبل مربعات جاهزة (overrideBoxes) حتى يحفظ التطبيق التلقائي فور تطبيقه
+  const handleSaveSync = async (overrideBoxes?: AyahBox[]) => {
     setIsSaving(true);
+    const boxesToSave = overrideBoxes ?? pageBoxes;
+    const surahEntries = boxesToSave
+      .map((box, idx) => ({ box, originalIndex: idx }))
+      .filter(({ box }) => box.surah === selectedSurahNum);
+    const teacherSyncedAyahs = Array.from(new Set(
+      boxesToSave
+        .filter((b) => b.surah === selectedSurahNum && b.ayah > 0 && b.audioStart !== undefined && b.audioEnd !== undefined)
+        .map((b) => b.ayah),
+    ));
+    const kidsSyncedAyahs = Array.from(new Set(
+      boxesToSave
+        .filter((b) => b.surah === selectedSurahNum && b.ayah > 0 && b.kidsStart !== undefined && b.kidsEnd !== undefined)
+        .map((b) => b.ayah),
+    ));
     try {
       // 1. تعميم التوقيتات على جميع المربعات الحاملة لنفس السورة والآية في كل الصفحات
       const allSavedCoords = getSavedAyahCoordinates();
       for (const pageKey of Object.keys(allSavedCoords)) {
         allSavedCoords[pageKey] = allSavedCoords[pageKey].map(b => {
           if (b.surah === selectedSurahNum) {
-            const match = pageBoxes.find(pb => pb.surah === b.surah && pb.ayah === b.ayah);
+            const match = boxesToSave.find(pb => pb.surah === b.surah && pb.ayah === b.ayah);
             if (match) {
               return {
                 ...b,
@@ -622,7 +876,7 @@ export default function AudioShadingSyncPage() {
       }
 
       // حفظ الصفحة الحالية والمربعات المحدثة
-      await savePageAyahBoxes(activePageSrc, pageBoxes);
+      await savePageAyahBoxes(activePageSrc, boxesToSave);
 
       // 2. تخزين الملفات المرفوعة في كاش IndexedDB لتعمل على الحاسوب دون إنترنت
       if (teacherCustomFile) {
@@ -633,35 +887,50 @@ export default function AudioShadingSyncPage() {
       }
 
       // 3. تجميع توقيتات المعلم والطفل كلّ على حدة حسب الآية
-      const sortedBoxes = [...surahBoxes].sort((a, b) => a.box.ayah - b.box.ayah);
+      const sortedBoxes = [...surahEntries].sort((a, b) => a.box.ayah - b.box.ayah);
       const teacherTimes: number[] = [];
       const kidsTimes: number[] = [];
       const segments: AudioSegment[] = [];
 
-      sortedBoxes.forEach(({ box }) => {
-        // توقيت المعلم
-        if (box.audioStart !== undefined) {
-          teacherTimes.push(box.audioStart);
+      // البسملة (آية 0) لها مربعها وتوقيتها داخل المربع، لكن مصفوفة التوقيتات
+      // يجب أن تبدأ من الآية 1 حتى لا تنزاح أرقام الآيات في المشغّل.
+      const timingAyahs = Array.from(new Set(
+        sortedBoxes.filter(({ box }) => box.ayah > 0).map(({ box }) => box.ayah),
+      )).sort((a, b) => a - b);
+
+      let lastTeacherEnd = 0;
+      let lastKidsEnd = 0;
+      timingAyahs.forEach((ayah) => {
+        const teacherBox = sortedBoxes.find(({ box }) => box.ayah === ayah && box.audioStart !== undefined)?.box;
+        if (teacherBox) {
+          teacherTimes.push(teacherBox.audioStart!);
+          lastTeacherEnd = teacherBox.audioEnd ?? teacherBox.audioStart!;
           segments.push({
-            id: `seg_teacher_${box.surah}_${box.ayah}`,
-            start: box.audioStart,
-            end: box.audioEnd ?? (box.audioStart + 3),
+            id: `seg_teacher_${teacherBox.surah}_${ayah}`,
+            start: teacherBox.audioStart!,
+            end: teacherBox.audioEnd ?? (teacherBox.audioStart! + 3),
             speaker: "teacher",
-            ayah: box.ayah,
-            label: box.label || (box.ayah === 0 ? "البسملة" : `آية ${box.ayah}`),
+            ayah,
+            label: teacherBox.label || `آية ${ayah}`,
           });
+        } else if (teacherTimes.length > 0) {
+          teacherTimes.push(lastTeacherEnd);
         }
-        // توقيت الطفل
-        if (box.kidsStart !== undefined) {
-          kidsTimes.push(box.kidsStart);
+
+        const kidsBox = sortedBoxes.find(({ box }) => box.ayah === ayah && box.kidsStart !== undefined)?.box;
+        if (kidsBox) {
+          kidsTimes.push(kidsBox.kidsStart!);
+          lastKidsEnd = kidsBox.kidsEnd ?? kidsBox.kidsStart!;
           segments.push({
-            id: `seg_kids_${box.surah}_${box.ayah}`,
-            start: box.kidsStart,
-            end: box.kidsEnd ?? (box.kidsStart + 3),
+            id: `seg_kids_${kidsBox.surah}_${ayah}`,
+            start: kidsBox.kidsStart!,
+            end: kidsBox.kidsEnd ?? (kidsBox.kidsStart! + 3),
             speaker: "kids",
-            ayah: box.ayah,
-            label: box.label || (box.ayah === 0 ? "البسملة" : `آية ${box.ayah}`),
+            ayah,
+            label: kidsBox.label || `آية ${ayah}`,
           });
+        } else if (kidsTimes.length > 0) {
+          kidsTimes.push(lastKidsEnd);
         }
       });
 
@@ -693,8 +962,8 @@ export default function AudioShadingSyncPage() {
         revelationType: selectedSurah?.revelationType || "مكية",
         teacherAudioUrl: teacherSourceType === "custom" ? teacherCustomUrl : undefined,
         kidsAudioUrl: kidsSourceType === "custom" ? kidsCustomUrl : undefined,
-        teacherSyncedAyahs: syncStats.teacherSyncedAyahs,
-        kidsSyncedAyahs: syncStats.kidsSyncedAyahs,
+        teacherSyncedAyahs,
+        kidsSyncedAyahs,
         pageSrc: activePageSrc,
         updatedAt: Date.now(),
       };
@@ -703,7 +972,7 @@ export default function AudioShadingSyncPage() {
 
       toast({
         title: "✅ تم الحفظ الشامل في الحاسوب والسيرفر!",
-        description: `تم حفظ ${syncStats.teacherSyncedCount} آية للمعلم و ${syncStats.kidsSyncedCount} آية للطفل، مع حفظ معلومات سورة ${selectedSurah?.name || selectedSurahNum} في ملفات المشروع وسيرفر التخزين.`,
+        description: `تم حفظ ${teacherSyncedAyahs.length} آية للمعلم و ${kidsSyncedAyahs.length} آية للطفل، مع حفظ معلومات سورة ${selectedSurah?.name || selectedSurahNum} في ملفات المشروع وسيرفر التخزين.`,
       });
     } catch (e) {
       toast({
@@ -879,8 +1148,7 @@ export default function AudioShadingSyncPage() {
             </button>
           </div>
 
-          <button
-            onClick={handleSaveSync}
+          <button                onClick={() => handleSaveSync()}
             disabled={isSaving}
             className={`px-4 py-2 rounded-xl text-black font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-lg active:scale-95 disabled:opacity-50 ${
               activeSyncSpeaker === "kids"
@@ -920,7 +1188,11 @@ export default function AudioShadingSyncPage() {
                 <label className="block text-[11px] text-stone-400 mb-1 font-bold">اختر السورة:</label>
                 <select
                   value={selectedSurahNum}
-                  onChange={(e) => setSelectedSurahNum(Number(e.target.value))}
+                  onChange={(e) => {
+                    setSelectedSurahNum(Number(e.target.value));
+                    setDetection(null);
+                    setDetectedSpeech(null);
+                  }}
                   className="w-full bg-stone-950 border border-white/15 focus:border-amber-400 rounded-xl px-3 py-2 text-xs font-bold text-white outline-none"
                 >
                   {surahsList.map((s) => (
@@ -1061,6 +1333,80 @@ export default function AudioShadingSyncPage() {
                 </button>
               </div>
             )}
+          </div>
+
+          {/* ⚖️ حساب المعلم والطفل: تغطية التوقيت ومدة كل متحدث (نقرة على أي بطاقة تبدّل الوضع) */}
+          <div className="bg-stone-900/80 border border-white/10 rounded-2xl p-3 shadow-xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-extrabold text-stone-300 flex items-center gap-1.5">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-stone-400" />
+                حساب المعلم والطفل
+              </span>
+              <span className="text-[10px] text-stone-500 font-mono">
+                {syncStats.totalAyahs} آية في السورة
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {([
+                {
+                  key: "teacher" as const,
+                  label: "المعلم",
+                  icon: <GraduationCap className="w-4 h-4" />,
+                  done: syncStats.teacherSyncedCount,
+                  percent: syncStats.teacherPercent,
+                  seconds: syncStats.teacherSeconds,
+                  avg: syncStats.teacherAvg,
+                  tone: "amber",
+                },
+                {
+                  key: "kids" as const,
+                  label: "طفل (تكرار الحفظ)",
+                  icon: <Baby className="w-4 h-4" />,
+                  done: syncStats.kidsSyncedCount,
+                  percent: syncStats.kidsPercent,
+                  seconds: syncStats.kidsSeconds,
+                  avg: syncStats.kidsAvg,
+                  tone: "sky",
+                },
+              ]).map((row) => (
+                <button
+                  key={row.key}
+                  onClick={() => handleSwitchSpeaker(row.key)}
+                  className={`text-right rounded-xl border p-2.5 transition-all active:scale-[0.99] ${
+                    activeSyncSpeaker === row.key
+                      ? row.tone === "sky"
+                        ? "bg-sky-500/10 border-sky-500/40"
+                        : "bg-amber-500/10 border-amber-500/40"
+                      : "bg-black/30 border-white/10 hover:bg-black/50"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className={`flex items-center gap-1.5 text-xs font-extrabold ${row.tone === "sky" ? "text-sky-300" : "text-amber-300"}`}>
+                      {row.icon}
+                      {row.label}
+                    </span>
+                    <span className="text-[11px] font-mono font-bold text-white">
+                      {row.done}/{syncStats.totalAyahs}
+                    </span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mb-1.5">
+                    <div
+                      className={`h-full rounded-full ${row.tone === "sky" ? "bg-sky-400" : "bg-amber-400"}`}
+                      style={{ width: `${row.percent}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-stone-400 font-mono">
+                    <span>{formatTimestamp(row.seconds)}</span>
+                    <span>متوسط الآية {formatTimestamp(row.avg)}</span>
+                  </div>
+                  {row.done < syncStats.totalAyahs && (
+                    <div className="text-[10px] text-rose-300/80 mt-1">
+                      متبقٍ {syncStats.totalAyahs - row.done} آية بلا توقيت
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* مشغل الصوت والمسطرة الزمنية التفاعلية */}
@@ -1230,7 +1576,121 @@ export default function AudioShadingSyncPage() {
                 <Zap className="w-4 h-4 text-purple-400" />
                 <span>⚡ سد فواصل السورة والربط الشامل</span>
               </button>
+
+              <button
+                onClick={detectSilenceAndAlign}
+                disabled={isDetecting}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-fuchsia-600/30 to-purple-600/30 hover:from-fuchsia-600/50 hover:to-purple-600/50 text-fuchsia-200 border border-fuchsia-500/40 text-xs font-extrabold flex items-center gap-1.5 transition-all active:scale-95 shadow-lg shadow-fuchsia-900/20 disabled:opacity-60"
+                title="يحلل تسجيل السورة ويكتشف فترات الصمت بين الآيات تلقائياً ثم يوزع بداية/نهاية كل آية على الصوت"
+              >
+                <Wand2 className={`w-4 h-4 text-fuchsia-300 ${isDetecting ? "animate-pulse" : ""}`} />
+                <span>{isDetecting ? "🎧 جاري تحليل الصوت..." : "🎧 اكتشاف الصمت وربط الآيات تلقائياً"}</span>
+              </button>
             </div>
+
+            {/* معاينة نتيجة الكشف: تُراجع وتُعدّل ثم تُطبَّق وتُحفظ */}
+            {detection && (
+              <div className="mt-3 rounded-2xl border border-fuchsia-500/35 bg-fuchsia-950/20 p-3 space-y-2.5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-xs font-extrabold text-fuchsia-200 flex items-center gap-1.5">
+                    <Wand2 className="w-4 h-4" />
+                    المعاينة قبل التطبيق · {detection.rows.length} آية من {detection.segments} مقطع صوتي
+                  </span>
+                  <label className="flex items-center gap-1.5 text-[11px] text-stone-300 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={detection.includeBasmalah}
+                      onChange={(e) => setDetectionBasmalah(e.target.checked)}
+                      className="w-3.5 h-3.5 accent-fuchsia-500"
+                    />
+                    التسجيل يبدأ بالبسملة
+                  </label>
+                </div>
+
+                <div className="max-h-60 overflow-auto rounded-xl border border-white/10 divide-y divide-white/5">
+                  {detection.rows.map((row, i) => (
+                    <div
+                      key={`${row.ayah}-${i}`}
+                      className={`grid grid-cols-[1fr_74px_74px_30px] items-center gap-2 px-2 py-1.5 text-[11px] ${
+                        row.ayah === 0 ? "bg-amber-500/10" : ""
+                      }`}
+                    >
+                      <span className="font-bold text-stone-200 truncate">
+                        {row.label}
+                        {row.boxCount > 1 && <span className="text-stone-500"> ×{row.boxCount}</span>}
+                        {row.boxCount === 0 && row.ayah > 0 && <span className="text-fuchsia-400"> (جديد)</span>}
+                        {typeof row.confidence === "number" && (
+                          <span
+                            className={`mr-1 text-[9px] font-mono px-1 py-0.5 rounded ${
+                              row.confidence >= 75
+                                ? "bg-emerald-500/15 text-emerald-300"
+                                : row.confidence >= 50
+                                  ? "bg-amber-500/15 text-amber-300"
+                                  : "bg-rose-500/15 text-rose-300"
+                            }`}
+                            title="جودة التقسيم: عمق الصمت قبل الآية وانتظام طولها"
+                          >
+                            {row.confidence}%
+                          </span>
+                        )}
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={row.start}
+                        onChange={(e) => updateDetectionRow(i, "start", Number(e.target.value))}
+                        className="w-full bg-black/50 border border-white/10 rounded-lg px-1.5 py-1 text-center font-mono text-[11px] text-stone-100 focus:outline-none focus:border-fuchsia-500/60"
+                        title="بداية الآية بالثواني"
+                      />
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={row.end}
+                        onChange={(e) => updateDetectionRow(i, "end", Number(e.target.value))}
+                        className="w-full bg-black/50 border border-white/10 rounded-lg px-1.5 py-1 text-center font-mono text-[11px] text-stone-100 focus:outline-none focus:border-fuchsia-500/60"
+                        title="نهاية الآية بالثواني"
+                      />
+                      <button
+                        onClick={() => {
+                          seek(row.start);
+                          if (!isPlaying) togglePlay();
+                        }}
+                        className="w-7 h-7 rounded-lg bg-white/10 hover:bg-fuchsia-500/30 text-stone-200 flex items-center justify-center transition-colors"
+                        title={`استمع من ${formatTimestamp(row.start)}`}
+                      >
+                        <Play className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={applyDetection}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-900/30 active:scale-95 transition-all"
+                    title="تطبيق الأزمنة المعروضة وإنشاء مربع البسملة إن كان ناقصاً، ثم الحفظ في السيرفر"
+                  >
+                    <CheckCircle2 className="w-4 h-4" /> تطبيق وحفظ في السيرفر
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDetection(null);
+                      setDetectedSpeech(null);
+                    }}
+                    className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-stone-300 text-xs font-bold transition-colors"
+                    title="إلغاء المعاينة دون تغيير أي شيء"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+                <p className="text-[10px] leading-relaxed text-stone-400">
+                  اضغط ▶ لسماع الآية من بدايتها، وعدّل البداية/النهاية بدقة 0.01 ثانية عند الحاجة، ثم «تطبيق وحفظ».
+                  إن بدأ التسجيل دون بسملة أزل علامة «التسجيل يبدأ بالبسملة».
+                </p>
+              </div>
+            )}
 
             {/* أزرار الوسم السريعة بنقرة واحدة (One-Tap Live Stamping) */}
             <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -1,0 +1,1425 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/App.tsx");import.meta.env = {"BASE_URL": "/", "DEV": true, "MODE": "development", "PROD": false, "SSR": false, "VITE_POSTHOG_KEY": "phc_local_verify_key", "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_g3fgEXSq3PsAXAfGh6zqrA_dXje4zeh", "VITE_SUPABASE_SECRET_KEY": "sb_secret_T1b1H-zLa2iWSfRPgIQy0A_t95ux5by", "VITE_SUPABASE_URL": "https://ktfxeccahsfsuhwdjjjn.supabase.co"};import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/App.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=53f49c8c"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$(), _s1 = $RefreshSig$(), _s2 = $RefreshSig$(), _s3 = $RefreshSig$(), _s4 = $RefreshSig$();
+import { QueryClient, QueryClientProvider } from "/node_modules/.vite/deps/@tanstack_react-query.js?v=53f49c8c";
+import { HashRouter, Route, Routes, useLocation, useNavigate } from "/node_modules/.vite/deps/react-router-dom.js?v=53f49c8c";
+import { setupTauriCloseHandler, closeTauriApp } from "/src/utils/tauriUtils.ts";
+import { isKidsMode, setKidsLocked } from "/src/data/kidsLock.ts";
+import ParentalGateModal from "/src/components/ParentalGateModal.tsx";
+import { Toaster as Sonner } from "/src/components/ui/sonner.tsx";
+import { Toaster } from "/src/components/ui/toaster.tsx";
+import { TooltipProvider } from "/src/components/ui/tooltip.tsx";
+import __vite__cjsImport11_react from "/node_modules/.vite/deps/react.js?v=53f49c8c"; const useEffect = __vite__cjsImport11_react["useEffect"]; const useState = __vite__cjsImport11_react["useState"]; const lazy = __vite__cjsImport11_react["lazy"]; const Suspense = __vite__cjsImport11_react["Suspense"]; const startTransition = __vite__cjsImport11_react["startTransition"];
+const SiteLinksOverlay = /*#__PURE__*/ lazy(()=>import("/src/components/SiteLinksOverlay.tsx"));
+_c = SiteLinksOverlay;
+import { AudioContextProvider } from "/src/contexts/audioContext.tsx";
+const Index = /*#__PURE__*/ lazy(()=>import("/src/pages/Index.tsx"));
+_c1 = Index;
+const NotFound = /*#__PURE__*/ lazy(_c2 = ()=>import("/src/pages/NotFound.tsx"));
+_c3 = NotFound;
+const QuranReader = /*#__PURE__*/ lazy(_c4 = ()=>import("/src/pages/QuranReader.tsx"));
+_c5 = QuranReader;
+const KidsGames = /*#__PURE__*/ lazy(_c6 = ()=>import("/src/pages/KidsGames.tsx"));
+_c7 = KidsGames;
+const KidsShop = /*#__PURE__*/ lazy(_c8 = ()=>import("/src/pages/KidsShop.tsx"));
+_c9 = KidsShop;
+import { applyTheme, getTheme } from "/src/utils/theme.ts";
+import { syncCoordinatesFromServer } from "/src/data/ayahCoordinates.ts";
+import { syncTimingsFromServer } from "/src/data/ayahTimings.ts";
+import { syncCustomPagesFromServer, syncAllShadingFromServer } from "/src/data/customPages.ts";
+import { syncSurahRegionsFromServer } from "/src/data/surahRegions.ts";
+import { syncBookmarksFromServer } from "/src/data/bookmarks.ts";
+import { syncAdminDataFromServer } from "/src/data/titles.ts";
+import { syncKidsProfileFromServer } from "/src/data/kidsProfile.ts";
+const SettingsPage = /*#__PURE__*/ lazy(_c10 = ()=>import("/src/pages/SettingsPage.tsx"));
+_c11 = SettingsPage;
+const ParentDashboard = /*#__PURE__*/ lazy(_c12 = ()=>import("/src/pages/ParentDashboard.tsx"));
+_c13 = ParentDashboard;
+const CustomAudioManager = /*#__PURE__*/ lazy(_c14 = ()=>import("/src/pages/CustomAudioManager.tsx"));
+_c15 = CustomAudioManager;
+const AudioUploadPage = /*#__PURE__*/ lazy(_c16 = ()=>import("/src/pages/AudioUploadPage.tsx"));
+_c17 = AudioUploadPage;
+const UploadDeskPage = /*#__PURE__*/ lazy(_c18 = ()=>import("/src/pages/UploadDeskPage.tsx"));
+_c19 = UploadDeskPage;
+const SupportPage = /*#__PURE__*/ lazy(_c20 = ()=>import("/src/pages/SupportPage.tsx"));
+_c21 = SupportPage;
+const AnnouncementsPage = /*#__PURE__*/ lazy(_c22 = ()=>import("/src/pages/AnnouncementsPage.tsx"));
+_c23 = AnnouncementsPage;
+const ErrorPage = /*#__PURE__*/ lazy(_c24 = ()=>import("/src/pages/ErrorPage.tsx"));
+_c25 = ErrorPage;
+const AdminReleasesPanel = /*#__PURE__*/ lazy(_c26 = ()=>import("/src/pages/AdminReleasesPanel.tsx"));
+_c27 = AdminReleasesPanel;
+const LegendaryDownloadHub = /*#__PURE__*/ lazy(_c28 = ()=>import("/src/components/LegendaryDownloadHub.tsx"));
+_c29 = LegendaryDownloadHub;
+// ===== أدوات المعلّم والمصحف (معايرة التظليل / التوقيت / التقسيم / الربط) =====
+const TeacherTools = /*#__PURE__*/ lazy(_c30 = ()=>import("/src/pages/TeacherTools.tsx"));
+_c31 = TeacherTools;
+const QuranStudent = /*#__PURE__*/ lazy(_c32 = ()=>import("/src/pages/QuranStudent.tsx"));
+_c33 = QuranStudent;
+const QuizPage = /*#__PURE__*/ lazy(_c34 = ()=>import("/src/pages/QuizPage.tsx"));
+_c35 = QuizPage;
+const AyahCalibration = /*#__PURE__*/ lazy(_c36 = ()=>import("/src/pages/AyahCalibration.tsx"));
+_c37 = AyahCalibration;
+const TimingsRecorder = /*#__PURE__*/ lazy(_c38 = ()=>import("/src/pages/TimingsRecorder.tsx"));
+_c39 = TimingsRecorder;
+const ShadingPage = /*#__PURE__*/ lazy(_c40 = ()=>import("/src/pages/ShadingPage.tsx"));
+_c41 = ShadingPage;
+const LinkAudioPage = /*#__PURE__*/ lazy(_c42 = ()=>import("/src/pages/LinkAudioPage.tsx"));
+_c43 = LinkAudioPage;
+const RecitationMethods = /*#__PURE__*/ lazy(_c44 = ()=>import("/src/pages/RecitationMethods.tsx"));
+_c45 = RecitationMethods;
+const AudioSplitterPage = /*#__PURE__*/ lazy(_c46 = ()=>import("/src/pages/AudioSplitterPage.tsx"));
+_c47 = AudioSplitterPage;
+const ImageManager = /*#__PURE__*/ lazy(_c48 = ()=>import("/src/pages/ImageManager.tsx"));
+_c49 = ImageManager;
+const MushafUploadPage = /*#__PURE__*/ lazy(_c50 = ()=>import("/src/pages/MushafUploadPage.tsx"));
+_c51 = MushafUploadPage;
+const SortPagesPage = /*#__PURE__*/ lazy(_c52 = ()=>import("/src/pages/SortPagesPage.tsx"));
+_c53 = SortPagesPage;
+const RecitationPage = /*#__PURE__*/ lazy(_c54 = ()=>import("/src/pages/RecitationPage.tsx"));
+_c55 = RecitationPage;
+const ShadingSettingsPage = /*#__PURE__*/ lazy(_c56 = ()=>import("/src/pages/ShadingSettingsPage.tsx"));
+_c57 = ShadingSettingsPage;
+const SurahShadingPage = /*#__PURE__*/ lazy(_c58 = ()=>import("/src/pages/SurahShadingPage.tsx"));
+_c59 = SurahShadingPage;
+const AudioShadingSyncPage = /*#__PURE__*/ lazy(_c60 = ()=>import("/src/pages/AudioShadingSyncPage.tsx"));
+_c61 = AudioShadingSyncPage;
+import { getProfiles, kidsEnabled } from "/src/data/kidsProfile.ts";
+import { toast } from "/src/hooks/use-toast.ts";
+import WelcomeOverlay, { isOnboarded } from "/src/components/WelcomeOverlay.tsx";
+import ProfilePicker, { isPicked, markPicked } from "/src/components/ProfilePicker.tsx";
+import { logAppOpen } from "/src/utils/analytics.ts";
+import { identifyActiveProfile } from "/src/utils/posthog.ts";
+import { useBackgroundNotifications } from "/src/utils/notifications.ts";
+import { claimDailyRewards, incrementStreak } from "/src/data/dailyRewards.ts";
+import { setupRemoteControlListeners } from "/src/utils/controllerNavigation.ts";
+import { GlobalPlayerWrapper } from "/src/GlobalPlayerWrapper.tsx";
+import QuranLoading from "/src/components/QuranLoading.tsx";
+import Intro3DCarousel from "/src/components/Intro3DCarousel.tsx";
+import NetworkStatusBar from "/src/components/NetworkStatusBar.tsx";
+const queryClient = new QueryClient();
+// 🎞️ غلاف انتقال موحّد: كل صفحة تدخل بحركة ظهور واحدة مع حماية Suspense ثابتة لكل مسار
+const PageTransition = ({ children })=>{
+    _s();
+    const location = useLocation();
+    return /*#__PURE__*/ _jsxDEV(Suspense, {
+        fallback: /*#__PURE__*/ _jsxDEV(QuranLoading, {
+            fullScreen: true,
+            label: "جارٍ فتح الصفحة..."
+        }, void 0, false, {
+            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+            lineNumber: 73,
+            columnNumber: 25
+        }, this),
+        children: /*#__PURE__*/ _jsxDEV("div", {
+            className: "page-transition",
+            children: children
+        }, location.pathname, false, {
+            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+            lineNumber: 74,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+        lineNumber: 73,
+        columnNumber: 5
+    }, this);
+};
+_s(PageTransition, "pkHmaVRPskBaU4tMJuJJpV42k1I=", false, function() {
+    return [
+        useLocation
+    ];
+});
+_c62 = PageTransition;
+// 🔇 عند الانتقال بين الصفحات: يوقف أي صوت يعمل (المصحف/التلاوات/الألعاب)
+// حتى لا يستمرّ التشغيل في الخلفية عند مغادرة الصفحة، ويستثني الصفحات
+// التي يُفترض أن يستمرّ فيها الصوت (المصحف والتلاوات) عند التنقل بينهما.
+const AUDIO_PERSIST_ROUTES = [
+    "/",
+    "/audio",
+    "/mushaf",
+    "/sync-audio",
+    "/surah-shading",
+    "/timings",
+    "/link-audio"
+];
+const NavigationAudioGuard = ()=>{
+    _s1();
+    const location = useLocation();
+    useEffect(()=>{
+        const path = location.pathname;
+        // إيقاف المشغّل العام وعناصر الصوت فقط إن كنا خارج صفحات الاستمرار (المصحف والتلاوات)
+        if (!AUDIO_PERSIST_ROUTES.includes(path)) {
+            const el = window.__globalAudioEl;
+            if (el) {
+                try {
+                    el.pause();
+                } catch  {}
+            }
+            try {
+                document.querySelectorAll("audio").forEach((a)=>{
+                    if (!a.paused) a.pause();
+                });
+            } catch  {}
+        }
+        // إيقاف أصوات التشجيع في الألعاب
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const gv = window.__stopGameVoice;
+            if (typeof gv === "function") gv();
+        } catch  {}
+        // إيقاف النطق المحلي (Web Speech API) حتى لا يستمر الكلام في الخلفية
+        try {
+            if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        } catch  {}
+    }, [
+        location.pathname
+    ]);
+    return null;
+};
+_s1(NavigationAudioGuard, "BXcZrDMM76mmm4zA8/QV5UbMNXE=", false, function() {
+    return [
+        useLocation
+    ];
+});
+_c63 = NavigationAudioGuard;
+// المسار الرئيسي يفتح صفحة الصوت (التلاوات) — المصحف قيد التطوير
+// ملاحظة: نعرض الصفحة مباشرة بدل إعادة التوجيه إلى /audio حتى لا يظهر المسار "/" كأنه فارغ،
+// مع إبقاء المسار /audio يعمل كما هو عند الدخول عليه من شريط التنقل.
+const HomeRoute = ()=>{
+    _s2();
+    const location = useLocation();
+    const navigate = useNavigate();
+    useEffect(()=>{
+        // إن كان مسار الجذر يحمل معاملات query فقط (بدون hash)، حوّل إلى /audio مع الحفاظ عليها.
+        // لا نعيد توجيه الروابط التي تحتوي على hash (مثل #/sync-audio) لأن React Router HashRouter
+        // يتعامل معها مباشرة وعرض الصفحة المقصودة.
+        if (location.search && !location.hash) {
+            startTransition(()=>{
+                navigate(`/audio${location.search}`, {
+                    replace: true
+                });
+            });
+        }
+    }, [
+        location.search,
+        location.hash,
+        navigate
+    ]);
+    return /*#__PURE__*/ _jsxDEV(Index, {}, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+        lineNumber: 134,
+        columnNumber: 10
+    }, this);
+};
+_s2(HomeRoute, "fPjCxODVr6jVvib6o2c9VLE4s84=", false, function() {
+    return [
+        useLocation,
+        useNavigate
+    ];
+});
+_c64 = HomeRoute;
+function KidsModeGuard() {
+    _s3();
+    const location = useLocation();
+    const navigate = useNavigate();
+    useEffect(()=>{
+        const checkMode = ()=>{
+            const allowedPaths = [
+                "/games",
+                "/",
+                "/audio",
+                "/mushaf",
+                "/shop",
+                "/profiles",
+                "/settings",
+                "/parent",
+                "/teacher-tools",
+                "/ayah-calibrate",
+                "/calibrate",
+                "/timings",
+                "/shading",
+                "/link",
+                "/recitation-methods",
+                "/audio-splitter",
+                "/image-manager",
+                "/mushaf-upload",
+                "/sort",
+                "/recitation",
+                "/surah-shading",
+                "/shading-settings",
+                "/new-shading",
+                "/shading-box",
+                "/sync-audio",
+                "/audio-shading-sync",
+                "/announcements",
+                "/support",
+                "/download",
+                "/releases",
+                "/error"
+            ];
+            if (isKidsMode() && !allowedPaths.includes(location.pathname)) {
+                startTransition(()=>{
+                    navigate("/audio", {
+                        replace: true
+                    });
+                });
+            }
+        };
+        checkMode();
+        window.addEventListener("mushaf:kidsmode", checkMode);
+        window.addEventListener("mushaf:appmode", checkMode);
+        return ()=>{
+            window.removeEventListener("mushaf:kidsmode", checkMode);
+            window.removeEventListener("mushaf:appmode", checkMode);
+        };
+    }, [
+        location.pathname,
+        navigate
+    ]);
+    useEffect(()=>{
+        const handleBeforeUnload = (e)=>{
+            if (isKidsMode()) {
+                e.preventDefault();
+                e.returnValue = "وضع الأطفال مقفل لحماية طفلك.";
+                return e.returnValue;
+            }
+        };
+        const handlePopState = ()=>{
+            if (isKidsMode()) {
+                const allowedPaths = [
+                    "/games",
+                    "/",
+                    "/audio",
+                    "/mushaf",
+                    "/shop",
+                    "/profiles",
+                    "/settings",
+                    "/parent",
+                    "/teacher-tools",
+                    "/ayah-calibrate",
+                    "/calibrate",
+                    "/timings",
+                    "/shading",
+                    "/link",
+                    "/recitation-methods",
+                    "/audio-splitter",
+                    "/image-manager",
+                    "/mushaf-upload",
+                    "/sort",
+                    "/recitation",
+                    "/surah-shading",
+                    "/shading-settings",
+                    "/new-shading",
+                    "/shading-box",
+                    "/sync-audio",
+                    "/audio-shading-sync",
+                    "/announcements",
+                    "/support",
+                    "/download",
+                    "/releases",
+                    "/error"
+                ];
+                if (!allowedPaths.includes(window.location.pathname)) {
+                    window.history.pushState(null, "", "/audio");
+                    startTransition(()=>{
+                        navigate("/audio", {
+                            replace: true
+                        });
+                    });
+                }
+            }
+        };
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        window.addEventListener("popstate", handlePopState);
+        return ()=>{
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("popstate", handlePopState);
+        };
+    }, [
+        navigate
+    ]);
+    return null;
+}
+_s3(KidsModeGuard, "f/aBFxbwKInRaAisPnDqLg9O6Mo=", false, function() {
+    return [
+        useLocation,
+        useNavigate
+    ];
+});
+_c65 = KidsModeGuard;
+const App = ()=>{
+    _s4();
+    const [showSiteLinks, setShowSiteLinks] = useState(false);
+    const [showWelcome, setShowWelcome] = useState(()=>!isOnboarded());
+    // بوابة "من يتعلّم الآن؟" عند فتح التطبيق
+    // وضع الأطفال: فقط إن كان هناك أكثر من طفل.
+    const shouldGate = ()=>{
+        try {
+            if (!isOnboarded() || isPicked()) return false;
+            if (!kidsEnabled()) return false; // وضع وليّ الأمر أو إخفاء الأطفال بالكامل
+            const n = getProfiles().length;
+            return n > 1;
+        } catch  {
+            return false;
+        }
+    };
+    const [showPicker, setShowPicker] = useState(shouldGate);
+    const [showExitGate, setShowExitGate] = useState(false);
+    useEffect(()=>{
+        // Security: Block right-click context menu
+        const blockContextMenu = (e)=>e.preventDefault();
+        document.addEventListener("contextmenu", blockContextMenu);
+        // Security: Block dev tools shortcuts
+        const blockDevTools = (e)=>{
+            // F12
+            if (e.key === "F12") e.preventDefault();
+            // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+            if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C" || e.key === "i" || e.key === "j" || e.key === "c")) {
+                e.preventDefault();
+            }
+            // Ctrl+U (View Source)
+            if (e.ctrlKey && (e.key === "U" || e.key === "u")) {
+                e.preventDefault();
+            }
+        };
+        document.addEventListener("keydown", blockDevTools);
+        const unlistenPromise = setupTauriCloseHandler(()=>{
+            setShowExitGate(true);
+        });
+        const handleGlobalExitRequest = ()=>{
+            setShowExitGate(true);
+        };
+        window.addEventListener("mushaf:request_exit", handleGlobalExitRequest);
+        return ()=>{
+            document.removeEventListener("contextmenu", blockContextMenu);
+            document.removeEventListener("keydown", blockDevTools);
+            unlistenPromise.then((unsub)=>unsub && unsub());
+            window.removeEventListener("mushaf:request_exit", handleGlobalExitRequest);
+        };
+    }, []);
+    useBackgroundNotifications();
+    useEffect(()=>{
+        applyTheme(getTheme());
+        // مزامنة البيانات في الخلفية دون أن توقف إكمال بقية المهام عند فشل طلب واحد.
+        const syncTimer = setTimeout(()=>{
+            [
+                syncCoordinatesFromServer,
+                syncTimingsFromServer,
+                syncCustomPagesFromServer,
+                syncSurahRegionsFromServer,
+                syncBookmarksFromServer,
+                syncKidsProfileFromServer,
+                syncAdminDataFromServer,
+                syncAllShadingFromServer
+            ].forEach((sync)=>{
+                Promise.resolve().then(sync).catch(()=>{});
+            });
+        }, 1500);
+        // Log analytics
+        logAppOpen();
+        // تعريف صاحب الجلسة في PostHog (طفل أو ولي أمر) — وعند كل تبديل ملف
+        identifyActiveProfile();
+        window.addEventListener("mushaf:activeprofile", identifyActiveProfile);
+        // المكافآت اليومية — تحميل من السيرفر في الخلفية ومطالبتها مرة واحدة يومياً
+        setTimeout(()=>{
+            claimDailyRewards().then((res)=>{
+                if (res.success && res.reward) {
+                    incrementStreak();
+                    toast({
+                        title: res.reward.message || "🎁 مكافأة اليوم وصلت!",
+                        description: `تم إضافة ${res.totalAdded} نجمة إلى حسابك`
+                    });
+                }
+            }).catch(()=>{});
+        }, 2000);
+        // ملاحظة: أُزيل الرفع التلقائي لملف الإحداثيات عند الإقلاع.
+        // كان يستبدل ملف التظليل على السيرفر بمحتوى المتصفح (وقد يمسح تظليل صفحات كاملة عند أول فتح)،
+        // كما كان يُعيد تحميل الصفحة مراراً في وضع التطوير (HMR). الحفظ الآن فقط من زر «حفظ التظليل بالسيرفر».
+        // تم إزالة فحص التحديثات التلقائي
+        // 🎮 ربط لوحة المفاتيح وأذرع التحكم بالتطبيق بالكامل (بدون وضع التلفاز)
+        const cleanupRemote = setupRemoteControlListeners();
+        return ()=>{
+            clearTimeout(syncTimer);
+            cleanupRemote();
+            window.removeEventListener("mushaf:activeprofile", identifyActiveProfile);
+        };
+    }, []);
+    // Ctrl+5 shortcut to toggle site links overlay
+    useEffect(()=>{
+        const handleKeyDown = (e)=>{
+            if (e.ctrlKey && e.key === '5') {
+                e.preventDefault();
+                setShowSiteLinks((prev)=>!prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return ()=>window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+    return /*#__PURE__*/ _jsxDEV(AudioContextProvider, {
+        children: /*#__PURE__*/ _jsxDEV(QueryClientProvider, {
+            client: queryClient,
+            children: /*#__PURE__*/ _jsxDEV(TooltipProvider, {
+                children: [
+                    /*#__PURE__*/ _jsxDEV(Toaster, {}, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                        lineNumber: 330,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV(Sonner, {}, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                        lineNumber: 331,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV(NetworkStatusBar, {}, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                        lineNumber: 333,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV(Intro3DCarousel, {}, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                        lineNumber: 335,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV(HashRouter, {
+                        basename: import.meta.env.BASE_URL,
+                        future: {
+                            v7_startTransition: true,
+                            v7_relativeSplatPath: true
+                        },
+                        children: [
+                            /*#__PURE__*/ _jsxDEV(KidsModeGuard, {}, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                lineNumber: 337,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV(NavigationAudioGuard, {}, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                lineNumber: 338,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV(Suspense, {
+                                fallback: /*#__PURE__*/ _jsxDEV(QuranLoading, {
+                                    fullScreen: true,
+                                    label: "جارٍ فتح التطبيق"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                    lineNumber: 339,
+                                    columnNumber: 33
+                                }, this),
+                                children: /*#__PURE__*/ _jsxDEV(Routes, {
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(HomeRoute, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 342,
+                                                    columnNumber: 58
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 342,
+                                                columnNumber: 42
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 342,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/audio",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(Index, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 343,
+                                                    columnNumber: 63
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 343,
+                                                columnNumber: 47
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 343,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/mushaf",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(QuranReader, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 344,
+                                                    columnNumber: 64
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 344,
+                                                columnNumber: 48
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 344,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/games",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(KidsGames, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 345,
+                                                    columnNumber: 63
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 345,
+                                                columnNumber: 47
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 345,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/shop",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(KidsShop, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 346,
+                                                    columnNumber: 62
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 346,
+                                                columnNumber: 46
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 346,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/settings",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(SettingsPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 347,
+                                                    columnNumber: 66
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 347,
+                                                columnNumber: 50
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 347,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/parent",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(ParentDashboard, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 348,
+                                                    columnNumber: 64
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 348,
+                                                columnNumber: 48
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 348,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/profiles",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(ProfilePicker, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 349,
+                                                    columnNumber: 66
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 349,
+                                                columnNumber: 50
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 349,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/manage-audio",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(CustomAudioManager, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 350,
+                                                    columnNumber: 70
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 350,
+                                                columnNumber: 54
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 350,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/custom-audio",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(CustomAudioManager, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 351,
+                                                    columnNumber: 70
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 351,
+                                                columnNumber: 54
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 351,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/upload",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(AudioUploadPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 352,
+                                                    columnNumber: 64
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 352,
+                                                columnNumber: 48
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 352,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/upload-desk",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(UploadDeskPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 353,
+                                                    columnNumber: 69
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 353,
+                                                columnNumber: 53
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 353,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/announcements",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(AnnouncementsPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 355,
+                                                    columnNumber: 71
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 355,
+                                                columnNumber: 55
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 355,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/support",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(SupportPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 356,
+                                                    columnNumber: 65
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 356,
+                                                columnNumber: 49
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 356,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/download",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(LegendaryDownloadHub, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 357,
+                                                    columnNumber: 66
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 357,
+                                                columnNumber: 50
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 357,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/releases",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(LegendaryDownloadHub, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 358,
+                                                    columnNumber: 66
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 358,
+                                                columnNumber: 50
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 358,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/error",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(ErrorPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 359,
+                                                    columnNumber: 63
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 359,
+                                                columnNumber: 47
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 359,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/admin/releases",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(AdminReleasesPanel, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 360,
+                                                    columnNumber: 72
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 360,
+                                                columnNumber: 56
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 360,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/teacher-tools",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(TeacherTools, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 362,
+                                                    columnNumber: 71
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 362,
+                                                columnNumber: 55
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 362,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/student",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(QuranStudent, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 363,
+                                                    columnNumber: 65
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 363,
+                                                columnNumber: 49
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 363,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/quiz",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(QuizPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 364,
+                                                    columnNumber: 62
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 364,
+                                                columnNumber: 46
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 364,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/exam",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(QuizPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 365,
+                                                    columnNumber: 62
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 365,
+                                                columnNumber: 46
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 365,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/ayah-calibrate",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(AyahCalibration, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 366,
+                                                    columnNumber: 72
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 366,
+                                                columnNumber: 56
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 366,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/calibrate",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(LinkAudioPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 367,
+                                                    columnNumber: 67
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 367,
+                                                columnNumber: 51
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 367,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/timings",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(TimingsRecorder, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 368,
+                                                    columnNumber: 65
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 368,
+                                                columnNumber: 49
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 368,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/shading",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(ShadingPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 369,
+                                                    columnNumber: 65
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 369,
+                                                columnNumber: 49
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 369,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/link",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(LinkAudioPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 370,
+                                                    columnNumber: 62
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 370,
+                                                columnNumber: 46
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 370,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/recitation-methods",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(RecitationMethods, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 371,
+                                                    columnNumber: 76
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 371,
+                                                columnNumber: 60
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 371,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/audio-splitter",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(AudioSplitterPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 372,
+                                                    columnNumber: 72
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 372,
+                                                columnNumber: 56
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 372,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/image-manager",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(ImageManager, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 373,
+                                                    columnNumber: 71
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 373,
+                                                columnNumber: 55
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 373,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/mushaf-upload",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(MushafUploadPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 374,
+                                                    columnNumber: 71
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 374,
+                                                columnNumber: 55
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 374,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/sort",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(SortPagesPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 375,
+                                                    columnNumber: 62
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 375,
+                                                columnNumber: 46
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 375,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/recitation",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(RecitationPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 376,
+                                                    columnNumber: 68
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 376,
+                                                columnNumber: 52
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 376,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/surah-shading",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(SurahShadingPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 377,
+                                                    columnNumber: 71
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 377,
+                                                columnNumber: 55
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 377,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/shading-settings",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(ShadingSettingsPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 378,
+                                                    columnNumber: 74
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 378,
+                                                columnNumber: 58
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 378,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/new-shading",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(SurahShadingPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 379,
+                                                    columnNumber: 69
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 379,
+                                                columnNumber: 53
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 379,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/shading-box",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(SurahShadingPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 380,
+                                                    columnNumber: 69
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 380,
+                                                columnNumber: 53
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 380,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/sync-audio",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(AudioShadingSyncPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 381,
+                                                    columnNumber: 68
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 381,
+                                                columnNumber: 52
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 381,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "/audio-shading-sync",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(AudioShadingSyncPage, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 382,
+                                                    columnNumber: 76
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 382,
+                                                columnNumber: 60
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 382,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ _jsxDEV(Route, {
+                                            path: "*",
+                                            element: /*#__PURE__*/ _jsxDEV(PageTransition, {
+                                                children: /*#__PURE__*/ _jsxDEV(NotFound, {}, void 0, false, {
+                                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                    lineNumber: 384,
+                                                    columnNumber: 58
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                                lineNumber: 384,
+                                                columnNumber: 42
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                            lineNumber: 384,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                    lineNumber: 340,
+                                    columnNumber: 15
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                lineNumber: 339,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV(SiteLinksOverlay, {
+                                open: showSiteLinks,
+                                onClose: ()=>setShowSiteLinks(false)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                lineNumber: 387,
+                                columnNumber: 13
+                            }, this),
+                            showWelcome && /*#__PURE__*/ _jsxDEV(WelcomeOverlay, {
+                                onDone: ()=>{
+                                    markPicked();
+                                    setShowWelcome(false);
+                                    setShowPicker(false);
+                                }
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                lineNumber: 388,
+                                columnNumber: 29
+                            }, this),
+                            !showWelcome && showPicker && /*#__PURE__*/ _jsxDEV(ProfilePicker, {
+                                onPicked: ()=>setShowPicker(false)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                lineNumber: 389,
+                                columnNumber: 44
+                            }, this),
+                            showExitGate && /*#__PURE__*/ _jsxDEV(ParentalGateModal, {
+                                title: "إغلاق التطبيق (حماية وضع الأطفال)",
+                                strictMode: false,
+                                onSuccess: ()=>{
+                                    setShowExitGate(false);
+                                    setKidsLocked(false);
+                                    closeTauriApp();
+                                },
+                                onCancel: ()=>{
+                                    setShowExitGate(false);
+                                }
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                lineNumber: 391,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV(GlobalPlayerWrapper, {}, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                                lineNumber: 404,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                        lineNumber: 336,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+                lineNumber: 329,
+                columnNumber: 9
+            }, this)
+        }, void 0, false, {
+            fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+            lineNumber: 328,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/App.tsx",
+        lineNumber: 327,
+        columnNumber: 7
+    }, this);
+};
+_s4(App, "D0EUAWDyxpZAX3XuOTEoz2rmwUQ=", false, function() {
+    return [
+        useBackgroundNotifications
+    ];
+});
+_c66 = App;
+export default App;
+var _c, _c1, _c2, _c3, _c4, _c5, _c6, _c7, _c8, _c9, _c10, _c11, _c12, _c13, _c14, _c15, _c16, _c17, _c18, _c19, _c20, _c21, _c22, _c23, _c24, _c25, _c26, _c27, _c28, _c29, _c30, _c31, _c32, _c33, _c34, _c35, _c36, _c37, _c38, _c39, _c40, _c41, _c42, _c43, _c44, _c45, _c46, _c47, _c48, _c49, _c50, _c51, _c52, _c53, _c54, _c55, _c56, _c57, _c58, _c59, _c60, _c61, _c62, _c63, _c64, _c65, _c66;
+$RefreshReg$(_c, "SiteLinksOverlay");
+$RefreshReg$(_c1, "Index");
+$RefreshReg$(_c2, "NotFound$lazy");
+$RefreshReg$(_c3, "NotFound");
+$RefreshReg$(_c4, "QuranReader$lazy");
+$RefreshReg$(_c5, "QuranReader");
+$RefreshReg$(_c6, "KidsGames$lazy");
+$RefreshReg$(_c7, "KidsGames");
+$RefreshReg$(_c8, "KidsShop$lazy");
+$RefreshReg$(_c9, "KidsShop");
+$RefreshReg$(_c10, "SettingsPage$lazy");
+$RefreshReg$(_c11, "SettingsPage");
+$RefreshReg$(_c12, "ParentDashboard$lazy");
+$RefreshReg$(_c13, "ParentDashboard");
+$RefreshReg$(_c14, "CustomAudioManager$lazy");
+$RefreshReg$(_c15, "CustomAudioManager");
+$RefreshReg$(_c16, "AudioUploadPage$lazy");
+$RefreshReg$(_c17, "AudioUploadPage");
+$RefreshReg$(_c18, "UploadDeskPage$lazy");
+$RefreshReg$(_c19, "UploadDeskPage");
+$RefreshReg$(_c20, "SupportPage$lazy");
+$RefreshReg$(_c21, "SupportPage");
+$RefreshReg$(_c22, "AnnouncementsPage$lazy");
+$RefreshReg$(_c23, "AnnouncementsPage");
+$RefreshReg$(_c24, "ErrorPage$lazy");
+$RefreshReg$(_c25, "ErrorPage");
+$RefreshReg$(_c26, "AdminReleasesPanel$lazy");
+$RefreshReg$(_c27, "AdminReleasesPanel");
+$RefreshReg$(_c28, "LegendaryDownloadHub$lazy");
+$RefreshReg$(_c29, "LegendaryDownloadHub");
+$RefreshReg$(_c30, "TeacherTools$lazy");
+$RefreshReg$(_c31, "TeacherTools");
+$RefreshReg$(_c32, "QuranStudent$lazy");
+$RefreshReg$(_c33, "QuranStudent");
+$RefreshReg$(_c34, "QuizPage$lazy");
+$RefreshReg$(_c35, "QuizPage");
+$RefreshReg$(_c36, "AyahCalibration$lazy");
+$RefreshReg$(_c37, "AyahCalibration");
+$RefreshReg$(_c38, "TimingsRecorder$lazy");
+$RefreshReg$(_c39, "TimingsRecorder");
+$RefreshReg$(_c40, "ShadingPage$lazy");
+$RefreshReg$(_c41, "ShadingPage");
+$RefreshReg$(_c42, "LinkAudioPage$lazy");
+$RefreshReg$(_c43, "LinkAudioPage");
+$RefreshReg$(_c44, "RecitationMethods$lazy");
+$RefreshReg$(_c45, "RecitationMethods");
+$RefreshReg$(_c46, "AudioSplitterPage$lazy");
+$RefreshReg$(_c47, "AudioSplitterPage");
+$RefreshReg$(_c48, "ImageManager$lazy");
+$RefreshReg$(_c49, "ImageManager");
+$RefreshReg$(_c50, "MushafUploadPage$lazy");
+$RefreshReg$(_c51, "MushafUploadPage");
+$RefreshReg$(_c52, "SortPagesPage$lazy");
+$RefreshReg$(_c53, "SortPagesPage");
+$RefreshReg$(_c54, "RecitationPage$lazy");
+$RefreshReg$(_c55, "RecitationPage");
+$RefreshReg$(_c56, "ShadingSettingsPage$lazy");
+$RefreshReg$(_c57, "ShadingSettingsPage");
+$RefreshReg$(_c58, "SurahShadingPage$lazy");
+$RefreshReg$(_c59, "SurahShadingPage");
+$RefreshReg$(_c60, "AudioShadingSyncPage$lazy");
+$RefreshReg$(_c61, "AudioShadingSyncPage");
+$RefreshReg$(_c62, "PageTransition");
+$RefreshReg$(_c63, "NavigationAudioGuard");
+$RefreshReg$(_c64, "HomeRoute");
+$RefreshReg$(_c65, "KidsModeGuard");
+$RefreshReg$(_c66, "App");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/App.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/App.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkFwcC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgUXVlcnlDbGllbnQsIFF1ZXJ5Q2xpZW50UHJvdmlkZXIgfSBmcm9tIFwiQHRhbnN0YWNrL3JlYWN0LXF1ZXJ5XCI7XHJcbmltcG9ydCB7IEhhc2hSb3V0ZXIsIFJvdXRlLCBSb3V0ZXMsIHVzZUxvY2F0aW9uLCB1c2VOYXZpZ2F0ZSB9IGZyb20gXCJyZWFjdC1yb3V0ZXItZG9tXCI7XHJcbmltcG9ydCB7IHNldHVwVGF1cmlDbG9zZUhhbmRsZXIsIGNsb3NlVGF1cmlBcHAgfSBmcm9tIFwiLi91dGlscy90YXVyaVV0aWxzXCI7XHJcbmltcG9ydCB7IGlzS2lkc01vZGUsIHNldEtpZHNMb2NrZWQgfSBmcm9tIFwiLi9kYXRhL2tpZHNMb2NrXCI7XHJcbmltcG9ydCBQYXJlbnRhbEdhdGVNb2RhbCBmcm9tIFwiLi9jb21wb25lbnRzL1BhcmVudGFsR2F0ZU1vZGFsXCI7XHJcbmltcG9ydCB7IFRvYXN0ZXIgYXMgU29ubmVyIH0gZnJvbSBcIi4vY29tcG9uZW50cy91aS9zb25uZXJcIjtcclxuaW1wb3J0IHsgVG9hc3RlciB9IGZyb20gXCIuL2NvbXBvbmVudHMvdWkvdG9hc3RlclwiO1xyXG5pbXBvcnQgeyBUb29sdGlwUHJvdmlkZXIgfSBmcm9tIFwiLi9jb21wb25lbnRzL3VpL3Rvb2x0aXBcIjtcclxuaW1wb3J0IHsgdXNlRWZmZWN0LCB1c2VTdGF0ZSwgdXNlQ2FsbGJhY2ssIGxhenksIFN1c3BlbnNlLCBzdGFydFRyYW5zaXRpb24sIHR5cGUgUmVhY3ROb2RlIH0gZnJvbSBcInJlYWN0XCI7XHJcbmNvbnN0IFNpdGVMaW5rc092ZXJsYXkgPSBsYXp5KCgpID0+IGltcG9ydChcIi4vY29tcG9uZW50cy9TaXRlTGlua3NPdmVybGF5XCIpKTtcclxuaW1wb3J0IHsgQXVkaW9Db250ZXh0UHJvdmlkZXIgfSBmcm9tIFwiLi9jb250ZXh0cy9hdWRpb0NvbnRleHRcIjtcclxuY29uc3QgSW5kZXggPSBsYXp5KCgpID0+IGltcG9ydChcIi4vcGFnZXMvSW5kZXgudHN4XCIpKTtcclxuY29uc3QgTm90Rm91bmQgPSBsYXp5KCgpID0+IGltcG9ydChcIi4vcGFnZXMvTm90Rm91bmQudHN4XCIpKTtcclxuY29uc3QgUXVyYW5SZWFkZXIgPSBsYXp5KCgpID0+IGltcG9ydChcIi4vcGFnZXMvUXVyYW5SZWFkZXIudHN4XCIpKTtcclxuY29uc3QgS2lkc0dhbWVzID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL3BhZ2VzL0tpZHNHYW1lcy50c3hcIikpO1xyXG5jb25zdCBLaWRzU2hvcCA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9LaWRzU2hvcC50c3hcIikpO1xyXG5pbXBvcnQgeyBhcHBseVRoZW1lLCBnZXRUaGVtZSB9IGZyb20gXCIuL3V0aWxzL3RoZW1lXCI7XHJcbmltcG9ydCB7IHN5bmNDb29yZGluYXRlc0Zyb21TZXJ2ZXIgfSBmcm9tIFwiLi9kYXRhL2F5YWhDb29yZGluYXRlc1wiO1xyXG5pbXBvcnQgeyBzeW5jVGltaW5nc0Zyb21TZXJ2ZXIgfSBmcm9tIFwiLi9kYXRhL2F5YWhUaW1pbmdzXCI7XHJcbmltcG9ydCB7IHN5bmNDdXN0b21QYWdlc0Zyb21TZXJ2ZXIsIHN5bmNBbGxTaGFkaW5nRnJvbVNlcnZlciB9IGZyb20gXCIuL2RhdGEvY3VzdG9tUGFnZXNcIjtcclxuaW1wb3J0IHsgc3luY1N1cmFoUmVnaW9uc0Zyb21TZXJ2ZXIgfSBmcm9tIFwiLi9kYXRhL3N1cmFoUmVnaW9uc1wiO1xyXG5pbXBvcnQgeyBzeW5jQm9va21hcmtzRnJvbVNlcnZlciB9IGZyb20gXCIuL2RhdGEvYm9va21hcmtzXCI7XHJcbmltcG9ydCB7IHN5bmNBZG1pbkRhdGFGcm9tU2VydmVyIH0gZnJvbSBcIi4vZGF0YS90aXRsZXNcIjtcclxuaW1wb3J0IHsgc3luY0tpZHNQcm9maWxlRnJvbVNlcnZlciB9IGZyb20gXCIuL2RhdGEva2lkc1Byb2ZpbGVcIjtcclxuY29uc3QgU2V0dGluZ3NQYWdlID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL3BhZ2VzL1NldHRpbmdzUGFnZS50c3hcIikpO1xyXG5jb25zdCBQYXJlbnREYXNoYm9hcmQgPSBsYXp5KCgpID0+IGltcG9ydChcIi4vcGFnZXMvUGFyZW50RGFzaGJvYXJkLnRzeFwiKSk7XHJcbmNvbnN0IEN1c3RvbUF1ZGlvTWFuYWdlciA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9DdXN0b21BdWRpb01hbmFnZXIudHN4XCIpKTtcclxuY29uc3QgQXVkaW9VcGxvYWRQYWdlID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL3BhZ2VzL0F1ZGlvVXBsb2FkUGFnZS50c3hcIikpO1xyXG5jb25zdCBVcGxvYWREZXNrUGFnZSA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9VcGxvYWREZXNrUGFnZS50c3hcIikpO1xyXG5jb25zdCBTdXBwb3J0UGFnZSA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9TdXBwb3J0UGFnZS50c3hcIikpO1xyXG5cclxuY29uc3QgQW5ub3VuY2VtZW50c1BhZ2UgPSBsYXp5KCgpID0+IGltcG9ydChcIi4vcGFnZXMvQW5ub3VuY2VtZW50c1BhZ2UudHN4XCIpKTtcclxuY29uc3QgRXJyb3JQYWdlID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL3BhZ2VzL0Vycm9yUGFnZS50c3hcIikpO1xyXG5jb25zdCBBZG1pblJlbGVhc2VzUGFuZWwgPSBsYXp5KCgpID0+IGltcG9ydChcIi4vcGFnZXMvQWRtaW5SZWxlYXNlc1BhbmVsLnRzeFwiKSk7XHJcbmNvbnN0IExlZ2VuZGFyeURvd25sb2FkSHViID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL2NvbXBvbmVudHMvTGVnZW5kYXJ5RG93bmxvYWRIdWIudHN4XCIpKTtcclxuLy8gPT09PT0g2KPYr9mI2KfYqiDYp9mE2YXYudmE2ZHZhSDZiNin2YTZhdi12K3ZgSAo2YXYudin2YrYsdipINin2YTYqti42YTZitmEIC8g2KfZhNiq2YjZgtmK2KogLyDYp9mE2KrZgtiz2YrZhSAvINin2YTYsdio2LcpID09PT09XHJcbmNvbnN0IFRlYWNoZXJUb29scyA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9UZWFjaGVyVG9vbHMudHN4XCIpKTtcclxuY29uc3QgUXVyYW5TdHVkZW50ID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL3BhZ2VzL1F1cmFuU3R1ZGVudC50c3hcIikpO1xyXG5jb25zdCBRdWl6UGFnZSA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9RdWl6UGFnZS50c3hcIikpO1xyXG5jb25zdCBBeWFoQ2FsaWJyYXRpb24gPSBsYXp5KCgpID0+IGltcG9ydChcIi4vcGFnZXMvQXlhaENhbGlicmF0aW9uLnRzeFwiKSk7XHJcbmNvbnN0IFRpbWluZ3NSZWNvcmRlciA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9UaW1pbmdzUmVjb3JkZXIudHN4XCIpKTtcclxuY29uc3QgU2hhZGluZ1BhZ2UgPSBsYXp5KCgpID0+IGltcG9ydChcIi4vcGFnZXMvU2hhZGluZ1BhZ2UudHN4XCIpKTtcclxuY29uc3QgTGlua0F1ZGlvUGFnZSA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9MaW5rQXVkaW9QYWdlLnRzeFwiKSk7XHJcbmNvbnN0IFJlY2l0YXRpb25NZXRob2RzID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL3BhZ2VzL1JlY2l0YXRpb25NZXRob2RzLnRzeFwiKSk7XHJcbmNvbnN0IEF1ZGlvU3BsaXR0ZXJQYWdlID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL3BhZ2VzL0F1ZGlvU3BsaXR0ZXJQYWdlLnRzeFwiKSk7XHJcbmNvbnN0IEltYWdlTWFuYWdlciA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9JbWFnZU1hbmFnZXIudHN4XCIpKTtcclxuY29uc3QgTXVzaGFmVXBsb2FkUGFnZSA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9NdXNoYWZVcGxvYWRQYWdlLnRzeFwiKSk7XHJcbmNvbnN0IFNvcnRQYWdlc1BhZ2UgPSBsYXp5KCgpID0+IGltcG9ydChcIi4vcGFnZXMvU29ydFBhZ2VzUGFnZS50c3hcIikpO1xyXG5jb25zdCBSZWNpdGF0aW9uUGFnZSA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9SZWNpdGF0aW9uUGFnZS50c3hcIikpO1xyXG5jb25zdCBTaGFkaW5nU2V0dGluZ3NQYWdlID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL3BhZ2VzL1NoYWRpbmdTZXR0aW5nc1BhZ2UudHN4XCIpKTtcclxuY29uc3QgU3VyYWhTaGFkaW5nUGFnZSA9IGxhenkoKCkgPT4gaW1wb3J0KFwiLi9wYWdlcy9TdXJhaFNoYWRpbmdQYWdlLnRzeFwiKSk7XHJcbmNvbnN0IEF1ZGlvU2hhZGluZ1N5bmNQYWdlID0gbGF6eSgoKSA9PiBpbXBvcnQoXCIuL3BhZ2VzL0F1ZGlvU2hhZGluZ1N5bmNQYWdlLnRzeFwiKSk7XHJcbmltcG9ydCB7IGdldFByb2ZpbGUsIGdldEFwcE1vZGUsIGdldFByb2ZpbGVzLCBraWRzRW5hYmxlZCB9IGZyb20gXCIuL2RhdGEva2lkc1Byb2ZpbGVcIjtcclxuaW1wb3J0IHsgdG9hc3QgfSBmcm9tIFwiLi9ob29rcy91c2UtdG9hc3RcIjtcclxuaW1wb3J0IFdlbGNvbWVPdmVybGF5LCB7IGlzT25ib2FyZGVkIH0gZnJvbSBcIi4vY29tcG9uZW50cy9XZWxjb21lT3ZlcmxheS50c3hcIjtcclxuaW1wb3J0IFByb2ZpbGVQaWNrZXIsIHsgaXNQaWNrZWQsIG1hcmtQaWNrZWQgfSBmcm9tIFwiLi9jb21wb25lbnRzL1Byb2ZpbGVQaWNrZXIudHN4XCI7XHJcbmltcG9ydCB7IGxvZ0FwcE9wZW4gfSBmcm9tIFwiLi91dGlscy9hbmFseXRpY3MudHNcIjtcclxuaW1wb3J0IHsgaWRlbnRpZnlBY3RpdmVQcm9maWxlIH0gZnJvbSBcIi4vdXRpbHMvcG9zdGhvZy50c1wiO1xyXG5pbXBvcnQgeyB1c2VCYWNrZ3JvdW5kTm90aWZpY2F0aW9ucywgc2hvd0xvY2FsTm90aWZpY2F0aW9uIH0gZnJvbSBcIi4vdXRpbHMvbm90aWZpY2F0aW9ucy50c1wiO1xyXG5pbXBvcnQgeyBjbGFpbURhaWx5UmV3YXJkcywgaW5jcmVtZW50U3RyZWFrIH0gZnJvbSBcIi4vZGF0YS9kYWlseVJld2FyZHNcIjtcclxuaW1wb3J0IHsgc2V0dXBSZW1vdGVDb250cm9sTGlzdGVuZXJzIH0gZnJvbSBcIi4vdXRpbHMvY29udHJvbGxlck5hdmlnYXRpb25cIjtcclxuaW1wb3J0IHsgR2xvYmFsUGxheWVyV3JhcHBlciB9IGZyb20gXCIuL0dsb2JhbFBsYXllcldyYXBwZXJcIjtcclxuaW1wb3J0IFF1cmFuTG9hZGluZyBmcm9tIFwiLi9jb21wb25lbnRzL1F1cmFuTG9hZGluZ1wiO1xyXG5pbXBvcnQgSW50cm8zRENhcm91c2VsIGZyb20gXCIuL2NvbXBvbmVudHMvSW50cm8zRENhcm91c2VsXCI7XHJcbmltcG9ydCBOZXR3b3JrU3RhdHVzQmFyIGZyb20gXCIuL2NvbXBvbmVudHMvTmV0d29ya1N0YXR1c0JhclwiO1xyXG5cclxuY29uc3QgcXVlcnlDbGllbnQgPSBuZXcgUXVlcnlDbGllbnQoKTtcclxuXHJcbi8vIPCfjp7vuI8g2LrZhNin2YEg2KfZhtiq2YLYp9mEINmF2YjYrdmR2K86INmD2YQg2LXZgdit2Kkg2KrYr9iu2YQg2KjYrdix2YPYqSDYuNmH2YjYsSDZiNin2K3Yr9ipINmF2Lkg2K3Zhdin2YrYqSBTdXNwZW5zZSDYq9in2KjYqtipINmE2YPZhCDZhdiz2KfYsVxyXG5jb25zdCBQYWdlVHJhbnNpdGlvbiA9ICh7IGNoaWxkcmVuIH06IHsgY2hpbGRyZW46IFJlYWN0Tm9kZSB9KSA9PiB7XHJcbiAgY29uc3QgbG9jYXRpb24gPSB1c2VMb2NhdGlvbigpO1xyXG4gIHJldHVybiAoXHJcbiAgICA8U3VzcGVuc2UgZmFsbGJhY2s9ezxRdXJhbkxvYWRpbmcgZnVsbFNjcmVlbiBsYWJlbD1cItis2KfYsdmNINmB2KrYrSDYp9mE2LXZgdit2KkuLi5cIiAvPn0+XHJcbiAgICAgIDxkaXYga2V5PXtsb2NhdGlvbi5wYXRobmFtZX0gY2xhc3NOYW1lPVwicGFnZS10cmFuc2l0aW9uXCI+XHJcbiAgICAgICAge2NoaWxkcmVufVxyXG4gICAgICA8L2Rpdj5cclxuICAgIDwvU3VzcGVuc2U+XHJcbiAgKTtcclxufTtcclxuXHJcbi8vIPCflIcg2LnZhtivINin2YTYp9mG2KrZgtin2YQg2KjZitmGINin2YTYtdmB2K3Yp9iqOiDZitmI2YLZgSDYo9mKINi12YjYqiDZiti52YXZhCAo2KfZhNmF2LXYrdmBL9in2YTYqtmE2KfZiNin2Kov2KfZhNij2YTYudin2KgpXHJcbi8vINit2KrZiSDZhNinINmK2LPYqtmF2LHZkSDYp9mE2KrYtNi62YrZhCDZgdmKINin2YTYrtmE2YHZitipINi52YbYryDZhdi62KfYr9ix2Kkg2KfZhNi12YHYrdip2Iwg2YjZitiz2KrYq9mG2Yog2KfZhNi12YHYrdin2KpcclxuLy8g2KfZhNiq2Yog2YrZj9mB2KrYsdi2INij2YYg2YrYs9iq2YXYsdmRINmB2YrZh9inINin2YTYtdmI2KogKNin2YTZhdi12K3ZgSDZiNin2YTYqtmE2KfZiNin2KopINi52YbYryDYp9mE2KrZhtmC2YQg2KjZitmG2YfZhdinLlxyXG5jb25zdCBBVURJT19QRVJTSVNUX1JPVVRFUyA9IFtcIi9cIiwgXCIvYXVkaW9cIiwgXCIvbXVzaGFmXCIsIFwiL3N5bmMtYXVkaW9cIiwgXCIvc3VyYWgtc2hhZGluZ1wiLCBcIi90aW1pbmdzXCIsIFwiL2xpbmstYXVkaW9cIl07XHJcblxyXG5jb25zdCBOYXZpZ2F0aW9uQXVkaW9HdWFyZCA9ICgpID0+IHtcclxuICBjb25zdCBsb2NhdGlvbiA9IHVzZUxvY2F0aW9uKCk7XHJcbiAgdXNlRWZmZWN0KCgpID0+IHtcclxuICAgIGNvbnN0IHBhdGggPSBsb2NhdGlvbi5wYXRobmFtZTtcclxuICAgIC8vINil2YrZgtin2YEg2KfZhNmF2LTYutmR2YQg2KfZhNi52KfZhSDZiNi52YbYp9i12LEg2KfZhNi12YjYqiDZgdmC2Lcg2KXZhiDZg9mG2Kcg2K7Yp9ix2Kwg2LXZgdit2KfYqiDYp9mE2KfYs9iq2YXYsdin2LEgKNin2YTZhdi12K3ZgSDZiNin2YTYqtmE2KfZiNin2KopXHJcbiAgICBpZiAoIUFVRElPX1BFUlNJU1RfUk9VVEVTLmluY2x1ZGVzKHBhdGgpKSB7XHJcbiAgICAgIGNvbnN0IGVsID0gKHdpbmRvdyBhcyB1bmtub3duIGFzIHsgX19nbG9iYWxBdWRpb0VsPzogSFRNTEF1ZGlvRWxlbWVudCB9KS5fX2dsb2JhbEF1ZGlvRWw7XHJcbiAgICAgIGlmIChlbCkge1xyXG4gICAgICAgIHRyeSB7IGVsLnBhdXNlKCk7IH0gY2F0Y2ggeyAvKiBpZ25vcmUgKi8gfVxyXG4gICAgICB9XHJcbiAgICAgIHRyeSB7XHJcbiAgICAgICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbChcImF1ZGlvXCIpLmZvckVhY2goKGEpID0+IHtcclxuICAgICAgICAgIGlmICghYS5wYXVzZWQpIGEucGF1c2UoKTtcclxuICAgICAgICB9KTtcclxuICAgICAgfSBjYXRjaCB7IC8qIGlnbm9yZSAqLyB9XHJcbiAgICB9XHJcbiAgICAvLyDYpdmK2YLYp9mBINij2LXZiNin2Kog2KfZhNiq2LTYrNmK2Lkg2YHZiiDYp9mE2KPZhNi52KfYqFxyXG4gICAgdHJ5IHtcclxuICAgICAgLy8gZXNsaW50LWRpc2FibGUtbmV4dC1saW5lIEB0eXBlc2NyaXB0LWVzbGludC9uby1leHBsaWNpdC1hbnlcclxuICAgICAgY29uc3QgZ3YgPSAod2luZG93IGFzIGFueSkuX19zdG9wR2FtZVZvaWNlO1xyXG4gICAgICBpZiAodHlwZW9mIGd2ID09PSBcImZ1bmN0aW9uXCIpIGd2KCk7XHJcbiAgICB9IGNhdGNoIHsgLyogaWdub3JlICovIH1cclxuICAgIC8vINil2YrZgtin2YEg2KfZhNmG2LfZgiDYp9mE2YXYrdmE2YogKFdlYiBTcGVlY2ggQVBJKSDYrdiq2Ykg2YTYpyDZitiz2KrZhdixINin2YTZg9mE2KfZhSDZgdmKINin2YTYrtmE2YHZitipXHJcbiAgICB0cnkge1xyXG4gICAgICBpZiAoXCJzcGVlY2hTeW50aGVzaXNcIiBpbiB3aW5kb3cpIHdpbmRvdy5zcGVlY2hTeW50aGVzaXMuY2FuY2VsKCk7XHJcbiAgICB9IGNhdGNoIHsgLyogaWdub3JlICovIH1cclxuICB9LCBbbG9jYXRpb24ucGF0aG5hbWVdKTtcclxuICByZXR1cm4gbnVsbDtcclxufTtcclxuXHJcbi8vINin2YTZhdiz2KfYsSDYp9mE2LHYptmK2LPZiiDZitmB2KrYrSDYtdmB2K3YqSDYp9mE2LXZiNiqICjYp9mE2KrZhNin2YjYp9iqKSDigJQg2KfZhNmF2LXYrdmBINmC2YrYryDYp9mE2KrYt9mI2YrYsVxyXG4vLyDZhdmE2KfYrdi42Kk6INmG2LnYsdi2INin2YTYtdmB2K3YqSDZhdio2KfYtNix2Kkg2KjYr9mEINil2LnYp9iv2Kkg2KfZhNiq2YjYrNmK2Ycg2KXZhNmJIC9hdWRpbyDYrdiq2Ykg2YTYpyDZiti42YfYsSDYp9mE2YXYs9in2LEgXCIvXCIg2YPYo9mG2Ycg2YHYp9ix2LrYjFxyXG4vLyDZhdi5INil2KjZgtin2KEg2KfZhNmF2LPYp9ixIC9hdWRpbyDZiti52YXZhCDZg9mF2Kcg2YfZiCDYudmG2K8g2KfZhNiv2K7ZiNmEINi52YTZitmHINmF2YYg2LTYsdmK2Lcg2KfZhNiq2YbZgtmELlxyXG5jb25zdCBIb21lUm91dGUgPSAoKSA9PiB7XHJcbiAgY29uc3QgbG9jYXRpb24gPSB1c2VMb2NhdGlvbigpO1xyXG4gIGNvbnN0IG5hdmlnYXRlID0gdXNlTmF2aWdhdGUoKTtcclxuXHJcbiAgdXNlRWZmZWN0KCgpID0+IHtcclxuICAgIC8vINil2YYg2YPYp9mGINmF2LPYp9ixINin2YTYrNiw2LEg2YrYrdmF2YQg2YXYudin2YXZhNin2KogcXVlcnkg2YHZgti3ICjYqNiv2YjZhiBoYXNoKdiMINit2YjZkdmEINil2YTZiSAvYXVkaW8g2YXYuSDYp9mE2K3Zgdin2Lgg2LnZhNmK2YfYpy5cclxuICAgIC8vINmE2Kcg2YbYudmK2K8g2KrZiNis2YrZhyDYp9mE2LHZiNin2KjYtyDYp9mE2KrZiiDYqtit2KrZiNmKINi52YTZiSBoYXNoICjZhdir2YQgIy9zeW5jLWF1ZGlvKSDZhNij2YYgUmVhY3QgUm91dGVyIEhhc2hSb3V0ZXJcclxuICAgIC8vINmK2KrYudin2YXZhCDZhdi52YfYpyDZhdio2KfYtNix2Kkg2YjYudix2LYg2KfZhNi12YHYrdipINin2YTZhdmC2LXZiNiv2KkuXHJcbiAgICBpZiAobG9jYXRpb24uc2VhcmNoICYmICFsb2NhdGlvbi5oYXNoKSB7XHJcbiAgICAgIHN0YXJ0VHJhbnNpdGlvbigoKSA9PiB7XHJcbiAgICAgICAgbmF2aWdhdGUoYC9hdWRpbyR7bG9jYXRpb24uc2VhcmNofWAsIHsgcmVwbGFjZTogdHJ1ZSB9KTtcclxuICAgICAgfSk7XHJcbiAgICB9XHJcbiAgfSwgW2xvY2F0aW9uLnNlYXJjaCwgbG9jYXRpb24uaGFzaCwgbmF2aWdhdGVdKTtcclxuXHJcbiAgcmV0dXJuIDxJbmRleCAvPjtcclxufTtcclxuXHJcbmZ1bmN0aW9uIEtpZHNNb2RlR3VhcmQoKSB7XHJcbiAgY29uc3QgbG9jYXRpb24gPSB1c2VMb2NhdGlvbigpO1xyXG4gIGNvbnN0IG5hdmlnYXRlID0gdXNlTmF2aWdhdGUoKTtcclxuXHJcbiAgdXNlRWZmZWN0KCgpID0+IHtcclxuICAgIGNvbnN0IGNoZWNrTW9kZSA9ICgpID0+IHtcclxuICAgICAgY29uc3QgYWxsb3dlZFBhdGhzID0gW1xyXG4gICAgICAgIFwiL2dhbWVzXCIsIFwiL1wiLCBcIi9hdWRpb1wiLCBcIi9tdXNoYWZcIiwgXCIvc2hvcFwiLCBcIi9wcm9maWxlc1wiLCBcIi9zZXR0aW5nc1wiLCBcIi9wYXJlbnRcIixcclxuICAgICAgICBcIi90ZWFjaGVyLXRvb2xzXCIsIFwiL2F5YWgtY2FsaWJyYXRlXCIsIFwiL2NhbGlicmF0ZVwiLCBcIi90aW1pbmdzXCIsIFwiL3NoYWRpbmdcIiwgXCIvbGlua1wiLFxyXG4gICAgICAgIFwiL3JlY2l0YXRpb24tbWV0aG9kc1wiLCBcIi9hdWRpby1zcGxpdHRlclwiLCBcIi9pbWFnZS1tYW5hZ2VyXCIsIFwiL211c2hhZi11cGxvYWRcIiwgXCIvc29ydFwiLFxyXG4gICAgICAgIFwiL3JlY2l0YXRpb25cIiwgXCIvc3VyYWgtc2hhZGluZ1wiLCBcIi9zaGFkaW5nLXNldHRpbmdzXCIsIFwiL25ldy1zaGFkaW5nXCIsIFwiL3NoYWRpbmctYm94XCIsXHJcbiAgICAgICAgXCIvc3luYy1hdWRpb1wiLCBcIi9hdWRpby1zaGFkaW5nLXN5bmNcIiwgXCIvYW5ub3VuY2VtZW50c1wiLCBcIi9zdXBwb3J0XCIsIFwiL2Rvd25sb2FkXCIsIFwiL3JlbGVhc2VzXCIsIFwiL2Vycm9yXCJcclxuICAgICAgXTtcclxuICAgICAgaWYgKGlzS2lkc01vZGUoKSAmJiAhYWxsb3dlZFBhdGhzLmluY2x1ZGVzKGxvY2F0aW9uLnBhdGhuYW1lKSkge1xyXG4gICAgICAgIHN0YXJ0VHJhbnNpdGlvbigoKSA9PiB7XHJcbiAgICAgICAgICBuYXZpZ2F0ZShcIi9hdWRpb1wiLCB7IHJlcGxhY2U6IHRydWUgfSk7XHJcbiAgICAgICAgfSk7XHJcbiAgICAgIH1cclxuICAgIH07XHJcbiAgICBjaGVja01vZGUoKTtcclxuICAgIHdpbmRvdy5hZGRFdmVudExpc3RlbmVyKFwibXVzaGFmOmtpZHNtb2RlXCIsIGNoZWNrTW9kZSk7XHJcbiAgICB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcihcIm11c2hhZjphcHBtb2RlXCIsIGNoZWNrTW9kZSk7XHJcbiAgICByZXR1cm4gKCkgPT4ge1xyXG4gICAgICB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcihcIm11c2hhZjpraWRzbW9kZVwiLCBjaGVja01vZGUpO1xyXG4gICAgICB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcihcIm11c2hhZjphcHBtb2RlXCIsIGNoZWNrTW9kZSk7XHJcbiAgICB9O1xyXG4gIH0sIFtsb2NhdGlvbi5wYXRobmFtZSwgbmF2aWdhdGVdKTtcclxuXHJcbiAgdXNlRWZmZWN0KCgpID0+IHtcclxuICAgIGNvbnN0IGhhbmRsZUJlZm9yZVVubG9hZCA9IChlOiBCZWZvcmVVbmxvYWRFdmVudCkgPT4ge1xyXG4gICAgICBpZiAoaXNLaWRzTW9kZSgpKSB7XHJcbiAgICAgICAgZS5wcmV2ZW50RGVmYXVsdCgpO1xyXG4gICAgICAgIGUucmV0dXJuVmFsdWUgPSBcItmI2LbYuSDYp9mE2KPYt9mB2KfZhCDZhdmC2YHZhCDZhNit2YXYp9mK2Kkg2LfZgdmE2YMuXCI7XHJcbiAgICAgICAgcmV0dXJuIGUucmV0dXJuVmFsdWU7XHJcbiAgICAgIH1cclxuICAgIH07XHJcblxyXG4gICAgY29uc3QgaGFuZGxlUG9wU3RhdGUgPSAoKSA9PiB7XHJcbiAgICAgIGlmIChpc0tpZHNNb2RlKCkpIHtcclxuICAgICAgICBjb25zdCBhbGxvd2VkUGF0aHMgPSBbXHJcbiAgICAgICAgICBcIi9nYW1lc1wiLCBcIi9cIiwgXCIvYXVkaW9cIiwgXCIvbXVzaGFmXCIsIFwiL3Nob3BcIiwgXCIvcHJvZmlsZXNcIiwgXCIvc2V0dGluZ3NcIiwgXCIvcGFyZW50XCIsXHJcbiAgICAgICAgICBcIi90ZWFjaGVyLXRvb2xzXCIsIFwiL2F5YWgtY2FsaWJyYXRlXCIsIFwiL2NhbGlicmF0ZVwiLCBcIi90aW1pbmdzXCIsIFwiL3NoYWRpbmdcIiwgXCIvbGlua1wiLFxyXG4gICAgICAgICAgXCIvcmVjaXRhdGlvbi1tZXRob2RzXCIsIFwiL2F1ZGlvLXNwbGl0dGVyXCIsIFwiL2ltYWdlLW1hbmFnZXJcIiwgXCIvbXVzaGFmLXVwbG9hZFwiLCBcIi9zb3J0XCIsXHJcbiAgICAgICAgICBcIi9yZWNpdGF0aW9uXCIsIFwiL3N1cmFoLXNoYWRpbmdcIiwgXCIvc2hhZGluZy1zZXR0aW5nc1wiLCBcIi9uZXctc2hhZGluZ1wiLCBcIi9zaGFkaW5nLWJveFwiLFxyXG4gICAgICAgICAgXCIvc3luYy1hdWRpb1wiLCBcIi9hdWRpby1zaGFkaW5nLXN5bmNcIiwgXCIvYW5ub3VuY2VtZW50c1wiLCBcIi9zdXBwb3J0XCIsIFwiL2Rvd25sb2FkXCIsIFwiL3JlbGVhc2VzXCIsIFwiL2Vycm9yXCJcclxuICAgICAgICBdO1xyXG4gICAgICAgIGlmICghYWxsb3dlZFBhdGhzLmluY2x1ZGVzKHdpbmRvdy5sb2NhdGlvbi5wYXRobmFtZSkpIHtcclxuICAgICAgICAgIHdpbmRvdy5oaXN0b3J5LnB1c2hTdGF0ZShudWxsLCBcIlwiLCBcIi9hdWRpb1wiKTtcclxuICAgICAgICAgIHN0YXJ0VHJhbnNpdGlvbigoKSA9PiB7XHJcbiAgICAgICAgICAgIG5hdmlnYXRlKFwiL2F1ZGlvXCIsIHsgcmVwbGFjZTogdHJ1ZSB9KTtcclxuICAgICAgICAgIH0pO1xyXG4gICAgICAgIH1cclxuICAgICAgfVxyXG4gICAgfTtcclxuXHJcbiAgICB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcihcImJlZm9yZXVubG9hZFwiLCBoYW5kbGVCZWZvcmVVbmxvYWQpO1xyXG4gICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoXCJwb3BzdGF0ZVwiLCBoYW5kbGVQb3BTdGF0ZSk7XHJcbiAgICByZXR1cm4gKCkgPT4ge1xyXG4gICAgICB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcihcImJlZm9yZXVubG9hZFwiLCBoYW5kbGVCZWZvcmVVbmxvYWQpO1xyXG4gICAgICB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcihcInBvcHN0YXRlXCIsIGhhbmRsZVBvcFN0YXRlKTtcclxuICAgIH07XHJcbiAgfSwgW25hdmlnYXRlXSk7XHJcblxyXG4gIHJldHVybiBudWxsO1xyXG59XHJcblxyXG5jb25zdCBBcHAgPSAoKSA9PiB7XHJcbiAgY29uc3QgW3Nob3dTaXRlTGlua3MsIHNldFNob3dTaXRlTGlua3NdID0gdXNlU3RhdGUoZmFsc2UpO1xyXG4gIGNvbnN0IFtzaG93V2VsY29tZSwgc2V0U2hvd1dlbGNvbWVdID0gdXNlU3RhdGUoKCkgPT4gIWlzT25ib2FyZGVkKCkpO1xyXG4gIC8vINio2YjYp9io2KkgXCLZhdmGINmK2KrYudmE2ZHZhSDYp9mE2KLZhtifXCIg2LnZhtivINmB2KrYrSDYp9mE2KrYt9io2YrZglxyXG4gIC8vINmI2LbYuSDYp9mE2KPYt9mB2KfZhDog2YHZgti3INil2YYg2YPYp9mGINmH2YbYp9mDINij2YPYq9ixINmF2YYg2LfZgdmELlxyXG4gIGNvbnN0IHNob3VsZEdhdGUgPSAoKSA9PiB7XHJcbiAgICB0cnkge1xyXG4gICAgICBpZiAoIWlzT25ib2FyZGVkKCkgfHwgaXNQaWNrZWQoKSkgcmV0dXJuIGZhbHNlO1xyXG4gICAgICBpZiAoIWtpZHNFbmFibGVkKCkpIHJldHVybiBmYWxzZTsgICAvLyDZiNi22Lkg2YjZhNmK2ZEg2KfZhNij2YXYsSDYo9mIINil2K7Zgdin2KEg2KfZhNij2LfZgdin2YQg2KjYp9mE2YPYp9mF2YRcclxuICAgICAgY29uc3QgbiA9IGdldFByb2ZpbGVzKCkubGVuZ3RoO1xyXG4gICAgICByZXR1cm4gbiA+IDE7XHJcbiAgICB9IGNhdGNoIHsgcmV0dXJuIGZhbHNlOyB9XHJcbiAgfTtcclxuICBjb25zdCBbc2hvd1BpY2tlciwgc2V0U2hvd1BpY2tlcl0gPSB1c2VTdGF0ZShzaG91bGRHYXRlKTtcclxuICBjb25zdCBbc2hvd0V4aXRHYXRlLCBzZXRTaG93RXhpdEdhdGVdID0gdXNlU3RhdGUoZmFsc2UpO1xyXG5cclxuICB1c2VFZmZlY3QoKCkgPT4ge1xyXG4gICAgLy8gU2VjdXJpdHk6IEJsb2NrIHJpZ2h0LWNsaWNrIGNvbnRleHQgbWVudVxyXG4gICAgY29uc3QgYmxvY2tDb250ZXh0TWVudSA9IChlOiBNb3VzZUV2ZW50KSA9PiBlLnByZXZlbnREZWZhdWx0KCk7XHJcbiAgICBkb2N1bWVudC5hZGRFdmVudExpc3RlbmVyKFwiY29udGV4dG1lbnVcIiwgYmxvY2tDb250ZXh0TWVudSk7XHJcblxyXG4gICAgLy8gU2VjdXJpdHk6IEJsb2NrIGRldiB0b29scyBzaG9ydGN1dHNcclxuICAgIGNvbnN0IGJsb2NrRGV2VG9vbHMgPSAoZTogS2V5Ym9hcmRFdmVudCkgPT4ge1xyXG4gICAgICAvLyBGMTJcclxuICAgICAgaWYgKGUua2V5ID09PSBcIkYxMlwiKSBlLnByZXZlbnREZWZhdWx0KCk7XHJcbiAgICAgIC8vIEN0cmwrU2hpZnQrSSwgQ3RybCtTaGlmdCtKLCBDdHJsK1NoaWZ0K0NcclxuICAgICAgaWYgKGUuY3RybEtleSAmJiBlLnNoaWZ0S2V5ICYmIChlLmtleSA9PT0gXCJJXCIgfHwgZS5rZXkgPT09IFwiSlwiIHx8IGUua2V5ID09PSBcIkNcIiB8fCBlLmtleSA9PT0gXCJpXCIgfHwgZS5rZXkgPT09IFwialwiIHx8IGUua2V5ID09PSBcImNcIikpIHtcclxuICAgICAgICBlLnByZXZlbnREZWZhdWx0KCk7XHJcbiAgICAgIH1cclxuICAgICAgLy8gQ3RybCtVIChWaWV3IFNvdXJjZSlcclxuICAgICAgaWYgKGUuY3RybEtleSAmJiAoZS5rZXkgPT09IFwiVVwiIHx8IGUua2V5ID09PSBcInVcIikpIHtcclxuICAgICAgICBlLnByZXZlbnREZWZhdWx0KCk7XHJcbiAgICAgIH1cclxuICAgIH07XHJcbiAgICBkb2N1bWVudC5hZGRFdmVudExpc3RlbmVyKFwia2V5ZG93blwiLCBibG9ja0RldlRvb2xzKTtcclxuXHJcbiAgICBjb25zdCB1bmxpc3RlblByb21pc2UgPSBzZXR1cFRhdXJpQ2xvc2VIYW5kbGVyKCgpID0+IHtcclxuICAgICAgc2V0U2hvd0V4aXRHYXRlKHRydWUpO1xyXG4gICAgfSk7XHJcblxyXG4gICAgY29uc3QgaGFuZGxlR2xvYmFsRXhpdFJlcXVlc3QgPSAoKSA9PiB7XHJcbiAgICAgIHNldFNob3dFeGl0R2F0ZSh0cnVlKTtcclxuICAgIH07XHJcbiAgICB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcihcIm11c2hhZjpyZXF1ZXN0X2V4aXRcIiwgaGFuZGxlR2xvYmFsRXhpdFJlcXVlc3QpO1xyXG5cclxuICAgIHJldHVybiAoKSA9PiB7XHJcbiAgICAgIGRvY3VtZW50LnJlbW92ZUV2ZW50TGlzdGVuZXIoXCJjb250ZXh0bWVudVwiLCBibG9ja0NvbnRleHRNZW51KTtcclxuICAgICAgZG9jdW1lbnQucmVtb3ZlRXZlbnRMaXN0ZW5lcihcImtleWRvd25cIiwgYmxvY2tEZXZUb29scyk7XHJcbiAgICAgIHVubGlzdGVuUHJvbWlzZS50aGVuKCh1bnN1YikgPT4gdW5zdWIgJiYgdW5zdWIoKSk7XHJcbiAgICAgIHdpbmRvdy5yZW1vdmVFdmVudExpc3RlbmVyKFwibXVzaGFmOnJlcXVlc3RfZXhpdFwiLCBoYW5kbGVHbG9iYWxFeGl0UmVxdWVzdCk7XHJcbiAgICB9O1xyXG4gIH0sIFtdKTtcclxuXHJcbiAgdXNlQmFja2dyb3VuZE5vdGlmaWNhdGlvbnMoKTtcclxuXHJcbiAgdXNlRWZmZWN0KCgpID0+IHtcclxuICAgIGFwcGx5VGhlbWUoZ2V0VGhlbWUoKSk7XHJcbiAgICAvLyDZhdiy2KfZhdmG2Kkg2KfZhNio2YrYp9mG2KfYqiDZgdmKINin2YTYrtmE2YHZitipINiv2YjZhiDYo9mGINiq2YjZgtmBINil2YPZhdin2YQg2KjZgtmK2Kkg2KfZhNmF2YfYp9mFINi52YbYryDZgdi02YQg2LfZhNioINmI2KfYrdivLlxyXG4gICAgY29uc3Qgc3luY1RpbWVyID0gc2V0VGltZW91dCgoKSA9PiB7XHJcbiAgICAgIFtcclxuICAgICAgICBzeW5jQ29vcmRpbmF0ZXNGcm9tU2VydmVyLFxyXG4gICAgICAgIHN5bmNUaW1pbmdzRnJvbVNlcnZlcixcclxuICAgICAgICBzeW5jQ3VzdG9tUGFnZXNGcm9tU2VydmVyLFxyXG4gICAgICAgIHN5bmNTdXJhaFJlZ2lvbnNGcm9tU2VydmVyLFxyXG4gICAgICAgIHN5bmNCb29rbWFya3NGcm9tU2VydmVyLFxyXG4gICAgICAgIHN5bmNLaWRzUHJvZmlsZUZyb21TZXJ2ZXIsXHJcbiAgICAgICAgc3luY0FkbWluRGF0YUZyb21TZXJ2ZXIsXHJcbiAgICAgICAgc3luY0FsbFNoYWRpbmdGcm9tU2VydmVyLFxyXG4gICAgICBdLmZvckVhY2goKHN5bmMpID0+IHtcclxuICAgICAgICBQcm9taXNlLnJlc29sdmUoKS50aGVuKHN5bmMpLmNhdGNoKCgpID0+IHsgLyogb2ZmbGluZSBvciBzZXJ2ZXIgdW5hdmFpbGFibGUgKi8gfSk7XHJcbiAgICAgIH0pO1xyXG4gICAgfSwgMTUwMCk7XHJcblxyXG4gICAgLy8gTG9nIGFuYWx5dGljc1xyXG4gICAgbG9nQXBwT3BlbigpO1xyXG5cclxuICAgIC8vINiq2LnYsdmK2YEg2LXYp9it2Kgg2KfZhNis2YTYs9ipINmB2YogUG9zdEhvZyAo2LfZgdmEINij2Ygg2YjZhNmKINij2YXYsSkg4oCUINmI2LnZhtivINmD2YQg2KrYqNiv2YrZhCDZhdmE2YFcclxuICAgIGlkZW50aWZ5QWN0aXZlUHJvZmlsZSgpO1xyXG4gICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoXCJtdXNoYWY6YWN0aXZlcHJvZmlsZVwiLCBpZGVudGlmeUFjdGl2ZVByb2ZpbGUpO1xyXG5cclxuICAgIC8vINin2YTZhdmD2KfZgdii2Kog2KfZhNmK2YjZhdmK2Kkg4oCUINiq2K3ZhdmK2YQg2YXZhiDYp9mE2LPZitix2YHYsSDZgdmKINin2YTYrtmE2YHZitipINmI2YXYt9in2YTYqNiq2YfYpyDZhdix2Kkg2YjYp9it2K/YqSDZitmI2YXZitin2YtcclxuICAgIHNldFRpbWVvdXQoKCkgPT4ge1xyXG4gICAgICBjbGFpbURhaWx5UmV3YXJkcygpLnRoZW4oKHJlcykgPT4ge1xyXG4gICAgICAgIGlmIChyZXMuc3VjY2VzcyAmJiByZXMucmV3YXJkKSB7XHJcbiAgICAgICAgICBpbmNyZW1lbnRTdHJlYWsoKTtcclxuICAgICAgICAgIHRvYXN0KHtcclxuICAgICAgICAgICAgdGl0bGU6IHJlcy5yZXdhcmQubWVzc2FnZSB8fCBcIvCfjoEg2YXZg9in2YHYo9ipINin2YTZitmI2YUg2YjYtdmE2KohXCIsXHJcbiAgICAgICAgICAgIGRlc2NyaXB0aW9uOiBg2KrZhSDYpdi22KfZgdipICR7cmVzLnRvdGFsQWRkZWR9INmG2KzZhdipINil2YTZiSDYrdiz2KfYqNmDYCxcclxuICAgICAgICAgIH0pO1xyXG4gICAgICAgIH1cclxuICAgICAgfSkuY2F0Y2goKCkgPT4geyAvKiBpZ25vcmUgKi8gfSk7XHJcbiAgICB9LCAyMDAwKTtcclxuXHJcbiAgICAvLyDZhdmE2KfYrdi42Kk6INij2Y/YstmK2YQg2KfZhNix2YHYuSDYp9mE2KrZhNmC2KfYptmKINmE2YXZhNmBINin2YTYpdit2K/Yp9ir2YrYp9iqINi52YbYryDYp9mE2KXZgtmE2KfYuS5cclxuICAgIC8vINmD2KfZhiDZitiz2KrYqNiv2YQg2YXZhNmBINin2YTYqti42YTZitmEINi52YTZiSDYp9mE2LPZitix2YHYsSDYqNmF2K3YqtmI2Ykg2KfZhNmF2KrYtdmB2K0gKNmI2YLYryDZitmF2LPYrSDYqti42YTZitmEINi12YHYrdin2Kog2YPYp9mF2YTYqSDYudmG2K8g2KPZiNmEINmB2KrYrSnYjFxyXG4gICAgLy8g2YPZhdinINmD2KfZhiDZitmP2LnZitivINiq2K3ZhdmK2YQg2KfZhNi12YHYrdipINmF2LHYp9ix2KfZiyDZgdmKINmI2LbYuSDYp9mE2KrYt9mI2YrYsSAoSE1SKS4g2KfZhNit2YHYuCDYp9mE2KLZhiDZgdmC2Lcg2YXZhiDYstixIMKr2K3Zgdi4INin2YTYqti42YTZitmEINio2KfZhNiz2YrYsdmB2LHCuy5cclxuXHJcbiAgICAvLyDYqtmFINil2LLYp9mE2Kkg2YHYrdi1INin2YTYqtit2K/Zitir2KfYqiDYp9mE2KrZhNmC2KfYptmKXHJcblxyXG4gICAgLy8g8J+OriDYsdio2Lcg2YTZiNit2Kkg2KfZhNmF2YHYp9iq2YrYrSDZiNij2LDYsdi5INin2YTYqtit2YPZhSDYqNin2YTYqti32KjZitmCINio2KfZhNmD2KfZhdmEICjYqNiv2YjZhiDZiNi22Lkg2KfZhNiq2YTZgdin2LIpXHJcbiAgICBjb25zdCBjbGVhbnVwUmVtb3RlID0gc2V0dXBSZW1vdGVDb250cm9sTGlzdGVuZXJzKCk7XHJcblxyXG4gICAgcmV0dXJuICgpID0+IHtcclxuICAgICAgY2xlYXJUaW1lb3V0KHN5bmNUaW1lcik7XHJcbiAgICAgIGNsZWFudXBSZW1vdGUoKTtcclxuICAgICAgd2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoXCJtdXNoYWY6YWN0aXZlcHJvZmlsZVwiLCBpZGVudGlmeUFjdGl2ZVByb2ZpbGUpO1xyXG4gICAgfTtcclxuICB9LCBbXSk7XHJcblxyXG5cclxuXHJcbiAgLy8gQ3RybCs1IHNob3J0Y3V0IHRvIHRvZ2dsZSBzaXRlIGxpbmtzIG92ZXJsYXlcclxuICB1c2VFZmZlY3QoKCkgPT4ge1xyXG4gICAgY29uc3QgaGFuZGxlS2V5RG93biA9IChlOiBLZXlib2FyZEV2ZW50KSA9PiB7XHJcbiAgICAgIGlmIChlLmN0cmxLZXkgJiYgZS5rZXkgPT09ICc1Jykge1xyXG4gICAgICAgIGUucHJldmVudERlZmF1bHQoKTtcclxuICAgICAgICBzZXRTaG93U2l0ZUxpbmtzKHByZXYgPT4gIXByZXYpO1xyXG4gICAgICB9XHJcbiAgICB9O1xyXG4gICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ2tleWRvd24nLCBoYW5kbGVLZXlEb3duKTtcclxuICAgIHJldHVybiAoKSA9PiB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcigna2V5ZG93bicsIGhhbmRsZUtleURvd24pO1xyXG4gIH0sIFtdKTtcclxuXHJcbiAgcmV0dXJuIChcclxuICAgICAgPEF1ZGlvQ29udGV4dFByb3ZpZGVyPlxyXG4gICAgICA8UXVlcnlDbGllbnRQcm92aWRlciBjbGllbnQ9e3F1ZXJ5Q2xpZW50fT5cclxuICAgICAgICA8VG9vbHRpcFByb3ZpZGVyPlxyXG4gICAgICAgICAgPFRvYXN0ZXIgLz5cclxuICAgICAgICAgIDxTb25uZXIgLz5cclxuICAgICAgICAgIHsvKiDwn5OhINi02LHZiti3INiq2YbYqNmK2Ycg2KfZhNin2YbZgti32KfYuSDYp9mE2YXYpNmC2Kog2YjYudmI2K/YqSDYp9mE2KfYqti12KfZhCDYqNin2YTYpdmG2KrYsdmG2KogKi99XHJcbiAgICAgICAgICA8TmV0d29ya1N0YXR1c0JhciAvPlxyXG4gICAgICAgICAgey8qIPCfjJ8g2LTYp9i02Kkg2KfZhNiv2K7ZiNmEINir2YTYp9ir2YrYqSDYp9mE2KPYqNi52KfYryDYp9mE2K/ZiNin2LHYqSDZhNmF2K/YqSA1INir2YjYp9mG2Y0g2LnZhtivINmB2KrYrSDYp9mE2KrYt9io2YrZgiAqL31cclxuICAgICAgICAgIDxJbnRybzNEQ2Fyb3VzZWwgLz5cclxuICAgICAgICAgIDxIYXNoUm91dGVyIGJhc2VuYW1lPXtpbXBvcnQubWV0YS5lbnYuQkFTRV9VUkx9IGZ1dHVyZT17eyB2N19zdGFydFRyYW5zaXRpb246IHRydWUsIHY3X3JlbGF0aXZlU3BsYXRQYXRoOiB0cnVlIH19PlxyXG4gICAgICAgICAgICA8S2lkc01vZGVHdWFyZCAvPlxyXG4gICAgICAgICAgICA8TmF2aWdhdGlvbkF1ZGlvR3VhcmQgLz5cclxuICAgICAgICAgICAgPFN1c3BlbnNlIGZhbGxiYWNrPXs8UXVyYW5Mb2FkaW5nIGZ1bGxTY3JlZW4gbGFiZWw9XCLYrNin2LHZjSDZgdiq2K0g2KfZhNiq2LfYqNmK2YJcIiAvPn0+XHJcbiAgICAgICAgICAgICAgPFJvdXRlcz5cclxuICAgICAgICAgICAgICAgIHsvKiDYtdmB2K3YqSDYp9mE2LXZgdit2Kkv2KfZhNin2YbYqtmC2KfZhDog2YPZhCDYqti62YrZitixINmF2LPYp9ixINmK2LTYutmR2YQg2K3YsdmD2Kkg2K/YrtmI2YQg2YXZiNit2K/YqSAqL31cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL1wiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48SG9tZVJvdXRlIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9hdWRpb1wiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48SW5kZXggLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL211c2hhZlwiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48UXVyYW5SZWFkZXIgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL2dhbWVzXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxLaWRzR2FtZXMgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL3Nob3BcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PEtpZHNTaG9wIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9zZXR0aW5nc1wiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48U2V0dGluZ3NQYWdlIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9wYXJlbnRcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PFBhcmVudERhc2hib2FyZCAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvcHJvZmlsZXNcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PFByb2ZpbGVQaWNrZXIgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL21hbmFnZS1hdWRpb1wiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48Q3VzdG9tQXVkaW9NYW5hZ2VyIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9jdXN0b20tYXVkaW9cIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PEN1c3RvbUF1ZGlvTWFuYWdlciAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvdXBsb2FkXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxBdWRpb1VwbG9hZFBhZ2UgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL3VwbG9hZC1kZXNrXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxVcGxvYWREZXNrUGFnZSAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL2Fubm91bmNlbWVudHNcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PEFubm91bmNlbWVudHNQYWdlIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9zdXBwb3J0XCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxTdXBwb3J0UGFnZSAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvZG93bmxvYWRcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PExlZ2VuZGFyeURvd25sb2FkSHViIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9yZWxlYXNlc1wiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48TGVnZW5kYXJ5RG93bmxvYWRIdWIgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL2Vycm9yXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxFcnJvclBhZ2UgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL2FkbWluL3JlbGVhc2VzXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxBZG1pblJlbGVhc2VzUGFuZWwgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIHsvKiA9PT09PSDYo9iv2YjYp9iqINin2YTZhdi52YTZkdmFICjYqNiv2YjZhiDZg9mE2YXYqSDZhdix2YjYsSDigJQg2YTZhNmI2KfZhNiv2YrZhiDZiNin2YTZhdi52YTZkdmFKSA9PT09PSAqL31cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL3RlYWNoZXItdG9vbHNcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PFRlYWNoZXJUb29scyAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvc3R1ZGVudFwiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48UXVyYW5TdHVkZW50IC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9xdWl6XCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxRdWl6UGFnZSAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvZXhhbVwiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48UXVpelBhZ2UgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL2F5YWgtY2FsaWJyYXRlXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxBeWFoQ2FsaWJyYXRpb24gLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL2NhbGlicmF0ZVwiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48TGlua0F1ZGlvUGFnZSAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvdGltaW5nc1wiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48VGltaW5nc1JlY29yZGVyIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9zaGFkaW5nXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxTaGFkaW5nUGFnZSAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvbGlua1wiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48TGlua0F1ZGlvUGFnZSAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvcmVjaXRhdGlvbi1tZXRob2RzXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxSZWNpdGF0aW9uTWV0aG9kcyAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvYXVkaW8tc3BsaXR0ZXJcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PEF1ZGlvU3BsaXR0ZXJQYWdlIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9pbWFnZS1tYW5hZ2VyXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxJbWFnZU1hbmFnZXIgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL211c2hhZi11cGxvYWRcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PE11c2hhZlVwbG9hZFBhZ2UgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL3NvcnRcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PFNvcnRQYWdlc1BhZ2UgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL3JlY2l0YXRpb25cIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PFJlY2l0YXRpb25QYWdlIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9zdXJhaC1zaGFkaW5nXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxTdXJhaFNoYWRpbmdQYWdlIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9zaGFkaW5nLXNldHRpbmdzXCIgZWxlbWVudD17PFBhZ2VUcmFuc2l0aW9uPjxTaGFkaW5nU2V0dGluZ3NQYWdlIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9uZXctc2hhZGluZ1wiIGVsZW1lbnQ9ezxQYWdlVHJhbnNpdGlvbj48U3VyYWhTaGFkaW5nUGFnZSAvPjwvUGFnZVRyYW5zaXRpb24+fSAvPlxyXG4gICAgICAgICAgICAgICAgPFJvdXRlIHBhdGg9XCIvc2hhZGluZy1ib3hcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PFN1cmFoU2hhZGluZ1BhZ2UgLz48L1BhZ2VUcmFuc2l0aW9uPn0gLz5cclxuICAgICAgICAgICAgICAgIDxSb3V0ZSBwYXRoPVwiL3N5bmMtYXVkaW9cIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PEF1ZGlvU2hhZGluZ1N5bmNQYWdlIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIi9hdWRpby1zaGFkaW5nLXN5bmNcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PEF1ZGlvU2hhZGluZ1N5bmNQYWdlIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgICB7LyogQUREIEFMTCBDVVNUT00gUk9VVEVTIEFCT1ZFIFRIRSBDQVRDSC1BTEwgXCIqXCIgUk9VVEUgKi99XHJcbiAgICAgICAgICAgICAgICA8Um91dGUgcGF0aD1cIipcIiBlbGVtZW50PXs8UGFnZVRyYW5zaXRpb24+PE5vdEZvdW5kIC8+PC9QYWdlVHJhbnNpdGlvbj59IC8+XHJcbiAgICAgICAgICAgICAgPC9Sb3V0ZXM+XHJcbiAgICAgICAgICAgIDwvU3VzcGVuc2U+XHJcbiAgICAgICAgICAgIDxTaXRlTGlua3NPdmVybGF5IG9wZW49e3Nob3dTaXRlTGlua3N9IG9uQ2xvc2U9eygpID0+IHNldFNob3dTaXRlTGlua3MoZmFsc2UpfSAvPlxyXG4gICAgICAgICAgICB7c2hvd1dlbGNvbWUgJiYgPFdlbGNvbWVPdmVybGF5IG9uRG9uZT17KCkgPT4geyBtYXJrUGlja2VkKCk7IHNldFNob3dXZWxjb21lKGZhbHNlKTsgc2V0U2hvd1BpY2tlcihmYWxzZSk7IH19IC8+fVxyXG4gICAgICAgICAgICB7IXNob3dXZWxjb21lICYmIHNob3dQaWNrZXIgJiYgPFByb2ZpbGVQaWNrZXIgb25QaWNrZWQ9eygpID0+IHNldFNob3dQaWNrZXIoZmFsc2UpfSAvPn1cclxuICAgICAgICAgICAge3Nob3dFeGl0R2F0ZSAmJiAoXHJcbiAgICAgICAgICAgICAgPFBhcmVudGFsR2F0ZU1vZGFsXHJcbiAgICAgICAgICAgICAgICB0aXRsZT1cItil2LrZhNin2YIg2KfZhNiq2LfYqNmK2YIgKNit2YXYp9mK2Kkg2YjYtti5INin2YTYo9i32YHYp9mEKVwiXHJcbiAgICAgICAgICAgICAgICBzdHJpY3RNb2RlPXtmYWxzZX1cclxuICAgICAgICAgICAgICAgIG9uU3VjY2Vzcz17KCkgPT4ge1xyXG4gICAgICAgICAgICAgICAgICBzZXRTaG93RXhpdEdhdGUoZmFsc2UpO1xyXG4gICAgICAgICAgICAgICAgICBzZXRLaWRzTG9ja2VkKGZhbHNlKTtcclxuICAgICAgICAgICAgICAgICAgY2xvc2VUYXVyaUFwcCgpO1xyXG4gICAgICAgICAgICAgICAgfX1cclxuICAgICAgICAgICAgICAgIG9uQ2FuY2VsPXsoKSA9PiB7XHJcbiAgICAgICAgICAgICAgICAgIHNldFNob3dFeGl0R2F0ZShmYWxzZSk7XHJcbiAgICAgICAgICAgICAgICB9fVxyXG4gICAgICAgICAgICAgIC8+XHJcbiAgICAgICAgICAgICl9XHJcbiAgICAgICAgICAgIDxHbG9iYWxQbGF5ZXJXcmFwcGVyIC8+XHJcbiAgICAgICAgICA8L0hhc2hSb3V0ZXI+XHJcbiAgICAgICAgPC9Ub29sdGlwUHJvdmlkZXI+XHJcbiAgICAgIDwvUXVlcnlDbGllbnRQcm92aWRlcj5cclxuICAgICAgPC9BdWRpb0NvbnRleHRQcm92aWRlcj5cclxuICApO1xyXG59O1xyXG5cclxuZXhwb3J0IGRlZmF1bHQgQXBwO1xyXG4iXSwibmFtZXMiOlsiUXVlcnlDbGllbnQiLCJRdWVyeUNsaWVudFByb3ZpZGVyIiwiSGFzaFJvdXRlciIsIlJvdXRlIiwiUm91dGVzIiwidXNlTG9jYXRpb24iLCJ1c2VOYXZpZ2F0ZSIsInNldHVwVGF1cmlDbG9zZUhhbmRsZXIiLCJjbG9zZVRhdXJpQXBwIiwiaXNLaWRzTW9kZSIsInNldEtpZHNMb2NrZWQiLCJQYXJlbnRhbEdhdGVNb2RhbCIsIlRvYXN0ZXIiLCJTb25uZXIiLCJUb29sdGlwUHJvdmlkZXIiLCJ1c2VFZmZlY3QiLCJ1c2VTdGF0ZSIsImxhenkiLCJTdXNwZW5zZSIsInN0YXJ0VHJhbnNpdGlvbiIsIlNpdGVMaW5rc092ZXJsYXkiLCJBdWRpb0NvbnRleHRQcm92aWRlciIsIkluZGV4IiwiTm90Rm91bmQiLCJRdXJhblJlYWRlciIsIktpZHNHYW1lcyIsIktpZHNTaG9wIiwiYXBwbHlUaGVtZSIsImdldFRoZW1lIiwic3luY0Nvb3JkaW5hdGVzRnJvbVNlcnZlciIsInN5bmNUaW1pbmdzRnJvbVNlcnZlciIsInN5bmNDdXN0b21QYWdlc0Zyb21TZXJ2ZXIiLCJzeW5jQWxsU2hhZGluZ0Zyb21TZXJ2ZXIiLCJzeW5jU3VyYWhSZWdpb25zRnJvbVNlcnZlciIsInN5bmNCb29rbWFya3NGcm9tU2VydmVyIiwic3luY0FkbWluRGF0YUZyb21TZXJ2ZXIiLCJzeW5jS2lkc1Byb2ZpbGVGcm9tU2VydmVyIiwiU2V0dGluZ3NQYWdlIiwiUGFyZW50RGFzaGJvYXJkIiwiQ3VzdG9tQXVkaW9NYW5hZ2VyIiwiQXVkaW9VcGxvYWRQYWdlIiwiVXBsb2FkRGVza1BhZ2UiLCJTdXBwb3J0UGFnZSIsIkFubm91bmNlbWVudHNQYWdlIiwiRXJyb3JQYWdlIiwiQWRtaW5SZWxlYXNlc1BhbmVsIiwiTGVnZW5kYXJ5RG93bmxvYWRIdWIiLCJUZWFjaGVyVG9vbHMiLCJRdXJhblN0dWRlbnQiLCJRdWl6UGFnZSIsIkF5YWhDYWxpYnJhdGlvbiIsIlRpbWluZ3NSZWNvcmRlciIsIlNoYWRpbmdQYWdlIiwiTGlua0F1ZGlvUGFnZSIsIlJlY2l0YXRpb25NZXRob2RzIiwiQXVkaW9TcGxpdHRlclBhZ2UiLCJJbWFnZU1hbmFnZXIiLCJNdXNoYWZVcGxvYWRQYWdlIiwiU29ydFBhZ2VzUGFnZSIsIlJlY2l0YXRpb25QYWdlIiwiU2hhZGluZ1NldHRpbmdzUGFnZSIsIlN1cmFoU2hhZGluZ1BhZ2UiLCJBdWRpb1NoYWRpbmdTeW5jUGFnZSIsImdldFByb2ZpbGVzIiwia2lkc0VuYWJsZWQiLCJ0b2FzdCIsIldlbGNvbWVPdmVybGF5IiwiaXNPbmJvYXJkZWQiLCJQcm9maWxlUGlja2VyIiwiaXNQaWNrZWQiLCJtYXJrUGlja2VkIiwibG9nQXBwT3BlbiIsImlkZW50aWZ5QWN0aXZlUHJvZmlsZSIsInVzZUJhY2tncm91bmROb3RpZmljYXRpb25zIiwiY2xhaW1EYWlseVJld2FyZHMiLCJpbmNyZW1lbnRTdHJlYWsiLCJzZXR1cFJlbW90ZUNvbnRyb2xMaXN0ZW5lcnMiLCJHbG9iYWxQbGF5ZXJXcmFwcGVyIiwiUXVyYW5Mb2FkaW5nIiwiSW50cm8zRENhcm91c2VsIiwiTmV0d29ya1N0YXR1c0JhciIsInF1ZXJ5Q2xpZW50IiwiUGFnZVRyYW5zaXRpb24iLCJjaGlsZHJlbiIsImxvY2F0aW9uIiwiZmFsbGJhY2siLCJmdWxsU2NyZWVuIiwibGFiZWwiLCJkaXYiLCJjbGFzc05hbWUiLCJwYXRobmFtZSIsIkFVRElPX1BFUlNJU1RfUk9VVEVTIiwiTmF2aWdhdGlvbkF1ZGlvR3VhcmQiLCJwYXRoIiwiaW5jbHVkZXMiLCJlbCIsIndpbmRvdyIsIl9fZ2xvYmFsQXVkaW9FbCIsInBhdXNlIiwiZG9jdW1lbnQiLCJxdWVyeVNlbGVjdG9yQWxsIiwiZm9yRWFjaCIsImEiLCJwYXVzZWQiLCJndiIsIl9fc3RvcEdhbWVWb2ljZSIsInNwZWVjaFN5bnRoZXNpcyIsImNhbmNlbCIsIkhvbWVSb3V0ZSIsIm5hdmlnYXRlIiwic2VhcmNoIiwiaGFzaCIsInJlcGxhY2UiLCJLaWRzTW9kZUd1YXJkIiwiY2hlY2tNb2RlIiwiYWxsb3dlZFBhdGhzIiwiYWRkRXZlbnRMaXN0ZW5lciIsInJlbW92ZUV2ZW50TGlzdGVuZXIiLCJoYW5kbGVCZWZvcmVVbmxvYWQiLCJlIiwicHJldmVudERlZmF1bHQiLCJyZXR1cm5WYWx1ZSIsImhhbmRsZVBvcFN0YXRlIiwiaGlzdG9yeSIsInB1c2hTdGF0ZSIsIkFwcCIsInNob3dTaXRlTGlua3MiLCJzZXRTaG93U2l0ZUxpbmtzIiwic2hvd1dlbGNvbWUiLCJzZXRTaG93V2VsY29tZSIsInNob3VsZEdhdGUiLCJuIiwibGVuZ3RoIiwic2hvd1BpY2tlciIsInNldFNob3dQaWNrZXIiLCJzaG93RXhpdEdhdGUiLCJzZXRTaG93RXhpdEdhdGUiLCJibG9ja0NvbnRleHRNZW51IiwiYmxvY2tEZXZUb29scyIsImtleSIsImN0cmxLZXkiLCJzaGlmdEtleSIsInVubGlzdGVuUHJvbWlzZSIsImhhbmRsZUdsb2JhbEV4aXRSZXF1ZXN0IiwidGhlbiIsInVuc3ViIiwic3luY1RpbWVyIiwic2V0VGltZW91dCIsInN5bmMiLCJQcm9taXNlIiwicmVzb2x2ZSIsImNhdGNoIiwicmVzIiwic3VjY2VzcyIsInJld2FyZCIsInRpdGxlIiwibWVzc2FnZSIsImRlc2NyaXB0aW9uIiwidG90YWxBZGRlZCIsImNsZWFudXBSZW1vdGUiLCJjbGVhclRpbWVvdXQiLCJoYW5kbGVLZXlEb3duIiwicHJldiIsImNsaWVudCIsImJhc2VuYW1lIiwiZW52IiwiQkFTRV9VUkwiLCJmdXR1cmUiLCJ2N19zdGFydFRyYW5zaXRpb24iLCJ2N19yZWxhdGl2ZVNwbGF0UGF0aCIsImVsZW1lbnQiLCJvcGVuIiwib25DbG9zZSIsIm9uRG9uZSIsIm9uUGlja2VkIiwic3RyaWN0TW9kZSIsIm9uU3VjY2VzcyIsIm9uQ2FuY2VsIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxTQUFTQSxXQUFXLEVBQUVDLG1CQUFtQixRQUFRLHdCQUF3QjtBQUN6RSxTQUFTQyxV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

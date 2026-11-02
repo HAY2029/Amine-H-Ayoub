@@ -55,6 +55,7 @@ import { toast } from "./hooks/use-toast";
 import WelcomeOverlay, { isOnboarded } from "./components/WelcomeOverlay.tsx";
 import ProfilePicker, { isPicked, markPicked } from "./components/ProfilePicker.tsx";
 import { logAppOpen } from "./utils/analytics.ts";
+import { identifyActiveProfile } from "./utils/posthog.ts";
 import { useBackgroundNotifications, showLocalNotification } from "./utils/notifications.ts";
 import { claimDailyRewards, incrementStreak } from "./data/dailyRewards";
 import { setupRemoteControlListeners } from "./utils/controllerNavigation";
@@ -275,6 +276,10 @@ const App = () => {
     // Log analytics
     logAppOpen();
 
+    // تعريف صاحب الجلسة في PostHog (طفل أو ولي أمر) — وعند كل تبديل ملف
+    identifyActiveProfile();
+    window.addEventListener("mushaf:activeprofile", identifyActiveProfile);
+
     // المكافآت اليومية — تحميل من السيرفر في الخلفية ومطالبتها مرة واحدة يومياً
     setTimeout(() => {
       claimDailyRewards().then((res) => {
@@ -300,6 +305,7 @@ const App = () => {
     return () => {
       clearTimeout(syncTimer);
       cleanupRemote();
+      window.removeEventListener("mushaf:activeprofile", identifyActiveProfile);
     };
   }, []);
 

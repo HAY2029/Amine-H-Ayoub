@@ -1,0 +1,182 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/SurahList.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/SurahList.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=53f49c8c"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"]; const _Fragment = __vite__cjsImport2_react_jsxDevRuntime["Fragment"];
+const SurahList = ({ surahs, currentPlaying, onSelect, className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5" })=>{
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: className,
+        children: surahs.map((surah)=>{
+            const isActive = currentPlaying === surah.number;
+            return /*#__PURE__*/ _jsxDEV("button", {
+                onClick: ()=>onSelect(surah),
+                className: `surah-card group relative flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 text-right focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:outline-none ${isActive ? "bg-amber-500/25 dark:bg-amber-950/60 border-amber-500 shadow-lg ring-2 ring-amber-400/50 scale-[1.01]" : "bg-white dark:bg-card border-amber-500/30 hover:border-amber-500 hover:shadow-lg hover:bg-white/90 dark:hover:bg-card/80 hover:scale-[1.01]"}`,
+                children: [
+                    isActive && /*#__PURE__*/ _jsxDEV("div", {
+                        className: "absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400/10 to-amber-600/10 animate-breathe pointer-events-none"
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                        lineNumber: 33,
+                        columnNumber: 15
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: `w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold shrink-0 shadow-sm transition-all duration-300 ${isActive ? "bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-amber-500/40 shadow-md scale-110" : "bg-amber-500/15 text-amber-700 dark:text-amber-300 group-hover:bg-amber-500/25 group-hover:scale-105 group-hover:shadow-md"}`,
+                        children: surah.revelationType === "custom" ? "🎤" : surah.number
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                        lineNumber: 36,
+                        columnNumber: 13
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "flex-1 min-w-0",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("h3", {
+                                className: "text-base sm:text-lg font-bold font-amiri text-stone-900 dark:text-stone-100 leading-snug truncate",
+                                children: surah.revelationType === "custom" ? surah.name : `سورة ${surah.name}`
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                                lineNumber: 48,
+                                columnNumber: 15
+                            }, this),
+                            surah.ayahCount ? /*#__PURE__*/ _jsxDEV("p", {
+                                className: "text-[11px] text-stone-600 dark:text-stone-300 mt-0.5 font-sans flex items-center gap-1.5",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        children: [
+                                            surah.ayahCount,
+                                            " آيات"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                                        lineNumber: 53,
+                                        columnNumber: 19
+                                    }, this),
+                                    surah.type && /*#__PURE__*/ _jsxDEV(_Fragment, {
+                                        children: [
+                                            /*#__PURE__*/ _jsxDEV("span", {
+                                                className: "opacity-40",
+                                                children: "•"
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                                                lineNumber: 56,
+                                                columnNumber: 23
+                                            }, this),
+                                            /*#__PURE__*/ _jsxDEV("span", {
+                                                className: `px-1.5 py-0.2 rounded text-[10px] font-bold ${surah.type === "مكية" ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30" : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30"}`,
+                                                children: surah.type
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                                                lineNumber: 57,
+                                                columnNumber: 23
+                                            }, this)
+                                        ]
+                                    }, void 0, true)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                                lineNumber: 52,
+                                columnNumber: 17
+                            }, this) : null
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                        lineNumber: 47,
+                        columnNumber: 13
+                    }, this),
+                    isActive && /*#__PURE__*/ _jsxDEV("div", {
+                        className: "flex items-center gap-[3px] h-6 shrink-0",
+                        children: [
+                            0,
+                            1,
+                            2,
+                            3
+                        ].map((i)=>/*#__PURE__*/ _jsxDEV("span", {
+                                className: "w-[3px] bg-amber-600 dark:bg-amber-400 rounded-full animate-wave",
+                                style: {
+                                    animationDelay: `${i * 0.15}s`
+                                }
+                            }, i, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                                lineNumber: 76,
+                                columnNumber: 19
+                            }, this))
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                        lineNumber: 74,
+                        columnNumber: 15
+                    }, this),
+                    !isActive && /*#__PURE__*/ _jsxDEV("div", {
+                        className: "shrink-0 w-8 h-8 rounded-full bg-amber-500/0 group-hover:bg-amber-500/15 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0",
+                        children: /*#__PURE__*/ _jsxDEV("svg", {
+                            className: "w-4 h-4 text-amber-600 dark:text-amber-400 mr-[-2px]",
+                            viewBox: "0 0 24 24",
+                            fill: "currentColor",
+                            children: /*#__PURE__*/ _jsxDEV("path", {
+                                d: "M8 5v14l11-7z"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                                lineNumber: 91,
+                                columnNumber: 19
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                            lineNumber: 90,
+                            columnNumber: 17
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                        lineNumber: 89,
+                        columnNumber: 15
+                    }, this)
+                ]
+            }, surah.number, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+                lineNumber: 22,
+                columnNumber: 11
+            }, this);
+        })
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/SurahList.tsx",
+        lineNumber: 17,
+        columnNumber: 5
+    }, this);
+};
+_c = SurahList;
+export default SurahList;
+var _c;
+$RefreshReg$(_c, "SurahList");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/SurahList.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/SurahList.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlN1cmFoTGlzdC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgU3VyYWhJdGVtIH0gZnJvbSBcIkAvaG9va3MvdXNlU3VyYWhEYXRhXCI7XG5cbmludGVyZmFjZSBQcm9wcyB7XG4gIHN1cmFoczogU3VyYWhJdGVtW107XG4gIGN1cnJlbnRQbGF5aW5nOiBudW1iZXIgfCBudWxsO1xuICBvblNlbGVjdDogKHN1cmFoOiBTdXJhaEl0ZW0pID0+IHZvaWQ7XG4gIGNsYXNzTmFtZT86IHN0cmluZztcbn1cblxuY29uc3QgU3VyYWhMaXN0ID0gKHtcbiAgc3VyYWhzLFxuICBjdXJyZW50UGxheWluZyxcbiAgb25TZWxlY3QsXG4gIGNsYXNzTmFtZSA9IFwiZ3JpZCBncmlkLWNvbHMtMSBzbTpncmlkLWNvbHMtMiBsZzpncmlkLWNvbHMtMyBnYXAtMi41XCIsXG59OiBQcm9wcykgPT4ge1xuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPXtjbGFzc05hbWV9PlxuICAgICAge3N1cmFocy5tYXAoKHN1cmFoKSA9PiB7XG4gICAgICAgIGNvbnN0IGlzQWN0aXZlID0gY3VycmVudFBsYXlpbmcgPT09IHN1cmFoLm51bWJlcjtcblxuICAgICAgICByZXR1cm4gKFxuICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgIGtleT17c3VyYWgubnVtYmVyfVxuICAgICAgICAgICAgb25DbGljaz17KCkgPT4gb25TZWxlY3Qoc3VyYWgpfVxuICAgICAgICAgICAgY2xhc3NOYW1lPXtgc3VyYWgtY2FyZCBncm91cCByZWxhdGl2ZSBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMyBwLTMgcm91bmRlZC0yeGwgYm9yZGVyIHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTMwMCB0ZXh0LXJpZ2h0IGZvY3VzLXZpc2libGU6cmluZy00IGZvY3VzLXZpc2libGU6cmluZy1hbWJlci01MDAgZm9jdXMtdmlzaWJsZTpyaW5nLW9mZnNldC0yIGZvY3VzLXZpc2libGU6b3V0bGluZS1ub25lICR7XG4gICAgICAgICAgICAgIGlzQWN0aXZlXG4gICAgICAgICAgICAgICAgPyBcImJnLWFtYmVyLTUwMC8yNSBkYXJrOmJnLWFtYmVyLTk1MC82MCBib3JkZXItYW1iZXItNTAwIHNoYWRvdy1sZyByaW5nLTIgcmluZy1hbWJlci00MDAvNTAgc2NhbGUtWzEuMDFdXCJcbiAgICAgICAgICAgICAgICA6IFwiYmctd2hpdGUgZGFyazpiZy1jYXJkIGJvcmRlci1hbWJlci01MDAvMzAgaG92ZXI6Ym9yZGVyLWFtYmVyLTUwMCBob3ZlcjpzaGFkb3ctbGcgaG92ZXI6Ymctd2hpdGUvOTAgZGFyazpob3ZlcjpiZy1jYXJkLzgwIGhvdmVyOnNjYWxlLVsxLjAxXVwiXG4gICAgICAgICAgICB9YH1cbiAgICAgICAgICA+XG4gICAgICAgICAgICB7LyogQWN0aXZlIGdsb3cgZWZmZWN0ICovfVxuICAgICAgICAgICAge2lzQWN0aXZlICYmIChcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJhYnNvbHV0ZSBpbnNldC0wIHJvdW5kZWQtMnhsIGJnLWdyYWRpZW50LXRvLWJyIGZyb20tYW1iZXItNDAwLzEwIHRvLWFtYmVyLTYwMC8xMCBhbmltYXRlLWJyZWF0aGUgcG9pbnRlci1ldmVudHMtbm9uZVwiIC8+XG4gICAgICAgICAgICApfVxuXG4gICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgIGNsYXNzTmFtZT17YHctMTEgaC0xMSByb3VuZGVkLXhsIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRleHQtYmFzZSBmb250LWJvbGQgc2hyaW5rLTAgc2hhZG93LXNtIHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTMwMCAke1xuICAgICAgICAgICAgICAgIGlzQWN0aXZlXG4gICAgICAgICAgICAgICAgICA/IFwiYmctZ3JhZGllbnQtdG8tYnIgZnJvbS1hbWJlci00MDAgdG8tYW1iZXItNjAwIHRleHQtd2hpdGUgc2hhZG93LWFtYmVyLTUwMC80MCBzaGFkb3ctbWQgc2NhbGUtMTEwXCJcbiAgICAgICAgICAgICAgICAgIDogXCJiZy1hbWJlci01MDAvMTUgdGV4dC1hbWJlci03MDAgZGFyazp0ZXh0LWFtYmVyLTMwMCBncm91cC1ob3ZlcjpiZy1hbWJlci01MDAvMjUgZ3JvdXAtaG92ZXI6c2NhbGUtMTA1IGdyb3VwLWhvdmVyOnNoYWRvdy1tZFwiXG4gICAgICAgICAgICAgIH1gfVxuICAgICAgICAgICAgPlxuICAgICAgICAgICAgICB7c3VyYWgucmV2ZWxhdGlvblR5cGUgPT09IFwiY3VzdG9tXCIgPyBcIvCfjqRcIiA6IHN1cmFoLm51bWJlcn1cbiAgICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgICB7LyogU3VyYWggbmFtZSAqL31cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleC0xIG1pbi13LTBcIj5cbiAgICAgICAgICAgICAgPGgzIGNsYXNzTmFtZT1cInRleHQtYmFzZSBzbTp0ZXh0LWxnIGZvbnQtYm9sZCBmb250LWFtaXJpIHRleHQtc3RvbmUtOTAwIGRhcms6dGV4dC1zdG9uZS0xMDAgbGVhZGluZy1zbnVnIHRydW5jYXRlXCI+XG4gICAgICAgICAgICAgICAge3N1cmFoLnJldmVsYXRpb25UeXBlID09PSBcImN1c3RvbVwiID8gc3VyYWgubmFtZSA6IGDYs9mI2LHYqSAke3N1cmFoLm5hbWV9YH1cbiAgICAgICAgICAgICAgPC9oMz5cbiAgICAgICAgICAgICAge3N1cmFoLmF5YWhDb3VudCA/IChcbiAgICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LVsxMXB4XSB0ZXh0LXN0b25lLTYwMCBkYXJrOnRleHQtc3RvbmUtMzAwIG10LTAuNSBmb250LXNhbnMgZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEuNVwiPlxuICAgICAgICAgICAgICAgICAgPHNwYW4+e3N1cmFoLmF5YWhDb3VudH0g2KLZitin2Ko8L3NwYW4+XG4gICAgICAgICAgICAgICAgICB7c3VyYWgudHlwZSAmJiAoXG4gICAgICAgICAgICAgICAgICAgIDw+XG4gICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwib3BhY2l0eS00MFwiPuKAojwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgICA8c3BhblxuICAgICAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgcHgtMS41IHB5LTAuMiByb3VuZGVkIHRleHQtWzEwcHhdIGZvbnQtYm9sZCAke1xuICAgICAgICAgICAgICAgICAgICAgICAgICBzdXJhaC50eXBlID09PSBcItmF2YPZitipXCJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA/IFwiYmctYW1iZXItNTAwLzE1IHRleHQtYW1iZXItODAwIGRhcms6dGV4dC1hbWJlci0zMDAgYm9yZGVyIGJvcmRlci1hbWJlci01MDAvMzBcIlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDogXCJiZy1lbWVyYWxkLTUwMC8xNSB0ZXh0LWVtZXJhbGQtODAwIGRhcms6dGV4dC1lbWVyYWxkLTMwMCBib3JkZXIgYm9yZGVyLWVtZXJhbGQtNTAwLzMwXCJcbiAgICAgICAgICAgICAgICAgICAgICAgIH1gfVxuICAgICAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgICAgIHtzdXJhaC50eXBlfVxuICAgICAgICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgPC8+XG4gICAgICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgICAgIDwvcD5cbiAgICAgICAgICAgICAgKSA6IG51bGx9XG4gICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAgey8qIFdhdmUgYW5pbWF0aW9uIGZvciBhY3RpdmUgKi99XG4gICAgICAgICAgICB7aXNBY3RpdmUgJiYgKFxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC1bM3B4XSBoLTYgc2hyaW5rLTBcIj5cbiAgICAgICAgICAgICAgICB7WzAsIDEsIDIsIDNdLm1hcCgoaSkgPT4gKFxuICAgICAgICAgICAgICAgICAgPHNwYW5cbiAgICAgICAgICAgICAgICAgICAga2V5PXtpfVxuICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJ3LVszcHhdIGJnLWFtYmVyLTYwMCBkYXJrOmJnLWFtYmVyLTQwMCByb3VuZGVkLWZ1bGwgYW5pbWF0ZS13YXZlXCJcbiAgICAgICAgICAgICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgICAgICAgICAgICBhbmltYXRpb25EZWxheTogYCR7aSAqIDAuMTV9c2AsXG4gICAgICAgICAgICAgICAgICAgIH19XG4gICAgICAgICAgICAgICAgICAvPlxuICAgICAgICAgICAgICAgICkpfVxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICl9XG5cbiAgICAgICAgICAgIHsvKiBIb3ZlciBwbGF5IGljb24gKi99XG4gICAgICAgICAgICB7IWlzQWN0aXZlICYmIChcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzaHJpbmstMCB3LTggaC04IHJvdW5kZWQtZnVsbCBiZy1hbWJlci01MDAvMCBncm91cC1ob3ZlcjpiZy1hbWJlci01MDAvMTUgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgdHJhbnNpdGlvbi1hbGwgZHVyYXRpb24tMzAwIG9wYWNpdHktMCBncm91cC1ob3ZlcjpvcGFjaXR5LTEwMCB0cmFuc2xhdGUteC0xIGdyb3VwLWhvdmVyOnRyYW5zbGF0ZS14LTBcIj5cbiAgICAgICAgICAgICAgICA8c3ZnIGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC1hbWJlci02MDAgZGFyazp0ZXh0LWFtYmVyLTQwMCBtci1bLTJweF1cIiB2aWV3Qm94PVwiMCAwIDI0IDI0XCIgZmlsbD1cImN1cnJlbnRDb2xvclwiPlxuICAgICAgICAgICAgICAgICAgPHBhdGggZD1cIk04IDV2MTRsMTEtN3pcIiAvPlxuICAgICAgICAgICAgICAgIDwvc3ZnPlxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICl9XG4gICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICk7XG4gICAgICB9KX1cbiAgICA8L2Rpdj5cbiAgKTtcbn07XG5cbmV4cG9ydCBkZWZhdWx0IFN1cmFoTGlzdDtcbiJdLCJuYW1lcyI6WyJTdXJhaExpc3QiLCJzdXJhaHMiLCJjdXJyZW50UGxheWluZyIsIm9uU2VsZWN0IiwiY2xhc3NOYW1lIiwiZGl2IiwibWFwIiwic3VyYWgiLCJpc0FjdGl2ZSIsIm51bWJlciIsImJ1dHRvbiIsIm9uQ2xpY2siLCJyZXZlbGF0aW9uVHlwZSIsImgzIiwibmFtZSIsImF5YWhDb3VudCIsInAiLCJzcGFuIiwidHlwZSIsImkiLCJzdHlsZSIsImFuaW1hdGlvbkRlbGF5Iiwic3ZnIiwidmlld0JveCIsImZpbGwiLCJwYXRoIiwiZCJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFTQSxNQUFNQSxZQUFZLENBQUMsRUFDakJDLE1BQU0sRUFDTkMsY0FBYyxFQUNkQyxRQUFRLEVBQ1JDLFlBQVksd0RBQXdELEVBQzlEO0lBQ04scUJBQ0UsUUFBQ0M7UUFBSUQsV0FBV0E7a0JBQ2JILE9BQU9LLEdBQUcsQ0FBQyxDQUFDQztZQUNYLE1BQU1DLFdBQVdOLG1CQUFtQkssTUFBTUUsTUFBTTtZQUVoRCxxQkFDRSxRQUFDQztnQkFFQ0MsU0FBUyxJQUFNUixTQUFTSTtnQkFDeEJILFdBQVcsQ0FBQyx5TkFBeU4sRUFDbk9JLFdBQ0ksMEdBQ0EsK0lBQ0o7O29CQUdEQSwwQkFDQyxRQUFDSDt3QkFBSUQsV0FBVTs7Ozs7O2tDQUdqQixRQUFDQzt3QkFDQ0QsV0FBVyxDQUFDLHlIQUF5SCxFQUNuSUksV0FDSSxxR0FDQSw4SEFDSjtrQ0FFREQsTUFBTUssY0FBYyxLQUFLLFdBQVcsT0FBT0wsTUFBTUUsTUFBTTs7Ozs7O2tDQUkxRCxRQUFDSjt3QkFBSUQsV0FBVTs7MENBQ2IsUUFBQ1M7Z0NBQUdULFdBQVU7MENBQ1hHLE1BQU1LLGNBQWMsS0FBSyxXQUFXTCxNQUFNTyxJQUFJLEdBQUcsQ0FBQyxLQUFLLEVBQUVQLE1BQU1PLElBQUksRUFBRTs7Ozs7OzRCQUV2RVAsTUFBTVEsU0FBUyxpQkFDZCxRQUFDQztnQ0FBRVosV0FBVTs7a0RBQ1gsUUFBQ2E7OzRDQUFNVixNQUFNUSxTQUFTOzRDQUFDOzs7Ozs7O29DQUN0QlIsTUFBTVcsSUFBSSxrQkFDVDs7MERBQ0UsUUFBQ0Q7Z0RBQUtiLFdBQVU7MERBQWE7Ozs7OzswREFDN0IsUUFBQ2E7Z0RBQ0NiLFdBQVcsQ0FBQyw0Q0FBNEMsRUFDdERHLE1BQU1XLElBQUksS0FBSyxTQUNYLGtGQUNBLHlGQUNKOzBEQUVEWCxNQUFNVyxJQUFJOzs7Ozs7Ozs7Ozs7O3VDQUtqQjs7Ozs7OztvQkFJTFYsMEJBQ0MsUUFBQ0g7d0JBQUlELFdBQVU7a0NBQ1o7NEJBQUM7NEJBQUc7NEJBQUc7NEJBQUc7eUJBQUUsQ0FBQ0UsR0FBRyxDQUFDLENBQUNhLGtCQUNqQixRQUFDRjtnQ0FFQ2IsV0FBVTtnQ0FDVmdCLE9BQU87b0NBQ0xDLGdCQUFnQixHQUFHRixJQUFJLEtBQUssQ0FBQyxDQUFDO2dDQUNoQzsrQkFKS0E7Ozs7Ozs7Ozs7b0JBV1osQ0FBQ1gsMEJBQ0EsUUFBQ0g7d0JBQUlELFdBQVU7a0NBQ2IsY0FBQSxRQUFDa0I7NEJBQUlsQixXQUFVOzRCQUF1RG1CLFNBQVE7NEJBQVlDLE1BQUs7c0NBQzdGLGNBQUEsUUFBQ0M7Z0NBQUtDLEdBQUU7Ozs7Ozs7Ozs7Ozs7Ozs7O2VBcEVUbkIsTUFBTUUsTUFBTTs7Ozs7UUEwRXZCOzs7Ozs7QUFHTjtLQTFGTVQ7QUE0Rk4sZUFBZUEsVUFBVSJ9

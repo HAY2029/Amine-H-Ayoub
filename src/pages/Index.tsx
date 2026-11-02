@@ -23,6 +23,7 @@ import { kidsEnabled as getKidsEnabled, addReadingMinutes, addCoins, setAppMode,
 
 import { checkAndUnlockBadges, recordTodayActivity } from "@/data/kidsBadges";
 import { toast } from "@/hooks/use-toast";
+import { captureEvent } from "@/utils/posthog";
 
 const LAST_SURAH_KEY = "audio:lastSurah";
 const LAST_TIME_KEY = "audio:lastTime";
@@ -314,6 +315,13 @@ const Index = () => {
     localStorage.setItem(LAST_SURAH_KEY, String(surah.number));
     localStorage.setItem(LAST_TIME_KEY, "0");
     recordAyah(surah.number, 1);
+
+    // قلب الرحلة: بدء الاستماع إلى سورة (يُبنى عليه مسار التحويل والاحتفاظ)
+    captureEvent("surah_play_started", {
+      surah_number: surah.number,
+      surah_name: surah.name,
+      surah_source: surah.revelationType === "custom" ? "custom" : "recitation",
+    });
   };
 
   useEffect(() => {

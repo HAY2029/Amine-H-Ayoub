@@ -94,14 +94,77 @@ export const JUZ_AMMA_PAGE_SECTIONS: Record<number, PageSectionInfo[]> = {
 };
 
 /**
+ * رقم ملف الصفحة من مصدره: /pages/603.jpg → 603، والفاتحة → 0.
+ * الصفحات المخصصة أو الصور الخارجية تُرجع null (لا يوجد جدول سور لها).
+ */
+export const getPageFileNumber = (rawPageSrc: string): number | null => {
+  if (!rawPageSrc) return null;
+  if (rawPageSrc.includes("fatiha")) return 0;
+  const m = rawPageSrc.match(/\/pages\/(\d{1,3})\.[a-z]+$/i) || rawPageSrc.match(/^(\d{1,3})$/);
+  return m ? parseInt(m[1], 10) : null;
+};
+
+/** أقسام السور (نطاقات الآيات) الموجودة فعلياً على صفحة المصحف */
+export const getPageSections = (rawPageSrc: string): PageSectionInfo[] => {
+  const n = getPageFileNumber(rawPageSrc);
+  return n == null ? [] : (JUZ_AMMA_PAGE_SECTIONS[n] || []);
+};
+
+/** أرقام السور التي توجد فعلياً على الصفحة (فارغة = صفحة غير معروفة) */
+export const getPageSurahNumbers = (rawPageSrc: string): number[] => {
+  const sections = getPageSections(rawPageSrc);
+  return sections.length ? Array.from(new Set(sections.map((s) => s.surah))) : [];
+};
+
+/** هل السورة موجودة فعلاً على هذه الصفحة؟ الصفحات غير المعروفة تُقبل دائماً */
+export const isSurahOnPage = (rawPageSrc: string, surah: number): boolean => {
+  const nums = getPageSurahNumbers(rawPageSrc);
+  return nums.length === 0 || nums.includes(surah);
+};
+
+/** كل صفحات السورة بالترتيب — للفاتحة صفحة واحدة، ولغيرها من جدول الأقسام */
+export const getSurahPageList = (surah: number): string[] => {
+  if (surah === 1) return ["/pages/0.jpg"];
+  const pages: number[] = [];
+  for (const [page, sections] of Object.entries(JUZ_AMMA_PAGE_SECTIONS)) {
+    const n = Number(page);
+    if (n <= 1) continue;
+    if (sections.some((s) => s.surah === surah)) pages.push(n);
+  }
+  return pages.sort((a, b) => a - b).map((n) => `/pages/${n}.jpg`);
+};
+
+/** أول صفحة للسورة (null إن لم تكن معروفة) */
+export const getSurahFirstPage = (surah: number): string | null =>
+  getSurahPageList(surah)[0] || null;
+
+/**
+ * تنقية مربعات صفحة: حذف أي مربع لسورة لا توجد على هذه الصفحة.
+ * هذه الحماية تمنع ظهور التظليل على سورة خاطئة إذا كانت البيانات القديمة مرتبطة بصفحة غير صفحتها.
+ */
+export const sanitizePageBoxes = (rawPageSrc: string, boxes: AyahBox[]): AyahBox[] => {
+  const allowed = getPageSurahNumbers(rawPageSrc);
+  if (allowed.length === 0) return boxes;
+  const seen = new Set<string>();
+  const out: AyahBox[] = [];
+  for (const box of boxes) {
+    if (!allowed.includes(box.surah)) continue;
+    const key = `${box.surah}-${box.ayah}-${Math.round(box.x)}-${Math.round(box.y)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(box);
+  }
+  return out;
+};
+
+/**
  * توليد مربعات تظليل تلقائية ذكية وجميلة لأي صفحة مصحف
  * تغطي آيات السور الموجودة في الصفحة بتنسيق شبكي متناسق مع قياس الصفحة 1260x1929
  */
 export function generateDefaultBoxesForPage(pageSrc: string): AyahBox[] {
-  const match = pageSrc.match(/(\d+)/);
-  const pageNum = match ? parseInt(match[1], 10) : 0;
+  const pageNum = getPageFileNumber(pageSrc);
   // الفاتحة: صفحة 0 أو 1
-  if (pageNum === 0 || pageNum === 1 || pageSrc.includes("fatiha") || pageSrc.includes("0.jpg") || pageSrc.includes("1.jpg")) {
+  if (pageNum === 0 || pageNum === 1 || pageSrc.includes("fatiha")) {
     return [
       { surah: 1, ayah: 0, x: 340, y: 516, width: 580, height: 95, label: "البسملة", color: "#eab308" },
       { surah: 1, ayah: 1, x: 330, y: 660, width: 600, height: 95, label: "الآية 1", color: "#eab308" },
@@ -114,106 +177,56 @@ export function generateDefaultBoxesForPage(pageSrc: string): AyahBox[] {
     ];
   }
 
-  // سائر صفحات المصحف الشريف (جزء عم وسائر القرآن)
-  const sections = JUZ_AMMA_PAGE_SECTIONS[pageNum];
-  if (sections && sections.length > 0) {
-    const boxes: AyahBox[] = [];
-    const PAGE_TOP = 220;
-    const PAGE_BOTTOM = 1750;
-    const TOTAL_HEIGHT = PAGE_BOTTOM - PAGE_TOP;
-    const CONTENT_WIDTH = 980;
-    const CONTENT_X = 140;
+  // صفحات جزء عمّ وغيرها: مربع واحد لكل سطر (بسملة + آية) بترتيب المصحف
+  const sections = pageNum == null ? undefined : JUZ_AMMA_PAGE_SECTIONS[pageNum];
+  if (!sections || sections.length === 0) return [];
 
-    let totalItems = 0;
-    sections.forEach(s => {
-      if (s.hasBasmalah) totalItems += 1;
-      const count = Math.max(1, s.endAyah - s.startAyah + 1);
-      totalItems += count;
-    });
+  const PAGE_TOP = 205;
+  const PAGE_BOTTOM = 1755;
+  const ROW_GAP = 8;
+  const CONTENT_X = 55;
+  const CONTENT_W = 1150;
+  const BASMALAH_X = 300;
+  const BASMALAH_W = 660;
 
-    const isDense = totalItems > 15;
-    if (isDense) {
-      let currentY = PAGE_TOP;
-      sections.forEach(s => {
-        if (s.hasBasmalah) {
-          boxes.push({
-            surah: s.surah,
-            ayah: 0,
-            x: 310,
-            y: Math.round(currentY),
-            width: 640,
-            height: 70,
-            label: "البسملة",
-            color: "#eab308"
-          });
-          currentY += 75;
-        }
+  const totalLines = sections.reduce(
+    (n, s) => n + (s.hasBasmalah ? 1 : 0) + Math.max(1, s.endAyah - s.startAyah + 1),
+    0
+  );
+  const rowH = Math.min(88, Math.max(40, (PAGE_BOTTOM - PAGE_TOP) / Math.max(1, totalLines)));
+  let y = PAGE_TOP;
+  const boxes: AyahBox[] = [];
 
-        const count = s.endAyah - s.startAyah + 1;
-        const remainingH = Math.max(400, PAGE_BOTTOM - currentY);
-        const rows = Math.ceil(count / 2);
-        const rowH = Math.min(80, Math.max(48, remainingH / rows));
-        const colW = (CONTENT_WIDTH - 20) / 2;
-
-        for (let a = s.startAyah; a <= s.endAyah; a++) {
-          const idx = a - s.startAyah;
-          const r = Math.floor(idx / 2);
-          const c = idx % 2; // 0 = right (RTL), 1 = left
-          const x = c === 0 ? CONTENT_X + colW + 20 : CONTENT_X;
-          const y = currentY + r * rowH;
-
-          boxes.push({
-            surah: s.surah,
-            ayah: a,
-            x: Math.round(x),
-            y: Math.round(y),
-            width: Math.round(colW),
-            height: Math.round(rowH - 6),
-            label: `الآية ${a}`,
-            color: "#eab308"
-          });
-        }
-        currentY += rows * rowH + 10;
+  sections.forEach((s) => {
+    if (s.hasBasmalah) {
+      boxes.push({
+        surah: s.surah,
+        ayah: 0,
+        x: BASMALAH_X,
+        y: Math.round(y),
+        width: BASMALAH_W,
+        height: Math.round(rowH - ROW_GAP),
+        label: "البسملة",
+        color: "#eab308",
       });
-    } else {
-      const rowHeight = Math.min(100, Math.max(55, TOTAL_HEIGHT / Math.max(10, totalItems)));
-      let currentY = PAGE_TOP + Math.max(0, (TOTAL_HEIGHT - (totalItems * rowHeight)) / 2);
-
-      sections.forEach(s => {
-        if (s.hasBasmalah) {
-          boxes.push({
-            surah: s.surah,
-            ayah: 0,
-            x: 310,
-            y: Math.round(currentY),
-            width: 640,
-            height: Math.round(rowHeight - 8),
-            label: "البسملة",
-            color: "#eab308"
-          });
-          currentY += rowHeight;
-        }
-
-        for (let a = s.startAyah; a <= s.endAyah; a++) {
-          boxes.push({
-            surah: s.surah,
-            ayah: a,
-            x: CONTENT_X,
-            y: Math.round(currentY),
-            width: CONTENT_WIDTH,
-            height: Math.round(rowHeight - 8),
-            label: `الآية ${a}`,
-            color: "#eab308"
-          });
-          currentY += rowHeight;
-        }
-      });
+      y += rowH;
     }
+    for (let a = s.startAyah; a <= s.endAyah; a++) {
+      boxes.push({
+        surah: s.surah,
+        ayah: a,
+        x: CONTENT_X,
+        y: Math.round(y),
+        width: CONTENT_W,
+        height: Math.round(rowH - ROW_GAP),
+        label: `الآية ${a}`,
+        color: "#eab308",
+      });
+      y += rowH;
+    }
+  });
 
-    return boxes;
-  }
-
-  return [];
+  return boxes;
 }
 
 // سيتم الاعتماد كلياً على المجلد المحلي `public/pages/`
@@ -225,36 +238,76 @@ const cloneBoxes = (boxes: AyahBox[]) => boxes.map((box) => ({ ...box }));
 export const syncCoordinatesFromServer = async () => {
   if (typeof window === "undefined") return;
 
-  // 1. محاولة الجلب من سيرفر المشروع المحلي (/api/save-boxes / boxes-dump.json)
+  // 🧹 تنظيف شامل: أي مربع لسورة ليست على صفحتها يُحذف نهائياً من النسخة المحلية،
+  // فلا تعود البيانات القديمة الخاطئة للظهور بعد إعادة التحميل.
+  const cleanAll = (data: Record<string, AyahBox[]>): Record<string, AyahBox[]> => {
+    const out: Record<string, AyahBox[]> = {};
+    for (const [src, boxes] of Object.entries(data)) {
+      if (!Array.isArray(boxes)) continue;
+      const kept = sanitizePageBoxes(src, boxes);
+      // صفحة معروفة بلا أي مربع صحيح: نحذف مفتاحها لتُولَّد مربعاتها الصحيحة عند القراءة
+      if (kept.length === 0 && getPageSurahNumbers(src).length > 0) continue;
+      out[src] = kept;
+    }
+    return out;
+  };
+
+  const applyMerged = async (source: Record<string, AyahBox[]>) => {
+    const validSources = await getExistingPageSources();
+    // نُصفّي بعد الدمج أيضاً حتى لا يبقى في التخزين المحلي أي صفحة قديمة بلا صورة
+    const mergedPages = Object.fromEntries(
+      Object.entries({ ...getSavedAyahCoordinates(), ...source }).filter(
+        ([src]) => src.startsWith("custom:") || !isMissingQuranPage(src, validSources),
+      ),
+    );
+    const merged = cleanAll(mergedPages);
+    cachedAyahCoords = merged;
+    lastCacheTime = Date.now();
+    localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(merged));
+    window.dispatchEvent(new Event("mushaf:sync_complete"));
+  };
+
+  // 1. ملف المشروع المحلي (هو المرجع في التطوير: بيانات مصححة ومُدقَّقة)
+  let serverDump: Record<string, AyahBox[]> | null = null;
   try {
     const res = await fetch("/api/save-boxes", { cache: "no-store" });
     if (res.ok) {
-      const serverDump = await res.json();
-      if (serverDump && typeof serverDump === "object" && Object.keys(serverDump).length > 0) {
-        const local = getSavedAyahCoordinates();
-        const merged = { ...local, ...serverDump };
-        localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(merged));
-        window.dispatchEvent(new Event("mushaf:sync_complete"));
+      const parsed = await res.json();
+      if (parsed && typeof parsed === "object" && Object.keys(parsed).length > 0) {
+        serverDump = parsed as Record<string, AyahBox[]>;
       }
     }
   } catch (err) {
     console.debug("Local server boxes sync info:", err);
   }
 
-  // 2. محاولة الجلب من قاعدة بيانات Supabase السحابية
-  if (typeof navigator !== "undefined" && !navigator.onLine) return; // offline
-  if (!hasValidSupabaseKey()) return; // skip sync when no valid API key
+  // 2. السحابة (Supabase) — تُدمج، لكن ملف المشروع المحلي يتقدم عليها
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    if (serverDump) await applyMerged(serverDump);
+    return;
+  }
+  if (!hasValidSupabaseKey()) {
+    if (serverDump) await applyMerged(serverDump);
+    return;
+  }
+
   try {
     const { data } = await supabase.from("store").select("value").eq("key", CALIBRATION_STORAGE_KEY).maybeSingle();
-    if (data && data.value && Object.keys(data.value as Record<string, unknown>).length > 0) {
-      // Server has data → merge with local
-      const local = getSavedAyahCoordinates();
-      const merged = { ...local, ...(data.value as Record<string, unknown>) };
-      localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(merged));
-      window.dispatchEvent(new Event("mushaf:sync_complete"));
+    const cloud = (data?.value || null) as Record<string, AyahBox[]> | null;
+    const hasCloud = !!cloud && Object.keys(cloud).length > 0;
+
+    if (hasCloud || serverDump) {
+      await applyMerged({ ...(cloud || {}), ...(serverDump || {}) });
     } else {
-      // Server empty → upload local copy so it persists across devices/refreshes
-      const local = getSavedAyahCoordinates();
+      // السحابة فارغة → ارفع النسخة المحلية بعد تنظيفها
+      const validSources = await getExistingPageSources();
+      const local = cleanAll(
+        Object.fromEntries(
+          Object.entries(getSavedAyahCoordinates()).filter(
+            ([src]) => src.startsWith("custom:") || !isMissingQuranPage(src, validSources),
+          ),
+        ),
+      );
       if (Object.keys(local).length > 0) {
         await supabase.from("store").upsert({ key: CALIBRATION_STORAGE_KEY, value: local });
       }
@@ -289,8 +342,7 @@ export const getSavedAyahCoordinates = (): Record<string, AyahBox[]> => {
  * 1. المربعات المربوطة مباشرة بالصفحة (من الإعدادات المحفوظة أو المدمجة)
  * 2. المربعات التي تشير إلى هذه الصفحة عبر حقل `pages` (مربعات مشتركة بين صفحات)
  */
-export const getPageAyahBoxes = (rawPageSrc: string) => {
-  const pageSrc = (rawPageSrc && rawPageSrc.includes("fatiha")) ? "/pages/0.jpg" : rawPageSrc;
+const collectSavedPageBoxes = (pageSrc: string): AyahBox[] => {
   const allSaved = getSavedAyahCoordinates();
   const result: AyahBox[] = [];
   const seen = new Set<string>();
@@ -337,12 +389,31 @@ export const getPageAyahBoxes = (rawPageSrc: string) => {
     }
   }
 
-  // إذا لم توجد مربعات محفوظة، يتم توليد الافتراضي فقط لسورة الفاتحة، أما باقي صفحات المصحف فتظل بدون تظليل
-  if (result.length === 0) {
+  return result;
+};
+
+/**
+ * المربعات **المحفوظة فقط** لصفحة (بدون توليد تقديري).
+ * يستخدمها محرر التظليل حتى يبدأ المستخدم من صفحة نظيفة ويتظليل الآيات بنفسه.
+ */
+export const getSavedPageBoxes = (rawPageSrc: string): AyahBox[] => {
+  const pageSrc = (rawPageSrc && rawPageSrc.includes("fatiha")) ? "/pages/0.jpg" : rawPageSrc;
+  return sanitizePageBoxes(pageSrc, collectSavedPageBoxes(pageSrc));
+};
+
+export const getPageAyahBoxes = (rawPageSrc: string) => {
+  const pageSrc = (rawPageSrc && rawPageSrc.includes("fatiha")) ? "/pages/0.jpg" : rawPageSrc;
+
+  // حماية أساسية: أي مربع مرتبط بسورة لا توجد على هذه الصفحة يُستبعد،
+  // حتى لا يظهر التظليل فوق آيات سورة أخرى (كان هذا سبب «التظليل لا يعمل»).
+  const clean = sanitizePageBoxes(pageSrc, collectSavedPageBoxes(pageSrc));
+
+  // إن لم يبق مربع صحيح (أو كانت الصفحة بلا بيانات) نولّد مربعات تلقائية لسور الصفحة الحقيقية.
+  if (clean.length === 0) {
     return generateDefaultBoxesForPage(pageSrc);
   }
 
-  return result;
+  return clean;
 };
 
 /**
@@ -357,7 +428,8 @@ export const savePageAyahBoxes = async (rawPageSrc: string, boxes: AyahBox[]) =>
   delete saved["/pages/fatiha.jpg"];
   delete saved["fatiha.jpg"];
 
-  saved[pageSrc] = cloneBoxes(boxes);
+  // لا نحفظ أبداً مربعاً لسورة لا توجد على الصفحة (يمنع تلوث البيانات مستقبلاً)
+  saved[pageSrc] = cloneBoxes(sanitizePageBoxes(pageSrc, boxes));
   cachedAyahCoords = saved;
   lastCacheTime = Date.now();
 
@@ -398,6 +470,107 @@ export const savePageAyahBoxes = async (rawPageSrc: string, boxes: AyahBox[]) =>
   } catch (e) {
     console.error("Supabase save error:", e);
   }
+};
+
+/**
+ * مصادر الصفحات الموجودة فعلاً (صور المصحف + الصفحات المخصصة).
+ * تستخدم لمنع رفع أو إحياء صفحة لا صورة لها (مثل /pages/604.jpg القديمة).
+ */
+const getExistingPageSources = async (): Promise<Set<string>> => {
+  const set = new Set<string>(["/pages/0.jpg"]);
+  try {
+    const mod = await import("./staticPages");
+    (mod.CODE_QURAN_PAGES || []).forEach((p) => p?.src && set.add(p.src));
+  } catch (err) {
+    console.debug("Static pages lookup skipped:", err);
+  }
+  try {
+    const mod = await import("./customPages");
+    (mod.getCustomPages?.() || []).forEach((p: { src?: string }) => p?.src && set.add(p.src));
+  } catch (err) {
+    console.debug("Custom pages lookup skipped:", err);
+  }
+  return set;
+};
+
+/** صفحة رقم صفحة مصحف (وليس مخصصة) لا صورة لها = غير صالحة */
+const isMissingQuranPage = (src: string, validSources: Set<string>) =>
+  /^\/pages\/[^/]+$/.test(src) && !src.includes("fatiha") && !validSources.has(src);
+
+/**
+ * رفع **كل** التظليل (كل الصفحات) إلى السيرفر دفعة واحدة.
+ * يجمع صفحات ملف المشروع مع تعديلات المتصفح (المتصفح يتقدم)، ثم يرفع النتيجة
+ * إلى ملفات المشروع (/api/save-boxes) وإلى Supabase. لا يحذف أي صفحة.
+ */
+export const saveAllAyahBoxesToServer = async (): Promise<{
+  pages: number;
+  boxes: number;
+  localOk: boolean;
+  cloudOk: boolean;
+}> => {
+  if (typeof window === "undefined") return { pages: 0, boxes: 0, localOk: false, cloudOk: false };
+
+  // 1. صفحات ملف المشروع الحالية (حتى لا تُفقد صفحة غير موجودة في localStorage)
+  let projectDump: Record<string, AyahBox[]> = {};
+  try {
+    const res = await fetch("/api/save-boxes", { cache: "no-store" });
+    if (res.ok) {
+      const parsed = await res.json();
+      if (parsed && typeof parsed === "object") projectDump = parsed as Record<string, AyahBox[]>;
+    }
+  } catch (err) {
+    console.debug("Project boxes read skipped:", err);
+  }
+
+  // 2. تعديلات المتصفح لها الأولوية (أحدث ما ظلّله المستخدم)
+  const merged: Record<string, AyahBox[]> = { ...projectDump, ...getSavedAyahCoordinates() };
+
+  // 3. تنقية كل صفحة: لا مربع لسورة ليست عليها، ولا صفحة بلا صورة
+  const validSources = await getExistingPageSources();
+  const cleaned: Record<string, AyahBox[]> = {};
+  let totalBoxes = 0;
+  for (const [src, boxes] of Object.entries(merged)) {
+    if (!Array.isArray(boxes)) continue;
+    if (src.startsWith("custom:") ? false : isMissingQuranPage(src, validSources)) continue;
+    const kept = sanitizePageBoxes(src, boxes);
+    if (kept.length === 0) continue;
+    cleaned[src] = cloneBoxes(kept);
+    totalBoxes += kept.length;
+  }
+
+  const pages = Object.keys(cleaned).length;
+  if (pages === 0) return { pages: 0, boxes: 0, localOk: false, cloudOk: false };
+
+  cachedAyahCoords = cleaned;
+  lastCacheTime = Date.now();
+  localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(cleaned));
+  window.dispatchEvent(new Event("mushaf:sync_complete"));
+
+  // 4. السيرفر المحلي: ملفات المشروع (shading_data.json + boxes-dump.json)
+  let localOk = false;
+  try {
+    const res = await fetch("/api/save-boxes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cleaned),
+    });
+    localOk = res.ok;
+  } catch (err) {
+    console.debug("Local server bulk save error:", err);
+  }
+
+  // 5. السحابة: Supabase
+  let cloudOk = false;
+  if (hasValidSupabaseKey()) {
+    try {
+      const { error } = await supabase.from("store").upsert({ key: CALIBRATION_STORAGE_KEY, value: cleaned });
+      cloudOk = !error;
+    } catch (e) {
+      console.debug("Supabase bulk save error:", e);
+    }
+  }
+
+  return { pages, boxes: totalBoxes, localOk, cloudOk };
 };
 
 export const resetPageAyahBoxes = async (pageSrc: string) => {

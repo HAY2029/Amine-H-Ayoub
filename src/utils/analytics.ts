@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { captureEvent } from "@/utils/posthog";
 
 export async function logAppOpen() {
   try {
@@ -17,6 +18,9 @@ export async function logAppOpen() {
     if (isNewUser) {
       localStorage.setItem("mushaf:isNotNewUser", "true");
     }
+
+    // أول حدث في مسار الاستخدام: فتح التطبيق (مع تحليلات Supabase الحالية)
+    captureEvent("app_open", { is_new_user: isNewUser });
 
     const { data: row, error } = await supabase
       .from("app_analytics")

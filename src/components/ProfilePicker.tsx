@@ -5,6 +5,7 @@ import { getProfiles, getAppMode, setAppMode, setActiveProfile, kidsRouteBlocked
 import { hasKidsPin, setKidsLocked } from "../data/kidsLock";
 import PinModal from "./PinModal";
 import Avatar from "./Avatar";
+import { captureEvent, identifyActiveProfile } from "../utils/posthog";
 
 const PICKED_FLAG = "mushaf:pickedSession";
 
@@ -32,6 +33,8 @@ export default function ProfilePicker({ onPicked }: { onPicked?: () => void }) {
     setKidsHidden(false);
     setPureMode(false); // تعطيل الوضع العادي عند اختيار طفل
     setKidsLocked(true);
+    identifyActiveProfile();
+    captureEvent("profile_selected", { role: "child" });
     close();
 
     const profile = profiles.find(p => p.id === id);
@@ -50,6 +53,8 @@ export default function ProfilePicker({ onPicked }: { onPicked?: () => void }) {
     // لا نغير وضع pureMode - نترك كما هو (flexible أو pure حسب اختيار المستخدم السابق)
     if (!isPureMode()) setKidsHidden(false);
     setKidsLocked(false);
+    identifyActiveProfile();
+    captureEvent("profile_selected", { role: "parent" });
     close();
     navigate("/audio");
   };

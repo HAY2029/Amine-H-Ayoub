@@ -1,0 +1,596 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/SurahDownloadModal.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=53f49c8c"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"]; const _Fragment = __vite__cjsImport2_react_jsxDevRuntime["Fragment"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=53f49c8c"; const React = __vite__cjsImport3_react.__esModule ? __vite__cjsImport3_react.default : __vite__cjsImport3_react; const useMemo = __vite__cjsImport3_react["useMemo"];
+import { Download, CheckCircle2, AlertCircle, X, Server, HardDrive, Gauge, Clock, Sparkles, RefreshCw, EyeOff } from "/node_modules/.vite/deps/lucide-react.js?v=53f49c8c";
+function formatBytes(bytes) {
+    if (!bytes || bytes <= 0) return "0 ميجابايت";
+    if (bytes < 1024) return `${bytes} بايت`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} كيلوبايت`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} ميجابايت`;
+}
+function formatSpeed(bytesPerSec) {
+    if (!bytesPerSec || bytesPerSec <= 0) return "قيد القياس...";
+    if (bytesPerSec < 1024 * 1024) {
+        return `${(bytesPerSec / 1024).toFixed(0)} كيلوبايت/ث`;
+    }
+    return `${(bytesPerSec / (1024 * 1024)).toFixed(2)} ميجابايت/ث`;
+}
+function formatEstimatedTime(received, total, speed) {
+    if (!total || !received || !speed || speed <= 0 || received >= total) {
+        return "ثوانٍ معدودة";
+    }
+    const remainingBytes = total - received;
+    const seconds = Math.ceil(remainingBytes / speed);
+    if (seconds <= 1) return "ثانية واحدة";
+    if (seconds === 2) return "ثانيتان";
+    if (seconds <= 10) return `${seconds} ثوانٍ`;
+    if (seconds < 60) return `${seconds} ثانية`;
+    const minutes = Math.ceil(seconds / 60);
+    return `حوالي ${minutes} دقيقة`;
+}
+export const SurahDownloadModal = ({ isOpen, onClose, surahNumber, surahName, progressData, onCancel, onRetry })=>{
+    _s();
+    if (!isOpen) return null;
+    const isCompleted = progressData?.status === "completed" || (progressData?.progress || 0) >= 100;
+    const isError = progressData?.status === "error";
+    const progressPercent = Math.min(100, Math.max(0, progressData?.progress || 0));
+    const stats = useMemo(()=>{
+        const received = progressData?.receivedBytes;
+        const total = progressData?.totalBytes;
+        const speed = progressData?.speed;
+        return {
+            downloadedText: total ? `${formatBytes(received)} من ${formatBytes(total)}` : received ? formatBytes(received) : "جاري الحساب...",
+            speedText: formatSpeed(speed),
+            estimatedTimeText: formatEstimatedTime(received, total, speed),
+            serverText: progressData?.serverName || "سيرفر التخزين السحابي فائق السرعة"
+        };
+    }, [
+        progressData
+    ]);
+    return /*#__PURE__*/ _jsxDEV("div", {
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": `شاشة تحميل سورة ${surahName}`,
+        className: "fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in",
+        onClick: (e)=>{
+            if (e.target === e.currentTarget && (isCompleted || isError)) onClose();
+        },
+        children: [
+            /*#__PURE__*/ _jsxDEV("div", {
+                className: "pointer-events-none absolute w-96 h-96 rounded-full bg-amber-500/15 blur-3xl"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                lineNumber: 99,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("div", {
+                className: "pointer-events-none absolute -bottom-10 -right-10 w-72 h-72 rounded-full bg-emerald-500/15 blur-3xl"
+            }, void 0, false, {
+                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                lineNumber: 100,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ _jsxDEV("div", {
+                className: "relative w-full max-w-md overflow-hidden rounded-3xl border border-amber-500/30 bg-card/95 text-card-foreground p-6 sm:p-7 shadow-2xl backdrop-blur-2xl transition-all",
+                children: [
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "flex items-start justify-between gap-3 mb-5",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                className: "flex items-center gap-3",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        className: `w-12 h-12 rounded-2xl flex items-center justify-center border shadow-inner transition-colors ${isCompleted ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-500" : isError ? "bg-red-500/15 border-red-500/40 text-red-500" : "bg-amber-500/15 border-amber-500/40 text-amber-500"}`,
+                                        children: isCompleted ? /*#__PURE__*/ _jsxDEV(CheckCircle2, {
+                                            className: "w-6 h-6 animate-scale-up"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                            lineNumber: 116,
+                                            columnNumber: 17
+                                        }, this) : isError ? /*#__PURE__*/ _jsxDEV(AlertCircle, {
+                                            className: "w-6 h-6 animate-pulse"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                            lineNumber: 118,
+                                            columnNumber: 17
+                                        }, this) : /*#__PURE__*/ _jsxDEV(Download, {
+                                            className: "w-6 h-6 animate-bounce"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                            lineNumber: 120,
+                                            columnNumber: 17
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 106,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("div", {
+                                        children: [
+                                            /*#__PURE__*/ _jsxDEV("div", {
+                                                className: "flex items-center gap-2",
+                                                children: [
+                                                    /*#__PURE__*/ _jsxDEV("span", {
+                                                        className: "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+                                                        children: [
+                                                            "سورة رقم ",
+                                                            surahNumber
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                                        lineNumber: 126,
+                                                        columnNumber: 17
+                                                    }, this),
+                                                    /*#__PURE__*/ _jsxDEV("span", {
+                                                        className: "text-xs text-muted-foreground flex items-center gap-1",
+                                                        children: [
+                                                            /*#__PURE__*/ _jsxDEV(HardDrive, {
+                                                                className: "w-3 h-3 text-stone-400"
+                                                            }, void 0, false, {
+                                                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                                                lineNumber: 130,
+                                                                columnNumber: 19
+                                                            }, this),
+                                                            " حفظ دائم للجهاز"
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                                        lineNumber: 129,
+                                                        columnNumber: 17
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                                lineNumber: 125,
+                                                columnNumber: 15
+                                            }, this),
+                                            /*#__PURE__*/ _jsxDEV("h2", {
+                                                className: "text-xl sm:text-2xl font-black mt-0.5 text-foreground",
+                                                children: surahName
+                                            }, void 0, false, {
+                                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                                lineNumber: 133,
+                                                columnNumber: 15
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 124,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 105,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("button", {
+                                onClick: onClose,
+                                "aria-label": "إغلاق الشاشة",
+                                className: "p-1.5 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors",
+                                children: /*#__PURE__*/ _jsxDEV(X, {
+                                    className: "w-5 h-5"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                    lineNumber: 144,
+                                    columnNumber: 13
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 139,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                        lineNumber: 104,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "flex items-center justify-between text-xs px-3.5 py-2 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-border mb-5",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("span", {
+                                className: "flex items-center gap-1.5 text-stone-600 dark:text-stone-300 font-medium truncate",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(Server, {
+                                        className: "w-3.5 h-3.5 text-amber-500 shrink-0"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 151,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "truncate",
+                                        children: stats.serverText
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 152,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 150,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("span", {
+                                className: `font-bold shrink-0 ${isCompleted ? "text-emerald-500" : isError ? "text-red-500" : "text-amber-500 animate-pulse"}`,
+                                children: isCompleted ? "اكتمل التنزيل" : isError ? "تعثر التحميل" : "جاري التحميل..."
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 154,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                        lineNumber: 149,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "space-y-2 mb-6",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                className: "flex items-baseline justify-between",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "text-xs font-semibold text-muted-foreground",
+                                        children: isCompleted ? "تم الحفظ بنجاح" : isError ? "توقف التنزيل" : "نسبة الإنجاز الدقيقة"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 170,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "text-3xl sm:text-4xl font-black tracking-tight font-mono text-transparent bg-clip-text bg-gradient-to-l from-amber-600 via-amber-500 to-emerald-600 dark:from-amber-400 dark:to-emerald-400",
+                                        children: [
+                                            progressPercent,
+                                            "%"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 173,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 169,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                className: "relative h-4 w-full overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800 border border-stone-300 dark:border-stone-700/80 p-0.5",
+                                children: /*#__PURE__*/ _jsxDEV("div", {
+                                    className: `h-full rounded-full transition-all duration-200 relative overflow-hidden ${isCompleted ? "bg-emerald-500" : isError ? "bg-red-500" : "bg-gradient-to-r from-emerald-500 via-amber-500 to-amber-400"}`,
+                                    style: {
+                                        width: `${progressPercent}%`
+                                    },
+                                    children: !isCompleted && !isError && /*#__PURE__*/ _jsxDEV("div", {
+                                        className: "absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1.5s_infinite]"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 192,
+                                        columnNumber: 17
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                    lineNumber: 180,
+                                    columnNumber: 13
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 179,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                        lineNumber: 168,
+                        columnNumber: 9
+                    }, this),
+                    !isError && /*#__PURE__*/ _jsxDEV("div", {
+                        className: "grid grid-cols-3 gap-2 sm:gap-3 mb-6",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                className: "flex flex-col items-center justify-center p-2.5 rounded-2xl bg-stone-100/60 dark:bg-stone-800/40 border border-border text-center",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(HardDrive, {
+                                        className: "w-4 h-4 text-amber-500 mb-1"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 203,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "text-[10px] text-muted-foreground",
+                                        children: "الحجم"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 204,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "text-xs font-bold text-foreground mt-0.5 dir-ltr truncate max-w-full",
+                                        children: stats.downloadedText
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 205,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 202,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                className: "flex flex-col items-center justify-center p-2.5 rounded-2xl bg-stone-100/60 dark:bg-stone-800/40 border border-border text-center",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(Gauge, {
+                                        className: "w-4 h-4 text-emerald-500 mb-1"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 212,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "text-[10px] text-muted-foreground",
+                                        children: "السرعة"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 213,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "text-xs font-bold text-foreground mt-0.5 dir-ltr truncate max-w-full",
+                                        children: isCompleted ? "مكتمل" : stats.speedText
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 214,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 211,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("div", {
+                                className: "flex flex-col items-center justify-center p-2.5 rounded-2xl bg-stone-100/60 dark:bg-stone-800/40 border border-border text-center",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(Clock, {
+                                        className: "w-4 h-4 text-blue-500 mb-1"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 221,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "text-[10px] text-muted-foreground",
+                                        children: "الوقت المتبقي"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 222,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ _jsxDEV("span", {
+                                        className: "text-xs font-bold text-foreground mt-0.5 truncate max-w-full",
+                                        children: isCompleted ? "0 ثانية" : stats.estimatedTimeText
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 223,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 220,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                        lineNumber: 200,
+                        columnNumber: 11
+                    }, this),
+                    isError && /*#__PURE__*/ _jsxDEV("div", {
+                        className: "p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs mb-6 space-y-1",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV("p", {
+                                className: "font-bold flex items-center gap-1.5",
+                                children: [
+                                    /*#__PURE__*/ _jsxDEV(AlertCircle, {
+                                        className: "w-4 h-4 shrink-0"
+                                    }, void 0, false, {
+                                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                        lineNumber: 234,
+                                        columnNumber: 15
+                                    }, this),
+                                    "تعذّر إكمال التحميل:"
+                                ]
+                            }, void 0, true, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 233,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("p", {
+                                className: "text-[11px] text-red-500/90 pr-5",
+                                children: progressData?.error || "حدث انقطاع في الاتصال بالسيرفر أو شبكة الإنترنت"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 237,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                        lineNumber: 232,
+                        columnNumber: 11
+                    }, this),
+                    isCompleted && /*#__PURE__*/ _jsxDEV("div", {
+                        className: "p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs mb-6 flex items-center gap-2.5",
+                        children: [
+                            /*#__PURE__*/ _jsxDEV(Sparkles, {
+                                className: "w-5 h-5 text-emerald-500 shrink-0"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 246,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ _jsxDEV("p", {
+                                className: "font-medium text-[11px] leading-relaxed",
+                                children: "أصبحت السورة الآن محفوظة بشكل دائم في ذاكرة جهازك، وستعمل تلقائياً وبسرعة فائقة حتى لو انقطع الإنترنت تماماً."
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                lineNumber: 247,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                        lineNumber: 245,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ _jsxDEV("div", {
+                        className: "flex items-center gap-2 pt-1 border-t border-border",
+                        children: isCompleted ? /*#__PURE__*/ _jsxDEV("button", {
+                            onClick: onClose,
+                            className: "w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-colors",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(CheckCircle2, {
+                                    className: "w-4 h-4"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                    lineNumber: 260,
+                                    columnNumber: 15
+                                }, this),
+                                " تم الحفظ، حسناً"
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                            lineNumber: 256,
+                            columnNumber: 13
+                        }, this) : isError ? /*#__PURE__*/ _jsxDEV(_Fragment, {
+                            children: [
+                                onRetry && /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: onRetry,
+                                    className: "flex-1 py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 transition-colors",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(RefreshCw, {
+                                            className: "w-4 h-4"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                            lineNumber: 269,
+                                            columnNumber: 19
+                                        }, this),
+                                        " إعادة المحاولة"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                    lineNumber: 265,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: onClose,
+                                    className: "py-2.5 px-4 rounded-xl border border-border text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-semibold transition-colors",
+                                    children: "إلغاء"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                    lineNumber: 272,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true) : /*#__PURE__*/ _jsxDEV(_Fragment, {
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: onClose,
+                                    title: "إخفاء الشاشة ومتابعة التنزيل بالخلفية",
+                                    className: "flex-1 py-2.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-colors",
+                                    children: [
+                                        /*#__PURE__*/ _jsxDEV(EyeOff, {
+                                            className: "w-4 h-4"
+                                        }, void 0, false, {
+                                            fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                            lineNumber: 286,
+                                            columnNumber: 17
+                                        }, this),
+                                        " المتابعة في الخلفية"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                    lineNumber: 281,
+                                    columnNumber: 15
+                                }, this),
+                                onCancel && /*#__PURE__*/ _jsxDEV("button", {
+                                    onClick: onCancel,
+                                    className: "py-2.5 px-3 rounded-xl text-stone-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 text-xs font-semibold transition-colors",
+                                    children: "إلغاء"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                                    lineNumber: 289,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true)
+                    }, void 0, false, {
+                        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                        lineNumber: 254,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+                lineNumber: 102,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx",
+        lineNumber: 89,
+        columnNumber: 5
+    }, this);
+};
+_s(SurahDownloadModal, "3FvJDKtC3yF1gbNv5/WixcrN7Rs=");
+_c = SurahDownloadModal;
+export default SurahDownloadModal;
+var _c;
+$RefreshReg$(_c, "SurahDownloadModal");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/SurahDownloadModal.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlN1cmFoRG93bmxvYWRNb2RhbC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7IHVzZU1lbW8gfSBmcm9tIFwicmVhY3RcIjtcbmltcG9ydCB7XG4gIERvd25sb2FkLFxuICBDaGVja0NpcmNsZTIsXG4gIEFsZXJ0Q2lyY2xlLFxuICBYLFxuICBTZXJ2ZXIsXG4gIEhhcmREcml2ZSxcbiAgR2F1Z2UsXG4gIENsb2NrLFxuICBTcGFya2xlcyxcbiAgUmVmcmVzaEN3LFxuICBFeWVPZmZcbn0gZnJvbSBcImx1Y2lkZS1yZWFjdFwiO1xuaW1wb3J0IHR5cGUgeyBTdXJhaERvd25sb2FkUHJvZ3Jlc3MgfSBmcm9tIFwiQC9kYXRhL29mZmxpbmVEb3dubG9hZFwiO1xuXG5leHBvcnQgaW50ZXJmYWNlIFN1cmFoRG93bmxvYWRNb2RhbFByb3BzIHtcbiAgaXNPcGVuOiBib29sZWFuO1xuICBvbkNsb3NlOiAoKSA9PiB2b2lkO1xuICBzdXJhaE51bWJlcjogbnVtYmVyO1xuICBzdXJhaE5hbWU6IHN0cmluZztcbiAgcHJvZ3Jlc3NEYXRhPzogU3VyYWhEb3dubG9hZFByb2dyZXNzO1xuICBvbkNhbmNlbD86ICgpID0+IHZvaWQ7XG4gIG9uUmV0cnk/OiAoKSA9PiB2b2lkO1xufVxuXG5mdW5jdGlvbiBmb3JtYXRCeXRlcyhieXRlcz86IG51bWJlcik6IHN0cmluZyB7XG4gIGlmICghYnl0ZXMgfHwgYnl0ZXMgPD0gMCkgcmV0dXJuIFwiMCDZhdmK2KzYp9io2KfZitiqXCI7XG4gIGlmIChieXRlcyA8IDEwMjQpIHJldHVybiBgJHtieXRlc30g2KjYp9mK2KpgO1xuICBpZiAoYnl0ZXMgPCAxMDI0ICogMTAyNCkgcmV0dXJuIGAkeyhieXRlcyAvIDEwMjQpLnRvRml4ZWQoMSl9INmD2YrZhNmI2KjYp9mK2KpgO1xuICByZXR1cm4gYCR7KGJ5dGVzIC8gKDEwMjQgKiAxMDI0KSkudG9GaXhlZCgyKX0g2YXZitis2KfYqNin2YrYqmA7XG59XG5cbmZ1bmN0aW9uIGZvcm1hdFNwZWVkKGJ5dGVzUGVyU2VjPzogbnVtYmVyKTogc3RyaW5nIHtcbiAgaWYgKCFieXRlc1BlclNlYyB8fCBieXRlc1BlclNlYyA8PSAwKSByZXR1cm4gXCLZgtmK2K8g2KfZhNmC2YrYp9izLi4uXCI7XG4gIGlmIChieXRlc1BlclNlYyA8IDEwMjQgKiAxMDI0KSB7XG4gICAgcmV0dXJuIGAkeyhieXRlc1BlclNlYyAvIDEwMjQpLnRvRml4ZWQoMCl9INmD2YrZhNmI2KjYp9mK2Kov2KtgO1xuICB9XG4gIHJldHVybiBgJHsoYnl0ZXNQZXJTZWMgLyAoMTAyNCAqIDEwMjQpKS50b0ZpeGVkKDIpfSDZhdmK2KzYp9io2KfZitiqL9irYDtcbn1cblxuZnVuY3Rpb24gZm9ybWF0RXN0aW1hdGVkVGltZShyZWNlaXZlZD86IG51bWJlciwgdG90YWw/OiBudW1iZXIsIHNwZWVkPzogbnVtYmVyKTogc3RyaW5nIHtcbiAgaWYgKCF0b3RhbCB8fCAhcmVjZWl2ZWQgfHwgIXNwZWVkIHx8IHNwZWVkIDw9IDAgfHwgcmVjZWl2ZWQgPj0gdG90YWwpIHtcbiAgICByZXR1cm4gXCLYq9mI2KfZhtmNINmF2LnYr9mI2K/YqVwiO1xuICB9XG4gIGNvbnN0IHJlbWFpbmluZ0J5dGVzID0gdG90YWwgLSByZWNlaXZlZDtcbiAgY29uc3Qgc2Vjb25kcyA9IE1hdGguY2VpbChyZW1haW5pbmdCeXRlcyAvIHNwZWVkKTtcbiAgaWYgKHNlY29uZHMgPD0gMSkgcmV0dXJuIFwi2KvYp9mG2YrYqSDZiNin2K3Yr9ipXCI7XG4gIGlmIChzZWNvbmRzID09PSAyKSByZXR1cm4gXCLYq9in2YbZitiq2KfZhlwiO1xuICBpZiAoc2Vjb25kcyA8PSAxMCkgcmV0dXJuIGAke3NlY29uZHN9INir2YjYp9mG2Y1gO1xuICBpZiAoc2Vjb25kcyA8IDYwKSByZXR1cm4gYCR7c2Vjb25kc30g2KvYp9mG2YrYqWA7XG4gIGNvbnN0IG1pbnV0ZXMgPSBNYXRoLmNlaWwoc2Vjb25kcyAvIDYwKTtcbiAgcmV0dXJuIGDYrdmI2KfZhNmKICR7bWludXRlc30g2K/ZgtmK2YLYqWA7XG59XG5cbmV4cG9ydCBjb25zdCBTdXJhaERvd25sb2FkTW9kYWw6IFJlYWN0LkZDPFN1cmFoRG93bmxvYWRNb2RhbFByb3BzPiA9ICh7XG4gIGlzT3BlbixcbiAgb25DbG9zZSxcbiAgc3VyYWhOdW1iZXIsXG4gIHN1cmFoTmFtZSxcbiAgcHJvZ3Jlc3NEYXRhLFxuICBvbkNhbmNlbCxcbiAgb25SZXRyeSxcbn0pID0+IHtcbiAgaWYgKCFpc09wZW4pIHJldHVybiBudWxsO1xuXG4gIGNvbnN0IGlzQ29tcGxldGVkID0gcHJvZ3Jlc3NEYXRhPy5zdGF0dXMgPT09IFwiY29tcGxldGVkXCIgfHwgKHByb2dyZXNzRGF0YT8ucHJvZ3Jlc3MgfHwgMCkgPj0gMTAwO1xuICBjb25zdCBpc0Vycm9yID0gcHJvZ3Jlc3NEYXRhPy5zdGF0dXMgPT09IFwiZXJyb3JcIjtcbiAgY29uc3QgcHJvZ3Jlc3NQZXJjZW50ID0gTWF0aC5taW4oMTAwLCBNYXRoLm1heCgwLCBwcm9ncmVzc0RhdGE/LnByb2dyZXNzIHx8IDApKTtcblxuICBjb25zdCBzdGF0cyA9IHVzZU1lbW8oKCkgPT4ge1xuICAgIGNvbnN0IHJlY2VpdmVkID0gcHJvZ3Jlc3NEYXRhPy5yZWNlaXZlZEJ5dGVzO1xuICAgIGNvbnN0IHRvdGFsID0gcHJvZ3Jlc3NEYXRhPy50b3RhbEJ5dGVzO1xuICAgIGNvbnN0IHNwZWVkID0gcHJvZ3Jlc3NEYXRhPy5zcGVlZDtcblxuICAgIHJldHVybiB7XG4gICAgICBkb3dubG9hZGVkVGV4dDogdG90YWxcbiAgICAgICAgPyBgJHtmb3JtYXRCeXRlcyhyZWNlaXZlZCl9INmF2YYgJHtmb3JtYXRCeXRlcyh0b3RhbCl9YFxuICAgICAgICA6IHJlY2VpdmVkXG4gICAgICAgID8gZm9ybWF0Qnl0ZXMocmVjZWl2ZWQpXG4gICAgICAgIDogXCLYrNin2LHZiiDYp9mE2K3Ys9in2KguLi5cIixcbiAgICAgIHNwZWVkVGV4dDogZm9ybWF0U3BlZWQoc3BlZWQpLFxuICAgICAgZXN0aW1hdGVkVGltZVRleHQ6IGZvcm1hdEVzdGltYXRlZFRpbWUocmVjZWl2ZWQsIHRvdGFsLCBzcGVlZCksXG4gICAgICBzZXJ2ZXJUZXh0OiBwcm9ncmVzc0RhdGE/LnNlcnZlck5hbWUgfHwgXCLYs9mK2LHZgdixINin2YTYqtiu2LLZitmGINin2YTYs9it2KfYqNmKINmB2KfYptmCINin2YTYs9ix2LnYqVwiLFxuICAgIH07XG4gIH0sIFtwcm9ncmVzc0RhdGFdKTtcblxuICByZXR1cm4gKFxuICAgIDxkaXZcbiAgICAgIHJvbGU9XCJkaWFsb2dcIlxuICAgICAgYXJpYS1tb2RhbD1cInRydWVcIlxuICAgICAgYXJpYS1sYWJlbD17YNi02KfYtNipINiq2K3ZhdmK2YQg2LPZiNix2KkgJHtzdXJhaE5hbWV9YH1cbiAgICAgIGNsYXNzTmFtZT1cImZpeGVkIGluc2V0LTAgei1bMTIwXSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBwLTQgYmctYmxhY2svNzAgYmFja2Ryb3AtYmx1ci1tZCBhbmltYXRlLWZhZGUtaW5cIlxuICAgICAgb25DbGljaz17KGUpID0+IHtcbiAgICAgICAgaWYgKGUudGFyZ2V0ID09PSBlLmN1cnJlbnRUYXJnZXQgJiYgKGlzQ29tcGxldGVkIHx8IGlzRXJyb3IpKSBvbkNsb3NlKCk7XG4gICAgICB9fVxuICAgID5cbiAgICAgIHsvKiBCYWNrZ3JvdW5kIERlY29yYXRpdmUgR2xvdyAqL31cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwicG9pbnRlci1ldmVudHMtbm9uZSBhYnNvbHV0ZSB3LTk2IGgtOTYgcm91bmRlZC1mdWxsIGJnLWFtYmVyLTUwMC8xNSBibHVyLTN4bFwiIC8+XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cInBvaW50ZXItZXZlbnRzLW5vbmUgYWJzb2x1dGUgLWJvdHRvbS0xMCAtcmlnaHQtMTAgdy03MiBoLTcyIHJvdW5kZWQtZnVsbCBiZy1lbWVyYWxkLTUwMC8xNSBibHVyLTN4bFwiIC8+XG5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmVsYXRpdmUgdy1mdWxsIG1heC13LW1kIG92ZXJmbG93LWhpZGRlbiByb3VuZGVkLTN4bCBib3JkZXIgYm9yZGVyLWFtYmVyLTUwMC8zMCBiZy1jYXJkLzk1IHRleHQtY2FyZC1mb3JlZ3JvdW5kIHAtNiBzbTpwLTcgc2hhZG93LTJ4bCBiYWNrZHJvcC1ibHVyLTJ4bCB0cmFuc2l0aW9uLWFsbFwiPlxuICAgICAgICB7LyogVG9wIEhlYWRlciAqL31cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLXN0YXJ0IGp1c3RpZnktYmV0d2VlbiBnYXAtMyBtYi01XCI+XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtM1wiPlxuICAgICAgICAgICAgPGRpdlxuICAgICAgICAgICAgICBjbGFzc05hbWU9e2B3LTEyIGgtMTIgcm91bmRlZC0yeGwgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYm9yZGVyIHNoYWRvdy1pbm5lciB0cmFuc2l0aW9uLWNvbG9ycyAke1xuICAgICAgICAgICAgICAgIGlzQ29tcGxldGVkXG4gICAgICAgICAgICAgICAgICA/IFwiYmctZW1lcmFsZC01MDAvMTUgYm9yZGVyLWVtZXJhbGQtNTAwLzQwIHRleHQtZW1lcmFsZC01MDBcIlxuICAgICAgICAgICAgICAgICAgOiBpc0Vycm9yXG4gICAgICAgICAgICAgICAgICA/IFwiYmctcmVkLTUwMC8xNSBib3JkZXItcmVkLTUwMC80MCB0ZXh0LXJlZC01MDBcIlxuICAgICAgICAgICAgICAgICAgOiBcImJnLWFtYmVyLTUwMC8xNSBib3JkZXItYW1iZXItNTAwLzQwIHRleHQtYW1iZXItNTAwXCJcbiAgICAgICAgICAgICAgfWB9XG4gICAgICAgICAgICA+XG4gICAgICAgICAgICAgIHtpc0NvbXBsZXRlZCA/IChcbiAgICAgICAgICAgICAgICA8Q2hlY2tDaXJjbGUyIGNsYXNzTmFtZT1cInctNiBoLTYgYW5pbWF0ZS1zY2FsZS11cFwiIC8+XG4gICAgICAgICAgICAgICkgOiBpc0Vycm9yID8gKFxuICAgICAgICAgICAgICAgIDxBbGVydENpcmNsZSBjbGFzc05hbWU9XCJ3LTYgaC02IGFuaW1hdGUtcHVsc2VcIiAvPlxuICAgICAgICAgICAgICApIDogKFxuICAgICAgICAgICAgICAgIDxEb3dubG9hZCBjbGFzc05hbWU9XCJ3LTYgaC02IGFuaW1hdGUtYm91bmNlXCIgLz5cbiAgICAgICAgICAgICAgKX1cbiAgICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0yXCI+XG4gICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgcHgtMiBweS0wLjUgcm91bmRlZC1mdWxsIGJnLWFtYmVyLTUwMC8xMCB0ZXh0LWFtYmVyLTYwMCBkYXJrOnRleHQtYW1iZXItNDAwIGJvcmRlciBib3JkZXItYW1iZXItNTAwLzIwXCI+XG4gICAgICAgICAgICAgICAgICDYs9mI2LHYqSDYsdmC2YUge3N1cmFoTnVtYmVyfVxuICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXhzIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMVwiPlxuICAgICAgICAgICAgICAgICAgPEhhcmREcml2ZSBjbGFzc05hbWU9XCJ3LTMgaC0zIHRleHQtc3RvbmUtNDAwXCIgLz4g2K3Zgdi4INiv2KfYptmFINmE2YTYrNmH2KfYslxuICAgICAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDxoMiBjbGFzc05hbWU9XCJ0ZXh0LXhsIHNtOnRleHQtMnhsIGZvbnQtYmxhY2sgbXQtMC41IHRleHQtZm9yZWdyb3VuZFwiPlxuICAgICAgICAgICAgICAgIHtzdXJhaE5hbWV9XG4gICAgICAgICAgICAgIDwvaDI+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgIG9uQ2xpY2s9e29uQ2xvc2V9XG4gICAgICAgICAgICBhcmlhLWxhYmVsPVwi2KXYutmE2KfZgiDYp9mE2LTYp9i02KlcIlxuICAgICAgICAgICAgY2xhc3NOYW1lPVwicC0xLjUgcm91bmRlZC14bCB0ZXh0LXN0b25lLTQwMCBob3Zlcjp0ZXh0LXN0b25lLTcwMCBkYXJrOmhvdmVyOnRleHQtc3RvbmUtMjAwIGhvdmVyOmJnLXN0b25lLTEwMCBkYXJrOmhvdmVyOmJnLXN0b25lLTgwMCB0cmFuc2l0aW9uLWNvbG9yc1wiXG4gICAgICAgICAgPlxuICAgICAgICAgICAgPFggY2xhc3NOYW1lPVwidy01IGgtNVwiIC8+XG4gICAgICAgICAgPC9idXR0b24+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiBTZXJ2ZXIgJiBTdGF0dXMgSW5mbyBCYW5uZXIgKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIHRleHQteHMgcHgtMy41IHB5LTIgcm91bmRlZC14bCBiZy1zdG9uZS0xMDAvNzAgZGFyazpiZy1zdG9uZS04MDAvNDAgYm9yZGVyIGJvcmRlci1ib3JkZXIgbWItNVwiPlxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjUgdGV4dC1zdG9uZS02MDAgZGFyazp0ZXh0LXN0b25lLTMwMCBmb250LW1lZGl1bSB0cnVuY2F0ZVwiPlxuICAgICAgICAgICAgPFNlcnZlciBjbGFzc05hbWU9XCJ3LTMuNSBoLTMuNSB0ZXh0LWFtYmVyLTUwMCBzaHJpbmstMFwiIC8+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0cnVuY2F0ZVwiPntzdGF0cy5zZXJ2ZXJUZXh0fTwvc3Bhbj5cbiAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgPHNwYW5cbiAgICAgICAgICAgIGNsYXNzTmFtZT17YGZvbnQtYm9sZCBzaHJpbmstMCAke1xuICAgICAgICAgICAgICBpc0NvbXBsZXRlZFxuICAgICAgICAgICAgICAgID8gXCJ0ZXh0LWVtZXJhbGQtNTAwXCJcbiAgICAgICAgICAgICAgICA6IGlzRXJyb3JcbiAgICAgICAgICAgICAgICA/IFwidGV4dC1yZWQtNTAwXCJcbiAgICAgICAgICAgICAgICA6IFwidGV4dC1hbWJlci01MDAgYW5pbWF0ZS1wdWxzZVwiXG4gICAgICAgICAgICB9YH1cbiAgICAgICAgICA+XG4gICAgICAgICAgICB7aXNDb21wbGV0ZWQgPyBcItin2YPYqtmF2YQg2KfZhNiq2YbYstmK2YRcIiA6IGlzRXJyb3IgPyBcItiq2LnYq9ixINin2YTYqtit2YXZitmEXCIgOiBcItis2KfYsdmKINin2YTYqtit2YXZitmELi4uXCJ9XG4gICAgICAgICAgPC9zcGFuPlxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICB7LyogQmlnIFBlcmNlbnRhZ2UgJiBQcm9ncmVzcyBCYXIgKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0yIG1iLTZcIj5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtYmFzZWxpbmUganVzdGlmeS1iZXR3ZWVuXCI+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtc2VtaWJvbGQgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kXCI+XG4gICAgICAgICAgICAgIHtpc0NvbXBsZXRlZCA/IFwi2KrZhSDYp9mE2K3Zgdi4INio2YbYrNin2K1cIiA6IGlzRXJyb3IgPyBcItiq2YjZgtmBINin2YTYqtmG2LLZitmEXCIgOiBcItmG2LPYqNipINin2YTYpdmG2KzYp9iyINin2YTYr9mC2YrZgtipXCJ9XG4gICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LTN4bCBzbTp0ZXh0LTR4bCBmb250LWJsYWNrIHRyYWNraW5nLXRpZ2h0IGZvbnQtbW9ubyB0ZXh0LXRyYW5zcGFyZW50IGJnLWNsaXAtdGV4dCBiZy1ncmFkaWVudC10by1sIGZyb20tYW1iZXItNjAwIHZpYS1hbWJlci01MDAgdG8tZW1lcmFsZC02MDAgZGFyazpmcm9tLWFtYmVyLTQwMCBkYXJrOnRvLWVtZXJhbGQtNDAwXCI+XG4gICAgICAgICAgICAgIHtwcm9ncmVzc1BlcmNlbnR9JVxuICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgey8qIFByZWNpc2lvbiBEdWFsLVRyYWNrIFByb2dyZXNzIEJhciAqL31cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJlbGF0aXZlIGgtNCB3LWZ1bGwgb3ZlcmZsb3ctaGlkZGVuIHJvdW5kZWQtZnVsbCBiZy1zdG9uZS0yMDAgZGFyazpiZy1zdG9uZS04MDAgYm9yZGVyIGJvcmRlci1zdG9uZS0zMDAgZGFyazpib3JkZXItc3RvbmUtNzAwLzgwIHAtMC41XCI+XG4gICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgIGNsYXNzTmFtZT17YGgtZnVsbCByb3VuZGVkLWZ1bGwgdHJhbnNpdGlvbi1hbGwgZHVyYXRpb24tMjAwIHJlbGF0aXZlIG92ZXJmbG93LWhpZGRlbiAke1xuICAgICAgICAgICAgICAgIGlzQ29tcGxldGVkXG4gICAgICAgICAgICAgICAgICA/IFwiYmctZW1lcmFsZC01MDBcIlxuICAgICAgICAgICAgICAgICAgOiBpc0Vycm9yXG4gICAgICAgICAgICAgICAgICA/IFwiYmctcmVkLTUwMFwiXG4gICAgICAgICAgICAgICAgICA6IFwiYmctZ3JhZGllbnQtdG8tciBmcm9tLWVtZXJhbGQtNTAwIHZpYS1hbWJlci01MDAgdG8tYW1iZXItNDAwXCJcbiAgICAgICAgICAgICAgfWB9XG4gICAgICAgICAgICAgIHN0eWxlPXt7IHdpZHRoOiBgJHtwcm9ncmVzc1BlcmNlbnR9JWAgfX1cbiAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgey8qIFNoaW1tZXIgTGlnaHQgUmVmbGVjdGlvbiBFZmZlY3QgKi99XG4gICAgICAgICAgICAgIHshaXNDb21wbGV0ZWQgJiYgIWlzRXJyb3IgJiYgKFxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYWJzb2x1dGUgaW5zZXQtMCBiZy1ncmFkaWVudC10by1yIGZyb20tdHJhbnNwYXJlbnQgdmlhLXdoaXRlLzQwIHRvLXRyYW5zcGFyZW50IGFuaW1hdGUtW3NoaW1tZXJfMS41c19pbmZpbml0ZV1cIiAvPlxuICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiBMaXZlIE1ldHJpY3MgR3JpZCAoU3BlZWQsIERvd25sb2FkZWQgU2l6ZSwgRXN0aW1hdGVkIFRpbWUpICovfVxuICAgICAgICB7IWlzRXJyb3IgJiYgKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZ3JpZCBncmlkLWNvbHMtMyBnYXAtMiBzbTpnYXAtMyBtYi02XCI+XG4gICAgICAgICAgICB7LyogRG93bmxvYWRlZCAvIFRvdGFsICovfVxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGZsZXgtY29sIGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBwLTIuNSByb3VuZGVkLTJ4bCBiZy1zdG9uZS0xMDAvNjAgZGFyazpiZy1zdG9uZS04MDAvNDAgYm9yZGVyIGJvcmRlci1ib3JkZXIgdGV4dC1jZW50ZXJcIj5cbiAgICAgICAgICAgICAgPEhhcmREcml2ZSBjbGFzc05hbWU9XCJ3LTQgaC00IHRleHQtYW1iZXItNTAwIG1iLTFcIiAvPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LVsxMHB4XSB0ZXh0LW11dGVkLWZvcmVncm91bmRcIj7Yp9mE2K3YrNmFPC9zcGFuPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LWZvcmVncm91bmQgbXQtMC41IGRpci1sdHIgdHJ1bmNhdGUgbWF4LXctZnVsbFwiPlxuICAgICAgICAgICAgICAgIHtzdGF0cy5kb3dubG9hZGVkVGV4dH1cbiAgICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgIHsvKiBDdXJyZW50IFNwZWVkICovfVxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGZsZXgtY29sIGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBwLTIuNSByb3VuZGVkLTJ4bCBiZy1zdG9uZS0xMDAvNjAgZGFyazpiZy1zdG9uZS04MDAvNDAgYm9yZGVyIGJvcmRlci1ib3JkZXIgdGV4dC1jZW50ZXJcIj5cbiAgICAgICAgICAgICAgPEdhdWdlIGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC1lbWVyYWxkLTUwMCBtYi0xXCIgLz5cbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1bMTBweF0gdGV4dC1tdXRlZC1mb3JlZ3JvdW5kXCI+2KfZhNiz2LHYudipPC9zcGFuPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LWZvcmVncm91bmQgbXQtMC41IGRpci1sdHIgdHJ1bmNhdGUgbWF4LXctZnVsbFwiPlxuICAgICAgICAgICAgICAgIHtpc0NvbXBsZXRlZCA/IFwi2YXZg9iq2YXZhFwiIDogc3RhdHMuc3BlZWRUZXh0fVxuICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAgey8qIFJlbWFpbmluZyBUaW1lICovfVxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGZsZXgtY29sIGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBwLTIuNSByb3VuZGVkLTJ4bCBiZy1zdG9uZS0xMDAvNjAgZGFyazpiZy1zdG9uZS04MDAvNDAgYm9yZGVyIGJvcmRlci1ib3JkZXIgdGV4dC1jZW50ZXJcIj5cbiAgICAgICAgICAgICAgPENsb2NrIGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC1ibHVlLTUwMCBtYi0xXCIgLz5cbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1bMTBweF0gdGV4dC1tdXRlZC1mb3JlZ3JvdW5kXCI+2KfZhNmI2YLYqiDYp9mE2YXYqtio2YLZijwvc3Bhbj5cbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgdGV4dC1mb3JlZ3JvdW5kIG10LTAuNSB0cnVuY2F0ZSBtYXgtdy1mdWxsXCI+XG4gICAgICAgICAgICAgICAge2lzQ29tcGxldGVkID8gXCIwINir2KfZhtmK2KlcIiA6IHN0YXRzLmVzdGltYXRlZFRpbWVUZXh0fVxuICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgKX1cblxuICAgICAgICB7LyogRXJyb3IgTm90aWZpY2F0aW9uICovfVxuICAgICAgICB7aXNFcnJvciAmJiAoXG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTMuNSByb3VuZGVkLTJ4bCBiZy1yZWQtNTAwLzEwIGJvcmRlciBib3JkZXItcmVkLTUwMC8zMCB0ZXh0LXJlZC02MDAgZGFyazp0ZXh0LXJlZC00MDAgdGV4dC14cyBtYi02IHNwYWNlLXktMVwiPlxuICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwiZm9udC1ib2xkIGZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjVcIj5cbiAgICAgICAgICAgICAgPEFsZXJ0Q2lyY2xlIGNsYXNzTmFtZT1cInctNCBoLTQgc2hyaW5rLTBcIiAvPlxuICAgICAgICAgICAgICDYqti52LDZkdixINil2YPZhdin2YQg2KfZhNiq2K3ZhdmK2YQ6XG4gICAgICAgICAgICA8L3A+XG4gICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LVsxMXB4XSB0ZXh0LXJlZC01MDAvOTAgcHItNVwiPlxuICAgICAgICAgICAgICB7cHJvZ3Jlc3NEYXRhPy5lcnJvciB8fCBcItit2K/YqyDYp9mG2YLYt9in2Lkg2YHZiiDYp9mE2KfYqti12KfZhCDYqNin2YTYs9mK2LHZgdixINij2Ygg2LTYqNmD2Kkg2KfZhNil2YbYqtix2YbYqlwifVxuICAgICAgICAgICAgPC9wPlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApfVxuXG4gICAgICAgIHsvKiBDb21wbGV0aW9uIE5vdGljZSAqL31cbiAgICAgICAge2lzQ29tcGxldGVkICYmIChcbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInAtMy41IHJvdW5kZWQtMnhsIGJnLWVtZXJhbGQtNTAwLzEwIGJvcmRlciBib3JkZXItZW1lcmFsZC01MDAvMzAgdGV4dC1lbWVyYWxkLTcwMCBkYXJrOnRleHQtZW1lcmFsZC0zMDAgdGV4dC14cyBtYi02IGZsZXggaXRlbXMtY2VudGVyIGdhcC0yLjVcIj5cbiAgICAgICAgICAgIDxTcGFya2xlcyBjbGFzc05hbWU9XCJ3LTUgaC01IHRleHQtZW1lcmFsZC01MDAgc2hyaW5rLTBcIiAvPlxuICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwiZm9udC1tZWRpdW0gdGV4dC1bMTFweF0gbGVhZGluZy1yZWxheGVkXCI+XG4gICAgICAgICAgICAgINij2LXYqNit2Kog2KfZhNiz2YjYsdipINin2YTYotmGINmF2K3ZgdmI2LjYqSDYqNi02YPZhCDYr9in2KbZhSDZgdmKINiw2KfZg9ix2Kkg2KzZh9in2LLZg9iMINmI2LPYqti52YXZhCDYqtmE2YLYp9im2YrYp9mLINmI2KjYs9ix2LnYqSDZgdin2KbZgtipINit2KrZiSDZhNmIINin2YbZgti32Lkg2KfZhNil2YbYqtix2YbYqiDYqtmF2KfZhdin2YsuXG4gICAgICAgICAgICA8L3A+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgICl9XG5cbiAgICAgICAgey8qIEFjdGlvbiBCdXR0b25zICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0yIHB0LTEgYm9yZGVyLXQgYm9yZGVyLWJvcmRlclwiPlxuICAgICAgICAgIHtpc0NvbXBsZXRlZCA/IChcbiAgICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgICAgb25DbGljaz17b25DbG9zZX1cbiAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIHB5LTIuNSBweC00IHJvdW5kZWQteGwgYmctZW1lcmFsZC02MDAgaG92ZXI6YmctZW1lcmFsZC03MDAgdGV4dC13aGl0ZSBmb250LWJvbGQgdGV4dC14cyBzbTp0ZXh0LXNtIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0yIHNoYWRvdy1sZyBzaGFkb3ctZW1lcmFsZC02MDAvMjAgdHJhbnNpdGlvbi1jb2xvcnNcIlxuICAgICAgICAgICAgPlxuICAgICAgICAgICAgICA8Q2hlY2tDaXJjbGUyIGNsYXNzTmFtZT1cInctNCBoLTRcIiAvPiDYqtmFINin2YTYrdmB2LjYjCDYrdiz2YbYp9mLXG4gICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICApIDogaXNFcnJvciA/IChcbiAgICAgICAgICAgIDw+XG4gICAgICAgICAgICAgIHtvblJldHJ5ICYmIChcbiAgICAgICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgICAgICBvbkNsaWNrPXtvblJldHJ5fVxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiZmxleC0xIHB5LTIuNSBweC00IHJvdW5kZWQteGwgYmctYW1iZXItNjAwIGhvdmVyOmJnLWFtYmVyLTcwMCB0ZXh0LXdoaXRlIGZvbnQtYm9sZCB0ZXh0LXhzIHNtOnRleHQtc20gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgZ2FwLTIgc2hhZG93LWxnIHNoYWRvdy1hbWJlci02MDAvMjAgdHJhbnNpdGlvbi1jb2xvcnNcIlxuICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIDxSZWZyZXNoQ3cgY2xhc3NOYW1lPVwidy00IGgtNFwiIC8+INil2LnYp9iv2Kkg2KfZhNmF2K3Yp9mI2YTYqVxuICAgICAgICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgICAgb25DbGljaz17b25DbG9zZX1cbiAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJweS0yLjUgcHgtNCByb3VuZGVkLXhsIGJvcmRlciBib3JkZXItYm9yZGVyIHRleHQtc3RvbmUtNjAwIGRhcms6dGV4dC1zdG9uZS0zMDAgaG92ZXI6Ymctc3RvbmUtMTAwIGRhcms6aG92ZXI6Ymctc3RvbmUtODAwIHRleHQteHMgZm9udC1zZW1pYm9sZCB0cmFuc2l0aW9uLWNvbG9yc1wiXG4gICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICDYpdmE2LrYp9ihXG4gICAgICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgICAgPC8+XG4gICAgICAgICAgKSA6IChcbiAgICAgICAgICAgIDw+XG4gICAgICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgICAgICBvbkNsaWNrPXtvbkNsb3NlfVxuICAgICAgICAgICAgICAgIHRpdGxlPVwi2KXYrtmB2KfYoSDYp9mE2LTYp9i02Kkg2YjZhdiq2KfYqNi52Kkg2KfZhNiq2YbYstmK2YQg2KjYp9mE2K7ZhNmB2YrYqVwiXG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiZmxleC0xIHB5LTIuNSBweC0zIHJvdW5kZWQteGwgYmctYW1iZXItNTAwLzEwIGhvdmVyOmJnLWFtYmVyLTUwMC8yMCB0ZXh0LWFtYmVyLTcwMCBkYXJrOnRleHQtYW1iZXItMzAwIGJvcmRlciBib3JkZXItYW1iZXItNTAwLzMwIGZvbnQtYm9sZCB0ZXh0LXhzIHNtOnRleHQtc20gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgZ2FwLTEuNSB0cmFuc2l0aW9uLWNvbG9yc1wiXG4gICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICA8RXllT2ZmIGNsYXNzTmFtZT1cInctNCBoLTRcIiAvPiDYp9mE2YXYqtin2KjYudipINmB2Yog2KfZhNiu2YTZgdmK2KlcbiAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICAgIHtvbkNhbmNlbCAmJiAoXG4gICAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgICAgb25DbGljaz17b25DYW5jZWx9XG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJweS0yLjUgcHgtMyByb3VuZGVkLXhsIHRleHQtc3RvbmUtNTAwIGhvdmVyOnRleHQtcmVkLTYwMCBob3ZlcjpiZy1yZWQtNTAgZGFyazpob3ZlcjpiZy1yZWQtOTUwLzIwIHRleHQteHMgZm9udC1zZW1pYm9sZCB0cmFuc2l0aW9uLWNvbG9yc1wiXG4gICAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgICAg2KXZhNi62KfYoVxuICAgICAgICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgPC8+XG4gICAgICAgICAgKX1cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cbiAgICA8L2Rpdj5cbiAgKTtcbn07XG5cbmV4cG9ydCBkZWZhdWx0IFN1cmFoRG93bmxvYWRNb2RhbDtcbiJdLCJuYW1lcyI6WyJSZWFjdCIsInVzZU1lbW8iLCJEb3dubG9hZCIsIkNoZWNrQ2lyY2xlMiIsIkFsZXJ0Q2lyY2xlIiwiWCIsIlNlcnZlciIsIkhhcmREcml2ZSIsIkdhdWdlIiwiQ2xvY2siLCJTcGFya2xlcyIsIlJlZnJlc2hDdyIsIkV5ZU9mZiIsImZvcm1hdEJ5dGVzIiwiYnl0ZXMiLCJ0b0ZpeGVkIiwiZm9ybWF0U3BlZWQiLCJieXRlc1BlclNlYyIsImZvcm1hdEVzdGltYXRlZFRpbWUiLCJyZWNlaXZlZCIsInRvdGFsIiwic3BlZWQiLCJyZW1haW5pbmdCeXRlcyIsInNlY29uZHMiLCJNYXRoIiwiY2VpbCIsIm1pbnV0ZXMiLCJTdXJhaERvd25sb2FkTW9kYWwiLCJpc09wZW4iLCJvbkNsb3NlIiwic3VyYWhOdW1iZXIiLCJzdXJhaE5hbWUiLCJwcm9ncmVzc0RhdGEiLCJvbkNhbmNlbCIsIm9uUmV0cnkiLCJpc0NvbXBsZXRlZCIsInN0YXR1cyIsInByb2dyZXNzIiwiaXNFcnJvciIsInByb2dyZXNzUGVyY2VudCIsIm1pbiIsIm1heCIsInN0YXRzIiwicmVjZWl2ZWRCeXRlcyIsInRvdGFsQnl0ZXMiLCJkb3dubG9hZGVkVGV4dCIsInNwZWVkVGV4dCIsImVzdGltYXRlZFRpbWVUZXh0Iiwic2VydmVyVGV4dCIsInNlcnZlck5hbWUiLCJkaXYiLCJyb2xlIiwiYXJpYS1tb2RhbCIsImFyaWEtbGFiZWwiLCJjbGFzc05hbWUiLCJvbkNsaWNrIiwiZSIsInRhcmdldCIsImN1cnJlbnRUYXJnZXQiLCJzcGFuIiwiaDIiLCJidXR0b24iLCJzdHlsZSIsIndpZHRoIiwicCIsImVycm9yIiwidGl0bGUiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLE9BQU9BLFNBQVNDLE9BQU8sUUFBUSxRQUFRO0FBQ3ZDLFNBQ0VDLFFBQVEsRUFDUkMsWUFBWSxFQUNaQyxXQUFXLEVBQ1hDLENBQUMsRUFDREMsTUFBTSxFQUNOQyxTQUFTLEVBQ1RDLEtBQUssRUFDTEMsS0FBSyxFQUNMQyxRQUFRLEVBQ1JDLFNBQVMsRUFDVEMsTUFBTSxRQUNELGVBQWU7QUFhdEIsU0FBU0MsWUFBWUMsS0FBYztJQUNqQyxJQUFJLENBQUNBLFNBQVNBLFNBQVMsR0FBRyxPQUFPO0lBQ2pDLElBQUlBLFFBQVEsTUFBTSxPQUFPLEdBQUdBLE1BQU0sS0FBSyxDQUFDO0lBQ3hDLElBQUlBLFFBQVEsT0FBTyxNQUFNLE9BQU8sR0FBRyxBQUFDQSxDQUFBQSxRQUFRLElBQUcsRUFBR0MsT0FBTyxDQUFDLEdBQUcsU0FBUyxDQUFDO0lBQ3ZFLE9BQU8sR0FBRyxBQUFDRCxDQUFBQSxRQUFTLENBQUEsT0FBTyxJQUFHLENBQUMsRUFBR0MsT0FBTyxDQUFDLEdBQUcsU0FBUyxDQUFDO0FBQ3pEO0FBRUEsU0FBU0MsWUFBWUMsV0FBb0I7SUFD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

@@ -9,7 +9,9 @@ import {
 import { getAllSurahs, getSurahByNumber, SurahInfo } from "@/data/quranData";
 import {
   getPageAyahBoxes, savePageAyahBoxes, AyahBox, getAllPageSources,
-  PAGE_IMAGE_SIZE, AYAH_COORDINATES, syncCoordinatesFromServer
+  PAGE_IMAGE_SIZE, AYAH_COORDINATES, syncCoordinatesFromServer,
+  getPageSections, getSurahFirstPage, getSurahPageList, generateDefaultBoxesForPage,
+  isSurahOnPage, getSavedAyahCoordinates, getSavedPageBoxes, saveAllAyahBoxesToServer
 } from "@/data/ayahCoordinates";
 import {
   SurahRegion, getSurahRegistry, getSurahRegistryEntry,
@@ -19,47 +21,16 @@ import { getCustomPages, syncAllPageImagesFromServer, saveShadingCustomColorToSe
 import { surahPageMap } from "@/data/surahPages";
 import { toast } from "@/hooks/use-toast";
 
-// خريطة صفحات جزء عمّ والسور الأساسية لربط السورة بالصفحة مباشرة
-const SURAH_TO_DEFAULT_PAGE: Record<number, string> = {
-  1: "/pages/0.jpg",
-  78: "/pages/582.jpg",
-  79: "/pages/583.jpg",
-  80: "/pages/585.jpg",
-  81: "/pages/586.jpg",
-  82: "/pages/587.jpg",
-  83: "/pages/587.jpg",
-  84: "/pages/589.jpg",
-  85: "/pages/590.jpg",
-  86: "/pages/591.jpg",
-  87: "/pages/591.jpg",
-  88: "/pages/592.jpg",
-  89: "/pages/593.jpg",
-  90: "/pages/594.jpg",
-  91: "/pages/595.jpg",
-  92: "/pages/595.jpg",
-  93: "/pages/596.jpg",
-  94: "/pages/596.jpg",
-  95: "/pages/597.jpg",
-  96: "/pages/597.jpg",
-  97: "/pages/598.jpg",
-  98: "/pages/598.jpg",
-  99: "/pages/599.jpg",
-  100: "/pages/600.jpg",
-  101: "/pages/600.jpg",
-  102: "/pages/600.jpg",
-  103: "/pages/601.jpg",
-  104: "/pages/601.jpg",
-  105: "/pages/601.jpg",
-  106: "/pages/602.jpg",
-  107: "/pages/602.jpg",
-  108: "/pages/602.jpg",
-  109: "/pages/603.jpg",
-  110: "/pages/603.jpg",
-  111: "/pages/603.jpg",
-  112: "/pages/603.jpg",
-  113: "/pages/603.jpg",
-  114: "/pages/603.jpg",
-};
+// خريطة «السورة ← أول صفحة لها» مشتقة من جدول أقسام الصفحات الحقيقي.
+// (كانت مكتوبة يدوياً ومزاحة بصفحة كاملة، فكانت تُفتح صفحة لا تحتوي السورة ويضيع التظليل.)
+const SURAH_TO_DEFAULT_PAGE: Record<number, string> = (() => {
+  const map: Record<number, string> = {};
+  for (let n = 1; n <= 114; n++) {
+    const page = getSurahFirstPage(n);
+    if (page) map[n] = page;
+  }
+  return map;
+})();
 
 // نماذج ألوان جاهزة سريعة
 const COLOR_SWATCHES = [
@@ -141,6 +112,7 @@ export default function SurahShadingPage() {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [history, setHistory] = useState<AyahBox[][]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAll, setIsUploadingAll] = useState(false);
   const [serverSavedStatus, setServerSavedStatus] = useState<boolean>(true);
 
   // مؤشر التعديلات غير المحفوظة — يظهر فور تعديل المربعات حتى يضغط المستخدم «حفظ في السيرفر»
@@ -168,8 +140,8 @@ export default function SurahShadingPage() {
   // إظهار مربعات التظليل الدائمة — تُخفى تلقائياً عند اختيار سورة من القائمة (وضع المعاينة: يظهر المربع ثم يختفي)
   const [showBoxes, setShowBoxes] = useState(true);
 
-  // نظام رسم وإنشاء المربعات بالسحب
-  const [isDrawMode, setIsDrawMode] = useState(false);
+  // 🖊️ التظليل الذكي: الرسم مفعّل دائماً — اسحب على أي مكان فارغ لتظليل الآية التالية،
+  // واسحب فوق مربع موجود لتحريكه. لا حاجة لأي «وضع رسم».
   const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
   const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
 
@@ -307,7 +279,7 @@ export default function SurahShadingPage() {
 
         // تحديث مربعات الصفحة المعروضة بعد وصول بيانات السيرفر (إلا إذا كان المستخدم يعدّل)
         if (!dirtyRef.current) {
-          const refreshed = getPageAyahBoxes(activePageRef.current);
+          const refreshed = getSavedPageBoxes(activePageRef.current);
           setBoxes((prev) => (JSON.stringify(prev) === JSON.stringify(refreshed) ? prev : refreshed));
         }
         computeSurahBoxCounts();
@@ -394,7 +366,7 @@ export default function SurahShadingPage() {
     const mapped = registryPage || SURAH_TO_DEFAULT_PAGE[num] || (known && surahPageMap[known.name]?.[0]);
     if (!mapped || mapped === activePageSrc) return;
     // إن كانت السورة موجودة أصلاً على الصفحة المعروضة نبقى هناك
-    if (getPageAyahBoxes(activePageSrc).some((b) => b.surah === num)) return;
+    if (getSavedPageBoxes(activePageSrc).some((b) => b.surah === num)) return;
     const safe = isPageAvailable(mapped) ? mapped : nearestAvailablePage(mapped);
     if (safe !== mapped) {
       toast({
@@ -414,8 +386,10 @@ export default function SurahShadingPage() {
     const surah = getSurahByNumber(num);
     // إن كانت السورة معرّفة في السجل المركزي نبدأ من صفحتها المسجلة (أول صفحة لها)
     const registryPage = getSurahRegistryEntry(num)?.pageSrc;
+    // نتجاهل صفحة قديمة في السجل إن كانت لا تحتوي السورة فعلاً (كانت تُفتح صفحة خاطئة)
+    const validRegistryPage = registryPage && isSurahOnPage(registryPage, num) ? registryPage : null;
     const mappedPage =
-      registryPage ||
+      validRegistryPage ||
       SURAH_TO_DEFAULT_PAGE[num] ||
       (surah && surahPageMap[surah.name]?.[0]) ||
       activePageSrc ||
@@ -749,7 +723,7 @@ export default function SurahShadingPage() {
       const counts: Record<number, number> = {};
       const bismillah: Record<number, boolean> = {};
       [...getAllPageSources(), ...getCustomPages().map((p) => p.src)].forEach((src) => {
-        getPageAyahBoxes(src).forEach((b) => {
+        getSavedPageBoxes(src).forEach((b) => {
           if (!b.surah) return;
           if (b.ayah === 0) {
             bismillah[b.surah] = true; // مربع البسملة — خارج عدّ الآيات
@@ -766,12 +740,18 @@ export default function SurahShadingPage() {
   // 📚 كل صفحات السورة: من السجل المركزي + الصفحات التي تحتوي مربعات لها فعلاً
   const collectSurahPages = useCallback((num: number): string[] => {
     try {
-      const found = new Set<string>();
+      // نبدأ من جدول الأقسام الحقيقي (سريع ودقيق) ثم نضيف أي صفحة محفوظة فعلاً لهذه السورة.
+      const found = new Set<string>(getSurahPageList(num));
       const entry = getSurahRegistryEntry(num);
-      if (entry?.pageSrc) found.add(entry.pageSrc);
-      (entry?.pages || []).forEach((p) => { if (p) found.add(p); });
-      [...getAllPageSources(), ...getCustomPages().map((p) => p.src)].forEach((src) => {
-        if (getPageAyahBoxes(src).some((b) => b.surah === num)) found.add(src);
+      if (entry?.pageSrc && isSurahOnPage(entry.pageSrc, num)) found.add(entry.pageSrc);
+      (entry?.pages || []).forEach((p) => { if (p && isSurahOnPage(p, num)) found.add(p); });
+      const saved = getSavedAyahCoordinates();
+      Object.entries(saved).forEach(([src, list]) => {
+        if (list.some((b) => b.surah === num)) found.add(src);
+      });
+      getCustomPages().forEach((p) => {
+        const list = saved[p.src];
+        if (list?.some((b) => b.surah === num)) found.add(p.src);
       });
       return Array.from(found)
         .map((src) => normalizePageSrc(src))
@@ -782,11 +762,40 @@ export default function SurahShadingPage() {
     }
   }, []);
 
+  // 🔢 رقم الآية التالية محلياً (يشمل المربعات غير المحفوظة على الشاشة)
+  // ويبدأ من أول آية موجودة فعلاً على هذه الصفحة (مثلاً صفحة 582 تبدأ من 78:31).
+  const nextAyahForSelection = useCallback((): number => {
+    const section = getPageSections(activePageSrc).find((s) => s.surah === selectedSurahNum);
+    if (section) {
+      // أول آية غير مظللة في نطاق السورة على **هذه الصفحة** (بغض النظر عن صفحات أخرى)
+      const used = new Set(
+        boxes.filter((b) => b.surah === selectedSurahNum && b.ayah > 0).map((b) => b.ayah)
+      );
+      for (let a = section.startAyah; a <= section.endAyah; a++) {
+        if (!used.has(a)) return a;
+      }
+      return section.endAyah + 1;
+    }
+
+    // صفحة غير معروفة: أكمل بعد أكبر آية محفوظة لهذه السورة
+    let max = 0;
+    boxes.forEach((b) => {
+      if (b.surah === selectedSurahNum && b.ayah > max) max = b.ayah;
+    });
+    const saved = getSavedAyahCoordinates();
+    collectSurahPages(selectedSurahNum).forEach((src) => {
+      if (src !== activePageSrc) (saved[src] || []).forEach((b) => {
+        if (b.surah === selectedSurahNum && b.ayah > max) max = b.ayah;
+      });
+    });
+    return max + 1;
+  }, [activePageSrc, selectedSurahNum, boxes, collectSurahPages]);
+
   // 🔢 رقم الآية التالية للسورة عبر كل صفحاتها — لا يعود الترقيم إلى 1 في الصفحة الثانية
   const nextAyahForSurah = useCallback((num: number): number => {
     let max = 0;
     collectSurahPages(num).forEach((src) => {
-      getPageAyahBoxes(src).forEach((b) => {
+      getSavedPageBoxes(src).forEach((b) => {
         if (b.surah === num && b.ayah > max) max = b.ayah;
       });
     });
@@ -834,13 +843,18 @@ export default function SurahShadingPage() {
   const loadPage = (src: string, surahForFilter?: number) => {
     setActivePageSrc(src);
     setImgFailed(false);
-    const pageBoxes = getPageAyahBoxes(src);
+    // في المحرر نعرض المربعات المحفوظة فقط — المربعات التقديرية لا تُحسب تظليلاً موجوداً،
+    // فيبدأ المستخدم من صفحة نظيفة ويستطيع تظليل الآية الأولى مباشرة.
+    const pageBoxes = getSavedPageBoxes(src);
 
+    // الهدف: السورة المطلوبة صراحةً، وإلا السورة الحالية إن كانت على الصفحة،
+    // وإلا أول سورة حقيقية على الصفحة حسب جدول الأقسام (وليس حسب أول مربع قد يكون قديماً/خاطئاً).
+    const pageSections = getPageSections(src);
     let targetSurah = surahForFilter;
     if (!targetSurah) {
-      // إن كانت السورة المختارة موجودة على هذه الصفحة نبقى عليها
-      // (ضروري للسور الممتدة على أكثر من صفحة: تبديل الصفحة لا يغيّر السورة المستهدفة)
-      if (pageBoxes.some((b) => b.surah === selectedSurahNum)) targetSurah = selectedSurahNum;
+      if (pageSections.some((s) => s.surah === selectedSurahNum)) targetSurah = selectedSurahNum;
+      else if (pageSections.length > 0) targetSurah = pageSections[0].surah;
+      else if (pageBoxes.some((b) => b.surah === selectedSurahNum)) targetSurah = selectedSurahNum;
       else if (pageBoxes.length > 0 && pageBoxes[0].surah) targetSurah = pageBoxes[0].surah;
     }
     if (!targetSurah) {
@@ -920,8 +934,8 @@ export default function SurahShadingPage() {
   const addNewBox = () => {
     pushHistory(boxes);
     // تجاهل مربع البسملة (ayah === 0) عند حساب رقم الآية التالية
-    // الترقيم مستمر عبر صفحات السورة (الصفحة الثانية تكمل من حيث توقفت الأولى)
-    const nextAyah = nextAyahForSurah(selectedSurahNum);
+    // الترقيم مستمر عبر صفحات السورة، ويشمل المربعات غير المحفوظة على الشاشة
+    const nextAyah = nextAyahForSelection();
     const nextY = selectedBox
       ? clamp(selectedBox.y + selectedBox.height + 15, 50, PAGE_IMAGE_SIZE.height - 150)
       : 800;
@@ -943,6 +957,46 @@ export default function SurahShadingPage() {
     markUnsaved();
     setShowBoxes(true);
     toast({ title: `✨ تم إضافة مربع تظليل للآية ${nextAyah}` });
+  };
+
+  // ⚡ تظليل السورة كاملة بضغطة واحدة: يضيف مربعاً لكل آية ناقصة في الصفحة الحالية
+  // (مواضع تقديرية جاهزة للسحب والتعديل، ثم اضغط «حفظ التظليل بالسيرفر»)
+  const shadeWholeSurah = () => {
+    const sections = getPageSections(activePageSrc).filter((s) => s.surah === selectedSurahNum);
+    if (sections.length === 0) {
+      const target = SURAH_TO_DEFAULT_PAGE[selectedSurahNum];
+      toast({
+        title: "هذه السورة ليست على الصفحة المعروضة",
+        description: target
+          ? `افتح ${pageLabel(target)} أولاً من قائمة الصفحات، ثم أعد المحاولة.`
+          : "اختر الصفحة التي تحتوي السورة أولاً.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const existing = new Set(
+      boxes.filter((b) => b.surah === selectedSurahNum).map((b) => b.ayah)
+    );
+    const generated = generateDefaultBoxesForPage(activePageSrc).filter(
+      (b) => b.surah === selectedSurahNum && !existing.has(b.ayah)
+    );
+
+    if (generated.length === 0) {
+      toast({ title: "✅ السورة مظللة بالكامل في هذه الصفحة" });
+      return;
+    }
+
+    pushHistory(boxes);
+    const updated = [...boxes, ...generated];
+    setBoxes(updated);
+    setSelectedIndex(boxes.length);
+    setShowBoxes(true);
+    markUnsaved();
+    toast({
+      title: `✨ أضفنا ${generated.length} مربعاً لسورة ${currentSurah?.name}`,
+      description: "المواضع تقديرية: اسحب أي مربع ليغطي سطره تماماً ثم اضغط حفظ.",
+    });
   };
 
   // نسخ المربع الحالي
@@ -998,7 +1052,6 @@ export default function SurahShadingPage() {
 
   // سحب المربع (Pointer Drag)
   const handlePointerDownDrag = (e: React.PointerEvent, index: number) => {
-    if (isDrawMode) return;
     e.stopPropagation();
     setSelectedIndex(index);
     isDraggingRef.current = true;
@@ -1026,7 +1079,6 @@ export default function SurahShadingPage() {
 
   // تغيير أبعاد المربع بالمقابض (Resize)
   const handlePointerDownResize = (handle: string, e: React.PointerEvent) => {
-    if (isDrawMode) return;
     e.stopPropagation();
     isResizingRef.current = handle;
     if (!selectedBox) return;
@@ -1041,19 +1093,21 @@ export default function SurahShadingPage() {
     try { (e.target as HTMLElement).setPointerCapture(e.pointerId); } catch { /* المؤشر غير نشط */ }
   };
 
-  // بدء رسم مربع جديد بالسحب فوق الصفحة
+  // بدء رسم مربع جديد بالسحب فوق أي مكان فارغ (الرسم مفعّل دائماً)
   const handleCanvasPointerDown = (e: React.PointerEvent) => {
-    if (!isDrawMode || !canvasRef.current) return;
+    if (!canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / scale;
-    const y = (e.clientY - rect.top) / scale;
+    const x = clamp((e.clientX - rect.left) / scale, 0, PAGE_IMAGE_SIZE.width);
+    const y = clamp((e.clientY - rect.top) / scale, 0, PAGE_IMAGE_SIZE.height);
+    setSingleAyahHighlight(null);
     setDrawStart({ x, y });
     setDrawCurrent({ x, y });
+    try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch { /* المؤشر غير نشط */ }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     // حالة رسم مربع جديد بالسحب
-    if (isDrawMode && drawStart && canvasRef.current) {
+    if (drawStart && canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
       const x = clamp((e.clientX - rect.left) / scale, 0, PAGE_IMAGE_SIZE.width);
       const y = clamp((e.clientY - rect.top) / scale, 0, PAGE_IMAGE_SIZE.height);
@@ -1120,17 +1174,44 @@ export default function SurahShadingPage() {
   };
 
   const handlePointerUp = () => {
-    // إتمام رسم مربع جديد
-    if (isDrawMode && drawStart && drawCurrent) {
+    // إتمام رسم مربع جديد (الرسم مفعّل دائماً — بدون أوضاع)
+    if (drawStart && drawCurrent) {
       const x = Math.min(drawStart.x, drawCurrent.x);
       const y = Math.min(drawStart.y, drawCurrent.y);
       const width = Math.abs(drawCurrent.x - drawStart.x);
       const height = Math.abs(drawCurrent.y - drawStart.y);
+      setDrawStart(null);
+      setDrawCurrent(null);
 
-      if (width >= 30 && height >= 20) {
+      // لا نُنشئ مربعاً لسورة غير موجودة على الصفحة
+      const pageSections = getPageSections(activePageSrc);
+      const section = pageSections.find((s) => s.surah === selectedSurahNum);
+      if (pageSections.length > 0 && !section) {
+        const target = SURAH_TO_DEFAULT_PAGE[selectedSurahNum];
+        toast({
+          title: "هذه السورة ليست على هذه الصفحة",
+          description: target
+            ? `سورة ${currentSurah?.name} تبدأ في ${pageLabel(target)} — انتقل إليها من قائمة الصفحات.`
+            : "اختر الصفحة التي تحتوي السورة أولاً.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // نقرة عارضة بلا سحب: لا تعديل ولا رسالة مزعجة
+      if (width < 3 && height < 3) return;
+
+      if (width >= 24 && height >= 16) {
+        const nextAyah = nextAyahForSelection();
+        // اكتملت آيات السورة في هذه الصفحة؟
+        if (section && nextAyah > section.endAyah) {
+          toast({
+            title: `✅ اكتمل تظليل ${currentSurah?.name} في هذه الصفحة`,
+            description: "انتقل إلى الصفحة التالية للسورة من قائمة الصفحات إن كانت ممتدة.",
+          });
+          return;
+        }
         pushHistory(boxes);
-        // رقم الآية التالية مع تجاهل مربع البسملة (ayah === 0)
-        const nextAyah = nextAyahForSurah(selectedSurahNum);
         const newBox: AyahBox = {
           surah: selectedSurahNum,
           ayah: nextAyah,
@@ -1139,21 +1220,20 @@ export default function SurahShadingPage() {
           width: Math.round(width),
           height: Math.round(height),
           color: customColor,
-          label: `الآية ${nextAyah}`
+          label: `الآية ${nextAyah}`,
         };
         const updated = [...boxes, newBox];
         setBoxes(updated);
         setSelectedIndex(updated.length - 1);
         setShowBoxes(true);
-        toast({ title: `✨ تم إنشاء مربع تظليل جديد للآية ${nextAyah}` });
+        markUnsaved();
+        toast({
+          title: `✨ ظُلِّلت الآية ${nextAyah}`,
+          description: "اسحب السطر التالي مباشرة — اخترنا الآية التالية تلقائياً.",
+        });
       } else {
-        toast({ title: "المربع صغير جداً، اسحب مسافة أوسع لتحديده", variant: "destructive" });
+        toast({ title: "اسحب مسافة أطول قليلاً لتظليل السطر", variant: "destructive" });
       }
-
-      setDrawStart(null);
-      setDrawCurrent(null);
-      setIsDrawMode(false);
-      markUnsaved();
       return;
     }
 
@@ -1193,6 +1273,42 @@ export default function SurahShadingPage() {
       setIsSaving(false);
     }
   };
+
+  // ☁️ رفع كل التظليل (كل الصفحات المحفوظة) إلى السيرفر مرة واحدة
+  const handleUploadAllShading = async () => {
+    setIsUploadingAll(true);
+    try {
+      const res = await saveAllAyahBoxesToServer();
+      if (res.pages === 0) {
+        toast({
+          title: "لا يوجد تظليل للرفع",
+          description: "ظلّل آية واحدة على الأقل ثم اضغط «حفظ التظليل بالسيرفر» أولاً.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setServerSavedStatus(true);
+      computeSurahBoxCounts();
+      setPagesVersion((v) => v + 1);
+      toast({
+        title: "☁️ تم رفع كل التظليل إلى السيرفر",
+        description: `${res.pages} صفحة و ${res.boxes} مربع تظليل — ${
+          res.localOk ? "ملفات المشروع ✓" : "ملفات المشروع ✗"
+        } · ${res.cloudOk ? "السحابة ✓" : "السحابة ✗ (المفتاح غير مفعّل)"}`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "تعذر رفع التظليل",
+        description: err?.message || "تأكد من تشغيل السيرفر ثم أعد المحاولة",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAll(false);
+    }
+  };
+
+  // الآية التالية المعروضة في شريط التظليل السريع وفي معاينة السحب
+  const nextAyahPreview = nextAyahForSelection();
 
   const activeBoxColorHex = selectedBox?.color || customColor;
   const activeBg = hexToRgba(activeBoxColorHex, opacity);
@@ -1429,12 +1545,29 @@ export default function SurahShadingPage() {
           {/* Section: Actions & Tools */}
           <div className="space-y-2.5">
             <h2 className="text-[10px] font-bold text-stone-500 uppercase tracking-wider flex items-center gap-1.5">
-              <Sliders className="w-3.5 h-3.5" /> أدوات الرسم
+              <Sliders className="w-3.5 h-3.5" /> تظليل سريع
             </h2>
-            
-            <button onClick={() => setIsDrawMode(v => !v)} className={`w-full py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md ${isDrawMode ? 'bg-amber-500 text-black shadow-amber-500/20 ring-2 ring-amber-500/50' : 'bg-white/5 text-stone-300 hover:bg-white/10 border border-white/5'}`}>
-              <Crosshair className="w-4 h-4" />
-              {isDrawMode ? "اسحب للرسم (نشط)..." : "تفعيل الرسم اليدوي"}
+
+            <div className="rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 to-transparent p-3 space-y-1.5">
+              <div className="flex items-center gap-2 text-[11px] font-extrabold text-amber-300">
+                <Crosshair className="w-4 h-4" /> التظليل الذكي مفعّل دائماً
+              </div>
+              <p className="text-[10px] leading-relaxed text-stone-400">
+                اسحب على أي سطر فارغ في الصفحة لتظليل الآية التالية تلقائياً، واسحب المربع الموجود لتحريكه — بدون أي أوضاع أو أزرار تفعيل.
+              </p>
+              <div className="flex items-center justify-between rounded-lg bg-black/40 px-2.5 py-1.5">
+                <span className="text-[10px] text-stone-500">الآية التالية</span>
+                <span className="text-[11px] font-extrabold text-amber-400">
+                  {currentSurah?.name} · {nextAyahPreview}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={shadeWholeSurah}
+              className="w-full py-3 rounded-xl bg-gradient-to-l from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black text-xs font-extrabold flex items-center justify-center gap-2 transition-all shadow-md shadow-amber-500/20 active:scale-95"
+            >
+              <Zap className="w-4 h-4" /> تظليل السورة كاملة تلقائياً
             </button>
             
             <div className="grid grid-cols-2 gap-2">
@@ -1472,6 +1605,15 @@ export default function SurahShadingPage() {
             <Save className="w-4 h-4" />
             {isSaving ? "جاري مزامنة التظليل..." : "حفظ التظليل بالسيرفر"}
           </button>
+          <button
+            onClick={handleUploadAllShading}
+            disabled={isUploadingAll}
+            className="w-full py-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 text-xs font-bold flex items-center justify-center gap-2 transition-all hover:text-white disabled:opacity-50"
+            title="يرفع كل الصفحات المظللة المحفوظة في المتصفح وملف المشروع إلى السيرفر والسحابة مرة واحدة"
+          >
+            <Upload className="w-3.5 h-3.5 text-sky-400" />
+            {isUploadingAll ? "جاري رفع كل التظليل..." : "☁️ رفع كل التظليل إلى السيرفر"}
+          </button>
           <button 
             onClick={() => navigate(`/sync-audio?surah=${selectedSurahNum}`)}
             className="w-full py-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-bold flex items-center justify-center gap-2 transition-all hover:text-white shadow-sm"
@@ -1505,7 +1647,7 @@ export default function SurahShadingPage() {
         <div
           ref={canvasRef}
           onPointerDown={handleCanvasPointerDown}
-          className={`relative shadow-[0_0_40px_rgba(0,0,0,0.4)] rounded-xl overflow-hidden ring-1 ring-white/10 transition-transform ${isDrawMode ? 'cursor-crosshair ring-amber-500/50 ring-2' : ''}`}
+          className="relative shadow-[0_0_40px_rgba(0,0,0,0.4)] rounded-xl overflow-hidden ring-1 ring-white/10 transition-transform cursor-crosshair"
           style={{ width: PAGE_IMAGE_SIZE.width * scale, height: PAGE_IMAGE_SIZE.height * scale, transformOrigin: 'center center' }}
         >
           <img
@@ -1536,14 +1678,26 @@ export default function SurahShadingPage() {
             </div>
           )}
           
+          {showBoxes && boxes.length === 0 && !imgFailed && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none px-5 py-4 rounded-2xl bg-black/70 backdrop-blur-md border border-amber-500/30 text-center shadow-2xl max-w-[320px]">
+              <div className="text-2xl mb-1">✏️</div>
+              <p className="text-sm font-extrabold text-amber-300">اسحب على أول سطر لتظليل الآية {nextAyahPreview}</p>
+              <p className="text-[11px] text-stone-400 mt-1 leading-relaxed">لا يوجد تظليل محفوظ لهذه الصفحة — كل سحب يظلل الآية التالية تلقائياً.</p>
+            </div>
+          )}
+
           {!showBoxes && (
             <button onClick={() => setShowBoxes(true)} className="absolute top-6 left-1/2 -translate-x-1/2 z-30 px-6 py-3 rounded-full bg-black/80 backdrop-blur-md border border-white/10 text-white font-bold text-sm flex items-center gap-2 shadow-xl hover:bg-black transition-colors animate-in slide-in-from-top-4">
               <Eye className="w-5 h-5 text-amber-400" /> عرض مربعات التظليل
             </button>
           )}
 
-          {isDrawMode && drawStart && drawCurrent && (
-            <div className="absolute border-2 border-dashed rounded-lg pointer-events-none z-30" style={{ left: Math.min(drawStart.x, drawCurrent.x) * scale, top: Math.min(drawStart.y, drawCurrent.y) * scale, width: Math.abs(drawCurrent.x - drawStart.x) * scale, height: Math.abs(drawCurrent.y - drawStart.y) * scale, backgroundColor: hexToRgba(customColor, 0.35), borderColor: customColor, boxShadow: `0 0 15px ${hexToRgba(customColor, 0.7)}` }} />
+          {drawStart && drawCurrent && (
+            <div className="absolute border-2 border-dashed rounded-lg pointer-events-none z-30" style={{ left: Math.min(drawStart.x, drawCurrent.x) * scale, top: Math.min(drawStart.y, drawCurrent.y) * scale, width: Math.abs(drawCurrent.x - drawStart.x) * scale, height: Math.abs(drawCurrent.y - drawStart.y) * scale, backgroundColor: hexToRgba(customColor, 0.35), borderColor: customColor, boxShadow: `0 0 15px ${hexToRgba(customColor, 0.7)}` }}>
+              <span className="absolute -top-8 right-1/2 translate-x-1/2 px-3 py-1 rounded-full bg-white text-black text-[11px] font-extrabold shadow-lg whitespace-nowrap">
+                الآية {nextAyahPreview} · {currentSurah?.name}
+              </span>
+            </div>
           )}
 
           {tempSurahHighlight && (
@@ -1564,12 +1718,10 @@ export default function SurahShadingPage() {
               <div
                 key={`box-${box.surah}-${box.ayah}-${index}`}
                 onPointerDown={(e) => {
-                  // في وضع الرسم يبقى السحب لرسم مربع جديد فوق الصفحة
-                  if (isDrawMode) return;
                   // مزامنة السورة المستهدفة مع المربع المضغوط (صفحة قد تضم أكثر من سورة)
                   if (box.surah !== selectedSurahNum) setSelectedSurahNum(box.surah);
                   handleSingleAyahHighlight(box.surah, box.ayah);
-                  // بدء السحب فوراً — هذا ما يجعل تحريك المربع ممكناً
+                  // بدء السحب فوراً — النقر على مربع يحوّله، والنقر على فراغ يرسم مربعاً جديداً
                   handlePointerDownDrag(e, index);
                 }}
                 style={{ left: box.x * scale, top: box.y * scale, width: box.width * scale, height: box.height * scale, backgroundColor: boxBg, borderColor: boxBorder, boxShadow: isSingleHighlight ? `0 0 30px ${hexToRgba(boxColorHex, 0.8)}, inset 0 0 15px ${hexToRgba(boxColorHex, 0.5)}` : (isSelected && glowEnabled ? `0 0 20px ${hexToRgba(boxColorHex, 0.5)}, inset 0 0 10px ${hexToRgba(boxColorHex, 0.3)}` : "none") }}
@@ -1589,7 +1741,7 @@ export default function SurahShadingPage() {
                   </button>
                 )}
 
-                {isSelected && !isDrawMode && (
+                {isSelected && (
                   <>
                     <div onPointerDown={(e) => handlePointerDownResize("se", e)} className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full cursor-se-resize shadow-lg touch-none hover:scale-125 transition-transform" />
                     <div onPointerDown={(e) => handlePointerDownResize("sw", e)} className="absolute -bottom-1.5 -left-1.5 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full cursor-sw-resize shadow-lg touch-none hover:scale-125 transition-transform" />
@@ -1633,7 +1785,8 @@ export default function SurahShadingPage() {
               <ol className="space-y-2 list-decimal pr-5 text-[13px] leading-relaxed">
                 <li>افتح «تعريف السورة في السجل» واختر السورة فقط — اسمها وعدد آياتها وصفحتها تُملأ تلقائياً.</li>
                 <li>اختر صفحتها من قائمة الصفحات (أو استخدم «تعريف السورة» لتحديدها).</li>
-                <li>أضف مربعاً لكل آية: «آية جديدة»، أو «تفعيل الرسم اليدوي» ثم اسحب فوق الآية.</li>
+                <li><b>اسحب بإصبعك/الفأرة مباشرة على أي سطر فارغ</b> — يُظلَّل تلقائياً بالآية التالية (لا حاجة لأي وضع رسم).</li>
+                <li>أو اضغط <b>«تظليل السورة كاملة تلقائياً»</b> لتوليد مربع لكل آية دفعة واحدة، ثم اسحب أي مربع لضبط موضعه.</li>
                 <li>اسحب المربع من داخله لتحريكه، أو استخدم المقابض لتغيير حجمه، والأسهم للتحريك الدقيق (بكسل واحد، ومع Shift عشرة).</li>
                 <li>اضغط «حفظ التظليل بالسيرفر» — ويُفضّل بعد كل صفحة.</li>
               </ol>

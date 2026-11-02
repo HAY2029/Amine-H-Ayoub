@@ -1,0 +1,450 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/SupportErrorBoundary.tsx");import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
+let prevRefreshReg;
+let prevRefreshSig;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react-swc can't detect preamble. Something is wrong."
+    );
+  }
+
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+import __vite__cjsImport2_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=53f49c8c"; const _jsxDEV = __vite__cjsImport2_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/node_modules/.vite/deps/react.js?v=53f49c8c"; const React = __vite__cjsImport3_react.__esModule ? __vite__cjsImport3_react.default : __vite__cjsImport3_react; const useState = __vite__cjsImport3_react["useState"]; const useEffect = __vite__cjsImport3_react["useEffect"];
+import { ErrorBoundary } from "/node_modules/.vite/deps/react-error-boundary.js?v=53f49c8c";
+import { RefreshCw, Trash2, HeartHandshake, WifiOff, Wifi, Sparkles, ChevronDown, ChevronUp } from "/node_modules/.vite/deps/lucide-react.js?v=53f49c8c";
+import { Button } from "/src/components/ui/button.tsx";
+import WhatsAppIcon from "/src/components/WhatsAppIcon.tsx";
+import { openWhatsAppSupport, SUPPORT_WHATSAPP_DISPLAY } from "/src/services/resendService.ts";
+import { getProfile } from "/src/data/kidsProfile.ts";
+import { CURRENT_VERSION } from "/src/utils/updateChecker.ts";
+import { classifyAppError } from "/src/utils/errorClassification.ts";
+function ErrorFallback({ error, resetErrorBoundary }) {
+    _s();
+    const [isOnline, setIsOnline] = useState(()=>typeof navigator !== "undefined" ? navigator.onLine : true);
+    const [showTechDetails, setShowTechDetails] = useState(false);
+    const [isReconnecting, setIsReconnecting] = useState(false);
+    const rawErrMsg = error ? error.message || String(error) : "";
+    const errorKind = classifyAppError(error, isOnline);
+    // استماع مباشر لتغير حالة الشبكة (أونلاين / أوفلاين)
+    useEffect(()=>{
+        const handleOnline = ()=>{
+            setIsOnline(true);
+            if (errorKind === "offline") {
+                setIsReconnecting(true);
+                setTimeout(()=>resetErrorBoundary(), 1200);
+            }
+        };
+        const handleOffline = ()=>{
+            setIsOnline(false);
+        };
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+        return ()=>{
+            window.removeEventListener("online", handleOnline);
+            window.removeEventListener("offline", handleOffline);
+        };
+    }, [
+        errorKind,
+        resetErrorBoundary
+    ]);
+    // استعادة تلقائية فورية إذا كان الخطأ مجرد توقف مؤقت أثناء تحميل صفحة (React Suspense Transition)
+    useEffect(()=>{
+        if (rawErrMsg.toLowerCase().includes("suspended while responding") || rawErrMsg.toLowerCase().includes("updates that suspend")) {
+            const timer = setTimeout(()=>{
+                resetErrorBoundary();
+            }, 50);
+            return ()=>clearTimeout(timer);
+        }
+    }, [
+        rawErrMsg,
+        resetErrorBoundary
+    ]);
+    const isConnectionIssue = errorKind !== "application";
+    const handleWhatsAppContact = ()=>{
+        const activeProfile = getProfile();
+        const profileName = activeProfile?.name || "مستخدم التطبيق";
+        const msg = `السلام عليكم ورحمة الله وبركاته،\n` + `أحتاج مساعدة من الدعم الفني لتطبيق القرآن للأطفال:\n` + `• اسم المستخدم: ${profileName}\n` + `• إصدار التطبيق: ${CURRENT_VERSION}\n` + `• نوع الحالة: ${errorKind === "offline" ? "الجهاز غير متصل بالإنترنت" : errorKind === "service" ? "تعذّر الوصول إلى خدمة الشبكة" : "خطأ داخل التطبيق"}\n` + `• التفاصيل: ${rawErrMsg.slice(0, 200) || "توقف مؤقت"}\n` + `أرجو المساعدة والمتابعة، بارك الله فيكم.`;
+        void openWhatsAppSupport(msg);
+    };
+    const handleManualRetry = ()=>{
+        setIsReconnecting(true);
+        setTimeout(()=>{
+            resetErrorBoundary();
+        }, 600);
+    };
+    const handleHardReset = ()=>{
+        try {
+            sessionStorage.clear();
+            // مسح الكاشات المؤقتة فقط دون مسح نجوم الطفل ومحفوظاته
+            Object.keys(localStorage).forEach((key)=>{
+                if (key.includes("cache") || key.includes("temp") || key.includes("v-runtime")) {
+                    localStorage.removeItem(key);
+                }
+            });
+        } catch  {
+        /* ignore */ }
+        window.location.href = "/";
+    };
+    return /*#__PURE__*/ _jsxDEV("div", {
+        className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-950 via-slate-950 to-teal-950 p-4 font-sans text-right select-none",
+        dir: "rtl",
+        children: /*#__PURE__*/ _jsxDEV("div", {
+            className: "max-w-md w-full bg-[#121816]/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-emerald-500/20 flex flex-col items-center text-center gap-6 animate-in zoom-in-95 duration-300",
+            children: [
+                isConnectionIssue ? /*#__PURE__*/ _jsxDEV("div", {
+                    className: "relative",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "w-20 h-20 bg-amber-500/15 text-amber-400 rounded-3xl flex items-center justify-center ring-8 ring-amber-500/10 shadow-inner",
+                            children: /*#__PURE__*/ _jsxDEV(WifiOff, {
+                                className: "w-10 h-10 animate-pulse"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                lineNumber: 104,
+                                columnNumber: 15
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 103,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-black text-xs font-bold shadow-md",
+                            children: "!"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 106,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 102,
+                    columnNumber: 11
+                }, this) : /*#__PURE__*/ _jsxDEV("div", {
+                    className: "relative",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "w-20 h-20 bg-emerald-500/15 text-emerald-400 rounded-3xl flex items-center justify-center ring-8 ring-emerald-500/10 shadow-inner",
+                            children: /*#__PURE__*/ _jsxDEV(HeartHandshake, {
+                                className: "w-10 h-10"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                lineNumber: 113,
+                                columnNumber: 15
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 112,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("div", {
+                            className: "absolute -top-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-black shadow-md",
+                            children: /*#__PURE__*/ _jsxDEV(Sparkles, {
+                                className: "w-3.5 h-3.5"
+                            }, void 0, false, {
+                                fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                lineNumber: 116,
+                                columnNumber: 15
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 115,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 111,
+                    columnNumber: 11
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "space-y-2.5",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("h2", {
+                            className: "text-xl sm:text-2xl font-black text-white",
+                            children: errorKind === "offline" ? "لا يوجد اتصال بالإنترنت 📡" : errorKind === "service" ? "تعذّر الوصول إلى الخدمة" : "حدث خطأ داخل التطبيق"
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 123,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("p", {
+                            className: "text-stone-300 text-xs sm:text-sm leading-relaxed max-w-xs mx-auto font-medium",
+                            children: errorKind === "offline" ? "جهازك غير متصل بالشبكة حالياً. عند عودة الاتصال سنحاول استعادة التطبيق تلقائياً." : errorKind === "service" ? "الجهاز متصل بالإنترنت، لكن تعذّر الوصول إلى الخدمة. قد يكون السبب عطلاً مؤقتاً في الخادم أو بطئاً في الشبكة." : "يبدو أن المشكلة من التطبيق وليست من اتصال الإنترنت. بياناتك المحفوظة آمنة؛ أعد المحاولة أو أرسل التفاصيل للدعم الفني."
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 126,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 122,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "w-full bg-black/40 border border-white/5 rounded-2xl p-3 flex items-center justify-between text-xs",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("span", {
+                            className: "text-stone-400 flex items-center gap-1.5 font-bold",
+                            children: [
+                                isOnline ? /*#__PURE__*/ _jsxDEV(Wifi, {
+                                    className: "w-4 h-4 text-emerald-400"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 138,
+                                    columnNumber: 25
+                                }, this) : /*#__PURE__*/ _jsxDEV(WifiOff, {
+                                    className: "w-4 h-4 text-amber-400"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 138,
+                                    columnNumber: 73
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: "حالة الشبكة:"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 139,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 137,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("span", {
+                            className: `font-bold flex items-center gap-1.5 ${isOnline ? "text-emerald-400" : "text-amber-400"}`,
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    className: `w-2 h-2 rounded-full ${isOnline ? "bg-emerald-400" : "bg-amber-400 animate-ping"}`
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 142,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: isOnline ? "متصل بالإنترنت" : "غير متصل حالياً"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 143,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 141,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 136,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ _jsxDEV("div", {
+                    className: "flex flex-col w-full gap-2.5",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV(Button, {
+                            onClick: handleManualRetry,
+                            disabled: isReconnecting,
+                            className: "w-full h-13 text-sm bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all disabled:opacity-60",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(RefreshCw, {
+                                    className: `w-4 h-4 ${isReconnecting ? "animate-spin" : ""}`
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 155,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: isReconnecting ? "جاري إعادة الاتصال والتحديث..." : "إعادة المحاولة وتحديث الصفحة 🔄"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 156,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 150,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV("button", {
+                            type: "button",
+                            onClick: handleWhatsAppContact,
+                            className: "w-full h-12 text-xs sm:text-sm bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] transition-all rounded-2xl text-white font-extrabold shadow-md shadow-[#25D366]/20 flex items-center justify-center gap-2 cursor-pointer",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(WhatsAppIcon, {
+                                    className: "w-5 h-5 text-white shrink-0"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 165,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: [
+                                        "تواصل مع الدعم الفني (",
+                                        SUPPORT_WHATSAPP_DISPLAY,
+                                        ")"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 166,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 160,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ _jsxDEV(Button, {
+                            onClick: handleHardReset,
+                            variant: "ghost",
+                            className: "w-full h-10 text-xs text-stone-400 hover:text-white hover:bg-white/5 rounded-xl font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV(Trash2, {
+                                    className: "w-3.5 h-3.5 text-stone-500"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 175,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: "إصلاح سريع وتنظيف الذاكرة المؤقتة"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 176,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 170,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 148,
+                    columnNumber: 9
+                }, this),
+                rawErrMsg && /*#__PURE__*/ _jsxDEV("div", {
+                    className: "w-full border-t border-white/5 pt-3",
+                    children: [
+                        /*#__PURE__*/ _jsxDEV("button", {
+                            onClick: ()=>setShowTechDetails((v)=>!v),
+                            className: "text-[11px] text-stone-500 hover:text-stone-300 flex items-center justify-center gap-1 mx-auto transition-colors",
+                            children: [
+                                /*#__PURE__*/ _jsxDEV("span", {
+                                    children: showTechDetails ? "إخفاء التفاصيل الفنية" : "عرض التفاصيل الفنية"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 187,
+                                    columnNumber: 15
+                                }, this),
+                                showTechDetails ? /*#__PURE__*/ _jsxDEV(ChevronUp, {
+                                    className: "w-3 h-3"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 188,
+                                    columnNumber: 34
+                                }, this) : /*#__PURE__*/ _jsxDEV(ChevronDown, {
+                                    className: "w-3 h-3"
+                                }, void 0, false, {
+                                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                                    lineNumber: 188,
+                                    columnNumber: 70
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 183,
+                            columnNumber: 13
+                        }, this),
+                        showTechDetails && /*#__PURE__*/ _jsxDEV("div", {
+                            className: "mt-2.5 p-3 rounded-xl bg-black/60 border border-white/5 text-[10px] text-stone-400 font-mono text-left dir-ltr max-h-24 overflow-y-auto break-all",
+                            children: rawErrMsg
+                        }, void 0, false, {
+                            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                            lineNumber: 191,
+                            columnNumber: 15
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 182,
+                    columnNumber: 11
+                }, this),
+                /*#__PURE__*/ _jsxDEV("p", {
+                    className: "text-[11px] text-stone-500 font-medium",
+                    children: "تطبيق القرآن للأطفال • دعم فني مستمر لخدمتكم 💖"
+                }, void 0, false, {
+                    fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+                    lineNumber: 198,
+                    columnNumber: 9
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+            lineNumber: 98,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+        lineNumber: 94,
+        columnNumber: 5
+    }, this);
+}
+_s(ErrorFallback, "Bh2HnpPpKnf5p9hN0XlfU3ldhYY=");
+_c = ErrorFallback;
+export function SupportErrorBoundary({ children }) {
+    return /*#__PURE__*/ _jsxDEV(ErrorBoundary, {
+        FallbackComponent: ErrorFallback,
+        onReset: ()=>{
+            window.location.reload();
+        },
+        children: children
+    }, void 0, false, {
+        fileName: "H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx",
+        lineNumber: 208,
+        columnNumber: 5
+    }, this);
+}
+_c1 = SupportErrorBoundary;
+var _c, _c1;
+$RefreshReg$(_c, "ErrorFallback");
+$RefreshReg$(_c1, "SupportErrorBoundary");
+
+
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+
+
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("H:/Amine-H-Ayoub/src/components/SupportErrorBoundary.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlN1cHBvcnRFcnJvckJvdW5kYXJ5LnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHsgdXNlU3RhdGUsIHVzZUVmZmVjdCB9IGZyb20gXCJyZWFjdFwiO1xuaW1wb3J0IHsgRXJyb3JCb3VuZGFyeSB9IGZyb20gXCJyZWFjdC1lcnJvci1ib3VuZGFyeVwiO1xuaW1wb3J0IHsgUmVmcmVzaEN3LCBUcmFzaDIsIEhlYXJ0SGFuZHNoYWtlLCBXaWZpT2ZmLCBXaWZpLCBTcGFya2xlcywgQ2hldnJvbkRvd24sIENoZXZyb25VcCB9IGZyb20gXCJsdWNpZGUtcmVhY3RcIjtcbmltcG9ydCB7IEJ1dHRvbiB9IGZyb20gXCIuL3VpL2J1dHRvblwiO1xuaW1wb3J0IFdoYXRzQXBwSWNvbiBmcm9tIFwiLi9XaGF0c0FwcEljb25cIjtcbmltcG9ydCB7IG9wZW5XaGF0c0FwcFN1cHBvcnQsIFNVUFBPUlRfV0hBVFNBUFBfRElTUExBWSB9IGZyb20gXCJAL3NlcnZpY2VzL3Jlc2VuZFNlcnZpY2VcIjtcbmltcG9ydCB7IGdldFByb2ZpbGUgfSBmcm9tIFwiQC9kYXRhL2tpZHNQcm9maWxlXCI7XG5pbXBvcnQgeyBDVVJSRU5UX1ZFUlNJT04gfSBmcm9tIFwiQC91dGlscy91cGRhdGVDaGVja2VyXCI7XG5pbXBvcnQgeyBjbGFzc2lmeUFwcEVycm9yIH0gZnJvbSBcIkAvdXRpbHMvZXJyb3JDbGFzc2lmaWNhdGlvblwiO1xuXG5mdW5jdGlvbiBFcnJvckZhbGxiYWNrKHsgZXJyb3IsIHJlc2V0RXJyb3JCb3VuZGFyeSB9OiB7IGVycm9yOiBFcnJvcjsgcmVzZXRFcnJvckJvdW5kYXJ5OiAoKSA9PiB2b2lkIH0pIHtcbiAgY29uc3QgW2lzT25saW5lLCBzZXRJc09ubGluZV0gPSB1c2VTdGF0ZTxib29sZWFuPigoKSA9PiB0eXBlb2YgbmF2aWdhdG9yICE9PSBcInVuZGVmaW5lZFwiID8gbmF2aWdhdG9yLm9uTGluZSA6IHRydWUpO1xuICBjb25zdCBbc2hvd1RlY2hEZXRhaWxzLCBzZXRTaG93VGVjaERldGFpbHNdID0gdXNlU3RhdGU8Ym9vbGVhbj4oZmFsc2UpO1xuICBjb25zdCBbaXNSZWNvbm5lY3RpbmcsIHNldElzUmVjb25uZWN0aW5nXSA9IHVzZVN0YXRlPGJvb2xlYW4+KGZhbHNlKTtcbiAgY29uc3QgcmF3RXJyTXNnID0gZXJyb3IgPyAoZXJyb3IubWVzc2FnZSB8fCBTdHJpbmcoZXJyb3IpKSA6IFwiXCI7XG4gIGNvbnN0IGVycm9yS2luZCA9IGNsYXNzaWZ5QXBwRXJyb3IoZXJyb3IsIGlzT25saW5lKTtcblxuICAvLyDYp9iz2KrZhdin2Lkg2YXYqNin2LTYsSDZhNiq2LrZitixINit2KfZhNipINin2YTYtNio2YPYqSAo2KPZiNmG2YTYp9mK2YYgLyDYo9mI2YHZhNin2YrZhilcbiAgdXNlRWZmZWN0KCgpID0+IHtcbiAgICBjb25zdCBoYW5kbGVPbmxpbmUgPSAoKSA9PiB7XG4gICAgICBzZXRJc09ubGluZSh0cnVlKTtcbiAgICAgIGlmIChlcnJvcktpbmQgPT09IFwib2ZmbGluZVwiKSB7XG4gICAgICAgIHNldElzUmVjb25uZWN0aW5nKHRydWUpO1xuICAgICAgICBzZXRUaW1lb3V0KCgpID0+IHJlc2V0RXJyb3JCb3VuZGFyeSgpLCAxMjAwKTtcbiAgICAgIH1cbiAgICB9O1xuXG4gICAgY29uc3QgaGFuZGxlT2ZmbGluZSA9ICgpID0+IHtcbiAgICAgIHNldElzT25saW5lKGZhbHNlKTtcbiAgICB9O1xuXG4gICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoXCJvbmxpbmVcIiwgaGFuZGxlT25saW5lKTtcbiAgICB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcihcIm9mZmxpbmVcIiwgaGFuZGxlT2ZmbGluZSk7XG5cbiAgICByZXR1cm4gKCkgPT4ge1xuICAgICAgd2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoXCJvbmxpbmVcIiwgaGFuZGxlT25saW5lKTtcbiAgICAgIHdpbmRvdy5yZW1vdmVFdmVudExpc3RlbmVyKFwib2ZmbGluZVwiLCBoYW5kbGVPZmZsaW5lKTtcbiAgICB9O1xuICB9LCBbZXJyb3JLaW5kLCByZXNldEVycm9yQm91bmRhcnldKTtcblxuICAvLyDYp9iz2KrYudin2K/YqSDYqtmE2YLYp9im2YrYqSDZgdmI2LHZitipINil2LDYpyDZg9in2YYg2KfZhNiu2LfYoyDZhdis2LHYryDYqtmI2YLZgSDZhdik2YLYqiDYo9ir2YbYp9ihINiq2K3ZhdmK2YQg2LXZgdit2KkgKFJlYWN0IFN1c3BlbnNlIFRyYW5zaXRpb24pXG4gIHVzZUVmZmVjdCgoKSA9PiB7XG4gICAgaWYgKFxuICAgICAgcmF3RXJyTXNnLnRvTG93ZXJDYXNlKCkuaW5jbHVkZXMoXCJzdXNwZW5kZWQgd2hpbGUgcmVzcG9uZGluZ1wiKSB8fFxuICAgICAgcmF3RXJyTXNnLnRvTG93ZXJDYXNlKCkuaW5jbHVkZXMoXCJ1cGRhdGVzIHRoYXQgc3VzcGVuZFwiKVxuICAgICkge1xuICAgICAgY29uc3QgdGltZXIgPSBzZXRUaW1lb3V0KCgpID0+IHtcbiAgICAgICAgcmVzZXRFcnJvckJvdW5kYXJ5KCk7XG4gICAgICB9LCA1MCk7XG4gICAgICByZXR1cm4gKCkgPT4gY2xlYXJUaW1lb3V0KHRpbWVyKTtcbiAgICB9XG4gIH0sIFtyYXdFcnJNc2csIHJlc2V0RXJyb3JCb3VuZGFyeV0pO1xuXG4gIGNvbnN0IGlzQ29ubmVjdGlvbklzc3VlID0gZXJyb3JLaW5kICE9PSBcImFwcGxpY2F0aW9uXCI7XG5cbiAgY29uc3QgaGFuZGxlV2hhdHNBcHBDb250YWN0ID0gKCkgPT4ge1xuICAgIGNvbnN0IGFjdGl2ZVByb2ZpbGUgPSBnZXRQcm9maWxlKCk7XG4gICAgY29uc3QgcHJvZmlsZU5hbWUgPSBhY3RpdmVQcm9maWxlPy5uYW1lIHx8IFwi2YXYs9iq2K7Yr9mFINin2YTYqti32KjZitmCXCI7XG4gICAgY29uc3QgbXNnID1cbiAgICAgIGDYp9mE2LPZhNin2YUg2LnZhNmK2YPZhSDZiNix2K3ZhdipINin2YTZhNmHINmI2KjYsdmD2KfYqtmH2IxcXG5gICtcbiAgICAgIGDYo9it2KrYp9isINmF2LPYp9i52K/YqSDZhdmGINin2YTYr9i52YUg2KfZhNmB2YbZiiDZhNiq2LfYqNmK2YIg2KfZhNmC2LHYotmGINmE2YTYo9i32YHYp9mEOlxcbmAgK1xuICAgICAgYOKAoiDYp9iz2YUg2KfZhNmF2LPYqtiu2K/ZhTogJHtwcm9maWxlTmFtZX1cXG5gICtcbiAgICAgIGDigKIg2KXYtdiv2KfYsSDYp9mE2KrYt9io2YrZgjogJHtDVVJSRU5UX1ZFUlNJT059XFxuYCArXG4gICAgICBg4oCiINmG2YjYuSDYp9mE2K3Yp9mE2Kk6ICR7ZXJyb3JLaW5kID09PSBcIm9mZmxpbmVcIiA/IFwi2KfZhNis2YfYp9iyINi62YrYsSDZhdiq2LXZhCDYqNin2YTYpdmG2KrYsdmG2KpcIiA6IGVycm9yS2luZCA9PT0gXCJzZXJ2aWNlXCIgPyBcItiq2LnYsNmR2LEg2KfZhNmI2LXZiNmEINil2YTZiSDYrtiv2YXYqSDYp9mE2LTYqNmD2KlcIiA6IFwi2K7Yt9ijINiv2KfYrtmEINin2YTYqti32KjZitmCXCJ9XFxuYCArXG4gICAgICBg4oCiINin2YTYqtmB2KfYtdmK2YQ6ICR7cmF3RXJyTXNnLnNsaWNlKDAsIDIwMCkgfHwgXCLYqtmI2YLZgSDZhdik2YLYqlwifVxcbmAgK1xuICAgICAgYNij2LHYrNmIINin2YTZhdiz2KfYudiv2Kkg2YjYp9mE2YXYqtin2KjYudip2Iwg2KjYp9ix2YMg2KfZhNmE2Ycg2YHZitmD2YUuYDtcblxuICAgIHZvaWQgb3BlbldoYXRzQXBwU3VwcG9ydChtc2cpO1xuICB9O1xuXG4gIGNvbnN0IGhhbmRsZU1hbnVhbFJldHJ5ID0gKCkgPT4ge1xuICAgIHNldElzUmVjb25uZWN0aW5nKHRydWUpO1xuICAgIHNldFRpbWVvdXQoKCkgPT4ge1xuICAgICAgcmVzZXRFcnJvckJvdW5kYXJ5KCk7XG4gICAgfSwgNjAwKTtcbiAgfTtcblxuICBjb25zdCBoYW5kbGVIYXJkUmVzZXQgPSAoKSA9PiB7XG4gICAgdHJ5IHtcbiAgICAgIHNlc3Npb25TdG9yYWdlLmNsZWFyKCk7XG4gICAgICAvLyDZhdiz2K0g2KfZhNmD2KfYtNin2Kog2KfZhNmF2KTZgtiq2Kkg2YHZgti3INiv2YjZhiDZhdiz2K0g2YbYrNmI2YUg2KfZhNi32YHZhCDZiNmF2K3ZgdmI2LjYp9iq2YdcbiAgICAgIE9iamVjdC5rZXlzKGxvY2FsU3RvcmFnZSkuZm9yRWFjaCgoa2V5KSA9PiB7XG4gICAgICAgIGlmIChrZXkuaW5jbHVkZXMoXCJjYWNoZVwiKSB8fCBrZXkuaW5jbHVkZXMoXCJ0ZW1wXCIpIHx8IGtleS5pbmNsdWRlcyhcInYtcnVudGltZVwiKSkge1xuICAgICAgICAgIGxvY2FsU3RvcmFnZS5yZW1vdmVJdGVtKGtleSk7XG4gICAgICAgIH1cbiAgICAgIH0pO1xuICAgIH0gY2F0Y2gge1xuICAgICAgLyogaWdub3JlICovXG4gICAgfVxuICAgIHdpbmRvdy5sb2NhdGlvbi5ocmVmID0gXCIvXCI7XG4gIH07XG5cbiAgcmV0dXJuIChcbiAgICA8ZGl2XG4gICAgICBjbGFzc05hbWU9XCJtaW4taC1zY3JlZW4gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYmctZ3JhZGllbnQtdG8tYnIgZnJvbS1lbWVyYWxkLTk1MCB2aWEtc2xhdGUtOTUwIHRvLXRlYWwtOTUwIHAtNCBmb250LXNhbnMgdGV4dC1yaWdodCBzZWxlY3Qtbm9uZVwiXG4gICAgICBkaXI9XCJydGxcIlxuICAgID5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwibWF4LXctbWQgdy1mdWxsIGJnLVsjMTIxODE2XS85NSBiYWNrZHJvcC1ibHVyLXhsIHJvdW5kZWQtM3hsIHAtNiBzbTpwLTggc2hhZG93LTJ4bCBib3JkZXIgYm9yZGVyLWVtZXJhbGQtNTAwLzIwIGZsZXggZmxleC1jb2wgaXRlbXMtY2VudGVyIHRleHQtY2VudGVyIGdhcC02IGFuaW1hdGUtaW4gem9vbS1pbi05NSBkdXJhdGlvbi0zMDBcIj5cbiAgICAgICAgXG4gICAgICAgIHsvKiDYo9mK2YLZiNmG2Kkg2KfZhNit2KfZhNipINin2YTYr9in2YTYqSAqL31cbiAgICAgICAge2lzQ29ubmVjdGlvbklzc3VlID8gKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmVsYXRpdmVcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidy0yMCBoLTIwIGJnLWFtYmVyLTUwMC8xNSB0ZXh0LWFtYmVyLTQwMCByb3VuZGVkLTN4bCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciByaW5nLTggcmluZy1hbWJlci01MDAvMTAgc2hhZG93LWlubmVyXCI+XG4gICAgICAgICAgICAgIDxXaWZpT2ZmIGNsYXNzTmFtZT1cInctMTAgaC0xMCBhbmltYXRlLXB1bHNlXCIgLz5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJhYnNvbHV0ZSAtdG9wLTEgLXJpZ2h0LTEgdy02IGgtNiByb3VuZGVkLWZ1bGwgYmctYW1iZXItNTAwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRleHQtYmxhY2sgdGV4dC14cyBmb250LWJvbGQgc2hhZG93LW1kXCI+XG4gICAgICAgICAgICAgICFcbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApIDogKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicmVsYXRpdmVcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidy0yMCBoLTIwIGJnLWVtZXJhbGQtNTAwLzE1IHRleHQtZW1lcmFsZC00MDAgcm91bmRlZC0zeGwgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgcmluZy04IHJpbmctZW1lcmFsZC01MDAvMTAgc2hhZG93LWlubmVyXCI+XG4gICAgICAgICAgICAgIDxIZWFydEhhbmRzaGFrZSBjbGFzc05hbWU9XCJ3LTEwIGgtMTBcIiAvPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImFic29sdXRlIC10b3AtMSAtcmlnaHQtMSB3LTYgaC02IHJvdW5kZWQtZnVsbCBiZy1lbWVyYWxkLTUwMCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciB0ZXh0LWJsYWNrIHNoYWRvdy1tZFwiPlxuICAgICAgICAgICAgICA8U3BhcmtsZXMgY2xhc3NOYW1lPVwidy0zLjUgaC0zLjVcIiAvPlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgICl9XG5cbiAgICAgICAgey8qINin2YTYsdiz2KfZhNipINin2YTYqtmI2LbZitit2YrYqSAqL31cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJzcGFjZS15LTIuNVwiPlxuICAgICAgICAgIDxoMiBjbGFzc05hbWU9XCJ0ZXh0LXhsIHNtOnRleHQtMnhsIGZvbnQtYmxhY2sgdGV4dC13aGl0ZVwiPlxuICAgICAgICAgICAge2Vycm9yS2luZCA9PT0gXCJvZmZsaW5lXCIgPyBcItmE2Kcg2YrZiNis2K8g2KfYqti12KfZhCDYqNin2YTYpdmG2KrYsdmG2Kog8J+ToVwiIDogZXJyb3JLaW5kID09PSBcInNlcnZpY2VcIiA/IFwi2KrYudiw2ZHYsSDYp9mE2YjYtdmI2YQg2KXZhNmJINin2YTYrtiv2YXYqVwiIDogXCLYrdiv2Ksg2K7Yt9ijINiv2KfYrtmEINin2YTYqti32KjZitmCXCJ9XG4gICAgICAgICAgPC9oMj5cbiAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXN0b25lLTMwMCB0ZXh0LXhzIHNtOnRleHQtc20gbGVhZGluZy1yZWxheGVkIG1heC13LXhzIG14LWF1dG8gZm9udC1tZWRpdW1cIj5cbiAgICAgICAgICAgIHtlcnJvcktpbmQgPT09IFwib2ZmbGluZVwiXG4gICAgICAgICAgICAgID8gXCLYrNmH2KfYstmDINi62YrYsSDZhdiq2LXZhCDYqNin2YTYtNio2YPYqSDYrdin2YTZitin2YsuINi52YbYryDYudmI2K/YqSDYp9mE2KfYqti12KfZhCDYs9mG2K3Yp9mI2YQg2KfYs9iq2LnYp9iv2Kkg2KfZhNiq2LfYqNmK2YIg2KrZhNmC2KfYptmK2KfZiy5cIlxuICAgICAgICAgICAgICA6IGVycm9yS2luZCA9PT0gXCJzZXJ2aWNlXCJcbiAgICAgICAgICAgICAgICA/IFwi2KfZhNis2YfYp9iyINmF2KrYtdmEINio2KfZhNil2YbYqtix2YbYqtiMINmE2YPZhiDYqti52LDZkdixINin2YTZiNi12YjZhCDYpdmE2Ykg2KfZhNiu2K/ZhdipLiDZgtivINmK2YPZiNmGINin2YTYs9io2Kgg2LnYt9mE2KfZiyDZhdik2YLYqtin2Ysg2YHZiiDYp9mE2K7Yp9iv2YUg2KPZiCDYqNi32KbYp9mLINmB2Yog2KfZhNi02KjZg9ipLlwiXG4gICAgICAgICAgICAgICAgOiBcItmK2KjYr9mIINij2YYg2KfZhNmF2LTZg9mE2Kkg2YXZhiDYp9mE2KrYt9io2YrZgiDZiNmE2YrYs9iqINmF2YYg2KfYqti12KfZhCDYp9mE2KXZhtiq2LHZhtiqLiDYqNmK2KfZhtin2KrZgyDYp9mE2YXYrdmB2YjYuNipINii2YXZhtip2Jsg2KPYudivINin2YTZhdit2KfZiNmE2Kkg2KPZiCDYo9ix2LPZhCDYp9mE2KrZgdin2LXZitmEINmE2YTYr9i52YUg2KfZhNmB2YbZii5cIn1cbiAgICAgICAgICA8L3A+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiDZhdik2LTYsSDYp9mE2K3Yp9mE2Kkg2KfZhNit2YrYqSAqL31cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LWZ1bGwgYmctYmxhY2svNDAgYm9yZGVyIGJvcmRlci13aGl0ZS81IHJvdW5kZWQtMnhsIHAtMyBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4gdGV4dC14c1wiPlxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtc3RvbmUtNDAwIGZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjUgZm9udC1ib2xkXCI+XG4gICAgICAgICAgICB7aXNPbmxpbmUgPyA8V2lmaSBjbGFzc05hbWU9XCJ3LTQgaC00IHRleHQtZW1lcmFsZC00MDBcIiAvPiA6IDxXaWZpT2ZmIGNsYXNzTmFtZT1cInctNCBoLTQgdGV4dC1hbWJlci00MDBcIiAvPn1cbiAgICAgICAgICAgIDxzcGFuPtit2KfZhNipINin2YTYtNio2YPYqTo8L3NwYW4+XG4gICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT17YGZvbnQtYm9sZCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMS41ICR7aXNPbmxpbmUgPyBcInRleHQtZW1lcmFsZC00MDBcIiA6IFwidGV4dC1hbWJlci00MDBcIn1gfT5cbiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT17YHctMiBoLTIgcm91bmRlZC1mdWxsICR7aXNPbmxpbmUgPyBcImJnLWVtZXJhbGQtNDAwXCIgOiBcImJnLWFtYmVyLTQwMCBhbmltYXRlLXBpbmdcIn1gfSAvPlxuICAgICAgICAgICAgPHNwYW4+e2lzT25saW5lID8gXCLZhdiq2LXZhCDYqNin2YTYpdmG2KrYsdmG2KpcIiA6IFwi2LrZitixINmF2KrYtdmEINit2KfZhNmK2KfZi1wifTwvc3Bhbj5cbiAgICAgICAgICA8L3NwYW4+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiDYp9mE2KPYstix2KfYsSDZiNin2YTYpdis2LHYp9ih2KfYqiDYp9mE2YXYqNin2LTYsdipICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggZmxleC1jb2wgdy1mdWxsIGdhcC0yLjVcIj5cbiAgICAgICAgICB7Lyog2LLYsSDYpdi52KfYr9ipINin2YTZhdit2KfZiNmE2Kkg2KfZhNmB2YjYsdmKICovfVxuICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgIG9uQ2xpY2s9e2hhbmRsZU1hbnVhbFJldHJ5fVxuICAgICAgICAgICAgZGlzYWJsZWQ9e2lzUmVjb25uZWN0aW5nfVxuICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIGgtMTMgdGV4dC1zbSBiZy1lbWVyYWxkLTUwMCBob3ZlcjpiZy1lbWVyYWxkLTQwMCB0ZXh0LXNsYXRlLTk1MCBmb250LWJsYWNrIHJvdW5kZWQtMnhsIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0yIGN1cnNvci1wb2ludGVyIHNoYWRvdy1sZyBzaGFkb3ctZW1lcmFsZC01MDAvMjAgYWN0aXZlOnNjYWxlLVswLjk4XSB0cmFuc2l0aW9uLWFsbCBkaXNhYmxlZDpvcGFjaXR5LTYwXCJcbiAgICAgICAgICA+XG4gICAgICAgICAgICA8UmVmcmVzaEN3IGNsYXNzTmFtZT17YHctNCBoLTQgJHtpc1JlY29ubmVjdGluZyA/IFwiYW5pbWF0ZS1zcGluXCIgOiBcIlwifWB9IC8+XG4gICAgICAgICAgICA8c3Bhbj57aXNSZWNvbm5lY3RpbmcgPyBcItis2KfYsdmKINil2LnYp9iv2Kkg2KfZhNin2KrYtdin2YQg2YjYp9mE2KrYrdiv2YrYqy4uLlwiIDogXCLYpdi52KfYr9ipINin2YTZhdit2KfZiNmE2Kkg2YjYqtit2K/ZitirINin2YTYtdmB2K3YqSDwn5SEXCJ9PC9zcGFuPlxuICAgICAgICAgIDwvQnV0dG9uPlxuXG4gICAgICAgICAgey8qINiy2LEg2YjYp9iq2LPYp9ioINmE2YTYr9i52YUg2KfZhNmB2YbZiiDYp9mE2YXYqNin2LTYsSAqL31cbiAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICB0eXBlPVwiYnV0dG9uXCJcbiAgICAgICAgICAgIG9uQ2xpY2s9e2hhbmRsZVdoYXRzQXBwQ29udGFjdH1cbiAgICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCBoLTEyIHRleHQteHMgc206dGV4dC1zbSBiZy1bIzI1RDM2Nl0gaG92ZXI6YmctWyMyMGJkNWFdIGFjdGl2ZTpzY2FsZS1bMC45OF0gdHJhbnNpdGlvbi1hbGwgcm91bmRlZC0yeGwgdGV4dC13aGl0ZSBmb250LWV4dHJhYm9sZCBzaGFkb3ctbWQgc2hhZG93LVsjMjVEMzY2XS8yMCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMiBjdXJzb3ItcG9pbnRlclwiXG4gICAgICAgICAgPlxuICAgICAgICAgICAgPFdoYXRzQXBwSWNvbiBjbGFzc05hbWU9XCJ3LTUgaC01IHRleHQtd2hpdGUgc2hyaW5rLTBcIiAvPlxuICAgICAgICAgICAgPHNwYW4+2KrZiNin2LXZhCDZhdi5INin2YTYr9i52YUg2KfZhNmB2YbZiiAoe1NVUFBPUlRfV0hBVFNBUFBfRElTUExBWX0pPC9zcGFuPlxuICAgICAgICAgIDwvYnV0dG9uPlxuXG4gICAgICAgICAgey8qINiy2LEg2KXYtdmE2KfYrSDYs9ix2YrYuSDZiNin2YTYudmI2K/YqSDZhNmE2LHYptmK2LPZitipICovfVxuICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgIG9uQ2xpY2s9e2hhbmRsZUhhcmRSZXNldH1cbiAgICAgICAgICAgIHZhcmlhbnQ9XCJnaG9zdFwiXG4gICAgICAgICAgICBjbGFzc05hbWU9XCJ3LWZ1bGwgaC0xMCB0ZXh0LXhzIHRleHQtc3RvbmUtNDAwIGhvdmVyOnRleHQtd2hpdGUgaG92ZXI6Ymctd2hpdGUvNSByb3VuZGVkLXhsIGZvbnQtbWVkaXVtIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGdhcC0xLjUgY3Vyc29yLXBvaW50ZXIgdHJhbnNpdGlvbi1jb2xvcnNcIlxuICAgICAgICAgID5cbiAgICAgICAgICAgIDxUcmFzaDIgY2xhc3NOYW1lPVwidy0zLjUgaC0zLjUgdGV4dC1zdG9uZS01MDBcIiAvPlxuICAgICAgICAgICAgPHNwYW4+2KXYtdmE2KfYrSDYs9ix2YrYuSDZiNiq2YbYuNmK2YEg2KfZhNiw2KfZg9ix2Kkg2KfZhNmF2KTZgtiq2Kk8L3NwYW4+XG4gICAgICAgICAgPC9CdXR0b24+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiDYqtmB2KfYtdmK2YQg2KrZgtmG2YrYqSDZgtin2KjZhNipINmE2YTYt9mKINmE2YTZhdi32YjYsSAvINmI2YTZiiDYp9mE2KPZhdixICovfVxuICAgICAgICB7cmF3RXJyTXNnICYmIChcbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInctZnVsbCBib3JkZXItdCBib3JkZXItd2hpdGUvNSBwdC0zXCI+XG4gICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHNldFNob3dUZWNoRGV0YWlscygodikgPT4gIXYpfVxuICAgICAgICAgICAgICBjbGFzc05hbWU9XCJ0ZXh0LVsxMXB4XSB0ZXh0LXN0b25lLTUwMCBob3Zlcjp0ZXh0LXN0b25lLTMwMCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBnYXAtMSBteC1hdXRvIHRyYW5zaXRpb24tY29sb3JzXCJcbiAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgPHNwYW4+e3Nob3dUZWNoRGV0YWlscyA/IFwi2KXYrtmB2KfYoSDYp9mE2KrZgdin2LXZitmEINin2YTZgdmG2YrYqVwiIDogXCLYudix2LYg2KfZhNiq2YHYp9i12YrZhCDYp9mE2YHZhtmK2KlcIn08L3NwYW4+XG4gICAgICAgICAgICAgIHtzaG93VGVjaERldGFpbHMgPyA8Q2hldnJvblVwIGNsYXNzTmFtZT1cInctMyBoLTNcIiAvPiA6IDxDaGV2cm9uRG93biBjbGFzc05hbWU9XCJ3LTMgaC0zXCIgLz59XG4gICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgIHtzaG93VGVjaERldGFpbHMgJiYgKFxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cIm10LTIuNSBwLTMgcm91bmRlZC14bCBiZy1ibGFjay82MCBib3JkZXIgYm9yZGVyLXdoaXRlLzUgdGV4dC1bMTBweF0gdGV4dC1zdG9uZS00MDAgZm9udC1tb25vIHRleHQtbGVmdCBkaXItbHRyIG1heC1oLTI0IG92ZXJmbG93LXktYXV0byBicmVhay1hbGxcIj5cbiAgICAgICAgICAgICAgICB7cmF3RXJyTXNnfVxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICl9XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgICl9XG5cbiAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1bMTFweF0gdGV4dC1zdG9uZS01MDAgZm9udC1tZWRpdW1cIj5cbiAgICAgICAgICDYqti32KjZitmCINin2YTZgtix2KLZhiDZhNmE2KPYt9mB2KfZhCDigKIg2K/YudmFINmB2YbZiiDZhdiz2KrZhdixINmE2K7Yr9mF2KrZg9mFIPCfkpZcbiAgICAgICAgPC9wPlxuICAgICAgPC9kaXY+XG4gICAgPC9kaXY+XG4gICk7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBTdXBwb3J0RXJyb3JCb3VuZGFyeSh7IGNoaWxkcmVuIH06IHsgY2hpbGRyZW46IFJlYWN0LlJlYWN0Tm9kZSB9KSB7XG4gIHJldHVybiAoXG4gICAgPEVycm9yQm91bmRhcnlcbiAgICAgIEZhbGxiYWNrQ29tcG9uZW50PXtFcnJvckZhbGxiYWNrfVxuICAgICAgb25SZXNldD17KCkgPT4ge1xuICAgICAgICB3aW5kb3cubG9jYXRpb24ucmVsb2FkKCk7XG4gICAgICB9fVxuICAgID5cbiAgICAgIHtjaGlsZHJlbn1cbiAgICA8L0Vycm9yQm91bmRhcnk+XG4gICk7XG59XG4iXSwibmFtZXMiOlsiUmVhY3QiLCJ1c2VTdGF0ZSIsInVzZUVmZmVjdCIsIkVycm9yQm91bmRhcnkiLCJSZWZyZXNoQ3ciLCJUcmFzaDIiLCJIZWFydEhhbmRzaGFrZSIsIldpZmlPZmYiLCJXaWZpIiwiU3BhcmtsZXMiLCJDaGV2cm9uRG93biIsIkNoZXZyb25VcCIsIkJ1dHRvbiIsIldoYXRzQXBwSWNvbiIsIm9wZW5XaGF0c0FwcFN1cHBvcnQiLCJTVVBQT1JUX1dIQVRTQVBQX0RJU1BMQVkiLCJnZXRQcm9maWxlIiwiQ1VSUkVOVF9WRVJTSU9OIiwiY2xhc3NpZnlBcHBFcnJvciIsIkVycm9yRmFsbGJhY2siLCJlcnJvciIsInJlc2V0RXJyb3JCb3VuZGFyeSIsImlzT25saW5lIiwic2V0SXNPbmxpbmUiLCJuYXZpZ2F0b3IiLCJvbkxpbmUiLCJzaG93VGVjaERldGFpbHMiLCJzZXRTaG93VGVjaERldGFpbHMiLCJpc1JlY29ubmVjdGluZyIsInNldElzUmVjb25uZWN0aW5nIiwicmF3RXJyTXNnIiwibWVzc2FnZSIsIlN0cmluZyIsImVycm9yS2luZCIsImhhbmRsZU9ubGluZSIsInNldFRpbWVvdXQiLCJoYW5kbGVPZmZsaW5lIiwid2luZG93IiwiYWRkRXZlbnRMaXN0ZW5lciIsInJlbW92ZUV2ZW50TGlzdGVuZXIiLCJ0b0xvd2VyQ2FzZSIsImluY2x1ZGVzIiwidGltZXIiLCJjbGVhclRpbWVvdXQiLCJpc0Nvbm5lY3Rpb25Jc3N1ZSIsImhhbmRsZVdoYXRzQXBwQ29udGFjdCIsImFjdGl2ZVByb2ZpbGUiLCJwcm9maWxlTmFtZSIsIm5hbWUiLCJtc2ciLCJzbGljZSIsImhhbmRsZU1hbnVhbFJldHJ5IiwiaGFuZGxlSGFyZFJlc2V0Iiwic2Vzc2lvblN0b3JhZ2UiLCJjbGVhciIsIk9iamVjdCIsImtleXMiLCJsb2NhbFN0b3JhZ2UiLCJmb3JFYWNoIiwia2V5IiwicmVtb3ZlSXRlbSIsImxvY2F0aW9uIiwiaHJlZiIsImRpdiIsImNsYXNzTmFtZSIsImRpciIsImgyIiwicCIsInNwYW4iLCJvbkNsaWNrIiwiZGlzYWJsZWQiLCJidXR0b24iLCJ0eXBlIiwidmFyaWFudCIsInYiLCJTdXBwb3J0RXJyb3JCb3VuZGFyeSIsImNoaWxkcmVuIiwiRmFsbGJhY2tDb21wb25lbnQiLCJvblJlc2V0IiwicmVsb2FkIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxPQUFPQSxTQUFTQyxRQUFRLEVBQUVDLFNBQVMsUUFBUSxRQUFRO0FBQ25ELFNBQVNDLGFBQWEsUUFBUSx1QkFBdUI7QUFDckQsU0FBU0MsU0FBUyxFQUFFQyxNQUFNLEVBQUVDLGNBQWMsRUFBRUMsT0FBTyxFQUFFQyxJQUFJLEVBQUVDLFFBQVEsRUFBRUMsV0FBVyxFQUFFQyxTQUFTLFFBQVEsZUFBZTtBQUNsSCxTQUFTQyxNQUFNLFFBQVEsY0FBYztBQUNyQyxPQUFPQyxrQkFBa0IsaUJBQWlCO0FBQzFDLFNBQVNDLG1CQUFtQixFQUFFQyx3QkFBd0IsUUFBUSwyQkFBMkI7QUFDekYsU0FBU0MsVUFBVSxRQUFRLHFCQUFx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

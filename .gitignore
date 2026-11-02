@@ -72,3 +72,5 @@ public/avatars/*.opt.jpg
 
 tools/���-��������-����.cmd
 .env*
+# نموذج المتغيرات (بدون أسرار) يبقى ظاهراً للمراجعة
+!.env.example
