@@ -2320,3 +2320,37 @@ html[data-theme="dark"] .wifi-loader {
 .animate-water-drop {
   animation: waterDropFall 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
+
+/* ===== شريط مشغّل المقطع «من ← إلى»: حركة دخول + نبض أثناء التشغيل ===== */
+@keyframes arp-pop-in {
+  0% { opacity: 0; transform: translateY(18px) scale(0.92); }
+  60% { opacity: 1; transform: translateY(-3px) scale(1.015); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.arp-enter { animation: arp-pop-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes arp-dock-in {
+  0% { opacity: 0; transform: translateY(28px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.arp-dock-enter { animation: arp-dock-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes arp-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--accent) / 0.45); }
+  55% { box-shadow: 0 0 0 9px hsl(var(--accent) / 0); }
+}
+.arp-glow { animation: arp-breathe 1.9s ease-out infinite; }
+
+@keyframes arp-sheen {
+  0% { transform: translateX(130%); }
+  100% { transform: translateX(-130%); }
+}
+.arp-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, hsl(var(--accent) / 0.16) 50%, transparent 70%);
+  animation: arp-sheen 2.6s ease-in-out infinite;
+}

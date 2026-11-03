@@ -8,7 +8,6 @@ import { getTheme, toggleTheme, setTheme } from "@/utils/theme";
 import DayNightSwitch from "@/components/ui/DayNightSwitch";
 import AppFooter from "@/components/AppFooter";
 import AppNav from "@/components/AppNav";
-import QuranLoading from "@/components/QuranLoading";
 import { getSavedTimings, getSurahTimings } from "@/data/ayahTimings";
 import { getSurahServerUrl, getSavedLinks, getSurahLink, saveSurahLink, initDefaultLinks, syncLinksFromServer } from "@/data/surahLink";
 import { getSurahSegments, SurahSegment, getOrderedSegments, createAlternatingSegments, saveSurahSegments } from "@/data/surahSegments";
@@ -210,6 +209,7 @@ export default function QuranReader() {
   const [loadedImgs, setLoadedImgs] = useState<Set<string>>(() => new Set());
   const markLoaded = useCallback((src: string) => setLoadedImgs(prev => (prev.has(src) ? prev : new Set(prev).add(src))), []);
 
+
   // تتبّع وقت القراءة والدراسة وتسجيله في الإحصائيات والأوسمة
   useEffect(() => {
     let accumulatedSecs = 0;
@@ -402,8 +402,32 @@ export default function QuranReader() {
   }, [currentPage, pages, customImgs]);
 
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : false);
+  // قياس مساحة العرض لحساب مقاس الصفحة (أو الصفحتين) بدقة: بلا قصّ ولا تشويه
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [stage, setStage] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const measure = () => {
+      const cs = getComputedStyle(el);
+      const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+      const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+      setStage({ w: Math.max(0, el.clientWidth - padX), h: Math.max(0, el.clientHeight - padY) });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener("orientationchange", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("orientationchange", measure);
+    };
+  }, [isDesktop]);
   const [controlsOpen, setControlsOpen] = useState(false);
   const [rangePlayerOpen, setRangePlayerOpen] = useState(false);
+  // مرجع متزامن: أي تشغيل من مشغل المصحف يُغلق مشغل المقطع حتى لا يتداخل صوتان
+  const rangePlayerOpenRef = useRef(false);
+  useEffect(() => { rangePlayerOpenRef.current = rangePlayerOpen; }, [rangePlayerOpen]);
   const [isGridOpen, setIsGridOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   // تنظيف أي قيمة سابقة لإعداد تخطي البسملة الخاطئ الذي كان يقفز من الفاتحة إلى النبأ
@@ -1010,6 +1034,8 @@ export default function QuranReader() {
   const isSeekingRef = useRef(false);
   const expectedStartTimeRef = useRef(0);
   const currentAyahStartRef = useRef(0);
+  const sourceWatchdogRef = useRef<number | null>(null); // يمنع تجمّد الصوت (والتظليل) عند مصدر لا يستجيب
+  const trackAliveRef = useRef(0); // آخر نبضة لحلقة متابعة الصوت — لإعادة تشغيلها إن توقفت
   const internalPauseRef = useRef(false); // guards against external pause listener firing on internal pauses
   const autoFollowRef = useRef(false); // true عندما يتغيّر الصفحة بسبب متابعة التشغيل لسورة ممتدّة على صفحتين (يمنع إيقاف الصوت)
 
@@ -1278,6 +1304,11 @@ export default function QuranReader() {
 
   const playAyah = useCallback(async (surah: SurahAudio, ayahNum: number, forceSpeaker?: Speaker, boxIndex?: number) => {
     const a = audioRef.current; if (!a) return;
+    // صوت واحد فقط: إغلاق مشغل المقطع «من ← إلى» قبل تشغيل القارئ الأساسي
+    if (rangePlayerOpenRef.current) {
+      rangePlayerOpenRef.current = false;
+      setRangePlayerOpen(false);
+    }
     const sp: Speaker = forceSpeaker ?? (playModeRef.current === "kids" ? "kids" : "teacher");
     currentSpeakerRef.current = sp;
     setActiveSpeaker(sp);
@@ -1457,13 +1488,58 @@ export default function QuranReader() {
       }).catch(console.error);
     };
 
+    // حارِس تعليق المصدر: بعض المصادر (HuggingFace) قد تبقى "قيد التحميل" بلا نهاية فلا يصل
+    // حدث loadedmetadata، فيتجمّد الصوت ومعها التظليل. ننتقل تلقائياً للمصادر البديلة.
+    if (sourceWatchdogRef.current) {
+      window.clearTimeout(sourceWatchdogRef.current);
+      sourceWatchdogRef.current = null;
+    }
+    const sourceChain = [targetSrc, getFallbackAudioUrl(surah.number), getArchiveGatewayAudioUrl(surah.number)]
+      .filter((u, i, arr) => !!u && arr.indexOf(u) === i);
+    let sourceIdx = Math.max(0, sourceChain.indexOf(targetSrc));
+
+    const armWatchdog = () => {
+      if (sourceWatchdogRef.current) window.clearTimeout(sourceWatchdogRef.current);
+      sourceWatchdogRef.current = window.setTimeout(() => {
+        const el = audioRef.current;
+        if (!el || el.readyState >= 1) return; // وصلت البيانات — لا حاجة للبديل
+        const nextIdx = sourceIdx + 1;
+        if (nextIdx >= sourceChain.length) return; // لا بديل متبقٍ
+        sourceIdx = nextIdx;
+        const nextUrl = sourceChain[nextIdx];
+        if (nextUrl.includes("archive.org")) reportHuggingFaceFailure();
+        el.src = nextUrl;
+        el.load();
+        armWatchdog();
+      }, 6000);
+    };
+
+    const clearWatchdog = () => {
+      if (sourceWatchdogRef.current) {
+        window.clearTimeout(sourceWatchdogRef.current);
+        sourceWatchdogRef.current = null;
+      }
+    };
+
     if (!sameSrc) {
       a.src = targetSrc;
       a.load();
       a.addEventListener("loadedmetadata", startPlayback, { once: true });
+      armWatchdog();
     } else {
       if (a.duration > 0) startPlayback();
-      else a.addEventListener("loadedmetadata", startPlayback, { once: true });
+      else {
+        a.addEventListener("loadedmetadata", startPlayback, { once: true });
+        // مصدر لم يجهز بعد (قد يكون تجمّد من نقرة سابقة) → حاول البديل
+        if (a.readyState < 1) armWatchdog();
+      }
+    }
+
+    // أوقف الحارِس متى ما بدأ التشغيل فعلياً
+    if (sourceWatchdogRef.current) {
+      const stopWatchdog = () => clearWatchdog();
+      a.addEventListener("playing", stopWatchdog, { once: true });
+      a.addEventListener("loadedmetadata", stopWatchdog, { once: true });
     }
   }, [actualPage, resolveAudioSrc, isShuffled, shuffledPageOrder, customPageOrder]);
 
@@ -1601,6 +1677,7 @@ export default function QuranReader() {
   }, [activeSurah, playAyah, actualPage, advanceSurah, clearAllHighlights]);
 
   const trackAudio = useCallback(() => {
+    trackAliveRef.current = performance.now();
     const a = audioRef.current;
     if (!a || !activeSurah) return;
 
@@ -1846,6 +1923,35 @@ export default function QuranReader() {
     };
   }, [isPlaying, trackAudio]);
 
+  // حارِس استمرارية التظليل: بعض مسارات "انتقال الآية" تنتهي بـ return بلا جدولة إطار جديد،
+  // فتتوقف حلقة المتابعة نهائياً ويبقى التظليل مجمّداً رغم أن الصوت يعمل. نعيد تشغيلها ذاتياً.
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const a = audioRef.current;
+      if (!a || a.paused) return;
+      if (performance.now() - trackAliveRef.current < 600) return;
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      requestRef.current = requestAnimationFrame(trackAudio);
+    }, 800);
+    return () => window.clearInterval(id);
+  }, [trackAudio]);
+
+  // مصدر ثانٍ للمتابعة: حدث timeupdate يعمل حتى عندما يُوقف المتصفح requestAnimationFrame
+  // (نافذة غير مرئية / وضع توفير الطاقة) وكان التظليل يتجمّد رغم استمرار الصوت.
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const onTime = () => {
+      if (!a.paused) trackAudio();
+    };
+    a.addEventListener("timeupdate", onTime);
+    a.addEventListener("seeked", onTime);
+    return () => {
+      a.removeEventListener("timeupdate", onTime);
+      a.removeEventListener("seeked", onTime);
+    };
+  }, [trackAudio]);
+
 
   // Keep ref always pointing to the latest handleAyahSegmentEnd
   useEffect(() => {
@@ -1927,6 +2033,51 @@ export default function QuranReader() {
     setCurrentPage(totalDisplayPages - 1);
   }, [currentPage, pageDataReady, totalDisplayPages]);
 
+  // ── فرشات المصحف (كما في المصحف الورقي) ──
+  // الصفحة 1 وحدها دائماً (الفاتحة)، ثم كل زوج متتالٍ: (2+3)، (4+5)…
+  // هذا يضمن أن الصفحتين في الحاسوب هما فعلاً وجهان متقابلان، لا صفحة عشوائية مع تاليتها.
+  const displayPageNumbers = useMemo(
+    () =>
+      Array.from({ length: totalDisplayPages }, (_, i) => {
+        const p = pages[getActualPageIndex(i)];
+        if (!p) return Number.MAX_SAFE_INTEGER;
+        const n = p.pageNumber || pageNumForKey(p.src);
+        return n && Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
+      }),
+    [pages, getActualPageIndex, totalDisplayPages]
+  );
+
+  const spreads = useMemo<number[][]>(() => {
+    const out: number[][] = [];
+    if (!isDesktop) {
+      for (let i = 0; i < displayPageNumbers.length; i++) out.push([i]);
+      return out;
+    }
+    let i = 0;
+    while (i < displayPageNumbers.length) {
+      const n = displayPageNumbers[i];
+      const n2 = displayPageNumbers[i + 1];
+      const pairable =
+        n !== Number.MAX_SAFE_INTEGER && n > 1 && n % 2 === 0 && n2 === n + 1;
+      if (pairable) {
+        out.push([i, i + 1]);
+        i += 2;
+      } else {
+        out.push([i]);
+        i += 1;
+      }
+    }
+    return out;
+  }, [displayPageNumbers, isDesktop]);
+
+  const spreadIndexFor = useCallback(
+    (displayIdx: number) => {
+      const found = spreads.findIndex((sp) => sp.includes(displayIdx));
+      return found >= 0 ? found : 0;
+    },
+    [spreads]
+  );
+
   const visiblePages = useMemo(() => {
     // إذا كان الفهرس المحفوظ أعلى من الصفحات المحلية المتاحة حالياً، اعرض
     // صفحة مؤقتة إلى أن تصل قائمة السيرفر، مع إبقاء currentPage لاستعادته لاحقاً.
@@ -1937,21 +2088,56 @@ export default function QuranReader() {
     if (!p1) return [];
     if (!isDesktop) return [p1];
 
-    // سورة الفاتحة (الصفحة 1 أو 0.jpg) صفحة افتتاحية مقدسة مستقلة دائماً، لا تُقرن بأي صفحة أخرى نهائياً
-    const isFatiha = p1.pageNumber === 1 || p1.src.includes("0.jpg") || p1.surahs.some(s => s.number === 1);
-    if (isFatiha) return [p1];
+    const ids = spreads[spreadIndexFor(displayPage)] ?? [displayPage];
+    const group = ids
+      .map((i) => pages[getActualPageIndex(i)])
+      .filter((p): p is PageInfo => Boolean(p));
+    return group.length > 0 ? group : [p1];
+  }, [currentPage, getActualPageIndex, isDesktop, isShuffled, pageDataReady, pages, shuffledPageOrder.length, spreads, spreadIndexFor]);
 
-    // في الحاسوب، نعرض صفحتين متجاورتين فقط إذا كانتا متتاليتين في المصحف
-    const nextIdx = displayPage + 1;
-    const p2 = nextIdx < totalDisplayPages ? pages[getActualPageIndex(nextIdx)] : null;
-    if (p2 && p2.pageNumber === p1.pageNumber + 1 && !p2.surahs.some(s => s.number === 1)) {
-      return [p1, p2];
-    }
-    return [p1];
-  }, [currentPage, getActualPageIndex, isDesktop, isShuffled, pageDataReady, pages, shuffledPageOrder.length, totalDisplayPages]);
+  // 🛡️ ضمان ظهور الصفحة: كثير من المتصفحات تُكمل تحميل الصورة من الكاش قبل ربط onLoad،
+  // فلا يُستدعى الحدث أبداً وتبقى الصفحة شفافة. نتحقّق من جاهزية كل صورة معروضة دورياً
+  // هنا بدل الاعتماد على onLoad وحده.
+  useEffect(() => {
+    let stopped = false;
+    const check = () => {
+      if (stopped) return;
+      const imgs = document.querySelectorAll<HTMLImageElement>("img.mushaf-page-img[data-page-src]");
+      imgs.forEach((img) => {
+        const key = img.dataset.pageSrc;
+        if (key && img.complete && img.naturalWidth > 0) markLoaded(key);
+      });
+    };
+    check();
+    const id = window.setInterval(check, 250);
+    const stop = window.setTimeout(() => { window.clearInterval(id); stopped = true; }, 12000);
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+      window.clearTimeout(stop);
+    };
+  }, [markLoaded, visiblePages]);
+
+  // ── مقاس الصفحة المعروضة: يُحسب من المساحة الحقيقية حتى تظهر الصفحتان معاً دائماً (حاسوب) ──
+  const pageRatio = PAGE_IMAGE_SIZE.width / PAGE_IMAGE_SIZE.height;
+  const pagesShown = Math.max(visiblePages.length, 1);
+  const pageGap = isDesktop && pagesShown > 1 ? 12 : 0;
+  const availWidth = Math.max(0, stage.w - pageGap * (pagesShown - 1));
+  const fittedWidth = stage.w > 0 ? Math.min(availWidth / pagesShown, stage.h * pageRatio) : 0;
+  const fittedHeight = fittedWidth > 0 ? fittedWidth / pageRatio : 0;
 
   const allBoxes = useMemo(() => pages.flatMap(p => getPageAyahBoxes(p.src)), [pages]);
-
+  // بداية فهرس مربعات كل صفحة داخل القائمة الشاملة — يُحسب حسابياً لأن getPageAyahBoxes
+  // تُنشئ كائنات جديدة في كل نداء فلا تصلح المقارنة بالهوية (indexOf) لمطابقة التظليل بالصوت.
+  const pageBoxStart = useMemo(() => {
+    const map = new Map<string, number>();
+    let acc = 0;
+    for (const p of pages) {
+      map.set(p.src, acc);
+      acc += getPageAyahBoxes(p.src).length;
+    }
+    return map;
+  }, [pages]);
   // ── اتجاه قلب الصفحة: يُستخدم لتحريك المجموعة كلها (صفحة/صفحتين) معاً ──
   const [turnDir, setTurnDir] = useState<1 | -1>(1);
   const [turnKey, setTurnKey] = useState(0);
@@ -1970,25 +2156,18 @@ export default function QuranReader() {
   }, [totalDisplayPages]);
   
   const goPrev = useCallback(() => {
-    // إذا كانت الصفحة الحالية هي صفحة 1 (أول صفحة بعد الفاتحة)، فالرجوع خطوة واحدة يعيدنا للفاتحة
-    let prevStep = 1;
-    if (isDesktop) {
-      if (currentPage === 1) {
-        prevStep = 1;
-      } else {
-        prevStep = 2;
-      }
-    }
-    let prevPage = currentPage - prevStep;
-    goToPage(Math.max(0, prevPage));
-  }, [currentPage, goToPage, isDesktop]);
-  
+    const cur = Math.min(Math.max(currentPage, 0), Math.max(totalDisplayPages - 1, 0));
+    const si = spreadIndexFor(cur);
+    const prev = spreads[si - 1];
+    goToPage(prev ? prev[0] : Math.max(0, cur - 1));
+  }, [currentPage, totalDisplayPages, goToPage, spreadIndexFor, spreads]);
+
   const goNext = useCallback(() => {
-    // إذا كانت الصفحة الحالية معروضة بمفردها (كالفاتحة)، ننتقل خطوة واحدة للأمام
-    const currentStep = (isDesktop && visiblePages.length > 1) ? 2 : 1;
-    let nextPage = currentPage + currentStep;
-    goToPage(Math.min(totalDisplayPages - 1, nextPage));
-  }, [currentPage, totalDisplayPages, goToPage, isDesktop, visiblePages.length]);
+    const cur = Math.min(Math.max(currentPage, 0), Math.max(totalDisplayPages - 1, 0));
+    const si = spreadIndexFor(cur);
+    const next = spreads[si + 1];
+    goToPage(next ? next[0] : Math.min(totalDisplayPages - 1, cur + 1));
+  }, [currentPage, totalDisplayPages, goToPage, spreadIndexFor, spreads]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -2273,12 +2452,20 @@ export default function QuranReader() {
           onClick={() => { }}
         >
           {/* Single page wrapper — centered & hugging the page on desktop */}
-          <div className={`flex h-full w-full ${isDesktop ? 'px-4 py-2 justify-center' : ''}`}>
+          <div ref={stageRef} className={`flex h-full w-full ${isDesktop ? 'px-4 py-2 justify-center' : ''}`}>
             {/* ظرف المجموعة: يُحرَّك كلياً عند قلب الصفحة (صفحة أو صفحتان معاً) */}
             <div
               key={turnKey}
-              className={`mushaf-page-turn relative flex h-full ${turnDir === 1 ? 'mushaf-page-turn--next' : 'mushaf-page-turn--prev'} ${isDesktop ? 'shadow-2xl rounded-lg overflow-hidden ring-1 ring-black/5' : 'w-full'}`}
+              style={{ gap: `${pageGap}px` }}
+              className={`mushaf-page-turn relative flex h-full ${turnDir === 1 ? 'mushaf-page-turn--next' : 'mushaf-page-turn--prev'} ${isDesktop ? 'rounded-lg overflow-hidden ring-1 ring-black/5' : 'w-full'}`}
             >
+              {/* كعب الكتاب بين الصفحتين في الحاسوب */}
+              {isDesktop && visiblePages.length > 1 && (
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-8 -translate-x-1/2 bg-gradient-to-r from-transparent via-black/25 to-transparent"
+                />
+              )}
               {/* لمعة ورقية خفيفة تُظهر حركة القلب كمجموعة واحدة */}
               <div
                 aria-hidden="true"
@@ -2290,12 +2477,17 @@ export default function QuranReader() {
                 </div>
               )}
           {visiblePages.map((page, idx) => (
-            <div key={page.src} className={`relative h-full ${isDesktop ? '' : 'flex-1'} min-w-0 flex items-center justify-center bg-background overflow-hidden p-1`}>
+            <div key={page.src} className="relative flex h-full min-w-0 items-center justify-center overflow-hidden bg-background">
               <div
                 className={`relative ${isDesktop ? 'shadow-none' : 'shadow-xl'}`}
-                style={{ aspectRatio: `${PAGE_IMAGE_SIZE.width}/${PAGE_IMAGE_SIZE.height}`, height: '100%', maxWidth: '100%' }}
+                style={
+                  fittedWidth > 0
+                    ? { width: `${fittedWidth}px`, height: `${fittedHeight}px` }
+                    : { aspectRatio: `${PAGE_IMAGE_SIZE.width}/${PAGE_IMAGE_SIZE.height}`, height: '100%', maxWidth: '100%' }
+                }
               >
                 <img src={imgSrcFor(page.src)} alt={page.name}
+                  data-page-src={page.src}
                   fetchPriority={idx === 0 ? "high" : "auto"}
                   className={`mushaf-page-img absolute inset-0 w-full h-full select-none transition-opacity duration-200 ${loadedImgs.has(page.src) ? "opacity-100" : "opacity-0"}`}
                   draggable={false} decoding="async" referrerPolicy="no-referrer"
@@ -2316,10 +2508,7 @@ export default function QuranReader() {
                     }
                     markLoaded(page.src);
                   }} />
-                {/* هيكل تحميل لطيف حتى تظهر الصورة (لا تظليل فوق فراغ) */}
-                {!loadedImgs.has(page.src) && (
-                  <QuranLoading label={`جارٍ تجهيز ${page.name}`} />
-                )}
+                {/* بلا شاشة تحميل: تُكشف الصفحة عند جاهزيتها فقط */}
                 {loadedImgs.has(page.src) && !hideShading && (
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${PAGE_IMAGE_SIZE.width} ${PAGE_IMAGE_SIZE.height}`} preserveAspectRatio="none">
                   <defs>
@@ -2332,7 +2521,7 @@ export default function QuranReader() {
                     </filter>
                   </defs>
                   {getPageAyahBoxes(page.src).map((box, i) => {
-                    const globalBoxIdx = allBoxes.indexOf(box);
+                    const globalBoxIdx = (pageBoxStart.get(page.src) ?? 0) + i;
                     const hasSpecificBox = activeBoxIndex >= 0;
                     const isBoxMatch = hasSpecificBox && activeBoxIndex === globalBoxIdx;
                     const isAyahMatch = activeSurahNum === box.surah && activeAyahNum === box.ayah;
@@ -2383,7 +2572,7 @@ export default function QuranReader() {
                           currentRepeatRef.current = 0;
                           // ربط التظليل مباشرة بالتشغيل السلس دون فتح مشغل يحجب المصحف
                           if (isSimultaneousPlaying) { stopSimultaneous(); }
-                          const globalIdx = allBoxes.indexOf(box);
+                          const globalIdx = (pageBoxStart.get(page.src) ?? 0) + i;
                           playAyah(surah, box.ayah, playModeRef.current === "kids" ? "kids" : "teacher", globalIdx >= 0 ? globalIdx : undefined);
                         }}
                         className="absolute rounded-md outline-none transition-colors hover:bg-accent/10 active:bg-accent/20"
@@ -2418,7 +2607,8 @@ export default function QuranReader() {
       </div>
 
       {/* ── الشريط العائم الذكي للمشغل (أسفل المصحف مباشرة) مع اختيار مباشر للمعلم والطفل ── */}
-      {!controlsOpen && (
+      {/* عند فتح مشغّل «من ← إلى» نخفي هذا الشريط تماماً حتى لا يبقى إلا شريط المقطع الصغير */}
+      {!controlsOpen && !rangePlayerOpen && (
         <div className="absolute bottom-[calc(4.2rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-40 w-[96vw] max-w-xl animate-slide-up-short pointer-events-auto" dir="rtl">
           <div className="backdrop-blur-2xl bg-white/95 dark:bg-[#121915]/95 border border-amber-500/30 dark:border-amber-400/20 shadow-2xl rounded-2xl px-3 py-2 flex items-center justify-between gap-2 text-foreground">
             {/* معلومات السورة والآية */}
@@ -3110,6 +3300,8 @@ export default function QuranReader() {
           initialAyah={selectedAyah > 0 ? selectedAyah : 1}
           onBeforePlay={() => {
             audioRef.current?.pause();
+            audioRef2.current?.pause();
+            if (isSimultaneousPlaying) stopSimultaneous();
             setIsPlaying(false);
           }}
         />
@@ -3139,7 +3331,9 @@ export default function QuranReader() {
                 } else if (/افتراضي/.test(p.name)) {
                   displayName = "افتراضي";
                 }
-                const isActive = currentPage === idx || (isDesktop && currentPage + 1 === idx);
+                const isActive = isDesktop
+                  ? (spreads[spreadIndexFor(currentPage)] ?? []).includes(idx)
+                  : currentPage === idx;
                 return (
                   <button
                     key={idx}

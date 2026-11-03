@@ -8,8 +8,6 @@ import CustomPlayer, { CustomPlayerHandle } from "@/components/CustomPlayer";
 import ParentalGateModal from "@/components/ParentalGateModal";
 import NotificationsModal from "../components/NotificationsModal";
 import AppNav from "@/components/AppNav";
-import WifiLoader from "@/components/ui/wifi-loader";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useSurahData, SurahItem } from "@/hooks/useSurahData";
 import { useProgress } from "@/hooks/useProgress";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -584,22 +582,7 @@ const Index = () => {
 
           {/* محتوى قائمة السور قابل للتمرير بسلاسة داخل الإطار الأبيض الشفاف */}
           <div className={`flex-1 overflow-y-auto quran-kids-scroll p-2 sm:p-2.5 ${currentTrack ? 'pb-[110px]' : ''}`}>
-            {loading && (
-              <div className="py-8 my-4 flex flex-col items-center justify-center text-center">
-                <WifiLoader text="جاري جلب قائمة السور والتلاوات..." />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full mt-12">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-white/60 border border-amber-400/20">
-                      <Skeleton className="w-10 h-10 rounded-xl" />
-                      <div className="flex-1 space-y-1.5">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-3 w-16" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {loading && null}
 
             {error && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-2xl p-6 text-center space-y-3 my-4">

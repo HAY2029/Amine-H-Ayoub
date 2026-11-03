@@ -6,6 +6,8 @@ const api = vi.hoisted(() => ({
   identify: vi.fn(),
   opt_in_capturing: vi.fn(),
   opt_out_capturing: vi.fn(),
+  startSessionRecording: vi.fn(),
+  stopSessionRecording: vi.fn(),
 }));
 
 vi.mock("posthog-js", () => ({ default: api }));
@@ -28,6 +30,32 @@ describe("posthog analytics module", () => {
 
     expect(api.capture).toHaveBeenCalledWith("app_open", { is_new_user: true });
     expect(api.identify).toHaveBeenCalledWith("child_p1", { role: "child" });
+  });
+
+  it("initializes session replay with every input masked", async () => {
+    const mod = await import("./posthog");
+    mod.initAnalytics();
+    await vi.waitFor(() => expect(api.init).toHaveBeenCalled());
+
+    const [, config] = api.init.mock.calls[0];
+    // التسجيل مفعّل لأن التهيئة لا تحدث إلا بموافقة المستخدم
+    expect(config.disable_session_recording).toBe(false);
+    expect(config.session_recording).toMatchObject({ maskAllInputs: true });
+    expect(config.session_recording.maskTextSelector).toContain("[data-ph-mask]");
+  });
+
+  it("stops and restarts replay with consent", async () => {
+    const mod = await import("./posthog");
+    mod.initAnalytics();
+    await vi.waitFor(() => expect(api.init).toHaveBeenCalled());
+
+    mod.setAnalyticsConsent(false);
+    expect(api.stopSessionRecording).toHaveBeenCalledTimes(1);
+    expect(api.opt_out_capturing).toHaveBeenCalledTimes(1);
+
+    mod.setAnalyticsConsent(true);
+    expect(api.startSessionRecording).toHaveBeenCalledTimes(1);
+    expect(api.opt_in_capturing).toHaveBeenCalledTimes(1);
   });
 
   it("flushes events queued before the SDK loaded", async () => {

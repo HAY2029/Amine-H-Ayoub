@@ -60,17 +60,17 @@ import { useBackgroundNotifications, showLocalNotification } from "./utils/notif
 import { claimDailyRewards, incrementStreak } from "./data/dailyRewards";
 import { setupRemoteControlListeners } from "./utils/controllerNavigation";
 import { GlobalPlayerWrapper } from "./GlobalPlayerWrapper";
-import QuranLoading from "./components/QuranLoading";
 import Intro3DCarousel from "./components/Intro3DCarousel";
 import NetworkStatusBar from "./components/NetworkStatusBar";
 
 const queryClient = new QueryClient();
 
 // 🎞️ غلاف انتقال موحّد: كل صفحة تدخل بحركة ظهور واحدة مع حماية Suspense ثابتة لكل مسار
+// (بلا شاشة تحميل: الصفحة تظهر مباشرة بدل تغطية الشاشة بمؤشّر دوّار)
 const PageTransition = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   return (
-    <Suspense fallback={<QuranLoading fullScreen label="جارٍ فتح الصفحة..." />}>
+    <Suspense fallback={null}>
       <div key={location.pathname} className="page-transition">
         {children}
       </div>
@@ -336,7 +336,7 @@ const App = () => {
           <HashRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <KidsModeGuard />
             <NavigationAudioGuard />
-            <Suspense fallback={<QuranLoading fullScreen label="جارٍ فتح التطبيق" />}>
+            <Suspense fallback={null}>
               <Routes>
                 {/* صفحة الصفحة/الانتقال: كل تغيير مسار يشغّل حركة دخول موحدة */}
                 <Route path="/" element={<PageTransition><HomeRoute /></PageTransition>} />

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Play, RefreshCw, BookOpen, Lock, Settings, Bell, Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Gift, Star, Hash, Grid3x3, Flame, Sparkles, Gamepad2, Puzzle, X, Crown, Brain, Camera, Award, Download, Clock, Mic, Landmark, Trees } from "lucide-react";
+import { ArrowRight, Play, RefreshCw, BookOpen, Lock, Settings, Bell, Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Gift, Star, Hash, Grid3x3, Flame, Sparkles, Gamepad2, Puzzle, X, Crown, Brain, Camera, Award, Download, Clock, Mic, Landmark, Trees, BookMarked, Sunrise, Droplets, MapPin, Heart, BadgeCheck, HandHeart, Moon, Flower2, Compass, CircleDollarSign, Rainbow, Lightbulb } from "lucide-react";
 import { getAllSurahs } from "../data/quranData";
 import { getSurahAudioUrl, hasCloudAudio, getFallbackAudioUrl } from "../data/audioUrls";
 import { getProfile, getProgress, getProfiles, getCoins, addCoins, kidsRouteBlocked, setCurrentSurah, addPlayMinutes, setAppMode, ownItem, unlockItem, getActiveId, getAppMode, isPureMode, formatCoins } from "../data/kidsProfile";
@@ -24,6 +24,7 @@ import ListenKidsGame from "../games/ListenKidsGame";
 import MakkiMadaniGame from "../games/MakkiMadaniGame";
 import OddQuranWordGame from "../games/OddQuranWordGame";
 import QuranOrchardGame from "../games/QuranOrchardGame";
+import QuranValuesGame from "../games/QuranValuesGame";
 import RemoteGameFrame from "../components/RemoteGameFrame";
 import Avatar, { getAvatarSrc } from "../components/Avatar";
 import { drawQRCodeOnCanvas } from "../utils/qrCode";
@@ -1910,9 +1911,10 @@ const ENGINES: Record<GameEngine, (p: { def: GameDef; minSurah: number }) => JSX
   listenkids: ({ def, minSurah }) => <ListenKidsGame def={def} minSurah={minSurah} onExit={() => window.dispatchEvent(new Event("mushaf:listenkids:exit"))} />,
   makkimadani: ({ def, minSurah }) => <MakkiMadaniGame def={def} minSurah={minSurah} />,
   oddword: ({ def, minSurah }) => <OddQuranWordGame def={def} minSurah={minSurah} />,
-  orchard: ({ def, minSurah }) => <QuranOrchardGame def={def} minSurah={minSurah} />,
+  orchard: ({ def, minSurah }) => <QuranOrchardGame def={def} minSurah={minSurah} />, 
+  values: ({ def }) => <QuranValuesGame def={def} />,
 };
-const ICONS: Record<string, typeof Headphones> = { Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Hash, Grid3x3, Gamepad2, BookOpen, Sparkles, Puzzle, Brain, Mic, Landmark, Trees };
+const ICONS: Record<string, typeof Headphones> = { Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Hash, Grid3x3, Gamepad2, BookOpen, Sparkles, Puzzle, Brain, Mic, Landmark, Trees, BookMarked, Sunrise, Gift, Droplets, MapPin, Heart, BadgeCheck, HandHeart, Moon, Flower2, Compass, CircleDollarSign, Rainbow, Lightbulb, Crown };
 const iconFor = (key: string) => ICONS[key] || Gamepad2;
 
 /* ───────────────── ركن الأطفال ───────────────── */

@@ -38,6 +38,44 @@ export interface SilenceOptions {
   snapWindowSec?: number;
 }
 
+/**
+ * عتبة Otsu على منحنى الطاقة: تفصل التلاوة عن خلفية التسجيل تلقائياً
+ * مهما كان مستوى التسجيل أو ضجيجه (بدل عتبة ثابتة تصلح لمقطع دون آخر).
+ */
+export const otsuThreshold = (values: number[]): number => {
+  if (values.length === 0) return 0;
+  const peak = values.reduce((max, v) => (v > max ? v : max), 0);
+  if (!(peak > 0)) return 0;
+  const bins = 128;
+  const hist = new Array<number>(bins).fill(0);
+  for (const v of values) {
+    const idx = Math.min(bins - 1, Math.max(0, Math.floor((v / peak) * (bins - 1))));
+    hist[idx]++;
+  }
+  const total = values.length;
+  let sumAll = 0;
+  for (let i = 0; i < bins; i++) sumAll += i * hist[i];
+  let wB = 0;
+  let sumB = 0;
+  let best = 0;
+  let bestVar = -1;
+  for (let i = 0; i < bins; i++) {
+    wB += hist[i];
+    if (wB === 0) continue;
+    const wF = total - wB;
+    if (wF === 0) break;
+    sumB += i * hist[i];
+    const mB = sumB / wB;
+    const mF = (sumAll - sumB) / wF;
+    const between = wB * wF * (mB - mF) * (mB - mF);
+    if (between > bestVar) {
+      bestVar = between;
+      best = i;
+    }
+  }
+  return (best / (bins - 1)) * peak;
+};
+
 /** العتبة التي تحتّها يُعتبر الصوت صمتاً */
 export const computeSilenceThreshold = (rms: number[], options: SilenceOptions = {}): number => {
   const noiseFloorFactor = options.noiseFloorFactor ?? 2.2;
@@ -47,8 +85,10 @@ export const computeSilenceThreshold = (rms: number[], options: SilenceOptions =
   const sorted = [...rms].sort((a, b) => a - b);
   const noiseFloor = sorted[Math.floor(sorted.length * percentile)] || 0;
   const peak = sorted[sorted.length - 1] || 0;
+  // عتبة Otsu تُرفع بها الأرضية فقط، وبسقف ربع الذروة حتى لا تُقصّ التلاوة الهادئة
+  const otsu = Math.min(otsuThreshold(rms), peak * 0.25);
   // لا تتجاوز العتبة نصف الذروة حتى لا يُعتبر تسجيل هادئ كله صمتاً
-  return Math.min(Math.max(noiseFloor * noiseFloorFactor, peak * peakFactor), peak * 0.5);
+  return Math.min(Math.max(noiseFloor * noiseFloorFactor, peak * peakFactor, otsu), peak * 0.5);
 };
 
 /**
@@ -196,6 +236,52 @@ export const quietestFrameInGap = (rms: number[], fromSec: number, toSec: number
   return best * frameSec;
 };
 
+/** تقسيم متساوٍ لمقطع واحد (احتياط حين لا يتوفر منحنى الطاقة) */
+const splitSpanEvenly = (start: number, end: number, parts: number): SpeechSegment[] => {
+  const step = (end - start) / parts;
+  return Array.from({ length: parts }, (_, i) => ({ start: start + i * step, end: start + (i + 1) * step }));
+};
+
+/**
+ * يقسم مقطعاً متصلاً إلى `parts` أجزاء، وكل حدّ عند أخفض طاقة داخله
+ * بشرط تباعد يمنع تكدّس الحدود — فتقع الفواصل على الوقفات لا وسط الكلمات.
+ */
+const splitSpanByQuiet = (
+  rms: number[],
+  start: number,
+  end: number,
+  parts: number,
+  frameSec: number,
+): SpeechSegment[] => {
+  if (parts <= 1) return [{ start, end }];
+  const from = Math.max(0, Math.round(start / frameSec));
+  const to = Math.min(rms.length, Math.round(end / frameSec));
+  if (to - from < parts * 2) return splitSpanEvenly(start, end, parts);
+
+  const dur = end - start;
+  const margin = Math.max(1, Math.round(Math.min(0.3, dur / (parts * 4)) / frameSec));
+  const minSpacing = Math.max(margin, Math.round((dur / parts) * 0.45 / frameSec));
+
+  const candidates: Array<{ f: number; v: number }> = [];
+  for (let f = from + margin; f <= to - margin; f++) candidates.push({ f, v: rms[f] });
+  candidates.sort((a, b) => a.v - b.v);
+
+  const cuts: number[] = [];
+  for (const c of candidates) {
+    if (cuts.length >= parts - 1) break;
+    if (cuts.some((x) => Math.abs(x - c.f) < minSpacing)) continue;
+    cuts.push(c.f);
+  }
+  if (cuts.length < parts - 1) return splitSpanEvenly(start, end, parts);
+
+  cuts.sort((a, b) => a - b);
+  const points = [from, ...cuts, to];
+  return Array.from({ length: parts }, (_, i) => ({
+    start: Math.max(start, points[i] * frameSec),
+    end: Math.min(end, points[i + 1] * frameSec),
+  }));
+};
+
 /**
  * يجعل عدد المقاطع مساوياً لعدد الآيات.
  * - عدد مساوٍ: تُستخدم المقاطع كما هي (أدق حالة).
@@ -250,6 +336,30 @@ export const alignSegmentsToCount = (
     return Array.from({ length: count }, (_, i) => ({ start: points[i], end: points[i + 1] }));
   }
 
-  const step = span / count;
-  return Array.from({ length: count }, (_, i) => ({ start: from + i * step, end: from + (i + 1) * step }));
+  /*
+   * مقاطع أقل من الآيات: تلاوة متصلة بلا صمت كافٍ بين الآيات.
+   * التقسيم المتساوي يقطع الكلمات في منتصفها، لذا نوزّع الآيات على المقاطع
+   * ثم نضع كل حدّ عند **أخفض إطار طاقة** داخل المقطع (موضع نَفَس/وقف حقيقي).
+   */
+  const parts = segments.map(() => 1);
+  let need = count - segments.length;
+  while (need > 0) {
+    let best = 0;
+    let bestLen = -1;
+    for (let i = 0; i < segments.length; i++) {
+      const len = (segments[i].end - segments[i].start) / parts[i];
+      if (len > bestLen) {
+        bestLen = len;
+        best = i;
+      }
+    }
+    parts[best] += 1;
+    need--;
+  }
+
+  const out: SpeechSegment[] = [];
+  segments.forEach((s, i) => {
+    out.push(...(rms ? splitSpanByQuiet(rms, s.start, s.end, parts[i], frameSec) : splitSpanEvenly(s.start, s.end, parts[i])));
+  });
+  return out;
 };

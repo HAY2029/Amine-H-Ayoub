@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Baby, ChevronDown, ChevronUp, GraduationCap, Pause, Play, Repeat, Square, X, Info,
+  ArrowLeft, Baby, GraduationCap, Info, Pause, Play, Repeat, SlidersHorizontal, Square, X,
 } from "lucide-react";
 import { getPageAyahBoxes } from "@/data/ayahCoordinates";
 import { getSavedTimings, getSurahTimings, type SurahTimings } from "@/data/ayahTimings";
@@ -43,6 +43,8 @@ const fmt = (sec: number): string => {
 };
 
 const REPEAT_OPTIONS = [1, 2, 3, 5, 7, 10, 0];
+const RING_R = 16;
+const RING_C = 2 * Math.PI * RING_R;
 
 // تنبيه واحد فقط لكل جلسة عند غياب ملف صوت الطفل
 let kidsFallbackNotified = false;
@@ -112,6 +114,21 @@ export default function AyahRangePlayer({
   const [duration, setDuration] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  // شكل المشغّل: كبسولة على الهاتف، ولوحة عريضة على الحاسوب
+  const [isDock, setIsDock] = useState(
+    () => typeof window !== "undefined" && window.innerWidth >= 900
+  );
+
+  useEffect(() => {
+    const onResize = () => setIsDock(window.innerWidth >= 900);
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, []);
 
   repeatsRef.current = repeats;
   speedRef.current = speed;
@@ -235,7 +252,17 @@ export default function AyahRangePlayer({
     return items;
   }, [mode, speakerMode, surahNum, fromAyah, toAyah, fromSurah, toSurah, surahOptions, allBounds]);
 
-  queueRef.current = queue;
+  // ── قائمة التشغيل الفعلية: في وضع «معلم» لا يدخل أي مقطع للطفل إطلاقاً (والعكس) ──
+  // كان الشريط يعتمد على «queue» وحده، فأي تأخّر في تحديث الحالة بعد اختيار الصوت
+  // يُبقي مقاطع «معًا» في القائمة فيُسمع الطفل مع المعلم. هذا الفلتر يقطع الطريق على ذلك.
+  const activeQueue = useMemo<Seg[]>(() => {
+    if (speakerMode === "both") return queue;
+    const wanted: Speaker = speakerMode === "kids" ? "kids" : "teacher";
+    const only = queue.filter((s) => s.speaker === wanted);
+    return only.length > 0 ? only : [];
+  }, [queue, speakerMode]);
+
+  queueRef.current = activeQueue;
 
   const segRange = useCallback(
     (seg: Seg) => {
@@ -544,7 +571,7 @@ export default function AyahRangePlayer({
 
   if (!open) return null;
 
-  const seg = queue[Math.min(segIdx, Math.max(queue.length - 1, 0))];
+  const seg = activeQueue[Math.min(segIdx, Math.max(activeQueue.length - 1, 0))];
   const activeSpeaker: Speaker = seg?.speaker ?? (speakerMode === "kids" ? "kids" : "teacher");
   const range = seg ? segRange(seg) : null;
 
@@ -567,17 +594,95 @@ export default function AyahRangePlayer({
     return cur;
   })();
 
-  const noTimings = queue.length === 0;
+  const noTimings = activeQueue.length === 0;
   const selectCls =
-    "h-7 rounded-lg bg-black/50 border border-white/10 px-1.5 text-[11px] font-bold text-white outline-none focus:border-amber-400/60";
+    "h-8 rounded-full bg-secondary text-secondary-foreground border border-border/60 px-2 text-center text-[11px] font-extrabold outline-none focus:border-accent";
+  const pillSelectCls =
+    "h-9 w-[3.4rem] shrink-0 rounded-full bg-background text-foreground border border-accent/35 px-1 text-center text-[13px] font-extrabold tabular-nums outline-none transition-colors focus:border-accent";
+  // في وضع «سور» نعرض اسم السورة بدل رقمها (أوضح على الهاتف)
+  const pillSurahSelectCls =
+    "h-9 w-[4.9rem] shrink-0 rounded-full bg-background text-foreground border border-accent/35 px-1.5 text-center text-[12px] font-extrabold truncate outline-none transition-colors focus:border-accent";
   const accentBg = activeSpeaker === "kids" ? "bg-sky-400" : "bg-amber-400";
   const accentText = activeSpeaker === "kids" ? "text-sky-300" : "text-amber-300";
+  // حقول لوحة الحاسوب (أكبر قليلاً وأسهل في النقر)
+  const dockSelectCls =
+    "h-9 w-[4.2rem] shrink-0 rounded-xl bg-background text-foreground border border-accent/35 px-1.5 text-center text-[13px] font-extrabold tabular-nums outline-none transition-colors hover:border-accent focus:border-accent";
+  const dockSurahSelectCls =
+    "h-9 w-[6.6rem] shrink-0 rounded-xl bg-background text-foreground border border-accent/35 px-2 text-center text-[12px] font-extrabold truncate outline-none transition-colors hover:border-accent focus:border-accent";
+
+  /* زر التشغيل المشترك: حلقة تقدّم حيّة + نبض ناعم أثناء التشغيل */
+  const playButton = (wrapCls: string, innerCls: string, iconCls: string) => (
+    <button
+      onClick={toggle}
+      disabled={loading}
+      className={`relative ${wrapCls} shrink-0 rounded-full flex items-center justify-center transition-transform active:scale-90 disabled:opacity-60 ${
+        playing ? "arp-glow" : ""
+      }`}
+      aria-label={playing ? "إيقاف مؤقت" : "تشغيل المقطع"}
+      title={playing ? "إيقاف مؤقت" : "تشغيل"}
+    >
+      <svg className="absolute inset-0 -rotate-90" viewBox="0 0 36 36" aria-hidden>
+        <circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-border" />
+        <circle
+          cx="18"
+          cy="18"
+          r="16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          className={accentText}
+          strokeDasharray={RING_C}
+          strokeDashoffset={RING_C - (RING_C * progress) / 100}
+          style={{ transition: "stroke-dashoffset 0.15s linear" }}
+        />
+      </svg>
+      <span className={`${innerCls} rounded-full flex items-center justify-center ${accentBg} text-black shadow-sm`}>
+        {loading ? (
+          <span className="text-[9px] font-black">…</span>
+        ) : playing ? (
+          <Pause className={`${iconCls} fill-current`} />
+        ) : (
+          <Play className={`${iconCls} fill-current ms-0.5`} />
+        )}
+      </span>
+    </button>
+  );
+
+  const optionsButton = (sizeCls: string, iconCls: string) => (
+    <button
+      onClick={() => setExpanded((v) => !v)}
+      className={`${sizeCls} shrink-0 rounded-full flex items-center justify-center border transition-all active:scale-90 ${
+        expanded
+          ? "bg-accent text-accent-foreground border-accent"
+          : "bg-foreground/5 text-muted-foreground border-border/60 hover:text-foreground"
+      }`}
+      aria-label="خيارات التشغيل"
+      title="خيارات: سور، مرات، سرعة، صوت"
+    >
+      <SlidersHorizontal className={iconCls} />
+    </button>
+  );
+
+  const closeButton = (sizeCls: string, iconCls: string) => (
+    <button
+      onClick={() => {
+        stop();
+        onClose();
+      }}
+      className={`${sizeCls} shrink-0 rounded-full flex items-center justify-center bg-foreground/5 border border-border/60 text-muted-foreground transition-all active:scale-90 hover:text-foreground`}
+      aria-label="إغلاق المشغّل"
+      title="إغلاق"
+    >
+      <X className={iconCls} />
+    </button>
+  );
 
   const speakerBtn = (value: SpeakerMode, label: string, icon: JSX.Element, activeCls: string) => (
     <button
       onClick={() => setSpeakerMode(value)}
       className={`px-2 h-6 rounded-md text-[11px] font-extrabold flex items-center gap-1 transition-all ${
-        speakerMode === value ? activeCls : "text-stone-400 hover:text-white"
+        speakerMode === value ? activeCls : "text-muted-foreground hover:text-foreground"
       }`}
       title={
         value === "both"
@@ -593,8 +698,10 @@ export default function AyahRangePlayer({
   );
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[80] pointer-events-none" dir="rtl">
-      <audio
+    <div
+      className="fixed inset-x-0 z-[80] flex flex-col items-center px-3 pointer-events-none bottom-[calc(76px+env(safe-area-inset-bottom,0px))] min-[900px]:bottom-4"
+      dir="rtl"
+    >      <audio
         ref={audioRef}
         preload="auto"
         playsInline
@@ -602,241 +709,297 @@ export default function AyahRangePlayer({
         onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
       />
 
-      <div className="pointer-events-auto mx-auto max-w-5xl px-2 pb-[calc(0.35rem+env(safe-area-inset-bottom,0px))]">
-        <div className="rounded-2xl border border-white/12 bg-[#0f1618]/95 backdrop-blur-xl shadow-[0_-8px_30px_rgba(0,0,0,0.45)] px-2.5 py-1.5">
-          {/* الصف الأول: الاختيارات (يُخفى عند الطيّ) */}
-          {!collapsed && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <div className="flex items-center bg-black/50 p-0.5 rounded-lg border border-white/10">
-                <button
-                  onClick={() => setMode("ayah")}
-                  className={`px-2 h-6 rounded-md text-[11px] font-extrabold transition-all ${
-                    mode === "ayah" ? "bg-white text-black" : "text-stone-400 hover:text-white"
-                  }`}
-                >
-                  آيات
-                </button>
-                <button
-                  onClick={() => setMode("surah")}
-                  className={`px-2 h-6 rounded-md text-[11px] font-extrabold transition-all ${
-                    mode === "surah" ? "bg-white text-black" : "text-stone-400 hover:text-white"
-                  }`}
-                >
-                  سور
-                </button>
-              </div>
+      {/* لوحة الخيارات — تُفتح عند الحاجة فقط، والشريط يبقى «من ← إلى» */}
+      {expanded && (
+        <div className="pointer-events-auto mb-2 w-[min(94vw,360px)] rounded-3xl border border-accent/40 bg-card/97 backdrop-blur-2xl shadow-[0_18px_50px_rgba(0,0,0,0.35)] p-3 space-y-2.5 animate-fade-in text-foreground">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-black text-muted-foreground">الاختيارات</span>
+            <span className="font-mono text-[10px] text-muted-foreground truncate">
+              {liveAyah > 0 ? `آية ${liveAyah} • ` : ""}
+              {fmt(Math.max(0, pos - startT))} / {span > 0 ? fmt(span) : "--:--"}
+            </span>
+          </div>
 
-              {mode === "ayah" ? (
-                <>
-                  <select
-                    value={surahNum}
-                    onChange={(e) => setSurahNum(Number(e.target.value))}
-                    className={`${selectCls} max-w-[8.5rem]`}
-                    title="السورة"
-                  >
-                    {surahOptions.map((s) => (
-                      <option key={s.n} value={s.n}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-[10px] text-stone-400">من</span>
-                  <select
-                    value={fromAyah}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      if (Number.isFinite(v) && v > 0) setFromAyah(v);
-                    }}
-                    className={selectCls}
-                    title="من الآية"
-                  >
-                    {(ayahOptions.length ? ayahOptions : [1]).map((a) => (
-                      <option key={a} value={a}>
-                        {a}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-[10px] text-stone-400">إلى</span>
-                  <select
-                    value={toAyah}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      if (Number.isFinite(v) && v > 0) setToAyah(v);
-                    }}
-                    className={selectCls}
-                    title="إلى الآية"
-                  >
-                    {(ayahOptions.length ? ayahOptions : [1]).map((a) => (
-                      <option key={a} value={a}>
-                        {a}
-                      </option>
-                    ))}
-                  </select>
-                </>
-              ) : (
-                <>
-                  <span className="text-[10px] text-stone-400">من سورة</span>
-                  <select
-                    value={fromSurah}
-                    onChange={(e) => setFromSurah(Number(e.target.value))}
-                    className={`${selectCls} max-w-[8.5rem]`}
-                    title="من سورة"
-                  >
-                    {surahOptions.map((s) => (
-                      <option key={s.n} value={s.n}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-[10px] text-stone-400">إلى سورة</span>
-                  <select
-                    value={toSurah}
-                    onChange={(e) => setToSurah(Number(e.target.value))}
-                    className={`${selectCls} max-w-[8.5rem]`}
-                    title="إلى سورة"
-                  >
-                    {surahOptions.map((s) => (
-                      <option key={s.n} value={s.n}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </>
-              )}
+          <div className="flex items-center gap-1 rounded-full bg-secondary p-0.5">
+            <button
+              onClick={() => setMode("ayah")}
+              className={`flex-1 h-7 rounded-full text-[11px] font-extrabold transition-all ${
+                mode === "ayah" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+              }`}
+            >
+              آيات
+            </button>
+            <button
+              onClick={() => setMode("surah")}
+              className={`flex-1 h-7 rounded-full text-[11px] font-extrabold transition-all ${
+                mode === "surah" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+              }`}
+            >
+              سور
+            </button>
+          </div>
 
+          {mode === "surah" && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-muted-foreground">من سورة</span>
               <select
-                value={repeats}
-                onChange={(e) => setRepeats(Number(e.target.value))}
-                className={selectCls}
-                title="عدد المرات"
+                value={fromSurah}
+                onChange={(e) => setFromSurah(Number(e.target.value))}
+                className="h-8 flex-1 min-w-0 rounded-full bg-secondary text-secondary-foreground border border-border/60 px-2 text-[11px] font-bold outline-none focus:border-accent"
               >
-                {REPEAT_OPTIONS.map((r) => (
-                  <option key={r} value={r}>
-                    {r === 0 ? "♾️" : `×${r}`}
+                {surahOptions.map((s) => (
+                  <option key={s.n} value={s.n}>
+                    {s.name}
                   </option>
                 ))}
               </select>
-
+              <span className="text-[10px] font-bold text-muted-foreground">إلى</span>
               <select
-                value={speed}
-                onChange={(e) => setSpeed(Number(e.target.value))}
-                className={selectCls}
-                title="سرعة التشغيل"
+                value={toSurah}
+                onChange={(e) => setToSurah(Number(e.target.value))}
+                className="h-8 flex-1 min-w-0 rounded-full bg-secondary text-secondary-foreground border border-border/60 px-2 text-[11px] font-bold outline-none focus:border-accent"
               >
-                {SPEED_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}×
+                {surahOptions.map((s) => (
+                  <option key={s.n} value={s.n}>
+                    {s.name}
                   </option>
                 ))}
               </select>
-
-              {/* المتحدث: معلم / طفل / معًا */}
-              <div className="flex items-center bg-black/50 p-0.5 rounded-lg border border-white/10">
-                {speakerBtn("teacher", "معلم", <GraduationCap className="w-3 h-3" />, "bg-amber-400 text-black")}
-                {speakerBtn("kids", "طفل", <Baby className="w-3 h-3" />, "bg-sky-400 text-black")}
-                {speakerBtn(
-                  "both",
-                  "معًا",
-                  <Repeat className="w-3 h-3" />,
-                  "bg-gradient-to-r from-amber-400 to-sky-400 text-black"
-                )}
-              </div>
             </div>
           )}
 
-          {/* الصف الثاني: التشغيل والتقدّم */}
-          <div className={`flex items-center gap-2 ${collapsed ? "" : "mt-1.5"}`}>
-            <button
-              onClick={toggle}
-              disabled={loading}
-              className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all disabled:opacity-60 ${accentBg} text-black`}
-              aria-label={playing ? "إيقاف مؤقت" : "تشغيل"}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] font-bold text-muted-foreground">عدد المرات</span>
+            <select
+              value={repeats}
+              onChange={(e) => setRepeats(Number(e.target.value))}
+              className={selectCls}
+              title="عدد مرات التكرار"
             >
-              {loading ? (
-                <span className="text-[10px] font-bold">...</span>
-              ) : playing ? (
-                <Pause className="w-4 h-4 fill-current" />
-              ) : (
-                <Play className="w-4 h-4 fill-current ml-0.5" />
+              {REPEAT_OPTIONS.map((r) => (
+                <option key={r} value={r}>
+                  {r === 0 ? "∞" : `×${r}`}
+                </option>
+              ))}
+            </select>
+
+            <span className="text-[10px] font-bold text-muted-foreground">السرعة</span>
+            <select
+              value={speed}
+              onChange={(e) => setSpeed(Number(e.target.value))}
+              className={selectCls}
+              title="سرعة التشغيل"
+            >
+              {SPEED_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}×
+                </option>
+              ))}
+            </select>
+
+            <div className="flex items-center rounded-full bg-secondary p-0.5 ms-auto">
+              {speakerBtn("teacher", "معلم", <GraduationCap className="w-3 h-3" />, "bg-accent text-accent-foreground")}
+              {speakerBtn("kids", "طفل", <Baby className="w-3 h-3" />, "bg-sky-400 text-black")}
+              {speakerBtn(
+                "both",
+                "معًا",
+                <Repeat className="w-3 h-3" />,
+                "bg-gradient-to-r from-amber-400 to-sky-400 text-black"
               )}
-            </button>
-
-            {!collapsed && (
-              <button
-                onClick={stop}
-                className="w-7 h-7 shrink-0 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-stone-300"
-                aria-label="إيقاف"
-                title="إيقاف وإعادة البداية"
-              >
-                <Square className="w-3 h-3 fill-current" />
-              </button>
-            )}
-
-            <div className="flex-1 min-w-0">
-              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${accentBg}`}
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <div className="flex items-center justify-between mt-0.5 text-[10px] font-mono text-stone-400">
-                <span className="truncate flex items-center gap-1">
-                  <span className={accentText}>{activeSpeaker === "kids" ? "👶" : "🎓"}</span>
-                  {surahLabel(seg?.surah ?? surahNum)} • آية {liveAyah}
-                  <span className="text-stone-600">|</span>
-                  {mode === "surah"
-                    ? `${Math.floor(segIdx / (speakerMode === "both" ? 2 : 1)) + 1} سورة`
-                    : `آية ${fromAyah}–${toAyah}`}
-                </span>
-                <span className="shrink-0 flex items-center gap-1.5">
-                  {loopIdx}/{repeats === 0 ? "∞" : repeats}
-                  <span className="text-stone-600">|</span>
-                  {fmt(Math.max(0, pos - startT))} / {span > 0 ? fmt(span) : "--:--"}
-                  <span className="text-stone-600">|</span>
-                  {speed}×
-                </span>
-              </div>
             </div>
+          </div>
 
-            {noTimings ? (
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={stop}
+              className="flex-1 h-8 rounded-full bg-secondary text-secondary-foreground text-[11px] font-extrabold flex items-center justify-center gap-1 active:scale-95 transition-all"
+            >
+              <Square className="w-3 h-3 fill-current" />
+              إيقاف وإعادة
+            </button>
+            {noTimings && (
               <button
                 onClick={() => setShowHint((v) => !v)}
-                className="shrink-0 w-7 h-7 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-center justify-center"
-                title="لا توجد توقيتات"
+                className="w-8 h-8 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-500 flex items-center justify-center"
                 aria-label="معلومات"
               >
                 <Info className="w-3.5 h-3.5" />
               </button>
-            ) : null}
-
-            <button
-              onClick={() => setCollapsed((v) => !v)}
-              className="shrink-0 w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-stone-300"
-              title={collapsed ? "توسيع الشريط" : "طيّ الشريط"}
-              aria-label={collapsed ? "توسيع" : "طيّ"}
-            >
-              {collapsed ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
-
-            <button
-              onClick={() => {
-                stop();
-                onClose();
-              }}
-              className="shrink-0 w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-stone-300"
-              aria-label="إغلاق الشريط"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
+            )}
           </div>
 
           {showHint && noTimings && (
-            <p className="mt-1 text-[10px] leading-relaxed rounded-lg bg-rose-500/10 border border-rose-500/25 text-rose-300 px-2 py-1">
+            <p className="text-[10px] leading-relaxed rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-500 px-2.5 py-1.5">
               لا توجد توقيتات محفوظة لهذا الاختيار. وثّق الآيات من «استوديو ربط التظليل بالصوت» ثم أعد المحاولة.
             </p>
           )}
         </div>
-      </div>
+      )}
+
+      {isDock ? (
+        /* ── شكل الحاسوب: لوحة أفقية عريضة مع خط تقدّم رقيق ── */
+        <div className="arp-dock-enter pointer-events-auto relative flex w-full max-w-[min(92vw,760px)] items-center gap-2 rounded-2xl border border-accent/45 bg-gradient-to-b from-card/98 to-card/92 px-3 py-2.5 ring-1 ring-primary/10 shadow-[0_22px_60px_-20px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
+          {/* خط تقدّم رقيق أسفل البطاقة (لا شريط عريض) */}
+          <span aria-hidden className="absolute inset-x-3 bottom-1 h-[3px] overflow-hidden rounded-full bg-foreground/10">
+            <span
+              className={`block h-full rounded-full ${accentBg}`}
+              style={{ width: `${progress}%`, transition: "width 0.2s linear" }}
+            />
+          </span>
+
+          {/* آيات / سور */}
+          <div className="flex shrink-0 items-center rounded-full bg-secondary p-0.5">
+            <button
+              onClick={() => setMode("ayah")}
+              className={`h-7 rounded-full px-3 text-[11px] font-extrabold transition-all active:scale-95 ${
+                mode === "ayah" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              آيات
+            </button>
+            <button
+              onClick={() => setMode("surah")}
+              className={`h-7 rounded-full px-3 text-[11px] font-extrabold transition-all active:scale-95 ${
+                mode === "surah" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              سور
+            </button>
+          </div>
+
+          <span className="text-[11px] font-black text-accent">من</span>
+          <select
+            value={mode === "surah" ? fromSurah : fromAyah}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              if (!Number.isFinite(v) || v <= 0) return;
+              if (mode === "surah") setFromSurah(v);
+              else setFromAyah(v);
+            }}
+            className={mode === "surah" ? dockSurahSelectCls : dockSelectCls}
+            title={mode === "surah" ? "من سورة" : "من الآية"}
+          >
+            {mode === "surah"
+              ? surahOptions.map((s) => (
+                  <option key={s.n} value={s.n}>
+                    {s.name}
+                  </option>
+                ))
+              : (ayahOptions.length ? ayahOptions : [1]).map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+          </select>
+
+          <span className="text-accent" aria-hidden>
+            <ArrowLeft className="w-3.5 h-3.5" />
+          </span>
+
+          <span className="text-[11px] font-black text-accent">إلى</span>
+          <select
+            value={mode === "surah" ? toSurah : toAyah}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              if (!Number.isFinite(v) || v <= 0) return;
+              if (mode === "surah") setToSurah(v);
+              else setToAyah(v);
+            }}
+            className={mode === "surah" ? dockSurahSelectCls : dockSelectCls}
+            title={mode === "surah" ? "إلى سورة" : "إلى الآية"}
+          >
+            {mode === "surah"
+              ? surahOptions.map((s) => (
+                  <option key={s.n} value={s.n}>
+                    {s.name}
+                  </option>
+                ))
+              : (ayahOptions.length ? ayahOptions : [1]).map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+          </select>
+
+          {/* شارة صغيرة: من يقرأ الآن + التكرار */}
+          <span className="ms-1 hidden shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-border/50 bg-foreground/5 px-2.5 py-1 text-[10px] font-bold text-muted-foreground sm:flex">
+            {activeSpeaker === "kids" ? (
+              <Baby className="w-3 h-3 text-sky-400" />
+            ) : (
+              <GraduationCap className="w-3 h-3 text-amber-400" />
+            )}
+            {mode === "surah" ? surahLabel(seg?.surah ?? surahNum) : `آية ${liveAyah}`}
+            <span className="text-[9px] opacity-70">{repeats > 0 ? `×${repeats}` : "∞"}</span>
+          </span>
+
+          <div className="ms-auto flex shrink-0 items-center gap-1.5">
+            {playButton("w-11 h-11", "w-9 h-9", "w-4 h-4")}
+            {optionsButton("w-9 h-9", "w-4 h-4")}
+            {closeButton("w-9 h-9", "w-4 h-4")}
+          </div>
+        </div>
+      ) : (
+        /* ── شكل الهاتف: كبسولة مدمجة فوق شريط التنقّل ── */
+        <div className="arp-enter pointer-events-auto flex max-w-[calc(100vw-1.25rem)] items-center gap-1.5 rounded-full border border-accent/50 bg-gradient-to-b from-card to-card/95 px-2.5 py-2 ring-1 ring-primary/10 shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
+          <span className="text-[10px] font-black text-accent">من</span>
+          <select
+            value={mode === "surah" ? fromSurah : fromAyah}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              if (!Number.isFinite(v) || v <= 0) return;
+              if (mode === "surah") setFromSurah(v);
+              else setFromAyah(v);
+            }}
+            className={mode === "surah" ? pillSurahSelectCls : pillSelectCls}
+            title={mode === "surah" ? "من سورة" : "من الآية"}
+          >
+            {mode === "surah"
+              ? surahOptions.map((s) => (
+                  <option key={s.n} value={s.n}>
+                    {s.name}
+                  </option>
+                ))
+              : (ayahOptions.length ? ayahOptions : [1]).map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+          </select>
+
+          <span className="text-accent" aria-hidden>
+            <ArrowLeft className="w-3.5 h-3.5" />
+          </span>
+
+          <span className="text-[10px] font-black text-accent">إلى</span>
+          <select
+            value={mode === "surah" ? toSurah : toAyah}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              if (!Number.isFinite(v) || v <= 0) return;
+              if (mode === "surah") setToSurah(v);
+              else setToAyah(v);
+            }}
+            className={mode === "surah" ? pillSurahSelectCls : pillSelectCls}
+            title={mode === "surah" ? "إلى سورة" : "إلى الآية"}
+          >
+            {mode === "surah"
+              ? surahOptions.map((s) => (
+                  <option key={s.n} value={s.n}>
+                    {s.name}
+                  </option>
+                ))
+              : (ayahOptions.length ? ayahOptions : [1]).map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+          </select>
+
+          {playButton("w-10 h-10 ms-0.5", "w-8 h-8", "w-3.5 h-3.5")}
+          {optionsButton("w-8 h-8", "w-3.5 h-3.5")}
+          {closeButton("w-8 h-8", "w-3.5 h-3.5")}
+        </div>
+      )}
     </div>
   );
 }

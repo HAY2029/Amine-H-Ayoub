@@ -2,10 +2,14 @@ import type { PostHog } from "posthog-js";
 import { getAppMode, getProfile, getProfiles } from "@/data/kidsProfile";
 
 /**
- * تحليلات المنتج عبر PostHog.
+ * تحليلات المنتج و«تسجيل الجلسات» (Session Replay) عبر PostHog.
  * - المفتاح العام يُقرأ من البيئة (VITE_POSTHOG_KEY) ولا يُكتب أبداً داخل الكود.
- * - لا يُحمَّل الـ SDK قبل موافقة المستخدم، والموافقة قابلة للإيقاف من الإعدادات.
+ * - لا يُحمَّل الـ SDK قبل موافقة المستخدم، والموافقة قابلة للإيقاف من الإعدادات،
+ *   ويبدأ/يتوقف تسجيل الجلسات معها.
  * - لا تُرسل بيانات شخصية: معرّف الملف ووضع الاستخدام فقط (بدون أسماء أو أعمار).
+ * - تُخفى كل حقول الإدخال في التسجيل، ويمكن إخفاء أي نص حسّاس بإضافة data-ph-mask إليه.
+ * - كل حدث يُسجَّل من هنا يحمل معرّف الجلسة نفسه، فتظهر الأحداث المحورية
+ *   (فتح التطبيق، اختيار الملف، بدء التلاوة، إكمال الجلسة) مرتبطة بتسجيلها.
  */
 
 const API_KEY = String(import.meta.env.VITE_POSTHOG_KEY ?? "").trim();
@@ -73,8 +77,16 @@ export function initAnalytics(): void {
         capture_pageview: true,
         capture_pageleave: true,
         autocapture: false,
-        // لا تسجيل جلسات (شاشات الأطفال قد تُظهر بيانات عائلية)
-        disable_session_recording: true,
+        // تسجيل الجلسات مفعّل لأن التهيئة لا تجري إلا بموافقة المستخدم
+        disable_session_recording: !hasAnalyticsConsent(),
+        session_recording: {
+          // إخفاء قيم كل حقول الإدخال (الأسماء، البريد، كلمة المرور…) بلا استثناء
+          maskAllInputs: true,
+          // إخفاء أي نص موسوم بـ data-ph-mask (وأصناف ph-mask الافتراضية)
+          maskTextSelector: "[data-ph-mask]",
+          // حجم تسجيل معقول: بلا حركة مؤشر مكثّفة
+          sampling: { mousemove: 100 },
+        },
         // لا نُنشئ ملفات شخصية إلا بعد تعريف المستخدم صراحةً
         person_profiles: "identified_only",
         persistence: "localStorage",
@@ -140,9 +152,24 @@ export function setAnalyticsConsent(granted: boolean): void {
   }
   if (granted) {
     initAnalytics();
-    if (client) client.opt_in_capturing();
+    if (client) {
+      client.opt_in_capturing();
+      // تسجيل الجلسات يعود مع الموافقة (قد يكون أُوقف سابقاً)
+      try {
+        client.startSessionRecording();
+      } catch {
+        /* ignore */
+      }
+    }
     return;
   }
-  if (client) client.opt_out_capturing();
+  if (client) {
+    try {
+      client.stopSessionRecording();
+    } catch {
+      /* ignore */
+    }
+    client.opt_out_capturing();
+  }
   pending.length = 0;
 }

@@ -962,7 +962,7 @@ export default function SettingsPage() {
               </span>
               <div>
                 <span className="block font-bold">تحليلات الاستخدام (PostHog)</span>
-                <span className="block text-[11px] text-muted-foreground">أحداث مجهولة الهوية لتحسين الرحلة — بدون أسماء ولا تسجيل جلسات</span>
+                <span className="block text-[11px] text-muted-foreground">أحداث مجهولة الهوية وتسجيلات جلسات بإخفاء كامل للحقول — لتطوير الرحلة</span>
               </div>
             </div>
             <button
