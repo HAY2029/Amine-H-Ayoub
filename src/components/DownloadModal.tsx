@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, Smartphone, Monitor, Apple, Download, CheckCircle2, Sparkles, ExternalLink } from "lucide-react";
 import { openExternalUrl } from "../utils/tauriUtils";
+import ModalLayer from "./ui/ModalLayer";
 
 interface DownloadModalProps {
   isOpen: boolean;
@@ -94,8 +95,9 @@ export default function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" dir="rtl">
-      <div className="relative w-full max-w-2xl bg-card border-2 border-gold/40 rounded-3xl p-6 md:p-8 shadow-[0_0_50px_rgba(212,175,55,0.25)] overflow-hidden max-h-[90vh] flex flex-col">
+    <ModalLayer>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain p-4 sm:items-center bg-black/80 backdrop-blur-md animate-fade-in" dir="rtl">
+      <div className="relative my-auto w-full max-w-2xl bg-card border-2 border-gold/40 rounded-3xl p-6 md:p-8 pb-safe shadow-[0_0_50px_rgba(212,175,55,0.25)] overflow-hidden max-h-[calc(100dvh-2rem)] flex flex-col">
         {/* Background glow */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-accent/15 rounded-full blur-3xl pointer-events-none" />
@@ -186,5 +188,6 @@ export default function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
         </div>
       </div>
     </div>
+    </ModalLayer>
   );
 }

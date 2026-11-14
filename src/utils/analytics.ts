@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase";
 import { captureEvent } from "@/utils/posthog";
 
 export async function logAppOpen() {
@@ -21,6 +20,9 @@ export async function logAppOpen() {
 
     // أول حدث في مسار الاستخدام: فتح التطبيق (مع تحليلات Supabase الحالية)
     captureEvent("app_open", { is_new_user: isNewUser });
+
+    // حزمة Supabase تُحمَّل هنا فقط (بعد الإقلاع) فلا تُثقل التحميل الأول
+    const { supabase } = await import("@/lib/supabase");
 
     const { data: row, error } = await supabase
       .from("app_analytics")

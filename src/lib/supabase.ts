@@ -1,12 +1,10 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { getDeviceId } from "@/utils/deviceInfo";
+import { supabaseUrl, supabaseAnonKey, hasValidSupabaseKey } from "./supabaseEnv";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
-
-/** True when a real Supabase anon key is configured. */
-export const hasValidSupabaseKey = (): boolean =>
-  !!supabaseUrl && !!supabaseAnonKey && supabaseAnonKey !== "placeholder";
+// يُعاد تصديره هنا للتوافق مع من كان يستورده من هذا الملف؛
+// أما من يحتاج الفحص فقط فيستورد من supabaseEnv كي لا يجذب حزمة Supabase كاملة.
+export { hasValidSupabaseKey, supabaseUrl, supabaseAnonKey };
 
 /**
  * No-op query builder: every chained method returns itself, and

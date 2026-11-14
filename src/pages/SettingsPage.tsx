@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Moon, Sun, Baby, ChevronLeft, X, BarChart3, Wrench, Pencil, User, GraduationCap, BookOpen, Lock, Settings as SettingsIcon, MessageSquare, Delete, Headphones, Power, Check, Bell, Clock, Star, Gift, Palette, Eye, EyeOff, RotateCcw, Sparkles, Mic } from "lucide-react";
+import { ArrowRight, Moon, Sun, Baby, ChevronLeft, X, BarChart3, Wrench, Pencil, User, GraduationCap, BookOpen, Lock, Settings as SettingsIcon, MessageSquare, Delete, Headphones, Power, Check, Clock, Star, Gift, Palette, Eye, EyeOff, RotateCcw, Sparkles, Mic } from "lucide-react";
 import { isMushafDevEnabled, setMushafDev, closeTauriApp } from "../utils/tauriUtils";
 import { getAppMode, setAppMode, getProfiles, addProfile, kidsHidden, setKidsHidden, setPureMode, isPureMode, getCoins, addCoins, type AppMode } from "../data/kidsProfile";
 import { redeemOneTimeCode, syncAdminDataFromServer } from "../data/titles";
-import { getReminderSettings, saveReminderSettings, showLocalNotification, requestNotificationPermission, type ReminderSettings } from "../utils/notifications";
 import {
   getLocalShadingSettings,
   saveShadingToServer,
@@ -18,14 +17,13 @@ import {
 
 
 import PinModal from "../components/PinModal";
-import ParentalGateModal from "../components/ParentalGateModal";
 import AdminGamesModal from "../components/AdminGamesModal";
 import SupportModal from "../components/SupportModal";
 import WhatsAppIcon from "../components/WhatsAppIcon";
 import { openWhatsAppSupport, SUPPORT_WHATSAPP_DISPLAY } from "../services/resendService";
 import { toast } from "../hooks/use-toast";
 
-import { hasKidsPin, setKidsPin, removeKidsPin, setKidsLocked, isKidsMode } from "../data/kidsLock";
+import { hasKidsPin, setKidsPin, removeKidsPin, setKidsLocked, isKidsMode, lockParentSession } from "../data/kidsLock";
 import AppFooter from "../components/AppFooter";
 import AppNav from "../components/AppNav";
 import { isBackgroundAudioEnabled, setBackgroundAudioEnabled } from "../utils/backgroundAudio";
@@ -62,8 +60,6 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState<"dark" | "light">(getTheme);
   const [showIntroPreview, setShowIntroPreview] = useState(false);
   const [appMode, setMode] = useState<AppMode>(getAppMode);
-  const [showPin, setShowPin] = useState(false);
-  const [showGate, setShowGate] = useState(false);
 
   useEffect(() => {
     const handleThemeChange = (e: Event) => {
@@ -102,11 +98,6 @@ export default function SettingsPage() {
   const [coins, setCoins] = useState(getCoins);
   const [rewardCode, setRewardCode] = useState("");
   const [rewardCodeMessage, setRewardCodeMessage] = useState("");
-  const [reminders, setReminders] = useState<ReminderSettings>(getReminderSettings);
-  const updateReminders = (patch: Partial<ReminderSettings>) => {
-    const next = saveReminderSettings(patch);
-    setReminders(next);
-  };
   const changePin = () => setPinFlow(hasKidsPin() ? "verifyOld" : "setNew");
   const removePin = () => { removeKidsPin(); setHasPin(false); toast({ title: "أُزيلت كلمة المرور" }); };
   const redeemRewardCode = async () => {
@@ -183,22 +174,9 @@ export default function SettingsPage() {
     window.addEventListener("mushaf:appmode", handleAppMode);
     return () => window.removeEventListener("mushaf:appmode", handleAppMode);
   }, []);
-  // حماية: إذا كان التطبيق في وضع الأطفال نطلب التحقق (رمز أو تحدي حسابي) قبل عرض الإعدادات.
-  useEffect(() => {
-    if (!isKidsMode()) return;
-    // إذا تم التحقق للتوّ من رمز وليّ الأمر في صفحة أخرى (السماع/المصحف) لا نكرّر السؤال.
-    try {
-      if (sessionStorage.getItem("mushaf:settingsUnlocked") === "1") {
-        sessionStorage.removeItem("mushaf:settingsUnlocked");
-        return;
-      }
-    } catch { /* ignore */ }
-    if (!hasKidsPin()) {
-      setShowGate(true);
-      return;
-    }
-    setShowPin(true);
-  }, [navigate]);
+  // ملاحظة: التحقق من رمز وليّ الأمر صار في حراسة المسارات (App.tsx):
+  // في وضع الأطفال لا تُركّب هذه الصفحة إطلاقاً قبل إدخال الرمز، فلا تظهر محتوياتها
+  // ولا يمكن الوصول إليها برابط مباشر أو بإعادة توجيه من صفحة أخرى.
 
 
 
@@ -227,6 +205,22 @@ export default function SettingsPage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-accent/10 to-transparent" aria-hidden="true" />
 
       <div className="settings-page-content page-with-bottom-nav relative mx-auto grid max-w-5xl grid-cols-1 gap-3 px-3 py-3 sm:gap-5 sm:px-6 sm:py-6 lg:grid-cols-2 lg:gap-6">
+        {isKidsMode() && (
+          <div className="flex items-center justify-between gap-2 rounded-2xl border border-accent/30 bg-accent/10 px-3 py-2 text-[11px] font-bold text-foreground lg:col-span-2">
+            <span className="flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5 text-accent" />
+              أنت في مساحة الوالدين — وضع الأطفال ما زال مقفلاً
+            </span>
+            <button
+              type="button"
+              onClick={() => { lockParentSession(); navigate("/games"); }}
+              className="shrink-0 rounded-full bg-accent px-3 py-1 text-[11px] font-extrabold text-accent-foreground active:scale-95"
+            >
+              رجوع لركن الأطفال
+            </button>
+          </div>
+        )}
+
         <header className="flex items-center justify-between lg:col-span-2">
           <button type="button" onClick={() => navigate(-1)} className="group flex h-10 items-center gap-1 rounded-full border border-border/70 bg-card/80 px-4 text-sm font-bold text-secondary-foreground shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-soft active:scale-95">
             <ArrowRight className="h-4 w-4" /> رجوع
@@ -832,127 +826,6 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        {/* ===== الإشعارات والتذكيرات الذكية ===== */}
-        <Section label="الإشعارات والتذكيرات الذكية">
-          <div className="flex items-center justify-between p-3">
-            <div className="flex items-center gap-3">
-              <span className="w-10 h-10 rounded-xl bg-secondary text-accent flex items-center justify-center">
-                <Bell className="w-5 h-5" />
-              </span>
-              <div>
-                <span className="block font-bold">نظام التذكيرات اليومية</span>
-                <span className="block text-[11px] text-muted-foreground">تنبيهات الورد القرآني، سنن الجمعة، وأذكار اليوم</span>
-              </div>
-            </div>
-            <button
-              onClick={async () => {
-                const next = !reminders.enabled;
-                if (next) {
-                  await requestNotificationPermission();
-                }
-                updateReminders({ enabled: next });
-                toast({ title: next ? "تم تفعيل التذكيرات الذكية 🔔" : "تم إيقاف التذكيرات مؤقتاً" });
-              }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all active:scale-95 ${
-                reminders.enabled ? "bg-accent text-accent-foreground shadow-soft" : "bg-secondary text-muted-foreground"
-              }`}
-            >
-              {reminders.enabled ? "مفعّل ✓" : "معطّل ✗"}
-            </button>
-          </div>
-
-          {reminders.enabled && (
-            <div className="p-3 space-y-3 bg-secondary/20">
-              {/* وقت تذكير الورد القرآني */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-card border border-border">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-accent" />
-                  <div>
-                    <span className="text-xs font-bold block">موعد تذكير القرآن اليومي</span>
-                    <span className="text-[10px] text-muted-foreground">تنبيه تشجيعي يومي لتلاوة كتاب الله</span>
-                  </div>
-                </div>
-                <input
-                  type="time"
-                  value={reminders.dailyLessonTime}
-                  onChange={(e) => updateReminders({ dailyLessonTime: e.target.value })}
-                  className="rounded-lg bg-secondary border border-border px-2.5 py-1 text-xs font-bold text-foreground focus:border-accent outline-none"
-                />
-              </div>
-
-              {/* أزرار السنن والأذكار والتنبيهات */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => updateReminders({ fridayKahfEnabled: !reminders.fridayKahfEnabled })}
-                  className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all ${
-                    reminders.fridayKahfEnabled ? "bg-accent/15 border-accent text-accent" : "bg-secondary/40 border-border text-muted-foreground"
-                  }`}
-                >
-                  <span className="text-right">⛰️ سورة الكهف (الجمعة)</span>
-                  <span className="text-[10px]">{reminders.fridayKahfEnabled ? "✓" : "✗"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => updateReminders({ soundEnabled: !reminders.soundEnabled })}
-                  className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all ${
-                    reminders.soundEnabled ? "bg-accent/15 border-accent text-accent" : "bg-secondary/40 border-border text-muted-foreground"
-                  }`}
-                >
-                  <span className="text-right">🔊 رنين التنبيه الهادئ</span>
-                  <span className="text-[10px]">{reminders.soundEnabled ? "✓" : "✗"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => updateReminders({ morningAthkarEnabled: !reminders.morningAthkarEnabled })}
-                  className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all ${
-                    reminders.morningAthkarEnabled ? "bg-accent/15 border-accent text-accent" : "bg-secondary/40 border-border text-muted-foreground"
-                  }`}
-                >
-                  <span className="text-right">☀️ أذكار الصباح</span>
-                  <span className="text-[10px]">{reminders.morningAthkarEnabled ? "✓" : "✗"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => updateReminders({ eveningAthkarEnabled: !reminders.eveningAthkarEnabled })}
-                  className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all ${
-                    reminders.eveningAthkarEnabled ? "bg-accent/15 border-accent text-accent" : "bg-secondary/40 border-border text-muted-foreground"
-                  }`}
-                >
-                  <span className="text-right">🌙 أذكار المساء</span>
-                  <span className="text-[10px]">{reminders.eveningAthkarEnabled ? "✓" : "✗"}</span>
-                </button>
-              </div>
-
-              {/* زر تجربة الإشعار الفوري */}
-              <button
-                type="button"
-                onClick={async () => {
-                  const granted = await requestNotificationPermission();
-                  await showLocalNotification(
-                    "تذكير القرآن الكريم 🌟",
-                    "نظام التذكيرات الذكية يعمل بامتياز! ستصلك تنبيهات الورد والأذكار في مواعيدها."
-                  );
-                  if (!granted) {
-                    toast({
-                      title: "تنبيه الصلاحيات ⚠️",
-                      description: "يرجى التأكد من السماح بالإشعارات في إعدادات جهازك لاستلام تنبيهات النظام الخارجية.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                className="w-full mt-2 p-2.5 rounded-xl bg-accent/20 hover:bg-accent/30 text-accent font-black text-xs flex items-center justify-center gap-2 border border-accent/30 active:scale-95 transition-all shadow-sm"
-              >
-                <Bell className="w-4 h-4" />
-                <span>تجربة إرسال إشعار تذكير الآن 🔔</span>
-              </button>
-            </div>
-          )}
-        </Section>
-
         {/* ===== التطبيق ===== */}
         <Section label="التطبيق">
           <div className="flex items-center justify-between p-3">
@@ -1013,28 +886,6 @@ export default function SettingsPage() {
 
         <p className="pt-1 text-center text-[11px] leading-relaxed text-muted-foreground lg:col-span-2">العمل الكامل دون إنترنت قيد التوسعة تدريجياً.</p>
       </div>
-
-      {showGate && (
-        <ParentalGateModal
-          title="منطقة الوالدين — الدخول إلى الإعدادات"
-          onSuccess={() => setShowGate(false)}
-          onCancel={() => { setShowGate(false); navigate("/audio"); }}
-        />
-      )}
-
-      {showPin && (
-        <PinModal
-          mode="verify"
-          title="رمز وليّ الأمر"
-          onSuccess={() => {
-            setShowPin(false);
-          }}
-          onCancel={() => {
-            setShowPin(false);
-            navigate("/audio");
-          }}
-        />
-      )}
 
       {pinFlow === "verifyOld" && (
         <PinModal mode="verify" title="أدخل كلمة المرور الحالية" onSuccess={() => setPinFlow("setNew")} onCancel={() => setPinFlow(null)} />

@@ -120,6 +120,44 @@ export const isKidsMode = (): boolean => {
   }
 };
 
+// ── جلسة وليّ الأمر داخل وضع الأطفال ──
+// بعد إدخال الرمز تُفتح صفحات الوالدين (الإعدادات، لوحة وليّ الأمر، أدوات المعلّم)
+// لمدة محدودة ثم تُقفل تلقائياً، بدل أن تكون هذه الصفحات متاحة للأطفال من الأساس.
+const PARENT_SESSION_KEY = "mushaf:parentSessionUntil";
+const PARENT_SESSION_MINUTES = 10;
+
+/** فتح جلسة وليّ الأمر (افتراضياً ١٠ دقائق) بعد نجاح التحقق من الرمز */
+export const unlockParentSession = (minutes: number = PARENT_SESSION_MINUTES): void => {
+  try {
+    sessionStorage.setItem(PARENT_SESSION_KEY, String(Date.now() + Math.max(1, minutes) * 60_000));
+  } catch {
+    /* ignore */
+  }
+};
+
+/** هل جلسة وليّ الأمر ما زالت سارية؟ */
+export const isParentSessionUnlocked = (): boolean => {
+  try {
+    const until = Number(sessionStorage.getItem(PARENT_SESSION_KEY) || 0);
+    if (!until || Date.now() >= until) {
+      if (until) sessionStorage.removeItem(PARENT_SESSION_KEY);
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/** إغلاق جلسة وليّ الأمر فوراً (عند الرجوع لركن الأطفال) */
+export const lockParentSession = (): void => {
+  try {
+    sessionStorage.removeItem(PARENT_SESSION_KEY);
+  } catch {
+    /* ignore */
+  }
+};
+
 /**
  * محاولة تفعيل أو تعطيل وضع الأطفال.
  * يمنع التفعيل تماماً إذا لم يكن هناك رمز PIN مخصص.
@@ -135,6 +173,10 @@ export const setKidsLocked = (on: boolean): boolean => {
   } catch {
     /* ignore */
   }
+  // تفعيل الوضع: مهلة قصيرة جداً تكفي وليّ الأمر لتسليم الجهاز ثم تُقفل صفحات الوالدين.
+  // تعطيل الوضع (رجوع وليّ الأمر): تُغلق الجلسة لأن الوضع الشامل لا يحتاجها.
+  if (on) unlockParentSession(1);
+  else lockParentSession();
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event("mushaf:kidsmode"));
   }

@@ -10,13 +10,20 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      position="top-center"
+      dir="rtl"
+      closeButton
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-          cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+            "group toast group-[.toaster]:!rounded-2xl group-[.toaster]:!border group-[.toaster]:!border-border/80 group-[.toaster]:!bg-card/95 group-[.toaster]:!text-foreground group-[.toaster]:!shadow-2xl group-[.toaster]:backdrop-blur-xl group-[.toaster]:!font-[inherit]",
+          title: "group-[.toast]:!text-[13px] group-[.toast]:!font-extrabold",
+          description: "group-[.toast]:!text-[11.5px] group-[.toast]:!text-muted-foreground",
+          actionButton: "group-[.toast]:!bg-accent group-[.toast]:!text-accent-foreground",
+          cancelButton: "group-[.toast]:!bg-muted group-[.toast]:!text-muted-foreground",
+          error: "group-[.toast]:!border-rose-500/45",
+          success: "group-[.toast]:!border-emerald-500/35",
+          warning: "group-[.toast]:!border-amber-500/40",
         },
       }}
       {...props}

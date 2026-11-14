@@ -1,5 +1,20 @@
 import { supabase, hasValidSupabaseKey } from "../lib/supabase";
 
+/**
+ * جزء من الآية الطويلة: الآية الواحدة قد يقرأها المعلم على أجزاء (لأنها طويلة)،
+ * ويقرأ الطفل كل جزء بعد معلّمه. كل جزء يحمل مدى تلاوة المعلم ومدى تلاوة الطفل.
+ */
+export interface AyahPart {
+  id: string;
+  /** بداية ونهاية تلاوة المعلم لهذا الجزء (ثوانٍ من بداية الملف) */
+  tStart: number;
+  tEnd: number;
+  /** بداية ونهاية تلاوة الطفل لنفس الجزء (اختياري) */
+  kStart?: number;
+  kEnd?: number;
+  label?: string;
+}
+
 export interface AyahBox {
   surah: number;
   ayah: number;
@@ -21,6 +36,11 @@ export interface AyahBox {
   speaker?: "teacher" | "kids";
   /** Optional: Custom name/label for the box (e.g. "البسملة") */
   label?: string;
+  /**
+   * أجزاء الآية الطويلة (اختياري). عند وجودها يتلو المعلم الجزء الأول ثم الطفل
+   * نفس الجزء، ثم المعلم الجزء الثاني ثم الطفل… بدل قراءة الآية دفعة واحدة.
+   */
+  parts?: AyahPart[];
   /** Optional: إذا كان المربع يظهر في أكثر من صفحة، سرد كل مصادر الصفحات هنا */
   pages?: string[];
 }

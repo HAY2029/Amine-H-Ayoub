@@ -346,6 +346,19 @@
 @keyframes scale-up { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
 .animate-scale-up { animation: scale-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* اهتزاز خفيف عند إدخال رمز خاطئ (شاشة رمز ولي الأمر) */
+@keyframes shake-x {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.animate-shake { animation: shake-x 0.35s ease-in-out; }
+
+/* أسفل الشاشات: احترام المساحة الآمنة في الهواتف ذات الحافة */
+.pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
 @keyframes float-soft { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 .animate-float { animation: float-soft 4s ease-in-out infinite; }
 
@@ -688,8 +701,11 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* ملاحظة: fill-mode = backwards (وليس both) حتى لا تبقى الصفحة شفافة تماماً
+   إذا لم تُشغَّل الحركة (نافذة غير مرئية/تبويب في الخلفية/حركة معطّلة)،
+   وهي حالة كانت تُنتج صفحة فارغة بيضاء بعد التنقل في وضع الأطفال. */
 .page-transition {
-  animation: page-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 @media (prefers-reduced-motion: reduce) {
   .page-transition { animation: none; }
@@ -2353,4 +2369,19 @@ html[data-theme="dark"] .wifi-loader {
   pointer-events: none;
   background: linear-gradient(100deg, transparent 30%, hsl(var(--accent) / 0.16) 50%, transparent 70%);
   animation: arp-sheen 2.6s ease-in-out infinite;
+}
+
+/* ── عدّاد الإشعارات (يُظهر كم بقي قبل الاختفاء التلقائي) ── */
+@keyframes toast-countdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+.toast-countdown {
+  transform-origin: right center;
+  animation: toast-countdown var(--toast-duration, 4500ms) linear forwards;
+}
+/* يتوقّف العدّاد عند المرور على الإشعار، مثل إشعارات النظام */
+.group:hover .toast-countdown,
+.group:focus-within .toast-countdown {
+  animation-play-state: paused;
 }

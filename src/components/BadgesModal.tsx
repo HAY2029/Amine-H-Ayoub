@@ -21,6 +21,7 @@ import { getProfile, getProgress, getCoins } from "@/data/kidsProfile";
 import { downloadStreakCertificate } from "@/utils/certificateGenerator";
 import { getAvatarSrc } from "@/components/Avatar";
 import { toast } from "@/hooks/use-toast";
+import ModalLayer from "@/components/ui/ModalLayer";
 
 interface Props {
   onClose: () => void;
@@ -115,11 +116,12 @@ export default function BadgesModal({ onClose }: Props) {
   });
 
   return (
+    <ModalLayer>
     <div
-      className="fixed inset-0 z-[250] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[250] flex items-start justify-center overflow-y-auto overscroll-contain bg-black/75 backdrop-blur-md p-4 sm:items-center animate-in fade-in duration-200"
       dir="rtl"
     >
-      <div className="relative w-full max-w-lg rounded-3xl bg-card border border-border shadow-2xl p-5 space-y-4 max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative my-auto w-full max-w-lg rounded-3xl bg-card border border-border shadow-2xl p-5 pb-safe space-y-4 max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* زر الإغلاق */}
         <button
           onClick={onClose}
@@ -144,101 +146,86 @@ export default function BadgesModal({ onClose }: Props) {
           </div>
         </div>
 
-        {/* كرت سلسلة الالتزام (Streak Banner) - تم تطويره ليكون مليئاً بالحماس */}
-        <div className="shrink-0 rounded-3xl p-5 bg-gradient-to-br from-stone-900 via-stone-950 to-black border border-amber-500/20 space-y-5 shadow-[0_0_25px_rgba(245,158,11,0.15)] relative mt-2 overflow-hidden">
-          {/* تأثيرات إضاءة خلفية للنار */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 blur-[40px] rounded-full -mr-10 -mt-10 pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-600/10 blur-[30px] rounded-full -ml-10 -mb-10 pointer-events-none"></div>
+        {/* سلسلة الحماس (Streak) — بتصميم مستوحى من Duolingo: شعلة + رقم كبير + شريط أسبوع */}
+        <div className="shrink-0 rounded-3xl p-4 sm:p-5 bg-gradient-to-br from-stone-900 via-stone-950 to-black border border-amber-500/20 space-y-3.5 shadow-[0_0_25px_rgba(245,158,11,0.15)] relative mt-2 overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 blur-[40px] rounded-full -mr-10 -mt-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-600/10 blur-[30px] rounded-full -ml-10 -mb-10 pointer-events-none" />
 
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-3">
-              <span className={`flex items-center justify-center ${streakInfo.currentStreak > 0 ? "animate-pulse" : "opacity-50"}`}>
-                <Flame 
+          <div className="relative z-10 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative shrink-0">
+                <Flame
                   className={`transition-all duration-500 ease-out ${
-                    streakInfo.currentStreak >= 7 ? "w-12 h-12 text-red-500 fill-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.9)] scale-110" :
-                    streakInfo.currentStreak >= 5 ? "w-10 h-10 text-orange-500 fill-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)] scale-105" :
-                    streakInfo.currentStreak >= 3 ? "w-9 h-9 text-amber-500 fill-amber-500 drop-shadow-[0_0_10px_rgba(245,158,11,0.7)]" :
-                    streakInfo.currentStreak >= 1 ? "w-8 h-8 text-yellow-500 fill-yellow-500 drop-shadow-[0_0_6px_rgba(234,179,8,0.6)]" :
-                    "w-8 h-8 text-zinc-700 fill-zinc-800"
-                  }`} 
+                    streakInfo.currentStreak >= 7
+                      ? "w-14 h-14 text-orange-500 fill-orange-500 drop-shadow-[0_0_22px_rgba(249,115,22,0.9)]"
+                      : streakInfo.currentStreak >= 3
+                        ? "w-12 h-12 text-amber-500 fill-amber-500 drop-shadow-[0_0_14px_rgba(245,158,11,0.7)]"
+                        : streakInfo.currentStreak >= 1
+                          ? "w-12 h-12 text-yellow-500 fill-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.6)]"
+                          : "w-12 h-12 text-zinc-700 fill-zinc-800"
+                  }`}
                 />
-              </span>
-              <div>
-                <span className="block font-black text-lg text-white tracking-wide drop-shadow-md">
-                  سلسلة الحماس: <span className="text-amber-400">{formatDaysCount(streakInfo.currentStreak)}</span> 🔥
+              </div>
+              <div className="min-w-0">
+                <span className="block text-[11px] font-bold text-amber-200/70">سلسلة الحماس</span>
+                <span className="block font-black text-2xl text-white leading-tight">
+                  {formatDaysCount(streakInfo.currentStreak)}
                 </span>
-                <span className="block text-[11px] text-amber-200/60 font-medium mt-0.5">
-                  أطول سلسلة حققتها: {formatDaysCount(streakInfo.longestStreak)}
+                <span className="block text-[11px] text-zinc-400 font-medium">
+                  أطول سلسلة: {formatDaysCount(streakInfo.longestStreak)}
                 </span>
               </div>
             </div>
-            <span className="text-xs font-black text-amber-950 bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-pulse shrink-0">
-              واظب يومياً
+            <span className="text-[11px] font-black text-amber-950 bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.35)] shrink-0">
+              {streakInfo.thisWeekDays[6] ? "أنجزت اليوم ✓" : "لم تُسجّل اليوم"}
             </span>
           </div>
 
-          {/* دوائر أيام الأسبوع (مسار يبدأ من اليمين [السبت] وينتهي في اليسار [اليوم]) */}
-          <div className="pt-2 pb-2 relative z-10 w-full">
-            {/* خط المسار الخلفي الثابت الشامل بين مراكز الدوائر */}
-            <div 
-              className="absolute top-[26px] -translate-y-1/2 left-[7.14%] right-[7.14%] h-1 bg-zinc-800/80 rounded-full shadow-inner pointer-events-none"
-            />
-            
-            {/* مقاطع المسار النشط المتوهج بين الأيام المتتالية المنجزة */}
-            <div 
-              className="absolute top-[26px] -translate-y-1/2 left-[7.14%] right-[7.14%] h-1 flex pointer-events-none z-0" 
-              dir="rtl"
-            >
-              {[0, 1, 2, 3, 4, 5].map((segIdx) => {
-                const isSegmentActive =
-                  Boolean(streakInfo.thisWeekDays[segIdx]) &&
-                  Boolean(streakInfo.thisWeekDays[segIdx + 1]);
-                return (
+          {/* شريط أيام الأسبوع: دائرة لكل يوم، شعلة لليوم المكتمل، وحلقة بارزة لليوم */}
+          <div className="relative z-10 grid grid-cols-7 gap-1.5 pt-1" dir="rtl">
+            {[0, 1, 2, 3, 4, 5, 6].map((idx) => {
+              const active = streakInfo.thisWeekDays[idx];
+              const isToday = idx === 6;
+              return (
+                <div key={idx} className="flex flex-col items-center gap-1.5">
                   <div
-                    key={segIdx}
-                    className={`flex-1 h-full transition-all duration-500 ${
-                      isSegmentActive
-                        ? "bg-gradient-to-l from-amber-400 via-orange-500 to-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.7)]"
-                        : "bg-transparent"
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-black text-[13px] transition-all duration-300 ${
+                      active
+                        ? "bg-gradient-to-br from-amber-400 to-orange-600 text-white ring-4 ring-amber-500/20 shadow-[0_0_14px_rgba(245,158,11,0.55)]"
+                        : isToday
+                          ? "bg-zinc-900 text-amber-400 ring-2 ring-amber-500/60"
+                          : "bg-zinc-900 text-zinc-600 ring-2 ring-zinc-800"
                     }`}
-                  />
-                );
-              })}
-            </div>
-            
-            <div className="grid grid-cols-7 relative z-10 w-full" dir="rtl">
-              {[0, 1, 2, 3, 4, 5, 6].map((idx) => {
-                const active = streakInfo.thisWeekDays[idx];
-                const isToday = idx === 6;
-                return (
-                  <div key={idx} className="flex flex-col items-center gap-2 group">
-                    <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        active
-                          ? "bg-gradient-to-br from-amber-400 to-orange-600 ring-4 ring-stone-900 shadow-[0_0_15px_rgba(245,158,11,0.7)] scale-110"
-                          : "bg-zinc-900 ring-2 ring-zinc-800 shadow-inner group-hover:bg-zinc-800"
-                      }`}
-                    >
-                      {active ? (
-                        <Flame className="w-5 h-5 fill-white text-white drop-shadow-md" />
-                      ) : (
-                        <div className="w-2 h-2 rounded-full bg-zinc-700/50"></div>
-                      )}
-                    </div>
-                    <span className={`text-[11px] font-bold truncate w-full text-center transition-colors ${
-                      isToday 
-                        ? "text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)] scale-110" 
-                        : active 
-                          ? "text-amber-200/90" 
-                          : "text-zinc-500"
-                    }`}>
-                      {isToday ? "اليوم" : (streakInfo.dayNamesArr[idx] || "")}
-                    </span>
+                  >
+                    {active ? <Flame className="w-5 h-5 fill-white text-white" /> : (streakInfo.dayNamesArr[idx] || "").slice(0, 1)}
                   </div>
-                );
-              })}
-            </div>
+                  <span
+                    className={`text-[10px] font-bold truncate w-full text-center ${
+                      isToday ? "text-amber-400" : active ? "text-amber-200/80" : "text-zinc-500"
+                    }`}
+                  >
+                    {isToday ? "اليوم" : (streakInfo.dayNamesArr[idx] || "").replace("ال", "")}
+                  </span>
+                </div>
+              );
+            })}
           </div>
+
+          {/* حماية السلسلة — تُفتح بعد 7 أيام متتالية (مثل Duolingo) */}
+          <div className="relative z-10 flex items-center justify-between gap-2 rounded-2xl bg-sky-500/10 border border-sky-500/25 px-3 py-2">
+            <span className="flex items-center gap-2 text-[11px] font-bold text-sky-200">
+              <ShieldCheck className="w-4 h-4" /> حماية السلسلة
+            </span>
+            <span className="text-[10px] font-black text-sky-200/90">
+              {streakInfo.currentStreak >= 7 ? "حماية متاحة لك 🛡️" : `تُفتح عند 7 أيام (باقٍ ${Math.max(0, 7 - streakInfo.currentStreak)})`}
+            </span>
+          </div>
+
+          {!streakInfo.thisWeekDays[6] && (
+            <p className="relative z-10 text-center text-[11px] font-bold text-amber-300/90">
+              اقرأ أو استمع لآية واحدة اليوم لتحافظ على سلسلتك 🔥
+            </p>
+          )}
 
           {/* شريط إحصائية أيام الحماس في الشهر وزر تحميل الشهادة الفاخرة */}
           <div className="pt-3 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-2.5 relative z-10">
@@ -415,5 +402,6 @@ export default function BadgesModal({ onClose }: Props) {
         </div>
       </div>
     </div>
+    </ModalLayer>
   );
 }

@@ -86,16 +86,17 @@ export const PAGE_TO_SURAHS: Record<number, number[]> = (() => {
   return out;
 })();
 
-const pageFiles = import.meta.glob('/صفحة قران/*.{jpg,jpeg,png}', { eager: true, query: '?url', import: 'default' });
+// أسماء ملفات صور المصحف من وحدة افتراضية يولّدها إعداد Vite.
+// (سابقاً كان glob يُصدِّر نسخة مُهشَّرة من كل صورة ويسكبها في dist/assets
+// بينما التطبيق يبني المسار من /pages ولا يطلب هذه النسخة إطلاقاً.)
+import pageFileNames from "virtual:quran-page-files";
 
 export const CODE_QURAN_PAGES: StaticQuranPage[] = (() => {
   const seenPages = new Set<string>();
   const seenPageNumbers = new Set<number>();
   const list: StaticQuranPage[] = [];
 
-  Object.keys(pageFiles).forEach((path) => {
-    // Extract filename without extension for page number (e.g. '581' from '/صفحة قران/581.jpg')
-    const fileName = path.split('/').pop() || '';
+  pageFileNames.forEach((fileName) => {
     const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
     
     // If it's a number, use it. Fatiha is 0.

@@ -5,7 +5,7 @@
  * كل الدوال القديمة (getProfile/saveProfile/getProgress/addReadingMinutes...) تعمل على
  * "الملف النشِط" حالياً، فلا حاجة لتغيير صفحات الألعاب/لوحة وليّ الأمر/القارئ.
  */
-import { supabase, hasValidSupabaseKey } from "../lib/supabase";
+import { hasValidSupabaseKey } from "../lib/supabaseEnv";
 import { isMushafDevEnabled } from "../utils/tauriUtils";
 
 /** وضع التطبيق: لوليّ الأمر فقط أو للأطفال فقط. */
@@ -154,7 +154,11 @@ const newId = (): string => {
 
 const upsert = (key: string, value: unknown) => {
   if (typeof navigator !== "undefined" && !navigator.onLine) return;
-  if (hasValidSupabaseKey()) supabase.from("store").upsert({ key, value }).then(() => {}, () => {});
+  if (!hasValidSupabaseKey()) return;
+  // حزمة Supabase تُحمَّل هنا فقط (بعد الإقلاع) ولا تدخل في التحميل الأول للتطبيق
+  void import("../lib/supabase")
+    .then(({ supabase }) => supabase.from("store").upsert({ key, value }))
+    .then(() => {}, () => {});
 };
 
 const normalize = (p: Partial<KidsProfile>, i = 0): KidsProfile => ({
@@ -528,6 +532,7 @@ export const setCurrentSurah = (surahNumber: number) => {
 export const syncKidsProfileFromServer = async () => {
   if (typeof window === "undefined" || !hasValidSupabaseKey()) return;
   try {
+    const { supabase } = await import("../lib/supabase");
     const { data } = await supabase.from("store").select("key,value").in("key", [PROFILES_KEY, APPMODE_KEY, ACTIVE_KEY]);
     (data || []).forEach((row: { key: string; value: unknown }) => {
       if (row.value == null) return;

@@ -10,6 +10,32 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import fs from "fs";
 
+/**
+ * وحدة افتراضية تُرجع أسماء صور صفحات المصحف (بدون استيراد الصور نفسها).
+ * قبلها كان `import.meta.glob(..., { eager: true, query: '?url' })` يُصدِّر نسخة
+ * مُهشَّرة من كل صورة (~14 ميغابايت) مع أنّ التطبيق لا يطلبها أبداً — إذ يبني
+ * مسارها من المجلد العام /pages، فكان الناتج مثقلاً بلا فائدة.
+ */
+const QURAN_PAGES_ID = "virtual:quran-page-files";
+const RESOLVED_QURAN_PAGES_ID = "\0" + QURAN_PAGES_ID;
+
+const readQuranPageFileNames = (): string[] => {
+  try {
+    const dir = path.resolve(__dirname, "صفحة قران");
+    if (!fs.existsSync(dir)) return [];
+    return fs
+      .readdirSync(dir)
+      .filter((f: string) => /\.(jpe?g|png|webp)$/i.test(f))
+      .sort((a: string, b: string) => {
+        const na = parseInt(a.match(/\d+/)?.[0] || "0", 10);
+        const nb = parseInt(b.match(/\d+/)?.[0] || "0", 10);
+        return na - nb || a.localeCompare(b);
+      });
+  } catch {
+    return [];
+  }
+};
+
 export default defineConfig(({ mode }) => ({
   base: mode === "development" ? "/" : process.env.VITE_BASE_URL || "/",
   server: {
@@ -58,6 +84,17 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/lucide-react/')) {
             return 'vendor-icons';
           }
+          // تحليلات المنتج: حزمة مستقلة تُخزَّن مؤقتاً ولا تدخل الرسم الأول
+          if (id.includes('node_modules/posthog-js/') || id.includes('node_modules/@posthog/')) {
+            return 'vendor-analytics';
+          }
+          // محرّك التعرّف على الصوت (تسجيل التلاوة): ثقيل ويُستخدم في صفحة واحدة فقط
+          if (id.includes('node_modules/onnxruntime-web/') || id.includes('node_modules/@ricky0123/')) {
+            return 'vendor-vad';
+          }
+          if (id.includes('node_modules/@tauri-apps/')) {
+            return 'vendor-tauri';
+          }
         },
         // تحميل متوازٍ أسرع للهاتف
         chunkFileNames: (chunkInfo) => {
@@ -83,6 +120,15 @@ export default defineConfig(({ mode }) => ({
         } catch (e) {
           console.debug('Quran pages copy hook:', e);
         }
+      },
+      // أسماء صور صفحات المصحف عبر وحدة افتراضية (بلا نسخ الصور داخل الحزمة)
+      resolveId(id: string) {
+        if (id === QURAN_PAGES_ID) return RESOLVED_QURAN_PAGES_ID;
+        return null;
+      },
+      load(id: string) {
+        if (id !== RESOLVED_QURAN_PAGES_ID) return null;
+        return `export default ${JSON.stringify(readQuranPageFileNames())};`;
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       configureServer(server: any) {
@@ -440,11 +486,17 @@ export default defineConfig(({ mode }) => ({
       },
     }),
   ].filter(Boolean),
+  // 🧹 إنتاج نظيف: حذف طباعة التصحيح و debugger من الحزمة نهائياً.
+  // يقلّل حجم الحزمة ويُوفّر عمل المُحلّل على الهواتف أثناء الصوت/التظليل/الألعاب،
+  // وتظلّ رسائل console.warn/error موجودة لأنها تُستخدم في تشخيص الأعطال الإنتاجية.
+  esbuild:
+    mode === "production"
+      ? { pure: ["console.log", "console.debug", "console.info"], drop: ["debugger"], legalComments: "none" }
+      : undefined,
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-    },
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
+    },    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
   optimizeDeps: {
     exclude: ["@ricky0123/vad-web", "onnxruntime-web"],

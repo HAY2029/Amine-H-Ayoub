@@ -47,7 +47,6 @@ import {
   Palette,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { showLocalNotification, requestNotificationPermission, saveReminderSettings } from "../utils/notifications";
 import {
   getProfile,
   updateProfile,
@@ -88,6 +87,7 @@ import {
   getSecurityQuestion,
   setSecurityQuestion,
   DEFAULT_SECURITY_QUESTIONS,
+  isParentSessionUnlocked,
 } from "../data/kidsLock";
 import { calculateStreak } from "../data/kidsBadges";
 import { SURAHS, getSurahByNumber } from "../data/quranData";
@@ -149,7 +149,10 @@ export default function ParentDashboard() {
   const [showAddChild, setShowAddChild] = useState(false);
   const [showBadges, setShowBadges] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
-  const [showGateCheck, setShowGateCheck] = useState(() => isKidsMode() && hasKidsPin());
+  // البوابة هنا احتياط ثانٍ فقط: مسار /parent محمي أصلاً في حراسة التطبيق
+  const [showGateCheck, setShowGateCheck] = useState(
+    () => isKidsMode() && hasKidsPin() && !isParentSessionUnlocked()
+  );
   const [inboxMessages, setInboxMessages] = useState<SupportReportData[]>(getLocalSupportMessages);
 
   // ميثاق المكافآت العائلية (ميزة جديدة حصرية)
@@ -369,17 +372,6 @@ export default function ParentDashboard() {
     removeProfile(id);
     refresh();
     toast({ title: "تم حذف الملف" });
-  };
-
-  // تذكير الدرس
-  const saveLesson = async (t: string) => {
-    updateProfile(profile.id, { lessonTime: t });
-    saveReminderSettings({ dailyLessonTime: t || "17:00", dailyLessonEnabled: !!t });
-    refresh();
-    if (t) {
-      void requestNotificationPermission();
-    }
-    toast({ title: t ? `🔔 تم ضبط تذكير الدرس: ${t}` : "تم إلغاء تذكير الدرس" });
   };
 
   // تبديل أوضاع التطبيق
@@ -1655,7 +1647,7 @@ export default function ParentDashboard() {
                 { id: "quran", label: "الورد القرآني والسورة", icon: BookOpen },
                 { id: "screen", label: "وقت الشاشة واللعب", icon: Clock },
                 { id: "security", label: "الأمان ونمط التطبيق", icon: Shield },
-                { id: "alerts", label: "التنبيهات وإدارة الجلسة", icon: Bell },
+                { id: "alerts", label: "إدارة جلسة اليوم", icon: Bell },
               ].map(({ id, label, icon: Icon }) => {
                 const isActive = settingsFilter === id;
                 return (
@@ -2383,61 +2375,15 @@ export default function ParentDashboard() {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-base text-stone-900 dark:text-amber-100 font-amiri">
-                      التنبيهات الذكية وإدارة جلسة اليوم
+                      إدارة جلسة اليوم
                     </h3>
                     <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                      ضبط مواعيد تذكير الدروس اليومية، فحص الإشعارات، وإعادة ضبط الدقائق عند الحاجة
+                      إعادة ضبط دقائق القراءة واللعب المسجّلة لليوم عند الحاجة
                     </p>
                   </div>
                 </div>
 
-                {/* موعد الدرس اليومي */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold text-foreground">
-                    موعد الدرس القرآني اليومي (إشعار تذكير يومي للطفل):
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="time"
-                      value={profile.lessonTime || ""}
-                      onChange={(e) => saveLesson(e.target.value)}
-                      className="flex-1 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-3 text-foreground font-bold text-xs outline-none"
-                    />
-                    {profile.lessonTime && (
-                      <button
-                        type="button"
-                        onClick={() => saveLesson("")}
-                        className="px-4 py-3 rounded-2xl bg-destructive/15 text-destructive font-bold text-xs hover:bg-destructive/25 transition-colors cursor-pointer"
-                      >
-                        إلغاء التذكير
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* أزرار الإجراءات السريعة: اختبار الإشعار + إعادة ضبط اليوم */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-amber-400/20">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const granted = await requestNotificationPermission();
-                      await showLocalNotification(
-                        "تذكير القرآن الكريم 🌟",
-                        `حان موعد درس القرآن للبطل ${draft.name || "الطفل"}! بارك الله فيك.`
-                      );
-                      if (!granted) {
-                        toast({
-                          title: "تنبيه صلاحيات النظام ℹ️",
-                          description: "يعمل بتنبيهات التطبيق، ويمكنك السماح بالإشعارات من إعدادات النظام لتظهر على الهاتف أو سطح المكتب.",
-                        });
-                      }
-                    }}
-                    className="p-3.5 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-200 font-black text-xs flex items-center justify-center gap-2 active:scale-95 transition-all border border-amber-400/30 shadow-xs cursor-pointer"
-                  >
-                    <Bell className="w-4 h-4 text-amber-600" />
-                    <span>تجربة إرسال إشعار تذكير 🔔</span>
-                  </button>
-
+                <div className="grid grid-cols-1 gap-3 pt-2 border-t border-amber-400/20">
                   <button
                     type="button"
                     onClick={() => {

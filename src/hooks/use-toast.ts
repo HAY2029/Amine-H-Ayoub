@@ -2,8 +2,10 @@ import * as React from "react";
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 
-const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
+// نُظهر حتى 3 إشعارات متراكبة (كان إشعاراً واحداً يُغطي غيره)
+const TOAST_LIMIT = 3;
+// مهلة إزالة العنصر من الشجرة بعد انتهاء حركة الاختفاء
+const TOAST_REMOVE_DELAY = 400;
 
 type ToasterToast = ToastProps & {
   id: string;

@@ -1,4 +1,4 @@
-import type { PostHog } from "posthog-js";
+import type { PostHog, PostHogConfig } from "posthog-js";
 import { getAppMode, getProfile, getProfiles } from "@/data/kidsProfile";
 
 /**
@@ -63,15 +63,25 @@ const getDeviceId = (): string => {
   }
 };
 
+/**
+ * يجلب حزمة posthog-js عند الحاجة فقط: لا تزيد حجم الحزمة الرئيسية
+ * ولا تُنزَّل إطلاقاً قبل موافقة المستخدم.
+ */
+async function loadSdk(): Promise<PostHog> {
+  const { default: sdk } = await import("posthog-js");
+  return sdk;
+}
+
 /** يبدأ تحميل PostHog وتشغيله — يُستدعى مرة واحدة عند الإقلاع أو عند منح الموافقة. */
 export function initAnalytics(): void {
   if (!API_KEY || typeof window === "undefined") return;
   if (!hasAnalyticsConsent()) return;
   if (loading) return;
 
-  loading = import("posthog-js")
-    .then(({ default: posthog }) => {
-      posthog.init(API_KEY, {
+  loading = loadSdk()
+    .then((posthog) => {
+      // الإعدادات مُنمَّطة من posthog-js نفسه حتى يُرفض أي خيار غير صحيح وقت البناء
+      const config: Partial<PostHogConfig> = {
         api_host: API_HOST,
         // أحداث صفحة أساسية فقط + أوتوكابتشر مطفأ لخفة التطبيق وحماية خصوصية الأطفال
         capture_pageview: true,
@@ -90,7 +100,8 @@ export function initAnalytics(): void {
         // لا نُنشئ ملفات شخصية إلا بعد تعريف المستخدم صراحةً
         person_profiles: "identified_only",
         persistence: "localStorage",
-      });
+      };
+      posthog.init(API_KEY, config);
       client = posthog;
       while (pending.length > 0) {
         const op = pending.shift();
@@ -112,13 +123,18 @@ export function initAnalytics(): void {
 /** تسجيل حدث منتج (no-op بهدوء إن لم يُضبط المفتاح أو لم تُمنح الموافقة). */
 export function captureEvent(event: string, properties: AnalyticsProps = {}): void {
   if (!API_KEY || typeof window === "undefined") return;
-  run((posthog) => posthog.capture(event, properties));
+  // كل حدث يمرّ من نفس القناة المؤجّلة، فيصل بعد التعريف لا قبله
+  run((posthog) => {
+    posthog.capture(event, properties);
+  });
 }
 
 /** تعريف المستخدم بمعرّف ثابت حتى تعمل مسارات التحويل (funnels) والاحتفاظ (retention). */
 export function identifyUser(distinctId: string, properties: AnalyticsProps = {}): void {
   if (!API_KEY || !distinctId || typeof window === "undefined") return;
-  run((posthog) => posthog.identify(distinctId, properties));
+  run((posthog) => {
+    posthog.identify(distinctId, properties);
+  });
 }
 
 /**
@@ -161,6 +177,9 @@ export function setAnalyticsConsent(granted: boolean): void {
         /* ignore */
       }
     }
+    // من منح الموافقة بعد الإقلاع لم يكن معرَّفاً في PostHog بعد؛ يُعرَّف الآن
+    // حتى لا تبقى أحداثه بلا شخص (يتأخر التعريف فيُفسد مسارات التحويل والاحتفاظ).
+    identifyActiveProfile();
     return;
   }
   if (client) {

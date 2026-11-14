@@ -195,7 +195,9 @@ export async function resolvePlayableAudioUrl(surahNumber: number, remoteUrl: st
     const cachedUrl = activeObjectUrls.get(memoryKey);
     if (cachedUrl) return cachedUrl;
   }
-  if (activeObjectUrls.has(surahNumber)) {
+  // توقيع قديم بلا فصل المتحدث: يُقبل فقط عند عدم طلب متحدث محدد
+  // (وإلا فسيعيد ملف المعلم عند طلب صوت الطفل — صوتان مختلفان تماماً)
+  if (!speaker && activeObjectUrls.has(surahNumber)) {
     const cachedUrl = activeObjectUrls.get(surahNumber);
     if (cachedUrl) return cachedUrl;
   }
@@ -211,11 +213,13 @@ export async function resolvePlayableAudioUrl(surahNumber: number, remoteUrl: st
       req.onsuccess = () => {
         if (req.result?.blob) {
           resolve(req.result);
-        } else if (speaker) {
+        } else if (speaker === "teacher") {
+          // توقيع قديم محفوظ بلا فصل المتحدث — يُقبل للمعلم فقط
           const req2 = store.get(`surah_${surahNumber}`);
           req2.onsuccess = () => resolve(req2.result || null);
           req2.onerror = () => resolve(null);
         } else {
+          // لا يُعاد ملف المعلم لوضع الطفل أبداً
           resolve(null);
         }
       };

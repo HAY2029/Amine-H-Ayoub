@@ -32,7 +32,7 @@ import { getSurahAudioUrl, hasCloudAudio, getFallbackAudioUrl } from "@/data/aud
 import { getPageAyahBoxes, PAGE_IMAGE_SIZE, AyahBox, getSavedAyahCoordinates } from "@/data/ayahCoordinates";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { getLocalShadingSettings, getAyahShadingStyle, hexToRgba, PRESET_SHADING_COLORS, type ShadingSettings } from "@/services/shadingSyncService";
+import { getLocalShadingSettings, getAyahShadingStyle, hexToRgba, PRESET_SHADING_COLORS, DEFAULT_SETTINGS, type ShadingSettings } from "@/services/shadingSyncService";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 
 const audioPath = (n: number) => (hasCloudAudio(n) ? getSurahAudioUrl(n) : getFallbackAudioUrl(n));
@@ -220,8 +220,8 @@ const MushafPage = ({ onBack }: Props) => {
   useEffect(() => {
     const syncShading = async () => {
       try {
-        const synced = await getLocalShadingSettings && typeof window !== "undefined"
-          ? (await import("@/services/shadingSyncService")).syncShadingFromServer()
+        const synced = typeof window !== "undefined"
+          ? await (await import("@/services/shadingSyncService")).syncShadingFromServer()
           : undefined;
         if (synced) {
           setShadingSettings(synced);

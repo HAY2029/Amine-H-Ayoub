@@ -47,9 +47,10 @@ export async function downloadSurahOffline(
 
   for (const url of urls) {
     if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    // اسم المصدر لا يُعرض للمستخدم: أسماء السيرفرات تظهر فقط في السجلّات الداخلية
     const serverName = url.includes("huggingface.co")
-      ? "سيرفر Hugging Face فائق السرعة"
-      : "سيرفر الأرشيف (Internet Archive)";
+      ? "تنزيل فائق السرعة"
+      : "تنزيل احتياطي";
 
     try {
       if (isTauri()) {

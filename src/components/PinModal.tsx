@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Lock, Delete, ShieldCheck, Check } from "lucide-react";
+import ModalLayer from "./ui/ModalLayer";
 import { getKidsPin, setKidsPin, setSecurityQuestion, DEFAULT_SECURITY_QUESTIONS } from "../data/kidsLock";
 
 /** لوحة رمز رقمية (٤ أرقام). mode="set" لتعيين الرمز مع سؤال الأمان، "verify" للتحقق. */
@@ -49,8 +50,9 @@ export default function PinModal({ mode, title, onSuccess, onCancel }: {
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "back"];
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-background/70 backdrop-blur-sm p-4 animate-fade-in" dir="rtl">
-      <div className="relative w-full max-w-xs glass-nour shadow-soft p-6 space-y-4 text-center overflow-hidden animate-scale-up">
+    <ModalLayer>
+    <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-background/70 backdrop-blur-sm p-4 sm:items-center animate-fade-in" dir="rtl">
+      <div className="relative my-auto w-full max-w-xs max-h-[calc(100dvh-2rem)] overflow-y-auto glass-nour shadow-soft p-6 pb-safe space-y-4 text-center custom-scrollbar animate-scale-up">
         {/* وهج ذهبي زخرفي خلف البطاقة */}
         <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-accent/20 blur-3xl" />
 
@@ -145,5 +147,6 @@ export default function PinModal({ mode, title, onSuccess, onCancel }: {
         </button>
       </div>
     </div>
+    </ModalLayer>
   );
 }

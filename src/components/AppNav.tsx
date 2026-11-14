@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, startTransition } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Headphones, BookOpen, Gamepad2, Settings, User, Lock, ShoppingBag, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
-import { isKidsMode, setKidsLocked, hasKidsPin } from "../data/kidsLock";
+import { isKidsMode, setKidsLocked, hasKidsPin, unlockParentSession } from "../data/kidsLock";
 import { isPureMode, setPureMode, setKidsHidden, getAppMode, setAppMode, getCoins, getProfile, getProgress } from "../data/kidsProfile";
 import ParentalGateModal from "./ParentalGateModal";
 import QuranLockGateModal from "./QuranLockGateModal";
@@ -142,7 +142,7 @@ export default function AppNav({
   const onPinSuccess = () => {
     if (pinAction === "unlock") { setKidsLocked(false); refreshState(); toast({ title: "تم فك قفل الأطفال بنجاح ✓" }); }
     else if (pinAction === "parent") { setKidsLocked(false); refreshState(); safeNavigate("/parent"); }
-    else if (pinAction === "settings") { sessionStorage.setItem("mushaf:settingsUnlocked", "1"); safeNavigate("/settings"); }
+    else if (pinAction === "settings") { unlockParentSession(); safeNavigate("/settings"); }
     setPinAction(null);
   };
 

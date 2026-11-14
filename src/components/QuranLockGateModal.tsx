@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ModalLayer from "./ui/ModalLayer";
 import { useNavigate } from "react-router-dom";
 import { Lock, Headphones, X, Clock, Star, Timer, Check } from "lucide-react";
 import { getProgress, getProfile, unlockToday, formatCoins, getCoins } from "@/data/kidsProfile";
@@ -87,10 +88,13 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
     navigate("/games");
   };
 
+  // Portal إلى body: النافذة تُفتح أحياناً من داخل إطار الأطفال المُحوَّل (transform)،
+  // وهذا يجعل position:fixed محصوراً في الإطار فيُقتطع المحتوى من أعلى الشاشة وأسفلها.
   return (
+    <ModalLayer>
     <>
       <div 
-        className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-3 sm:p-5 animate-fade-in"
+        className="fixed inset-0 z-[250] flex items-start justify-center overflow-y-auto overscroll-contain bg-slate-950/75 backdrop-blur-sm p-3 sm:items-center sm:p-5 animate-fade-in"
         onClick={onClose}
         dir="rtl"
       >
@@ -98,7 +102,7 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
           role="dialog"
           aria-modal="true"
           aria-labelledby="quran-gate-title"
-          className="relative w-full max-w-[360px] bg-[#10231d] text-white rounded-[28px] shadow-[0_24px_90px_rgba(0,0,0,.55)] border border-amber-400/35 p-4 sm:p-5 text-center space-y-3.5 animate-fade-up overflow-hidden"
+          className="relative my-auto w-full max-w-[360px] max-h-[calc(100dvh-1.5rem)] bg-[#10231d] text-white rounded-[28px] shadow-[0_24px_90px_rgba(0,0,0,.55)] border border-amber-400/35 p-4 sm:p-5 pb-safe text-center space-y-3.5 animate-fade-up overflow-y-auto overflow-x-hidden custom-scrollbar"
           onClick={(e) => e.stopPropagation()}
         >
           {/* هالات خلفية ذهبية خفيفة */}
@@ -210,5 +214,6 @@ export default function QuranLockGateModal({ isOpen, onClose, targetName = "ال
         </div>
       </div>
     </>
+    </ModalLayer>
   );
 }

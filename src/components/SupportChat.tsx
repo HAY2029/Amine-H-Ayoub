@@ -7,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { sendSupportReportEmail, openWhatsAppSupport, SUPPORT_WHATSAPP_DISPLAY } from "@/services/resendService";
 import { getProfile } from "@/data/kidsProfile";
 import WhatsAppIcon from "./WhatsAppIcon";
+import ModalLayer from "./ui/ModalLayer";
 
 export type SupportMessage = {
   id: string;
@@ -571,6 +572,7 @@ export default function SupportChat({
 
       {/* Fullscreen Image Lightbox Modal */}
       {selectedImage && (
+        <ModalLayer>
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
           <div className="relative max-w-3xl max-h-[85vh]">
             <button
@@ -582,6 +584,7 @@ export default function SupportChat({
             <img src={selectedImage} alt="عرض الصورة المكبرة" className="max-w-full max-h-[80vh] rounded-2xl object-contain shadow-2xl" />
           </div>
         </div>
+        </ModalLayer>
       )}
     </div>
   );
@@ -591,11 +594,13 @@ export default function SupportChat({
   }
 
   return (
+    <ModalLayer>
     <div className="fixed inset-0 z-[150] flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" dir="rtl">
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative w-full max-w-lg md:max-w-md h-full shadow-2xl animate-in slide-in-from-right duration-300 z-10">
         {chatUI}
       </div>
     </div>
+    </ModalLayer>
   );
 }

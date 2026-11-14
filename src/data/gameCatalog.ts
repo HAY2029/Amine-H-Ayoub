@@ -3,7 +3,7 @@
  */
 import { supabase, hasValidSupabaseKey } from "../lib/supabase";
 
-export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "catchstar" | "ayahmath" | "listenkids" | "makkimadani" | "oddword" | "orchard" | "values";
+export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "ayahmath" | "listenkids" | "makkimadani" | "oddword" | "orchard" | "values";
 
 export interface GameDef {
   id: string;
@@ -44,8 +44,20 @@ const FULL = { minSurah: 114 };
 const BANNED_NON_QURAN_IDS = new Set([
   "odd-square", "catch-star", "falling-stars", "count-stars",
   "odd_square", "catch_star", "falling_stars", "count_stars",
-  "order-surahs", "complete-ayah", "which-surah", "longer-surah", "memory-quran"
+  "order-surahs", "complete-ayah", "which-surah", "longer-surah", "memory-quran",
+  // «word-letters» نسخة قديمة مرفوعة من لعبة «رتّب كلمات القرآن» المدمجة
+  // (المحرّك wordbuilder)، وكانت تظهر بجانبها كأنها لعبة ثانية مكررة.
+  "word-letters",
 ]);
+
+/**
+ * 🔒 أُزيلت لعبة «صائد النجوم» الترفيهية (بلا قيمة تربوية) من الكتالوج والملفات،
+ * ويُمنع أي نسخة بعيدة/مخزّنة تحمل مُعرّفها أو محرّكها من الظهور مجدداً.
+ */
+export const OUT_OF_SCOPE_GAME_IDS = new Set(["catchstar"]);
+
+const isBlockedGame = (id: string): boolean =>
+  BANNED_NON_QURAN_IDS.has(id) || OUT_OF_SCOPE_GAME_IDS.has(id);
 
 // تنظيف التخزين المؤقت فورياً من أي لعبة غير قرآنية
 if (typeof window !== "undefined") {
@@ -93,7 +105,7 @@ export const setRemoteGamesList = (list: any[]) => {
   const hidden = hiddenIds();
   remoteServerGames = list
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .filter((g: any) => g && typeof g.id === "string" && !hidden.includes(g.id) && !BANNED_NON_QURAN_IDS.has(g.id))
+    .filter((g: any) => g && typeof g.id === "string" && !hidden.includes(g.id) && !isBlockedGame(g.id))
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((g: any, i: number) => ({
       id: g.id,
@@ -116,8 +128,8 @@ let serverGames: GameDef[] = [];
 const isValid = (g: unknown): g is GameDef => {
   const d = g as GameDef;
   if (!d || typeof d.id !== "string" || typeof d.title !== "string" || typeof d.cost !== "number") return false;
-  if (BANNED_NON_QURAN_IDS.has(d.id)) return false;
-  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "catchstar", "ayahmath", "listenkids", "makkimadani", "oddword", "orchard", "values"];
+  if (isBlockedGame(d.id)) return false;
+  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "ayahmath", "listenkids", "makkimadani", "oddword", "orchard", "values"];
   if (!engines.includes(d.engine)) return false;
   return true;
 };
@@ -127,25 +139,62 @@ const readServerLocal = (): GameDef[] => {
   try { const r = localStorage.getItem(CATALOG_KEY); const v = r ? JSON.parse(r) : []; return Array.isArray(v) ? v.filter(isValid).map(g => ({ ...g, custom: true })) : []; } catch { return []; }
 };
 
+/** بصمة قصيرة لمحتوى HTML — تكشف النسخ المرفوعة المتطابقة تحت معرّفات مختلفة. */
+const strHash = (s: string): string => {
+  let h = 5381;
+  for (let i = 0; i < s.length; i += 1) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+};
+
+/**
+ * كود اللعبة (هويتها الفعلية) — لا يعتمد على الاسم المعروض إطلاقاً:
+ * - لعبة مرفوعة: نوعها + رابطها أو بصمة محتواها (أو كودها إن لم يوجد رابط).
+ * - لعبة مدمجة: المحرّك + إعداداته، فمحرّك واحد بإعدادات واحدة = لعبة واحدة
+ *   مهما تعدّدت عناوينها (مثال: ألعاب محرّك «values» التي تُظهر نفس المحتوى).
+ */
+const gameCode = (g: GameDef): string => {
+  const r = g.remote as Record<string, unknown> | undefined;
+  if (r) {
+    const kind = String(r.kind ?? "url");
+    const payload = kind === "html" ? String(r.html ?? "") : String(r.url ?? "");
+    const src = payload.trim();
+    if (src) return `remote:${kind}:${kind === "html" ? strHash(src) : src.toLowerCase()}`;
+    const declared = r.code ?? r.slug;
+    return `remote:${kind}:${String(declared ?? g.id).trim().toLowerCase()}`;
+  }
+  return `${g.engine}|${JSON.stringify(g.params ?? {})}`;
+};
+
 export const getGameCatalog = (): GameDef[] => {
   const server = serverGames.length ? serverGames : readServerLocal();
   const map = new Map<string, GameDef>();
   for (const g of BUILTIN_GAMES) {
-    if (!BANNED_NON_QURAN_IDS.has(g.id)) map.set(g.id, g);
+    if (!isBlockedGame(g.id)) map.set(g.id, g);
   }
   for (const g of remoteServerGames) {
-    if (!BANNED_NON_QURAN_IDS.has(g.id)) map.set(g.id, g);
+    if (!isBlockedGame(g.id)) map.set(g.id, g);
   }
   for (const g of server) {
-    if (!BANNED_NON_QURAN_IDS.has(g.id)) map.set(g.id, { tint: "bg-slate-500/20 text-slate-200", icon: "Gamepad2", ageMin: 5, ...g, custom: true });
+    if (!isBlockedGame(g.id)) map.set(g.id, { tint: "bg-slate-500/20 text-slate-200", icon: "Gamepad2", ageMin: 5, ...g, custom: true });
   }
-  
   // جميع الألعاب مجانية تماماً ومفتوحة (cost: 0)
+  //
+  // 🧹 إزالة التكرار بكود اللعبة لا باسمها:
+  // الاسم المعروض يتغيّر (تشكيل/همزات/إيموجي/إعادة صياغة) فيفلت التكرار،
+  // أما الكود فهو هوية اللعبة الحقيقية: المحرّك + إعداداته للعبة المدمجة،
+  // ونوع رابط/محتوى اللعبة المرفوعة. أي لعبتين بنفس الكود هما لعبة واحدة،
+  // فنحتفظ بأول ظهور (المدمجة أولاً) ونُسقط الباقي.
+  const seenCodes = new Set<string>();
+  const unique: GameDef[] = [];
   for (const g of map.values()) {
-    map.set(g.id, { ...g, cost: 0 });
+    if (isBlockedGame(g.id)) continue;
+    const code = gameCode(g);
+    if (seenCodes.has(code)) continue;
+    seenCodes.add(code);
+    unique.push({ ...g, cost: 0 });
   }
-  
-  return Array.from(map.values()).filter(g => !BANNED_NON_QURAN_IDS.has(g.id));
+
+  return unique;
 };
 
 const getPriceOverrides = (): Record<string, number> => {
@@ -264,7 +313,6 @@ export const BUILTIN_GAMES: GameDef[] = [
   // ── الألعاب القرآنية الأسطورية الذكية ──
   G("detective", "المحقق القرآني", "detective", 5, 16, 0, "Sparkles", FULL, 0),
   G("wordbuilder", "رتّب كلمات القرآن", "wordbuilder", 5, 16, 0, "Puzzle", FULL, 1),
-  G("catchstar", "صائد النجوم والكلمات", "catchstar", 5, 16, 0, "Star", FULL, 2),
   G("ayahmath", "أرقام وحساب الآيات", "ayahmath", 5, 16, 0, "Hash", FULL, 3),
   G("makkimadani", "سفينة السور: مكية أم مدنية؟", "makkimadani", 5, 16, 0, "Landmark", FULL, 4),
   G("oddword", "الكلمة القرآنية المختلفة", "oddword", 5, 16, 0, "Sparkles", FULL, 5),

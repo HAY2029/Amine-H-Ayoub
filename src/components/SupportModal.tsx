@@ -24,6 +24,7 @@ import {
 import { getProfile } from "@/data/kidsProfile";
 import { CURRENT_VERSION } from "@/utils/updateChecker";
 import { toast } from "@/hooks/use-toast";
+import ModalLayer from "@/components/ui/ModalLayer";
 
 interface Props {
   onClose: () => void;
@@ -100,11 +101,12 @@ export default function SupportModal({ onClose }: Props) {
   };
 
   return (
+    <ModalLayer>
     <div
-      className="fixed inset-0 z-[250] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[250] flex items-start justify-center overflow-y-auto overscroll-contain bg-black/70 backdrop-blur-md p-4 sm:items-center animate-in fade-in duration-200"
       dir="rtl"
     >
-      <div className="relative w-full max-w-md rounded-3xl bg-card border border-border shadow-2xl p-6 space-y-4 max-h-[92vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+      <div className="relative my-auto w-full max-w-md rounded-3xl bg-card border border-border shadow-2xl p-6 pb-safe space-y-4 max-h-[calc(100dvh-2rem)] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200">
         {/* زر الإغلاق */}
         <button
           onClick={onClose}
@@ -278,5 +280,6 @@ export default function SupportModal({ onClose }: Props) {
         )}
       </div>
     </div>
+    </ModalLayer>
   );
 }

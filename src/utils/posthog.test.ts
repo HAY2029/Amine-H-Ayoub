@@ -58,6 +58,21 @@ describe("posthog analytics module", () => {
     expect(api.opt_in_capturing).toHaveBeenCalledTimes(1);
   });
 
+  it("identifies the active profile as soon as consent is granted", async () => {
+    localStorage.setItem("mushaf:analyticsConsent", "0");
+    const mod = await import("./posthog");
+    mod.initAnalytics();
+    expect(api.init).not.toHaveBeenCalled();
+
+    mod.setAnalyticsConsent(true);
+    await vi.waitFor(() => expect(api.init).toHaveBeenCalled());
+    await vi.waitFor(() => expect(api.identify).toHaveBeenCalledTimes(1));
+
+    const [distinctId, props] = api.identify.mock.calls[0];
+    expect(props).toMatchObject({ role: "child" });
+    expect(distinctId).toMatch(/^child_/);
+  });
+
   it("flushes events queued before the SDK loaded", async () => {
     const mod = await import("./posthog");
     mod.captureEvent("queued_event");

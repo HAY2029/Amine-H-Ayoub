@@ -11,9 +11,10 @@ import {
 import { getAllSurahs, getSurahByNumber, SurahInfo } from "@/data/quranData";
 import { getSurahAudioUrl, getFallbackAudioUrl } from "@/data/audioUrls";
 import {
-  getPageAyahBoxes, savePageAyahBoxes, AyahBox, getAllPageSources,
+  getPageAyahBoxes, savePageAyahBoxes, AyahBox, AyahPart, getAllPageSources,
   PAGE_IMAGE_SIZE, getSavedAyahCoordinates, getPageSections
 } from "@/data/ayahCoordinates";
+import { boxParts, splitBoxParts, appendBoxPart, boxWithParts } from "@/data/ayahParts";
 import { getSurahTimings, saveSurahTimings, getSavedTimings, AudioSegment } from "@/data/ayahTimings";
 import { getSurahLink, saveSurahLink } from "@/data/surahLink";
 import { detectSpeechSegments, alignSegmentsToCount, scoreSegments, type SpeechSegment } from "@/data/audioSilence";
@@ -450,6 +451,28 @@ export default function AudioShadingSyncPage() {
     });
   };
 
+  /**
+   * أجزاء الآية الطويلة: تُحفظ داخل كل مربّعات نفس الآية (تماماً كالتوقيتات)
+   * حتى يتلو المعلم الجزء الأول ثم يعيده الطفل، ثم الجزء الثاني وهكذا.
+   */
+  const updateBoxParts = (parts: AyahPart[]) => {
+    if (!selectedBox) return;
+    const targetSurah = selectedBox.surah;
+    const targetAyah = selectedBox.ayah;
+    setPageBoxes((prev) => prev.map((b) => (
+      b.surah === targetSurah && b.ayah === targetAyah ? boxWithParts(b, parts) : b
+    )));
+  };
+
+  const patchSelectedBoxPart = (partId: string, patch: Partial<AyahPart>) => {
+    if (!selectedBox) return;
+    updateBoxParts(boxParts(selectedBox).map((p) => (p.id === partId ? { ...p, ...patch } : p)));
+  };
+
+  const stampSelectedBoxPart = (partId: string, field: "tStart" | "tEnd" | "kStart" | "kEnd") => {
+    patchSelectedBoxPart(partId, { [field]: Number(currentTime.toFixed(2)) });
+  };
+
   // تسجيل بداية التوقيت للمربع الحالي عند اللحظة الحالية في الصوت (وتعميمها على نفس الآية)
   const stampCurrentBoxStart = () => {
     if (!selectedBox) return;
@@ -720,9 +743,12 @@ export default function AudioShadingSyncPage() {
       if (b.surah !== selectedSurahNum) return b;
       const t = timing.get(b.ayah);
       if (!t) return b;
+      // التوزيع التلقائي يعيد الآية مدىً واحداً، فتُلغى أي أجزاء قديمة لها
+      const cleared: AyahBox = { ...b };
+      delete cleared.parts;
       return isKid
-        ? { ...b, kidsStart: Number(t.start.toFixed(2)), kidsEnd: Number(t.end.toFixed(2)) }
-        : { ...b, audioStart: Number(t.start.toFixed(2)), audioEnd: Number(t.end.toFixed(2)) };
+        ? { ...cleared, kidsStart: Number(t.start.toFixed(2)), kidsEnd: Number(t.end.toFixed(2)) }
+        : { ...cleared, audioStart: Number(t.start.toFixed(2)), audioEnd: Number(t.end.toFixed(2)) };
     });
 
     setPageBoxes(nextBoxes);
@@ -959,7 +985,7 @@ export default function AudioShadingSyncPage() {
         surahNumber: selectedSurahNum,
         surahName: selectedSurah?.name || `سورة ${selectedSurahNum}`,
         ayahCount: selectedSurah?.ayahCount || 7,
-        revelationType: selectedSurah?.revelationType || "مكية",
+        revelationType: selectedSurah?.type || "مكية",
         teacherAudioUrl: teacherSourceType === "custom" ? teacherCustomUrl : undefined,
         kidsAudioUrl: kidsSourceType === "custom" ? kidsCustomUrl : undefined,
         teacherSyncedAyahs,
@@ -1272,7 +1298,7 @@ export default function AudioShadingSyncPage() {
                 </span>
                 <div>
                   <div className="font-bold text-white flex items-center gap-2">
-                    <span>سورة {selectedSurah?.name} ({selectedSurah?.revelationType || "مكية"})</span>
+                    <span>سورة {selectedSurah?.name} ({selectedSurah?.type || "مكية"})</span>
                     <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono">
                       {selectedSurah?.ayahCount} آيات
                     </span>
@@ -1840,6 +1866,152 @@ export default function AudioShadingSyncPage() {
                   </div>
                 </div>
               </div>
+
+              {/* أجزاء الآية الطويلة: معلّم ← طفل ← معلّم ← طفل داخل الآية نفسها */}
+              <div className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-2.5">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-fuchsia-400" />
+                    <span>أجزاء الآية الطويلة</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-fuchsia-500/15 text-fuchsia-300 border border-fuchsia-500/30">
+                      {boxParts(selectedBox).length} جزء
+                    </span>
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      onClick={() => updateBoxParts(splitBoxParts(selectedBox, 2))}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-fuchsia-300 border border-fuchsia-500/30 text-[11px] font-bold active:scale-95 transition-all"
+                      title="قسّم توقيت الآية إلى جزأين متساويين للمعلم والطفل"
+                    >
+                      ✂️ جزآن
+                    </button>
+                    <button
+                      onClick={() => updateBoxParts(splitBoxParts(selectedBox, 3))}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-fuchsia-300 border border-fuchsia-500/30 text-[11px] font-bold active:scale-95 transition-all"
+                      title="قسّم توقيت الآية إلى ثلاثة أجزاء"
+                    >
+                      ✂️ ثلاثة
+                    </button>
+                    <button
+                      onClick={() => updateBoxParts(appendBoxPart(selectedBox, currentTime))}
+                      className="px-2.5 py-1 rounded-lg bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-200 border border-fuchsia-500/40 text-[11px] font-bold active:scale-95 transition-all"
+                      title="أضف جزءاً جديداً يبدأ من نهاية آخر جزء"
+                    >
+                      ➕ جزء
+                    </button>
+                    {(selectedBox.parts?.length ?? 0) > 0 && (
+                      <button
+                        onClick={() => updateBoxParts([])}
+                        className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-stone-300 border border-white/10 text-[11px] font-bold active:scale-95 transition-all"
+                        title="إرجاع الآية إلى جزء واحد بكامل مداها"
+                      >
+                        ↩️ جزء واحد
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-[11px] text-stone-400 leading-relaxed">
+                  للآيات الطويلة (مثل سورة البيّنة) التي لا يقرأها المعلم دفعة واحدة:
+                  يقرأ المعلم الجزء ثم يعيده الطفل، ثم المعلم الجزء التالي… اضبط مدى كل جزء
+                  هنا وسيتبعها المصحف والتظليل بنفس الترتيب.
+                </p>
+                <div className="space-y-1.5">
+                  {boxParts(selectedBox).map((part, pIdx) => {
+                    const hasTeacher = part.tStart > 0 || part.tEnd > 0;
+                    return (
+                      <div key={part.id} className="rounded-lg bg-white/5 border border-white/10 p-2 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-black text-fuchsia-300">الجزء {pIdx + 1}</span>
+                          <button
+                            onClick={() => updateBoxParts(boxParts(selectedBox).filter((p) => p.id !== part.id))}
+                            className="p-1 rounded text-rose-400 hover:bg-rose-500/15 active:scale-90 transition-all"
+                            title="حذف هذا الجزء"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-1.5 space-y-1">
+                            <span className="text-[10px] font-bold text-amber-300 flex items-center gap-1">
+                              <GraduationCap className="w-3 h-3" /> المعلم
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                step="0.05"
+                                min="0"
+                                value={Number.isFinite(part.tStart) ? part.tStart : 0}
+                                onChange={(e) => patchSelectedBoxPart(part.id, { tStart: Number(e.target.value) })}
+                                className="w-full bg-black/50 border border-white/10 rounded px-1.5 py-1 text-[11px] font-mono text-amber-200 focus:outline-none focus:border-amber-500/50"
+                                title="بداية تلاوة المعلم لهذا الجزء (ثانية)"
+                              />
+                              <input
+                                type="number"
+                                step="0.05"
+                                min="0"
+                                value={Number.isFinite(part.tEnd) ? part.tEnd : 0}
+                                onChange={(e) => patchSelectedBoxPart(part.id, { tEnd: Number(e.target.value) })}
+                                className="w-full bg-black/50 border border-white/10 rounded px-1.5 py-1 text-[11px] font-mono text-amber-200 focus:outline-none focus:border-amber-500/50"
+                                title="نهاية تلاوة المعلم لهذا الجزء (ثانية)"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => stampSelectedBoxPart(part.id, "tStart")}
+                                className="flex-1 py-1 rounded bg-amber-500/15 hover:bg-amber-500/25 text-[10px] font-bold text-amber-200 active:scale-95 transition-all"
+                                title="اجعل البداية عند موضع المؤشر الحالي"
+                              >📍 من هنا</button>
+                              <button
+                                onClick={() => stampSelectedBoxPart(part.id, "tEnd")}
+                                className="flex-1 py-1 rounded bg-amber-500/15 hover:bg-amber-500/25 text-[10px] font-bold text-amber-200 active:scale-95 transition-all"
+                                title="اجعل النهاية عند موضع المؤشر الحالي"
+                              >⏹️ إلى هنا</button>
+                            </div>
+                          </div>
+                          <div className="rounded-lg bg-sky-500/5 border border-sky-500/20 p-1.5 space-y-1">
+                            <span className="text-[10px] font-bold text-sky-300 flex items-center gap-1">
+                              <Baby className="w-3 h-3" /> الطفل
+                              {!hasTeacher && <span className="text-[9px] text-stone-500">(اختياري)</span>}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                step="0.05"
+                                min="0"
+                                value={Number.isFinite(part.kStart as number) ? (part.kStart as number) : 0}
+                                onChange={(e) => patchSelectedBoxPart(part.id, { kStart: Number(e.target.value) })}
+                                className="w-full bg-black/50 border border-white/10 rounded px-1.5 py-1 text-[11px] font-mono text-sky-200 focus:outline-none focus:border-sky-500/50"
+                                title="بداية تلاوة الطفل لهذا الجزء (ثانية)"
+                              />
+                              <input
+                                type="number"
+                                step="0.05"
+                                min="0"
+                                value={Number.isFinite(part.kEnd as number) ? (part.kEnd as number) : 0}
+                                onChange={(e) => patchSelectedBoxPart(part.id, { kEnd: Number(e.target.value) })}
+                                className="w-full bg-black/50 border border-white/10 rounded px-1.5 py-1 text-[11px] font-mono text-sky-200 focus:outline-none focus:border-sky-500/50"
+                                title="نهاية تلاوة الطفل لهذا الجزء (ثانية)"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => stampSelectedBoxPart(part.id, "kStart")}
+                                className="flex-1 py-1 rounded bg-sky-500/15 hover:bg-sky-500/25 text-[10px] font-bold text-sky-200 active:scale-95 transition-all"
+                                title="اجعل بداية تلاوة الطفل عند موضع المؤشر الحالي"
+                              >📍 من هنا</button>
+                              <button
+                                onClick={() => stampSelectedBoxPart(part.id, "kEnd")}
+                                className="flex-1 py-1 rounded bg-sky-500/15 hover:bg-sky-500/25 text-[10px] font-bold text-sky-200 active:scale-95 transition-all"
+                                title="اجعل نهاية تلاوة الطفل عند موضع المؤشر الحالي"
+                              >⏹️ إلى هنا</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 
@@ -1897,6 +2069,14 @@ export default function AudioShadingSyncPage() {
                         <div>
                           <div className="text-xs font-bold text-white flex items-center gap-1.5">
                             <span>{box.label || (box.ayah === 0 ? "🕌 بسملة" : `الآية ${box.ayah}`)}</span>
+                            {(box.parts?.length ?? 0) > 1 && (
+                              <span
+                                className="text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30"
+                                title={`هذه الآية مقسومة إلى ${box.parts!.length} أجزاء: المعلم يقرأ الجزء ثم يعيده الطفل`}
+                              >
+                                {box.parts!.length} أجزاء
+                              </span>
+                            )}
                             {isCurrentlyPlaying && (
                               <Volume2 className="w-3.5 h-3.5 text-emerald-400 animate-bounce" />
                             )}

@@ -4,6 +4,7 @@ import { getRemoteGames, getRemoteGamesUrl, setRemoteGamesUrl, fetchRemoteGames,
 import { hideRemoteGame, showRemoteGame, getHiddenRemoteIds } from "../data/gameCatalog";
 import { getSurahAudioUrl } from "../data/audioUrls";
 import { toast } from "../hooks/use-toast";
+import ModalLayer from "./ui/ModalLayer";
 
 /**
  * لوحة أدمن الألعاب — تظهر في أدوات المالك فقط:
@@ -57,8 +58,9 @@ export default function AdminGamesModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[130] flex items-center justify-center bg-background/70 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="card-nour w-full max-w-lg p-5 space-y-4 animate-fade-up max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+    <ModalLayer>
+    <div className="fixed inset-0 z-[130] flex items-start justify-center overflow-y-auto overscroll-contain bg-background/70 backdrop-blur-sm p-4 sm:items-center" onClick={onClose}>
+      <div className="my-auto card-nour w-full max-w-lg p-5 pb-safe space-y-4 animate-fade-up max-h-[calc(100dvh-2rem)] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h2 className="font-extrabold text-lg text-gradient-gold">أدمن الألعاب</h2>
           <button onClick={onClose} className="px-3 py-1 rounded-full bg-secondary text-sm font-bold">إغلاق ✕</button>
@@ -124,5 +126,6 @@ export default function AdminGamesModal({ onClose }: { onClose: () => void }) {
         <p className="text-[11px] text-muted-foreground leading-relaxed">تُحمَّل أكواد الألعاب تلقائياً للجهاز في الخلفية عند فتح ركن الأطفال والاتصال متوفر، فتعمل لاحقاً دون إنترنت.</p>
       </div>
     </div>
+    </ModalLayer>
   );
 }

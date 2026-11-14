@@ -15,6 +15,7 @@ import { getSurahAudioUrl } from "../data/audioUrls";
 import { ensureCorpus, normalizeArabic, type SurahText } from "../data/quranText";
 import { getTitlesConfig, levelForCompleted, titleForLevel, redeemOneTimeCode } from "../data/titles";
 import { toast } from "../hooks/use-toast";
+import ModalLayer from "./ui/ModalLayer";
 
 // مرتبة بترتيب المصحف — التقدّم دائماً إلى السورة التالية للأمام
 const SURAHS = [...getAllSurahs()].sort((a, b) => a.number - b.number);
@@ -275,21 +276,24 @@ h1{color:#8b6914;font-size:32px}h2{font-size:44px;color:#c0392b;margin:30px 0}p{
   // منع المستخدم المحظور من دخول منطقة الألعاب
   if (getProfile().blocked) {
     return (
-      <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
-        <div className="w-full max-w-sm bg-card rounded-3xl shadow-2xl border-2 border-rose-500/50 p-8 text-center space-y-4">
+      <ModalLayer>
+      <div className="fixed inset-0 z-[250] flex items-center justify-center overflow-y-auto bg-black/90 backdrop-blur-sm p-4">
+        <div className="my-auto w-full max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto pb-safe bg-card rounded-3xl shadow-2xl border-2 border-rose-500/50 p-8 text-center space-y-4">
           <div className="mx-auto w-16 h-16 rounded-full bg-rose-500/15 border border-rose-500/40 flex items-center justify-center text-rose-500 text-3xl">🚫</div>
           <h2 className="text-xl font-extrabold text-foreground">تم إيقاف حسابك مؤقتاً</h2>
           <p className="text-sm text-muted-foreground font-bold">راجع وليّ الأمر أو المشرف لإعادة تفعيل الحساب.</p>
         </div>
       </div>
+      </ModalLayer>
     );
   }
 
   if (!open) {
     if (celebrate) {
       return (
-        <div className="fixed inset-0 z-[240] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="w-full max-w-sm bg-gradient-to-b from-amber-900/95 to-yellow-900/95 rounded-3xl shadow-2xl border-2 border-amber-400/50 p-8 text-center space-y-5 animate-fade-up">
+        <ModalLayer>
+        <div className="fixed inset-0 z-[240] flex items-start justify-center overflow-y-auto bg-black/70 backdrop-blur-sm p-4 sm:items-center animate-fade-in">
+          <div className="my-auto w-full max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto pb-safe bg-gradient-to-b from-amber-900/95 to-yellow-900/95 rounded-3xl shadow-2xl border-2 border-amber-400/50 p-8 text-center space-y-5 animate-fade-up">
             <div className="mx-auto w-20 h-20 rounded-full bg-amber-400/20 border border-amber-300/50 flex items-center justify-center text-amber-300 animate-bounce"><Award className="w-12 h-12" /></div>
             <h2 className="text-2xl font-extrabold text-amber-300">🏅 لقب جديد: {celebrate}</h2>
             <p className="text-amber-100 text-sm">ما شاء الله! أتممت {certLevel * cfg.surahsPerLevel} سورة/جزء ونلت لقب جديد.</p>
@@ -298,14 +302,16 @@ h1{color:#8b6914;font-size:32px}h2{font-size:44px;color:#c0392b;margin:30px 0}p{
             <button onClick={() => setCelebrate(null)} className="w-full p-2.5 rounded-xl bg-white/10 text-amber-200 font-bold hover:bg-white/20">متابعة</button>
           </div>
         </div>
+        </ModalLayer>
       );
     }
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-[240] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="w-full max-w-lg bg-card rounded-3xl shadow-2xl border border-border p-5 sm:p-6 space-y-4 animate-fade-up max-h-[92vh] overflow-y-auto">
+    <ModalLayer>
+    <div className="fixed inset-0 z-[240] flex items-start justify-center overflow-y-auto overscroll-contain bg-black/70 backdrop-blur-sm p-4 sm:items-center animate-fade-in">
+      <div className="my-auto w-full max-w-lg bg-card rounded-3xl shadow-2xl border border-border p-5 pb-safe sm:p-6 space-y-4 animate-fade-up max-h-[calc(100dvh-2rem)] overflow-y-auto custom-scrollbar">
         <audio ref={audioRef} src={audioUrl} preload="auto" onEnded={() => setPlaying(false)} className="hidden" />
 
         <div className="flex items-center justify-between gap-2">
@@ -409,5 +415,6 @@ h1{color:#8b6914;font-size:32px}h2{font-size:44px;color:#c0392b;margin:30px 0}p{
         </div>
       </div>
     </div>
+    </ModalLayer>
   );
 }

@@ -6,16 +6,14 @@ import SurahList from "@/components/SurahList";
 import SearchBar from "@/components/SearchBar";
 import CustomPlayer, { CustomPlayerHandle } from "@/components/CustomPlayer";
 import ParentalGateModal from "@/components/ParentalGateModal";
-import NotificationsModal from "../components/NotificationsModal";
 import AppNav from "@/components/AppNav";
 import { useSurahData, SurahItem } from "@/hooks/useSurahData";
 import { useProgress } from "@/hooks/useProgress";
-import { useNotifications } from "@/hooks/useNotifications";
 import { useTVNavigation } from "@/hooks/useTVNavigation";
 import { useAudioContext } from "@/contexts/audioContext";
 
-import { Shuffle, ListOrdered, Settings, Bell, Gamepad2, Lock, Maximize2, Minimize2 } from "lucide-react";
-import { isKidsMode, setKidsLocked, hasKidsPin } from "@/data/kidsLock";
+import { Shuffle, ListOrdered, Settings, Gamepad2, Lock, Maximize2, Minimize2 } from "lucide-react";
+import { isKidsMode, setKidsLocked, hasKidsPin, unlockParentSession } from "@/data/kidsLock";
 import { isTimeAllowed } from "@/data/kidsSchedule";
 import { kidsEnabled as getKidsEnabled, addReadingMinutes, addCoins, setAppMode, getProgress, isPureMode, setKidsHidden, kidsHidden } from "@/data/kidsProfile";
 
@@ -37,7 +35,6 @@ function shuffleArray<T>(arr: T[]): T[] {
 }
 
 const Index = () => {
-  useNotifications();
   const navigate = useNavigate();
   const { surahs, loading, error, retry } = useSurahData();
   const { points, recordAyah } = useProgress();
@@ -52,7 +49,6 @@ const Index = () => {
   // ركن الأطفال
   const [kidsMode, setKidsMode] = useState(isKidsMode);
   const [pinAction, setPinAction] = useState<null | "enter" | "settings" | "exit_kids" | "exit_kids">(null);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
 
   const isAudioPlayingRef = useRef(false);
@@ -391,7 +387,6 @@ const Index = () => {
     onPrev: handlePlayPrev,
     onBack: () => {
       if (currentTrack) closeCurrentTrack();
-      else if (showNotifications) setShowNotifications(false);
     },
   });
 
@@ -618,7 +613,7 @@ const Index = () => {
               setKidsLocked(false);
               toast({ title: "تم فك قفل الأطفال بنجاح" });
             } else if (pinAction === "settings") {
-              sessionStorage.setItem("mushaf:settingsUnlocked", "1");
+              unlockParentSession();
               navigate("/settings");
             }
             setPinAction(null);
@@ -626,8 +621,6 @@ const Index = () => {
           onCancel={() => setPinAction(null)}
         />
       )}
-
-      {showNotifications && <NotificationsModal onClose={() => setShowNotifications(false)} />}
 
       {/* تذييل الموقع — يُخفى بالكامل في وضع الأطفال */}
       <AppFooter />

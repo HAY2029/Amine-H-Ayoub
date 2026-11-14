@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   AlertCircle,
   X,
-  Server,
   HardDrive,
   Gauge,
   Clock,
@@ -13,6 +12,7 @@ import {
   EyeOff
 } from "lucide-react";
 import type { SurahDownloadProgress } from "@/data/offlineDownload";
+import ModalLayer from "@/components/ui/ModalLayer";
 
 export interface SurahDownloadModalProps {
   isOpen: boolean;
@@ -81,16 +81,18 @@ export const SurahDownloadModal: React.FC<SurahDownloadModalProps> = ({
         : "جاري الحساب...",
       speedText: formatSpeed(speed),
       estimatedTimeText: formatEstimatedTime(received, total, speed),
-      serverText: progressData?.serverName || "سيرفر التخزين السحابي فائق السرعة",
+      // لا يُعرض أي اسم سيرفر للمستخدم إطلاقاً — وصف محايد فقط
+      serverText: "تنزيل مباشر فائق السرعة",
     };
   }, [progressData]);
 
   return (
+    <ModalLayer>
     <div
       role="dialog"
       aria-modal="true"
       aria-label={`شاشة تحميل سورة ${surahName}`}
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain p-4 sm:items-center bg-black/70 backdrop-blur-md animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget && (isCompleted || isError)) onClose();
       }}
@@ -99,7 +101,7 @@ export const SurahDownloadModal: React.FC<SurahDownloadModalProps> = ({
       <div className="pointer-events-none absolute w-96 h-96 rounded-full bg-amber-500/15 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-10 -right-10 w-72 h-72 rounded-full bg-emerald-500/15 blur-3xl" />
 
-      <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-amber-500/30 bg-card/95 text-card-foreground p-6 sm:p-7 shadow-2xl backdrop-blur-2xl transition-all">
+      <div className="relative my-auto w-full max-w-md overflow-hidden rounded-3xl border border-amber-500/30 bg-card/95 text-card-foreground p-6 pb-safe sm:p-7 shadow-2xl backdrop-blur-2xl transition-all max-h-[calc(100dvh-2rem)] overflow-y-auto custom-scrollbar">
         {/* Top Header */}
         <div className="flex items-start justify-between gap-3 mb-5">
           <div className="flex items-center gap-3">
@@ -145,10 +147,10 @@ export const SurahDownloadModal: React.FC<SurahDownloadModalProps> = ({
           </button>
         </div>
 
-        {/* Server & Status Info Banner */}
+        {/* شريط الحالة — بدون أي اسم سيرفر */}
         <div className="flex items-center justify-between text-xs px-3.5 py-2 rounded-xl bg-stone-100/70 dark:bg-stone-800/40 border border-border mb-5">
           <span className="flex items-center gap-1.5 text-stone-600 dark:text-stone-300 font-medium truncate">
-            <Server className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <Download className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span className="truncate">{stats.serverText}</span>
           </span>
           <span
@@ -298,6 +300,7 @@ export const SurahDownloadModal: React.FC<SurahDownloadModalProps> = ({
         </div>
       </div>
     </div>
+    </ModalLayer>
   );
 };
 

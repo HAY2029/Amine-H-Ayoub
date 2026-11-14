@@ -18,7 +18,6 @@ import MissingWordGame from "../games/MissingWordGame";
 import AyahOrderGame from "../games/AyahOrderGame";
 import DetectiveGame from "../games/DetectiveGame";
 import WordBuilderGame from "../games/WordBuilderGame";
-import CatchStarGame from "../games/CatchStarGame";
 import AyahMathGame from "../games/AyahMathGame";
 import ListenKidsGame from "../games/ListenKidsGame";
 import MakkiMadaniGame from "../games/MakkiMadaniGame";
@@ -28,7 +27,6 @@ import QuranValuesGame from "../games/QuranValuesGame";
 import RemoteGameFrame from "../components/RemoteGameFrame";
 import Avatar, { getAvatarSrc } from "../components/Avatar";
 import { drawQRCodeOnCanvas } from "../utils/qrCode";
-import NotificationsModal from "../components/NotificationsModal";
 import BadgesModal from "../components/BadgesModal";
 import QuranLockGateModal from "../components/QuranLockGateModal";
 import DailyGateModal from "../components/DailyGateModal";
@@ -1905,14 +1903,13 @@ const ENGINES: Record<GameEngine, (p: { def: GameDef; minSurah: number }) => JSX
   remote: ({ def }) => <RemoteGameFrame def={def} onExit={() => window.dispatchEvent(new Event("mushaf:remotegame:exit"))} />,
   detective: ({ def, minSurah }) => <DetectiveGame def={def} minSurah={minSurah} />,
   wordbuilder: ({ def, minSurah }) => <WordBuilderGame def={def} minSurah={minSurah} />,
-  catchstar: ({ def, minSurah }) => <CatchStarGame def={def} minSurah={minSurah} />,
   ayahmath: ({ def, minSurah }) => <AyahMathGame def={def} minSurah={minSurah} />,
   server_quiz: ({ def }) => <ServerQuizEngine def={def} />,
   listenkids: ({ def, minSurah }) => <ListenKidsGame def={def} minSurah={minSurah} onExit={() => window.dispatchEvent(new Event("mushaf:listenkids:exit"))} />,
   makkimadani: ({ def, minSurah }) => <MakkiMadaniGame def={def} minSurah={minSurah} />,
   oddword: ({ def, minSurah }) => <OddQuranWordGame def={def} minSurah={minSurah} />,
   orchard: ({ def, minSurah }) => <QuranOrchardGame def={def} minSurah={minSurah} />, 
-  values: ({ def }) => <QuranValuesGame def={def} />,
+  values: ({ def, minSurah }) => <QuranValuesGame def={def} minSurah={minSurah} />,
 };
 const ICONS: Record<string, typeof Headphones> = { Headphones, ListOrdered, LayoutGrid, Scale, Trophy, Hash, Grid3x3, Gamepad2, BookOpen, Sparkles, Puzzle, Brain, Mic, Landmark, Trees, BookMarked, Sunrise, Gift, Droplets, MapPin, Heart, BadgeCheck, HandHeart, Moon, Flower2, Compass, CircleDollarSign, Rainbow, Lightbulb, Crown };
 const iconFor = (key: string) => ICONS[key] || Gamepad2;
@@ -1933,7 +1930,6 @@ export default function KidsGames() {
   const [showSurahConfirm, setShowSurahConfirm] = useState(() => {
     try { return localStorage.getItem("mushaf:surahConfirmDay") !== new Date().toDateString(); } catch { return true; }
   });
-  const [showNotifications, setShowNotifications] = useState(false);
 
   // شهادة التقدم (زر المشكلة)
   const [showCertificate, setShowCertificate] = useState(false);
@@ -1971,19 +1967,7 @@ export default function KidsGames() {
   // مخفيّ للمستخدمين (لكن يدخله المالك للتجربة)
   useEffect(() => { if (kidsRouteBlocked()) navigate("/audio", { replace: true }); }, [navigate]);
 
-  // لا يدخل للألعاب وهو في فترة دراسة القرآن طالما لم يكمل الدقائق المطلوبة
-  useEffect(() => {
-    const goal = typeof profile.goalMinutes === "number" && profile.goalMinutes > 0 ? profile.goalMinutes : 5;
-    const read = progress.minutes || 0;
-    if (read < goal && !progress.unlocked) {
-      toast({ 
-        title: "⏳ وقت مدارسة القرآن الكريم أولاً!", 
-        description: `بقي ${Math.max(0, Math.round((goal - read) * 10) / 10)} دقيقة استماع لفتح الألعاب.`,
-        variant: "destructive"
-      });
-      navigate("/audio", { replace: true });
-    }
-  }, [profile.goalMinutes, progress.minutes, progress.unlocked, navigate]);
+  // الألعاب مفتوحة للعب مباشرة بلا شرط إتمام دقائق القراءة
 
   useEffect(() => {
     recordTodayActivity();
@@ -2909,7 +2893,6 @@ export default function KidsGames() {
             {!active && (
               <>
                 <button onClick={() => setShowBadges(true)} aria-label="الأوسمة والإنجازات" title="الأوسمة والإنجازات" className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full bg-amber-500/15 text-amber-500 hover:brightness-95 flex items-center justify-center active:scale-95 border border-amber-500/30 shadow-sm"><Trophy className="w-5 h-5" /></button>
-                <button onClick={() => setShowNotifications(true)} aria-label="الإشعارات" title="الإشعارات" className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full bg-secondary text-secondary-foreground hover:brightness-95 flex items-center justify-center active:scale-95"><Bell className="w-5 h-5" /></button>
                 <button onClick={openParent} aria-label="إعدادات ولي الأمر" title="إعدادات ولي الأمر" className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full bg-secondary text-secondary-foreground hover:brightness-95 flex items-center justify-center active:scale-95"><Settings className="w-5 h-5" /></button>
                 <button onClick={openCertificate} aria-label="شهادة التقدم" title="شهادة التقدم" className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full bg-rose-500/15 text-rose-500 hover:brightness-95 flex items-center justify-center active:scale-95 border border-rose-500/30 shadow-sm"><Award className="w-5 h-5" /></button>
               </>
@@ -3175,7 +3158,6 @@ export default function KidsGames() {
         />
       )}
       
-      {showNotifications && <NotificationsModal onClose={() => setShowNotifications(false)} />}
       {showBadges && <BadgesModal onClose={() => setShowBadges(false)} />}
 
       {/* رسالة التشجيع بعد إنجاز وقت الدراسة (عند الدخول للألعاب) */}
@@ -3192,7 +3174,7 @@ export default function KidsGames() {
                 <Gamepad2 className="w-5 h-5" /> دخول الألعاب
               </button>
               <button onClick={dismissEncourage} className="w-full p-2.5 rounded-xl bg-secondary text-secondary-foreground font-bold active:scale-95 transition-all">
-                دخول الألعاب
+                لاحقاً
               </button>
             </div>
                     </div>

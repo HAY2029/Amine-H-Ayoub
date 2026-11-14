@@ -1,4 +1,6 @@
-import { hasValidSupabaseKey, supabase } from "@/lib/supabase";
+// فحص المفتاح فقط من وحدة خفيفة؛ حزمة Supabase تُجلب عند إرسال التقرير فقط
+// (هذا الملف يُستورد مع حاجز الأخطاء في الشاشة الأولى، فلا يجوز أن يجرّها معه).
+import { hasValidSupabaseKey } from "@/lib/supabaseEnv";
 import { getDeviceId } from "@/utils/deviceInfo";
 import { openExternalUrl } from "@/utils/tauriUtils";
 
@@ -159,6 +161,7 @@ export async function sendSupportReportEmail(
   // 2. القناة الثانية: حفظ الرسالة في سوبابيز
   if (hasValidSupabaseKey()) {
     try {
+      const { supabase } = await import("@/lib/supabase");
       const deviceId = getDeviceId();
       const { data: conversation } = await supabase
         .from("support_conversations")
@@ -193,6 +196,7 @@ export async function sendSupportReportEmail(
 
     // محاولة استدعاء دالة Edge Function إن وُجدت
     try {
+      const { supabase } = await import("@/lib/supabase");
       const { data, error } = await supabase.functions.invoke("send-support-report", {
         body: report,
       });

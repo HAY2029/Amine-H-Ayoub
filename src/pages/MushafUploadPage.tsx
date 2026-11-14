@@ -296,7 +296,15 @@ export default function MushafUploadPage() {
               {pages.map((p) => (
                 <li key={p.src} className="overflow-hidden rounded-lg border bg-background/60">
                   {imgs[p.src] ? (
-                    <img src={imgs[p.src]} alt={p.name} className="h-32 w-full object-cover" />
+                    // صفحات المصحف ثقيلة (~600 كيلوبايت للصفحة): تُحمَّل الصور الظاهرة فقط
+                    // بدل تنزيل كل الشبكة دفعة واحدة على الهاتف.
+                    <img
+                      src={imgs[p.src]}
+                      alt={p.name}
+                      className="h-32 w-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : (
                     <div className="flex h-32 items-center justify-center bg-muted">
                       <ImageOff className="h-5 w-5 text-muted-foreground" />

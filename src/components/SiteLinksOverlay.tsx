@@ -1,5 +1,6 @@
 import { useEffect, useCallback, startTransition } from "react";
 import { useNavigate } from "react-router-dom";
+import ModalLayer from "./ui/ModalLayer";
 import { BookOpen, Headphones, Timer, Target, Zap, X, Map, GraduationCap } from "lucide-react";
 
 interface Props {
@@ -33,16 +34,15 @@ export default function SiteLinksOverlay({ open, onClose }: Props) {
   if (!open) return null;
 
   return (
+    <ModalLayer>
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto overscroll-contain p-4 sm:items-center animate-fade-in"
       onClick={onClose}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-background/70 backdrop-blur-md" />
 
-      {/* Modal */}
-      <div
-        className="relative w-full max-w-lg glass-nour rounded-3xl p-6 shadow-soft animate-scale-up"
+      {/* Modal */}        <div className="relative my-auto w-full max-w-lg glass-nour rounded-3xl p-6 pb-safe shadow-soft max-h-[calc(100dvh-2rem)] overflow-y-auto custom-scrollbar animate-scale-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -101,5 +101,6 @@ export default function SiteLinksOverlay({ open, onClose }: Props) {
         </div>
       </div>
     </div>
+    </ModalLayer>
   );
 }

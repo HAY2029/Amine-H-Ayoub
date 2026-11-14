@@ -33,6 +33,10 @@ interface Props {
   initialAyah?: number;
   pageSrcs: string[];
   onBeforePlay?: () => void;
+  /** يُبلَّغ بالقدر المختار فور بدء التلاوة، ليستأنفه القارئ تلقائياً في زيارة تالية */
+  onRangeChange?: (range: { surah: number; from: number; to: number }) => void;
+  /** Speaker mode: teacher, kids, or both */
+  speakerMode?: SpeakerMode;
 }
 
 const fmt = (sec: number): string => {
@@ -80,6 +84,8 @@ export default function AyahRangePlayer({
   initialAyah = 1,
   pageSrcs,
   onBeforePlay,
+  onRangeChange,
+  speakerMode: speakerModeProp = "teacher",
 }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const startRef = useRef(0);
@@ -98,7 +104,8 @@ export default function AyahRangePlayer({
   const startTickerRef = useRef<() => void>(() => {});
 
   const [mode, setMode] = useState<Mode>("ayah");
-  const [speakerMode, setSpeakerMode] = useState<SpeakerMode>("teacher");
+  // الوضع الافتراضي يأتي من الخاصية (أو «معلم»)، ثم يمكن للمستخدم تبديله من الأزرار
+  const [speakerMode, setSpeakerMode] = useState<SpeakerMode>(speakerModeProp);
   const [surahNum, setSurahNum] = useState(surahNumber);
   const [fromAyah, setFromAyah] = useState(initialAyah);
   const [toAyah, setToAyah] = useState(initialAyah);
@@ -291,7 +298,7 @@ export default function AyahRangePlayer({
     if (initializedRef.current) return;
     initializedRef.current = true;
     setMode("ayah");
-    setSpeakerMode("teacher");
+    setSpeakerMode(speakerModeProp);
     setSurahNum(surahNumber);
     setFromSurah(surahNumber);
     setToSurah(surahNumber);
@@ -451,8 +458,15 @@ export default function AyahRangePlayer({
       return;
     }
     onBeforePlay?.();
+    if (mode === "ayah") {
+      onRangeChange?.(
+        fromAyah <= toAyah
+          ? { surah: surahNum, from: fromAyah, to: toAyah }
+          : { surah: surahNum, from: toAyah, to: fromAyah }
+      );
+    }
     await playSeg(0, 1);
-  }, [onBeforePlay, playSeg]);
+  }, [onBeforePlay, onRangeChange, mode, fromAyah, toAyah, surahNum, playSeg]);
 
   const toggle = useCallback(() => {
     if (playing) {

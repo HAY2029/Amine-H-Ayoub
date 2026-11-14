@@ -144,6 +144,11 @@ export const syncShadingFromServer = async (): Promise<ShadingSettings> => {
 
     if (data && data.value) {
       const serverSettings = data.value as ShadingSettings;
+      // لا نطمس تعديلاً محلياً أحدث لم يُرفع بعد (مثال: تغيير لون التظليل من قارئ المصحف)
+      const local = getLocalShadingSettings();
+      const localTime = local.updatedAt ? new Date(local.updatedAt).getTime() : 0;
+      const serverTime = serverSettings.updatedAt ? new Date(serverSettings.updatedAt).getTime() : 0;
+      if (localTime > serverTime) return local;
       // حفظ محلياً أيضاً
       localStorage.setItem(SHADING_STORAGE_KEY, JSON.stringify(serverSettings));
       return { ...DEFAULT_SETTINGS, ...serverSettings };

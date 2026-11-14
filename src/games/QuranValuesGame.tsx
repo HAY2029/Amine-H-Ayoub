@@ -1,175 +1,201 @@
-import { useMemo, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Headphones, Pause, Play, Sparkles, Volume2 } from "lucide-react";
 import type { GameDef } from "../data/gameCatalog";
-import { getAllSurahs } from "../data/quranData";
 import { addCoins } from "../data/kidsProfile";
+import { ensureCorpus, type SurahText } from "../data/quranText";
+import { getFallbackAudioUrl, getSurahAudioUrl, hasCloudAudio } from "../data/audioUrls";
 
-interface Quest {
+interface Question {
   symbol: string;
-  question: string;
+  prompt: string;
   answer: string;
-  choices: string[];
+  options: string[];
+  ayahText?: string;
 }
 
-const QUESTS: Record<string, Quest[]> = {
-  "quran-book": [
-    { symbol: "📖", question: "أين كتاب القرآن؟", answer: "📖", choices: ["📖", "⚽", "🚗"] },
-    { symbol: "✨", question: "ماذا نفعل عند القرآن؟", answer: "نستمع", choices: ["نستمع", "نرميه", "نغلقه"] },
-    { symbol: "🤲", question: "بعد القراءة نقول؟", answer: "صدق الله", choices: ["صدق الله", "لا شيء", "وداعاً"] },
-  ],
-  "prayer-time": [
-    { symbol: "💧", question: "الخطوة الأولى للصلاة؟", answer: "نتوضأ", choices: ["نتوضأ", "ننام", "نلعب"] },
-    { symbol: "🕋", question: "نتجه في الصلاة إلى؟", answer: "القبلة", choices: ["القبلة", "التلفاز", "الباب"] },
-    { symbol: "🙌", question: "نبدأ الصلاة بـ؟", answer: "الله أكبر", choices: ["الله أكبر", "تصفيق", "غناء"] },
-    { symbol: "📖", question: "نقرأ في الصلاة؟", answer: "الفاتحة", choices: ["الفاتحة", "قصة", "رسالة"] },
-    { symbol: "🙇", question: "ثم ننحني في؟", answer: "الركوع", choices: ["الركوع", "الجري", "الضحك"] },
-    { symbol: "🤲", question: "نضع الجبهة على الأرض في؟", answer: "السجود", choices: ["السجود", "النوم", "القفز"] },
-  ],
-  "sunrise-remembrance": [
-    { symbol: "☀️", question: "عند الصباح نقول؟", answer: "الحمد لله", choices: ["الحمد لله", "لا شيء", "غضب"] },
-    { symbol: "🌤️", question: "من خلق الشمس؟", answer: "الله", choices: ["الله", "اللعبة", "السيارة"] },
-    { symbol: "😊", question: "نبدأ يومنا بـ؟", answer: "ابتسامة", choices: ["ابتسامة", "خصام", "بكاء"] },
-  ],
-  "kindness-gift": [
-    { symbol: "🎁", question: "نشارك لعبتنا مع؟", answer: "صديق", choices: ["صديق", "لا أحد", "نخفيها"] },
-    { symbol: "💛", question: "الكلمة الطيبة؟", answer: "جميلة", choices: ["جميلة", "سيئة", "لا نحتاجها"] },
-    { symbol: "🌷", question: "نساعد من؟", answer: "المحتاج", choices: ["المحتاج", "لا أحد", "نضحك عليه"] },
-  ],
-  "clean-water": [
-    { symbol: "💧", question: "نتوضأ بـ؟", answer: "الماء", choices: ["الماء", "الرمل", "الكرة"] },
-    { symbol: "🫧", question: "نغسل يدينا؟", answer: "للنظافة", choices: ["للنظافة", "للتعب", "لا نغسلها"] },
-    { symbol: "🌿", question: "النظافة شيء؟", answer: "جميل", choices: ["جميل", "سيئ", "ممنوع"] },
-  ],
-  "mosque-path": [
-    { symbol: "🕌", question: "في المسجد نكون؟", answer: "هادئين", choices: ["هادئين", "صاخبين", "غاضبين"] },
-    { symbol: "👟", question: "قبل الدخول؟", answer: "نخلع الحذاء", choices: ["نخلع الحذاء", "نرميه", "نلبس اثنين"] },
-    { symbol: "🤲", question: "المسجد بيت؟", answer: "الله", choices: ["الله", "السيارة", "اللعبة"] },
-  ],
-  "parents-love": [
-    { symbol: "❤️", question: "نقول لأمي؟", answer: "أحبك", choices: ["أحبك", "لا", "اذهبي"] },
-    { symbol: "🌟", question: "نطيع والدي؟", answer: "نعم", choices: ["نعم", "لا", "أحياناً"] },
-    { symbol: "🤝", question: "نساعد في البيت؟", answer: "نعم", choices: ["نعم", "لا", "نهرب"] },
-  ],
-  "honest-star": [
-    { symbol: "⭐", question: "وجدت لعبة ليست لي", answer: "أعيدها", choices: ["أعيدها", "آخذها", "أكسرها"] },
-    { symbol: "💬", question: "نقول دائماً؟", answer: "الصدق", choices: ["الصدق", "الكذب", "لا نتكلم"] },
-    { symbol: "🏅", question: "الصادق طفل؟", answer: "شجاع", choices: ["شجاع", "سيئ", "كسول"] },
-  ],
-  "help-friend": [
-    { symbol: "🤝", question: "صديقي يحتاج مساعدة", answer: "أساعده", choices: ["أساعده", "أضحك", "أهرب"] },
-    { symbol: "😊", question: "الصديق الجيد؟", answer: "لطيف", choices: ["لطيف", "مؤذٍ", "غاضب"] },
-    { symbol: "🧸", question: "نرتب الألعاب معاً؟", answer: "نعم", choices: ["نعم", "لا", "نرميها"] },
-  ],
-  "night-moon": [
-    { symbol: "🌙", question: "قبل النوم نقرأ؟", answer: "دعاء", choices: ["دعاء", "صراخ", "لا شيء"] },
-    { symbol: "😴", question: "النوم نعمة من؟", answer: "الله", choices: ["الله", "اللعبة", "القمر"] },
-    { symbol: "⭐", question: "ننام بعد؟", answer: "الهدوء", choices: ["الهدوء", "الركض", "الضجيج"] },
-  ],
-  "garden-good": [
-    { symbol: "🌷", question: "الزهرة تحتاج؟", answer: "ماء", choices: ["ماء", "حجر", "حذاء"] },
-    { symbol: "🌱", question: "نحافظ على؟", answer: "الزرع", choices: ["الزرع", "إفساده", "قطفه كله"] },
-    { symbol: "🦋", question: "نحن لطفاء مع؟", answer: "الحيوان", choices: ["الحيوان", "إيذائه", "إخافته"] },
-  ],
-  "qibla-compass": [
-    { symbol: "🧭", question: "قبل الصلاة نتجه إلى؟", answer: "القبلة", choices: ["القبلة", "الباب", "التلفاز"] },
-    { symbol: "🕋", question: "الكعبة في؟", answer: "مكة", choices: ["مكة", "البحر", "الحديقة"] },
-    { symbol: "🤲", question: "نقف في الصلاة؟", answer: "بانتباه", choices: ["بانتباه", "بلعب", "بنوم"] },
-  ],
-  "charity-box": [
-    { symbol: "🪙", question: "نتصدق على؟", answer: "المحتاج", choices: ["المحتاج", "لا أحد", "نخفي المال"] },
-    { symbol: "🍎", question: "نشارك طعامنا؟", answer: "نعم", choices: ["نعم", "لا", "نرميه"] },
-    { symbol: "💛", question: "العطاء يجعل القلب؟", answer: "سعيداً", choices: ["سعيداً", "حزيناً", "غاضباً"] },
-  ],
-  "rainbow-mercy": [
-    { symbol: "🌈", question: "نقول لمن أخطأ؟", answer: "سامحتك", choices: ["سامحتك", "لا", "اذهب"] },
-    { symbol: "💗", question: "الرحمة شيء؟", answer: "جميل", choices: ["جميل", "سيئ", "لا نعرف"] },
-    { symbol: "🕊️", question: "نحب السلام؟", answer: "نعم", choices: ["نعم", "لا", "غضب"] },
-  ],
-  "good-deeds-crown": [
-    { symbol: "👑", question: "العمل الطيب يجعلني؟", answer: "سعيداً", choices: ["سعيداً", "غاضباً", "حزيناً"] },
-    { symbol: "🌟", question: "إذا ساعدت غيري؟", answer: "أحصل على أجر", choices: ["أحصل على أجر", "أخسر", "لا شيء"] },
-    { symbol: "🤲", question: "نختار كل يوم؟", answer: "عملاً طيباً", choices: ["عملاً طيباً", "خصاماً", "كذباً"] },
-  ],  "lamp-learning": [
-    { symbol: "💡", question: "نتعلم القرآن بـ؟", answer: "فرح", choices: ["فرح", "ملل", "غضب"] },
-    { symbol: "📚", question: "عندما لا نعرف نسأل؟", answer: "المعلم", choices: ["المعلم", "لا أحد", "الكرسي"] },
-    { symbol: "🏆", question: "كل محاولة تجعلني؟", answer: "أفضل", choices: ["أفضل", "أسوأ", "لا شيء"] },
-  ],
+const shuffle = <T,>(items: T[]) => {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const targetIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[targetIndex]] = [result[targetIndex], result[index]];
+  }
+  return result;
 };
 
-const shuffle = <T,>(items: T[]) => [...items].sort(() => Math.random() - 0.5);
-const SURAHS = getAllSurahs();
+const unique = (items: string[]) => [...new Set(items.filter(Boolean))];
 
-const gameSeed = (gameId: string) => Array.from(gameId).reduce((total, letter) => total + letter.charCodeAt(0), 0);
+const wordsIn = (text: string) => unique(
+  text
+    .split(/\s+/)
+    .map((word) => word.replace(/[^\p{L}]/gu, ""))
+    .filter((word) => word.length > 1),
+);
 
-const endlessQuest = (gameId: string, round: number): Quest => {
-  const offset = Math.max(0, round - (QUESTS[gameId]?.length ?? 0));
-  const seed = gameSeed(gameId);
-  const surah = SURAHS[(offset * 37 + seed) % SURAHS.length];
-  const alternateOne = SURAHS[(surah.number + offset + 17) % SURAHS.length];
-  const alternateTwo = SURAHS[(surah.number + offset + 43) % SURAHS.length];
-  const challengeType = Math.floor(offset / SURAHS.length) % 3;
+const numericChoices = (answer: number, maximum: number) => unique([
+  String(answer),
+  String(Math.max(1, answer - 1)),
+  String(Math.min(maximum, answer + 1)),
+  String(answer + 2 <= maximum ? answer + 2 : Math.max(1, answer - 2)),
+]).slice(0, 3);
 
-  if (challengeType === 0) {
-    const nearOne = Math.max(1, surah.ayahCount - 1);
-    const nearTwo = surah.ayahCount + 1;
-    return { symbol: "📖", question: `كم آية في سورة ${surah.name}؟`, answer: String(surah.ayahCount), choices: [String(surah.ayahCount), String(nearOne), String(nearTwo)] };
+const questionFor = (surah: SurahText, corpus: SurahText[], round: number): Question => {
+  const ayahIndex = round % surah.ayahs.length;
+  const kind = Math.floor(round / surah.ayahs.length) % 4;
+  const cycle = Math.floor(round / (surah.ayahs.length * 4));
+  const ayah = surah.ayahs[ayahIndex];
+  const allWords = unique(surah.ayahs.flatMap((item) => wordsIn(item.text)));
+  const ayahWords = wordsIn(ayah.text);
+
+  if (kind === 0) {
+    return {
+      symbol: "📖",
+      prompt: "ما رقم هذه الآية؟",
+      ayahText: ayah.text,
+      answer: String(ayah.n),
+      options: numericChoices(ayah.n, surah.ayahs.length),
+    };
   }
 
-  if (challengeType === 1) {
-    return { symbol: "🔢", question: `ما رقم سورة ${surah.name}؟`, answer: String(surah.number), choices: [String(surah.number), String(((surah.number + 11 - 1) % 114) + 1), String(((surah.number + 29 - 1) % 114) + 1)] };
+  if (kind === 1 && ayahWords.length) {
+    const answer = ayahWords[cycle % ayahWords.length];
+    const wrongWords = allWords.filter((word) => !ayahWords.includes(word));
+    const choices = unique([answer, ...wrongWords.slice(cycle % Math.max(1, wrongWords.length), (cycle % Math.max(1, wrongWords.length)) + 2)]);
+    while (choices.length < 3) choices.push(...allWords.filter((word) => word !== answer && !choices.includes(word)).slice(0, 3 - choices.length));
+    return {
+      symbol: "🔎",
+      prompt: "اختر كلمة سمعتها في الآية",
+      ayahText: ayah.text,
+      answer,
+      options: choices.slice(0, 3),
+    };
   }
 
-  return { symbol: "✨", question: `ما اسم السورة رقم ${surah.number}؟`, answer: surah.name, choices: [surah.name, alternateOne.name, alternateTwo.name] };
+  if (kind === 2) {
+    const prompts = [
+      `كم آية في سورة ${surah.name}؟`,
+      `سورة ${surah.name} فيها كم آية؟`,
+      `اختر عدد آيات سورة ${surah.name}`,
+    ];
+    return {
+      symbol: "🔢",
+      prompt: prompts[cycle % prompts.length],
+      answer: String(surah.ayahs.length),
+      options: numericChoices(surah.ayahs.length, Math.max(12, surah.ayahs.length + 3)),
+    };
+  }
+
+  const otherSurahs = corpus.filter((item) => item.std !== surah.std && item.name !== surah.name);
+  const firstOther = otherSurahs[(cycle * 11 + 3) % otherSurahs.length];
+  const secondOther = otherSurahs[(cycle * 17 + 19) % otherSurahs.length];
+  return {
+    symbol: "✨",
+    prompt: "ما اسم السورة التي استمعت إليها؟",
+    answer: surah.name,
+    options: unique([surah.name, firstOther?.name || "", secondOther?.name || ""]).slice(0, 3),
+  };
 };
 
-const questionForRound = (gameId: string, quests: Quest[], round: number) => round < quests.length ? quests[round] : endlessQuest(gameId, round);
+const audioUrlFor = (surahNumber: number) => hasCloudAudio(surahNumber) ? getSurahAudioUrl(surahNumber) : getFallbackAudioUrl(surahNumber);
 
-export default function QuranValuesGame({ def }: { def: GameDef }) {
-  const quests = QUESTS[def.id] ?? QUESTS["quran-book"];
+export default function QuranValuesGame({ def, minSurah }: { def: GameDef; minSurah: number }) {
+  const [corpus, setCorpus] = useState<SurahText[]>([]);
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
-  const quest = questionForRound(def.id, quests, round);
-  const choices = useMemo(() => shuffle(quest.choices), [quest]);
+  const [started, setStarted] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    ensureCorpus().then(setCorpus).catch(() => setCorpus([]));
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  const surah = useMemo(() => corpus.find((item) => item.std === minSurah || item.app === minSurah) ?? corpus[0], [corpus, minSurah]);
+  const question = useMemo(() => surah ? questionFor(surah, corpus, round) : null, [surah, corpus, round]);
+  const choices = useMemo(() => question ? shuffle(question.options) : [], [question]);
+
+  const playSurah = () => {
+    if (!surah) return;
+    if (audioRef.current && playing) {
+      audioRef.current.pause();
+      setPlaying(false);
+      return;
+    }
+    audioRef.current?.pause();
+    const audio = new Audio(audioUrlFor(surah.std));
+    audioRef.current = audio;
+    audio.onended = () => setPlaying(false);
+    audio.onerror = () => setPlaying(false);
+    audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+  };
+
+  const beginChallenge = () => {
+    audioRef.current?.pause();
+    setPlaying(false);
+    setStarted(true);
+  };
 
   const choose = (choice: string) => {
-    if (selected) return;
+    if (!question || selected) return;
     setSelected(choice);
-    if (choice === quest.answer) {
+    if (choice === question.answer) {
       setScore((value) => value + 1);
       addCoins(2);
     }
   };
 
-  const next = () => { setRound((value) => value + 1); setSelected(null); };
+  const next = () => {
+    setRound((value) => value + 1);
+    setSelected(null);
+  };
+
+  if (!surah) return <div className="py-10 text-center text-sm font-bold text-muted-foreground">جارٍ تجهيز السورة...</div>;
+
+  if (!started) return (
+    <div className="space-y-4 text-center animate-fade-up max-w-xl mx-auto" dir="rtl">
+      <div className="p-6 rounded-3xl bg-gradient-to-br from-card via-card/95 to-secondary/30 border-2 border-accent/25 shadow-xl space-y-4">
+        <div className="mx-auto w-16 h-16 rounded-2xl bg-accent/15 text-accent flex items-center justify-center shadow-inner"><Headphones className="w-8 h-8" /></div>
+        <p className="text-xs font-black text-accent">استمع جيداً ثم ابدأ التحدي</p>
+        <h2 className="text-3xl font-black text-foreground font-quran">سورة {surah.name}</h2>
+        <p className="text-sm font-bold text-muted-foreground">بعد الاستماع ستظهر أسئلة من آيات هذه السورة فقط.</p>
+        <button onClick={playSurah} className="btn-gold mx-auto px-7 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg active:scale-95">
+          {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />} {playing ? "إيقاف الاستماع" : "استمع للسورة"}
+        </button>
+      </div>
+      <button onClick={beginChallenge} className="w-full py-3 rounded-2xl bg-accent text-accent-foreground font-black text-sm shadow-md hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2"><Volume2 className="w-5 h-5" /> ابدأ أسئلة السورة</button>
+    </div>
+  );
 
   return (
     <div className="space-y-4 text-center animate-fade-up max-w-xl mx-auto" dir="rtl">
       <div className="flex items-center justify-between gap-2 text-xs font-bold text-muted-foreground px-3.5 py-2.5 bg-secondary/50 backdrop-blur-sm rounded-2xl border border-border/70 shadow-sm">
-        <span className="text-foreground font-black truncate">{def.title}</span>
-        <span className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-black">مرحلة {round + 1}</span>
+        <span className="text-foreground font-black truncate">{surah.name}</span>
+        <button onClick={playSurah} className="bg-accent/10 text-accent border border-accent/20 px-3 py-1 rounded-full font-black flex items-center gap-1"><Headphones className="w-3.5 h-3.5" /> {playing ? "يعمل" : "اسمع"}</button>
         <span className="text-amber-500 font-black flex items-center gap-1 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30"><Sparkles className="h-4 w-4" /> {score}</span>
       </div>
 
-      <div className="p-6 rounded-3xl bg-gradient-to-br from-card via-card/95 to-secondary/30 border-2 border-accent/25 shadow-xl space-y-3">
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-accent/15 text-accent flex items-center justify-center text-4xl shadow-inner" aria-hidden="true">{quest.symbol}</div>
-        <h2 className="text-2xl sm:text-3xl font-black text-foreground leading-tight">{quest.question}</h2>
-        <p className="text-sm font-bold text-muted-foreground">اختر الجواب الصحيح</p>
+      <div className="p-6 rounded-3xl bg-gradient-to-br from-card via-card/95 to-secondary/30 border-2 border-accent/25 shadow-xl space-y-4">
+        <div className="mx-auto w-16 h-16 rounded-2xl bg-accent/15 text-accent flex items-center justify-center text-4xl shadow-inner" aria-hidden="true">{question?.symbol}</div>
+        <h2 className="text-2xl sm:text-3xl font-black text-foreground leading-tight">{question?.prompt}</h2>
+        {question?.ayahText && <p className="rounded-2xl bg-accent/10 border border-accent/25 px-4 py-3 text-xl sm:text-2xl leading-loose font-quran text-foreground">{question.ayahText}</p>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         {choices.map((choice) => {
-          const isCorrect = selected && choice === quest.answer;
-          const isWrong = selected === choice && choice !== quest.answer;
+          const isCorrect = selected && choice === question?.answer;
+          const isWrong = selected === choice && choice !== question?.answer;
           return <button key={choice} onClick={() => choose(choice)} disabled={selected !== null} className={`min-h-24 p-4 rounded-3xl border-2 transition-all flex items-center justify-center text-lg font-black shadow-lg active:scale-95 ${!selected ? "bg-gradient-to-br from-card via-card to-secondary/20 border-border hover:border-accent/70 hover:shadow-accent/10 text-foreground" : isCorrect ? "bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400" : isWrong ? "bg-red-500/15 border-red-500 text-red-500" : "opacity-40 border-border text-muted-foreground"}`}>{choice}</button>;
         })}
       </div>
 
-      {selected && (
-        <div className="p-4 rounded-3xl bg-secondary/50 border border-border space-y-3 animate-in fade-in zoom-in-95 duration-200">
-          <p className={`font-black text-sm ${selected === quest.answer ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500"}`}>{selected === quest.answer ? "إجابة صحيحة يا بطل! + نجمتان" : "معلومة جديدة للمرحلة القادمة"}</p>
-          <button onClick={next} className="w-full py-3 rounded-2xl bg-accent text-accent-foreground font-black text-sm shadow-md hover:brightness-105 active:scale-98 transition-all">السؤال التالي ←</button>
-        </div>
-      )}
+      {selected && <div className="p-4 rounded-3xl bg-secondary/50 border border-border space-y-3 animate-in fade-in zoom-in-95 duration-200">
+        <p className={`font-black text-sm ${selected === question?.answer ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500"}`}>{selected === question?.answer ? "إجابة صحيحة يا بطل! + نجمتان" : "استمع مرة أخرى، ثم أكمل"}</p>
+        <button onClick={next} className="w-full py-3 rounded-2xl bg-accent text-accent-foreground font-black text-sm shadow-md hover:brightness-105 active:scale-98 transition-all">السؤال التالي ←</button>
+      </div>}
     </div>
-  );}
+  );
+}

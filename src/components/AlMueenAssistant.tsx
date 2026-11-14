@@ -17,6 +17,7 @@ import { createMailtoSupportLink, saveSupportMessageLocally, openWhatsAppSupport
 import { getProfile } from "@/data/kidsProfile";
 import { CURRENT_VERSION } from "@/utils/updateChecker";
 import { toast } from "@/hooks/use-toast";
+import ModalLayer from "@/components/ui/ModalLayer";
 import WhatsAppIcon from "./WhatsAppIcon";
 
 type ActiveTab = "companion" | "guide" | "support";
@@ -131,12 +132,13 @@ export default function AlMueenAssistant() {
 
       {/* Modal Drawer */}
       {open && (
+        <ModalLayer>
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain p-3 sm:items-center sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
           dir="rtl"
         >
           <div
-            className="relative w-full max-w-lg rounded-3xl bg-card border border-border shadow-2xl p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200"
+            className="relative my-auto w-full max-w-lg rounded-3xl bg-card border border-border shadow-2xl p-5 sm:p-6 pb-safe space-y-4 max-h-[calc(100dvh-1.5rem)] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -335,6 +337,7 @@ export default function AlMueenAssistant() {
             )}
           </div>
         </div>
+        </ModalLayer>
       )}
     </>
   );

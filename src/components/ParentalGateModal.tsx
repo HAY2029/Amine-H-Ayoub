@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ModalLayer from "./ui/ModalLayer";
 import { Lock, KeyRound, AlertCircle, X, ShieldCheck, HelpCircle, Check } from "lucide-react";
 import {
   verifyKidsPin,
@@ -144,12 +145,23 @@ export default function ParentalGateModal({
 
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "back"];
 
+  // Portal إلى body حتى لا يُحصر position:fixed داخل أي إطار مُحوَّل (transform)
   return (
+    <ModalLayer>
     <div
-      className="fixed inset-0 z-[250] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[400] flex items-center justify-center overflow-x-hidden bg-black/85 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-200"
       dir="rtl"
     >
-      <div className="relative w-full max-w-sm rounded-3xl bg-card border border-border shadow-2xl p-6 text-center space-y-4 overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-[min(24rem,calc(100vw-1.5rem))] max-w-full max-h-[92dvh] overflow-y-auto overflow-x-hidden rounded-[28px] bg-card border border-accent/25 shadow-[0_24px_70px_-20px_rgba(0,0,0,0.6)] p-5 sm:p-6 pb-safe text-center space-y-4 animate-in zoom-in-95 duration-200">
+        {/* هالة زخرفية علوية خفيفة تعطي الشاشة عمقاً بصرياً */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-10 -top-16 h-32 rounded-full bg-accent/25 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-accent/60 to-transparent"
+        />
         {/* زر الإغلاق مخفي في الوضع الصارم — لا مخرج بدون كلمة المرور أو سؤال الأمان */}
         {!strictMode && (
           <button
@@ -161,7 +173,7 @@ export default function ParentalGateModal({
           </button>
         )}
 
-        <div className="mx-auto w-14 h-14 rounded-2xl bg-accent/15 text-accent flex items-center justify-center ring-1 ring-accent/30 shadow-inner">
+        <div className="relative mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/25 to-accent/5 text-accent flex items-center justify-center ring-1 ring-accent/40 shadow-lg shadow-accent/10">
           {mode === "setup_pin" ? (
             <ShieldCheck className="w-7 h-7" />
           ) : mode === "pin" ? (
@@ -199,7 +211,7 @@ export default function ParentalGateModal({
         {/* ===== نمط إعداد الرمز وسؤال الأمان لأول مرة ===== */}
         {mode === "setup_pin" && setupStep !== "security" && (
           <div className="space-y-4">
-            <div className="flex justify-center items-center gap-3 py-2" dir="ltr">
+            <div key={`setup-${error ? errorMsg : "ok"}-${setupStep}-${pin}-${confirmPin}`} className={`flex justify-center items-center gap-3 py-2 ${error ? "animate-shake" : ""}`} dir="ltr">
               {[0, 1, 2, 3].map((i) => {
                 const currentVal = setupStep === "enter" ? pin : confirmPin;
                 return (
@@ -230,7 +242,7 @@ export default function ParentalGateModal({
                   <button
                     key={i}
                     onClick={() => handleKeyClick(k)}
-                    className="h-12 rounded-2xl bg-secondary hover:bg-secondary/80 text-foreground text-lg font-bold flex items-center justify-center active:scale-95 transition-transform select-none shadow-sm"
+                    className="h-14 rounded-2xl bg-secondary/80 hover:bg-secondary text-foreground text-xl font-extrabold flex items-center justify-center ring-1 ring-border/50 active:scale-95 active:bg-accent/15 transition-all select-none shadow-sm"
                   >
                     {k === "back" ? "⌫" : k}
                   </button>
@@ -291,7 +303,7 @@ export default function ParentalGateModal({
         {/* ===== نمط التحقق برمز الـ PIN ===== */}
         {mode === "pin" && (
           <div className="space-y-4">
-            <div className="flex justify-center items-center gap-3 py-2" dir="ltr">
+            <div key={`mask-${error ? errorMsg : "ok"}-${pin}`} className={`flex justify-center items-center gap-3 py-2 ${error ? "animate-shake" : ""}`} dir="ltr">
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
@@ -319,7 +331,7 @@ export default function ParentalGateModal({
                   <button
                     key={i}
                     onClick={() => handleKeyClick(k)}
-                    className="h-12 rounded-2xl bg-secondary hover:bg-secondary/80 text-foreground text-lg font-bold flex items-center justify-center active:scale-95 transition-transform select-none shadow-sm"
+                    className="h-14 rounded-2xl bg-secondary/80 hover:bg-secondary text-foreground text-xl font-extrabold flex items-center justify-center ring-1 ring-border/50 active:scale-95 active:bg-accent/15 transition-all select-none shadow-sm"
                   >
                     {k === "back" ? "⌫" : k}
                   </button>
@@ -411,5 +423,6 @@ export default function ParentalGateModal({
         )}
       </div>
     </div>
+    </ModalLayer>
   );
 }

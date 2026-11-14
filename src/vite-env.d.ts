@@ -1,5 +1,11 @@
 /// <reference types="vite/client" />
 
+// وحدة افتراضية يولّدها إعداد Vite: أسماء صور صفحات المصحف دون استيراد الصور.
+declare module "virtual:quran-page-files" {
+  const fileNames: string[];
+  export default fileNames;
+}
+
 declare module "virtual:pwa-register" {
   export interface RegisterSWOptions {
     immediate?: boolean;
