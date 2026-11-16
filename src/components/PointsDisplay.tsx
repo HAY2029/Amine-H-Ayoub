@@ -27,7 +27,7 @@ const PointsDisplay = ({ points }: Props) => {
   const displayValue = points !== undefined ? points : coins;
 
   return (
-    <div className="bg-card/90 backdrop-blur-sm rounded-full shadow-md px-4 sm:px-5 py-1.5 sm:py-2 border border-border flex items-center gap-2 text-sm md:text-base transition-all">
+    <div className="surface-lux backdrop-blur-sm rounded-full px-4 sm:px-5 py-1.5 sm:py-2 flex items-center gap-2 text-sm md:text-base transition-all">
       <div className="flex items-center gap-1.5">
         <Star className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 fill-amber-500" />
         <span className="font-extrabold text-foreground">{formatCoins(displayValue)}</span>

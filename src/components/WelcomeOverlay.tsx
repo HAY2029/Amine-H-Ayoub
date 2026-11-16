@@ -43,16 +43,7 @@ import { setKidsPin, setKidsLocked } from "../data/kidsLock";
 import { captureEvent } from "../utils/posthog";
 import Avatar from "./Avatar";
 import { openExternalUrl } from "../utils/tauriUtils";
-
-const ONBOARD_KEY = "mushaf:onboarded:v1";
-
-export const isOnboarded = (): boolean => {
-  try {
-    return localStorage.getItem(ONBOARD_KEY) === "1";
-  } catch {
-    return true;
-  }
-};
+import { markOnboarded } from "../utils/onboarding";
 
 interface NewKid {
   name: string;
@@ -123,11 +114,7 @@ export default function WelcomeOverlay({ onDone }: { onDone: () => void }) {
       });
       if (firstId) setActiveProfile(firstId);
     }
-    try {
-      localStorage.setItem(ONBOARD_KEY, "1");
-    } catch {
-      /* ignore */
-    }
+    markOnboarded();
 
     // اكتمال التهيئة: نقطة التحويل الأولى في مسار الاستخدام
     captureEvent("onboarding_completed", {

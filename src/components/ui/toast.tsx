@@ -15,8 +15,8 @@ const ToastProvider = ToastPrimitives.Provider;
  * حتى لا يحجبها أي نافذة/لوحة مفتوحة، وحتى لا يُقيّدها عنصر أب مُحوَّل
  * (transform) فيخرج الإشعار عن حدود الشاشة.
  *
- * وتُعرض كإشعار هاتف حقيقي في الأعلى: ظاهر فوق كل شيء، بعرض الشاشة على
- * الهاتف وبعرض محدود ومُوسَّط على الحاسوب.
+ * وتُعرض في الزاوية السفلية اليمنى: ظاهرة فوق كل شيء، بعرض الشاشة على
+ * الهاتف وبعرض محدود ومُلتصقة باليمين على الحاسوب.
  */
 const ToastViewport = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Viewport>,
@@ -29,7 +29,7 @@ const ToastViewport = React.forwardRef<
     <ToastPrimitives.Viewport
       ref={ref}
       className={cn(
-        "pointer-events-none fixed inset-x-0 top-0 z-[2147483000] flex max-h-[100dvh] w-full flex-col items-center gap-2.5 p-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] sm:top-2 sm:p-4",
+        "pointer-events-none fixed bottom-0 right-0 left-auto z-[2147483000] flex max-h-[100dvh] w-full flex-col items-end gap-2.5 p-3 pb-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] sm:w-auto sm:max-w-sm sm:p-4",
         className,
       )}
       {...props}
@@ -40,7 +40,7 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName;
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-2xl border p-3.5 pe-9 ps-3.5 text-start shadow-2xl backdrop-blur-xl data-[swipe=end]:animate-out data-[state=closed]:animate-out data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-top-4 data-[state=closed]:slide-out-to-top-2 data-[swipe=cancel]:translate-x-0",
+  "group pointer-events-auto relative flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-2xl border p-3.5 pe-9 ps-3.5 text-start shadow-2xl backdrop-blur-xl data-[swipe=end]:animate-out data-[state=closed]:animate-out data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:fade-out-80 data-[state=open]:slide-in-from-bottom-4 data-[state=closed]:slide-out-to-bottom-2 data-[swipe=cancel]:translate-x-0",
   {
     variants: {
       variant: {

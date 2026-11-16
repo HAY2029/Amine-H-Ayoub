@@ -6,12 +6,7 @@ import { hasKidsPin, setKidsLocked } from "../data/kidsLock";
 import PinModal from "./PinModal";
 import Avatar from "./Avatar";
 import { captureEvent, identifyActiveProfile } from "../utils/posthog";
-
-const PICKED_FLAG = "mushaf:pickedSession";
-
-/** يُعلِّم أنّ ملفّاً اختير في هذه الجلسة (حتى لا تتكرّر شاشة الاختيار). */
-export const markPicked = () => { try { sessionStorage.setItem(PICKED_FLAG, "1"); } catch { /* ignore */ } };
-export const isPicked = (): boolean => { try { return sessionStorage.getItem(PICKED_FLAG) === "1"; } catch { return true; } };
+import { markPicked } from "../utils/onboarding";
 
 /**
  * شاشة "من يتعلّم الآن؟" على غرار يوتيوب على التلفاز.

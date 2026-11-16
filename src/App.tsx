@@ -46,13 +46,17 @@ const AudioShadingSyncPage = lazy(() => import("./pages/AudioShadingSyncPage.tsx
 const ShadingToolsPage = lazy(() => import("./pages/ShadingToolsPage.tsx"));
 import { getProfile, getAppMode, getProfiles, kidsEnabled } from "./data/kidsProfile";
 import { toast } from "./hooks/use-toast";
-import WelcomeOverlay, { isOnboarded } from "./components/WelcomeOverlay.tsx";
-import ProfilePicker, { isPicked, markPicked } from "./components/ProfilePicker.tsx";
+// ⚡ شاشات ثقيلة لا تظهر إلا عند الحاجة: تُحمَّل في حزمة مستقلة بعد أول رسم
+const WelcomeOverlay = lazy(() => import("./components/WelcomeOverlay.tsx"));
+const ProfilePicker = lazy(() => import("./components/ProfilePicker.tsx"));
+const GlobalPlayerWrapper = lazy(() =>
+  import("./GlobalPlayerWrapper").then((m) => ({ default: m.GlobalPlayerWrapper }))
+);
+import { isOnboarded, isPicked, markPicked } from "./utils/onboarding";
 import { identifyActiveProfile } from "./utils/posthog.ts";
 import { claimDailyRewards, incrementStreak } from "./data/dailyRewards";
 import { setupRemoteControlListeners } from "./utils/controllerNavigation";
-import { GlobalPlayerWrapper } from "./GlobalPlayerWrapper";
-import Intro3DCarousel from "./components/Intro3DCarousel";
+const Intro3DCarousel = lazy(() => import("./components/Intro3DCarousel"));
 import NetworkStatusBar from "./components/NetworkStatusBar";
 
 const queryClient = new QueryClient();
@@ -358,7 +362,9 @@ const App = () => {
           {/* 📡 شريط تنبيه الانقطاع المؤقت وعودة الاتصال بالإنترنت */}
           <NetworkStatusBar />
           {/* 🌟 شاشة الدخول ثلاثية الأبعاد الدوارة لمدة 5 ثوانٍ عند فتح التطبيق */}
-          <Intro3DCarousel />
+          <Suspense fallback={null}>
+            <Intro3DCarousel />
+          </Suspense>
           <HashRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <NavigationAudioGuard />
             <KidsModeGuard>
@@ -412,9 +418,11 @@ const App = () => {
                 </Routes>
               </Suspense>
             </KidsModeGuard>
-            <SiteLinksOverlay open={showSiteLinks} onClose={() => setShowSiteLinks(false)} />
-            {showWelcome && <WelcomeOverlay onDone={() => { markPicked(); setShowWelcome(false); setShowPicker(false); }} />}
-            {!showWelcome && showPicker && <ProfilePicker onPicked={() => setShowPicker(false)} />}
+            <Suspense fallback={null}>
+              <SiteLinksOverlay open={showSiteLinks} onClose={() => setShowSiteLinks(false)} />
+              {showWelcome && <WelcomeOverlay onDone={() => { markPicked(); setShowWelcome(false); setShowPicker(false); }} />}
+              {!showWelcome && showPicker && <ProfilePicker onPicked={() => setShowPicker(false)} />}
+            </Suspense>
             {showExitGate && (
               <ParentalGateModal
                 title="إغلاق التطبيق (حماية وضع الأطفال)"
@@ -429,7 +437,9 @@ const App = () => {
                 }}
               />
             )}
-            <GlobalPlayerWrapper />
+            <Suspense fallback={null}>
+              <GlobalPlayerWrapper />
+            </Suspense>
           </HashRouter>
         </TooltipProvider>
       </QueryClientProvider>

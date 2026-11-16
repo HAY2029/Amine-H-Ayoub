@@ -2972,7 +2972,7 @@ export default function KidsGames() {
           </div>
         ) : (
           <>
-            <div className="card-nour p-5 text-center space-y-3 animate-fade-up">
+            <div className="surface-lux p-5 text-center space-y-3 animate-fade-up">
               <div className="flex flex-col items-center gap-2">
                 <button 
                   onClick={openShop} 

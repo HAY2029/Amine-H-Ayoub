@@ -3,7 +3,7 @@
  */
 import { supabase, hasValidSupabaseKey } from "../lib/supabase";
 
-export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "ayahmath" | "listenkids" | "makkimadani" | "oddword" | "orchard" | "values";
+export type GameEngine = "order" | "memory" | "memory_meaning" | "which" | "quiz" | "server_quiz" | "count" | "nextayah" | "prevayah" | "whichsurah" | "missingword" | "surahaudio" | "ayahsurah" | "ayahorder" | "ayahlonger" | "surahorder" | "surahnum" | "remote" | "detective" | "wordbuilder" | "ayahmath" | "listenkids" | "makkimadani" | "oddword" | "orchard" | "values" | "heartvalues";
 
 export interface GameDef {
   id: string;
@@ -129,7 +129,7 @@ const isValid = (g: unknown): g is GameDef => {
   const d = g as GameDef;
   if (!d || typeof d.id !== "string" || typeof d.title !== "string" || typeof d.cost !== "number") return false;
   if (isBlockedGame(d.id)) return false;
-  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "ayahmath", "listenkids", "makkimadani", "oddword", "orchard", "values"];
+  const engines: string[] = ["order", "memory", "memory_meaning", "which", "quiz", "server_quiz", "count", "nextayah", "prevayah", "whichsurah", "missingword", "surahaudio", "ayahsurah", "ayahorder", "ayahlonger", "surahorder", "surahnum", "remote", "detective", "wordbuilder", "ayahmath", "listenkids", "makkimadani", "oddword", "orchard", "values", "heartvalues"];
   if (!engines.includes(d.engine)) return false;
   return true;
 };
@@ -147,8 +147,40 @@ const strHash = (s: string): string => {
 };
 
 /**
- * كود اللعبة (هويتها الفعلية) — لا يعتمد على الاسم المعروض إطلاقاً:
- * - لعبة مرفوعة: نوعها + رابطها أو بصمة محتواها (أو كودها إن لم يوجد رابط).
+ * توحيد نصّ للعنوان: حذف التشكيل والتطويل، وتوحيد الهمزات والألف والياء
+ * والتاء المربوطة، وإسقاط الرموز والإيموجي والمسافات الزائدة — كي لا يفلت
+ * التكرار بسبب اختلاف كتابة الاسم (تشكيل/همزة/إيموجي/مسافة).
+ */
+const normalizeTitle = (s: string): string =>
+  String(s || "")
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
+    .replace(/\u0640/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .toLowerCase();
+
+/**
+ * توحيد رابط اللعبة: http/https، وwww، والشرطة الأخيرة، ومعاملات ?query
+ * و#hash، وصيغة الترميز — كلها صور لنفس الرابط وليست ألعاباً مختلفة.
+ */
+const canonicalUrl = (raw: string): string => {
+  let s = String(raw || "").trim().toLowerCase();
+  try { s = decodeURIComponent(s); } catch { /* رابط غير قابل للفك — نكمل كما هو */ }
+  return s
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .split("#")[0]
+    .split("?")[0]
+    .replace(/\/{2,}/g, "/")
+    .replace(/\/+$/, "");
+};
+
+/**
+ * كود اللعبة (هويتها الفعلية) — لا يعتمد على الاسم المعروض ولا على صيغة الرابط:
+ * - لعبة مرفوعة: رابط موحّد أو بصمة محتواها بعد توحيد المسافات (أو كودها إن لم يوجد رابط).
  * - لعبة مدمجة: المحرّك + إعداداته، فمحرّك واحد بإعدادات واحدة = لعبة واحدة
  *   مهما تعدّدت عناوينها (مثال: ألعاب محرّك «values» التي تُظهر نفس المحتوى).
  */
@@ -158,11 +190,17 @@ const gameCode = (g: GameDef): string => {
     const kind = String(r.kind ?? "url");
     const payload = kind === "html" ? String(r.html ?? "") : String(r.url ?? "");
     const src = payload.trim();
-    if (src) return `remote:${kind}:${kind === "html" ? strHash(src) : src.toLowerCase()}`;
-    const declared = r.code ?? r.slug;
-    return `remote:${kind}:${String(declared ?? g.id).trim().toLowerCase()}`;
+    if (src) {
+      if (kind === "html") return `remote:html:${strHash(src.replace(/\s+/g, " ").trim())}`;
+      return `remote:url:${canonicalUrl(src)}`;
+    }
+    const declared = r.code ?? r.slug ?? g.id;
+    return `remote:source:${normalizeTitle(String(declared)) || String(g.id).trim().toLowerCase()}`;
   }
-  return `${g.engine}|${JSON.stringify(g.params ?? {})}`;
+  // ترتيب مفاتيح الإعدادات لا يغيّر هوية اللعبة
+  const p = (g.params ?? {}) as Record<string, unknown>;
+  const sorted = Object.keys(p).sort().reduce<Record<string, unknown>>((acc, k) => { acc[k] = p[k]; return acc; }, {});
+  return `${g.engine}|${JSON.stringify(sorted)}`;
 };
 
 export const getGameCatalog = (): GameDef[] => {
@@ -179,18 +217,24 @@ export const getGameCatalog = (): GameDef[] => {
   }
   // جميع الألعاب مجانية تماماً ومفتوحة (cost: 0)
   //
-  // 🧹 إزالة التكرار بكود اللعبة لا باسمها:
-  // الاسم المعروض يتغيّر (تشكيل/همزات/إيموجي/إعادة صياغة) فيفلت التكرار،
-  // أما الكود فهو هوية اللعبة الحقيقية: المحرّك + إعداداته للعبة المدمجة،
-  // ونوع رابط/محتوى اللعبة المرفوعة. أي لعبتين بنفس الكود هما لعبة واحدة،
-  // فنحتفظ بأول ظهور (المدمجة أولاً) ونُسقط الباقي.
+  // 🧹 إزالة التكرار بكود اللعبة وبعنوانها الموحّد:
+  // الكود = هوية اللعبة الحقيقية (المحرّك + إعداداته للمدمجة، والرابط الموحّد
+  // أو بصمة المحتوى للمرفوعة)، فيكشف النسخ التي تختلف صيغة رابطها فقط
+  // (http/https، www، شرطة أخيرة، ?query، HTML مقابل رابط).
+  // والعنوان الموحّد يكشف النسخ التي رُفعت باسمها نفسه تحت معرّف آخر.
+  // نحتفظ بأول ظهور (المدمجة أولاً) ونُسقط الباقي.
   const seenCodes = new Set<string>();
+  const seenTitles = new Set<string>();
   const unique: GameDef[] = [];
   for (const g of map.values()) {
     if (isBlockedGame(g.id)) continue;
     const code = gameCode(g);
+    const titleKey = normalizeTitle(g.title);
     if (seenCodes.has(code)) continue;
+    // العناوين القصيرة جداً («لعبة 1» مثلاً) لا تُستخدم للحكم — قد تكون ألعاباً مختلفة
+    if (titleKey.length >= 5 && seenTitles.has(titleKey)) continue;
     seenCodes.add(code);
+    if (titleKey.length >= 5) seenTitles.add(titleKey);
     unique.push({ ...g, cost: 0 });
   }
 
@@ -317,6 +361,9 @@ export const BUILTIN_GAMES: GameDef[] = [
   G("makkimadani", "سفينة السور: مكية أم مدنية؟", "makkimadani", 5, 16, 0, "Landmark", FULL, 4),
   G("oddword", "الكلمة القرآنية المختلفة", "oddword", 5, 16, 0, "Sparkles", FULL, 5),
   G("orchard", "بستان معاني القرآن", "orchard", 5, 16, 0, "Trees", FULL, 3),
+
+  // ── ألعاب القلب والقيم (مواقف حقيقية من حياة الطفل) ──
+  G("kind-heart", "قلبٌ يحبّ الخير", "heartvalues", 5, 16, 0, "Heart", null, 2),
   G("quran-book", "كنز القرآن", "values", 5, 16, 0, "BookMarked", null, 0),
   G("prayer-time", "كيف أصلي؟", "values", 5, 16, 0, "Sunrise", null, 1),
   G("kindness-gift", "هدية اللطف", "values", 5, 16, 0, "Gift", null, 2),

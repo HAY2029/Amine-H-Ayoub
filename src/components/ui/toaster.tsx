@@ -10,15 +10,15 @@ import {
   ToastViewport,
 } from "@/components/ui/toast";
 
-/** مدة بقاء الإشعار قبل اختفائه التلقائي (الأخطاء تبقى أطول قليلاً) */
-const DURATION_SUCCESS = 4500;
-const DURATION_ERROR = 7000;
+/** مدة قصيرة كي لا يبقى الإشعار ويحجب المحتوى (الأخطاء أطول قليلاً فقط) */
+const DURATION_SUCCESS = 2600;
+const DURATION_ERROR = 4000;
 
 export function Toaster() {
   const { toasts } = useToast();
 
   return (
-    <ToastProvider swipeDirection="up">
+    <ToastProvider swipeDirection="down">
       {toasts.map(function ({ id, title, description, action, variant, duration, ...props }) {
         const ms = duration ?? (variant === "destructive" ? DURATION_ERROR : DURATION_SUCCESS);
         return (

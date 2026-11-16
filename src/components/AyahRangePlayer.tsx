@@ -609,6 +609,9 @@ export default function AyahRangePlayer({
   })();
 
   const noTimings = activeQueue.length === 0;
+  // Repeat display style
+  const repeatDisplayCls =
+    "inline-flex items-center gap-1 rounded-bg bg-secondary/20 text-secondary px-2 py-0.5 text-[9px] font-bold";
   const selectCls =
     "h-8 rounded-full bg-secondary text-secondary-foreground border border-border/60 px-2 text-center text-[11px] font-extrabold outline-none focus:border-accent";
   const pillSelectCls =
@@ -943,7 +946,7 @@ export default function AyahRangePlayer({
               <GraduationCap className="w-3 h-3 text-amber-400" />
             )}
             {mode === "surah" ? surahLabel(seg?.surah ?? surahNum) : `آية ${liveAyah}`}
-            <span className="text-[9px] opacity-70">{repeats > 0 ? `×${repeats}` : "∞"}</span>
+            <span className="repeatDisplayCls">{repeats > 0 ? `×${repeats}` : "∞"}</span>
           </span>
 
           <div className="ms-auto flex shrink-0 items-center gap-1.5">

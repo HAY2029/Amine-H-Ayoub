@@ -1081,7 +1081,7 @@ const MushafPage = ({ onBack }: Props) => {
                 <select 
                   value={repeatCount} 
                   onChange={(e) => setRepeatCount(Number(e.target.value))}
-                  className="bg-white border border-border rounded-md px-2 py-1 text-sm outline-none cursor-pointer"
+                  className="bg-white/80 border border-border/30 rounded-md px-2 py-1 text-sm outline-none cursor-pointer dark:bg-stone-900/80 dark:border-stone-400"
                 >
                   <option value={0}>بدون تكرار</option>
                   <option value={1}>مرة واحدة</option>

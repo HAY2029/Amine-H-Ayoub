@@ -86,7 +86,7 @@ export default function ReaderAudioHud({
           className={btnCls}
         >
           <span className="relative flex items-center justify-center">
-            <Repeat className="h-5 w-5" />
+            <Repeat className="h-5 w-5 text-amber-600" />
             <span className="absolute -bottom-1.5 text-[9px] font-extrabold tabular-nums">
               {repeatLabel.startsWith("♾") ? "∞" : repeatLabel.replace(/[^\d]/g, "") || "0"}
             </span>

@@ -308,6 +308,36 @@ export default function AudioShadingSyncPage() {
       .filter(({ box }) => box.surah === selectedSurahNum);
   }, [pageBoxes, selectedSurahNum]);
 
+  /**
+   * صفّ واحد لكل آية: الآية الممتدة على سطرين (أو أكثر) لها أكثر من مربّع تظليل،
+   * وكانت تظهر مرتين في الجدول بتوقيتين متطابقين. التوقيت يُعمَّم أصلاً على كل
+   * مربّعات الآية، فنجمعها هنا في صفّ واحد بمدى موحّد (أول بداية وآخر نهاية).
+   */
+  const groupedSurahBoxes = useMemo(() => {
+    const map = new Map<string, { box: AyahBox; indices: number[] }>();
+    surahBoxes.forEach(({ box, originalIndex }) => {
+      const key = `${box.surah}-${box.ayah}`;
+      const cur = map.get(key);
+      if (!cur) {
+        map.set(key, { box, indices: [originalIndex] });
+        return;
+      }
+      cur.indices.push(originalIndex);
+      const minDef = (a?: number, b?: number) => (a === undefined ? b : b === undefined ? a : Math.min(a, b));
+      const maxDef = (a?: number, b?: number) => (a === undefined ? b : b === undefined ? a : Math.max(a, b));
+      cur.box = {
+        ...cur.box,
+        audioStart: minDef(cur.box.audioStart, box.audioStart),
+        audioEnd: maxDef(cur.box.audioEnd, box.audioEnd),
+        kidsStart: minDef(cur.box.kidsStart, box.kidsStart),
+        kidsEnd: maxDef(cur.box.kidsEnd, box.kidsEnd),
+      };
+    });
+    return [...map.values()]
+      .sort((a, b) => a.box.ayah - b.box.ayah)
+      .map((g) => ({ box: g.box, indices: g.indices, boxCount: g.indices.length }));
+  }, [surahBoxes]);
+
   const selectedBox = pageBoxes[selectedBoxIndex] || null;
 
   // إحصائيات الربط لكل من المعلم والطفل مبنية على الآيات الفريدة (يحسب نفس رقم الآية والسورة كوحدة واحدة)
@@ -2020,7 +2050,8 @@ export default function AudioShadingSyncPage() {
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-white flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-amber-400" />
-                <span>مربعات وآيات السورة ({surahBoxes.length} مربع · {syncStats.totalAyahs} آيات):</span>
+                <span>آيات السورة ({syncStats.totalAyahs} آية · {surahBoxes.length} مربع):</span>
+                <span className="text-[10px] font-bold text-stone-400">صفّ واحد لكل آية</span>
               </span>
               <span className="text-[10px] text-stone-400 font-mono">
                 المتحدث النشط: {activeSyncSpeaker === "kids" ? "👶 الطفل" : "🎓 المعلم"}
@@ -2037,8 +2068,9 @@ export default function AudioShadingSyncPage() {
                   </Link>
                 </div>
               ) : (
-                surahBoxes.map(({ box, originalIndex }) => {
-                  const isSelected = originalIndex === selectedBoxIndex;
+                groupedSurahBoxes.map(({ box, indices, boxCount }) => {
+                  const originalIndex = indices[0];
+                  const isSelected = indices.includes(selectedBoxIndex);
                   const isTeacherSynced = box.audioStart !== undefined && box.audioEnd !== undefined;
                   const isKidsSynced = box.kidsStart !== undefined && box.kidsEnd !== undefined;
                   const isSynced = activeSyncSpeaker === "kids" ? isKidsSynced : isTeacherSynced;
@@ -2051,7 +2083,7 @@ export default function AudioShadingSyncPage() {
 
                   return (
                     <div
-                      key={`sync-row-${box.surah}-${box.ayah}-${originalIndex}`}
+                      key={`sync-row-${box.surah}-${box.ayah}`}
                       onClick={() => setSelectedBoxIndex(originalIndex)}
                       className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                         isSelected
@@ -2075,6 +2107,14 @@ export default function AudioShadingSyncPage() {
                                 title={`هذه الآية مقسومة إلى ${box.parts!.length} أجزاء: المعلم يقرأ الجزء ثم يعيده الطفل`}
                               >
                                 {box.parts!.length} أجزاء
+                              </span>
+                            )}
+                            {boxCount > 1 && (
+                              <span
+                                className="text-[9px] font-mono font-black px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30"
+                                title={`الآية ممتدة على ${boxCount} مربّعات — التوقيت واحد لها جميعاً، وتعديله هنا يُطبَّق عليها كلها`}
+                              >
+                                {boxCount} أسطر
                               </span>
                             )}
                             {isCurrentlyPlaying && (
@@ -2147,9 +2187,7 @@ export default function AudioShadingSyncPage() {
                           const curStart = isKid ? box.kidsStart : box.audioStart;
                           const curEnd = isKid ? box.kidsEnd : box.audioEnd;
                           // البحث عن الآية السابقة مباشرة
-                          const prevSorted = [...surahBoxes]
-                            .sort((a, b) => a.box.ayah - b.box.ayah)
-                            .find(item => item.box.ayah === box.ayah - 1);
+                          const prevSorted = groupedSurahBoxes.find(item => item.box.ayah === box.ayah - 1);
                           if (!prevSorted) return null;
                           const prevEnd = isKid ? prevSorted.box.kidsEnd : prevSorted.box.audioEnd;
                           if (curStart === undefined || prevEnd === undefined) return null;

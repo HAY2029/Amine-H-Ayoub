@@ -12,7 +12,7 @@ import { useProgress } from "@/hooks/useProgress";
 import { useTVNavigation } from "@/hooks/useTVNavigation";
 import { useAudioContext } from "@/contexts/audioContext";
 
-import { Shuffle, ListOrdered, Settings, Gamepad2, Lock, Maximize2, Minimize2 } from "lucide-react";
+import { Shuffle, ListOrdered, Settings, Gamepad2, Lock, Maximize2, Minimize2, Star, Building2, Landmark, RefreshCw } from "lucide-react";
 import { isKidsMode, setKidsLocked, hasKidsPin, unlockParentSession } from "@/data/kidsLock";
 import { isTimeAllowed } from "@/data/kidsSchedule";
 import { kidsEnabled as getKidsEnabled, addReadingMinutes, addCoins, setAppMode, getProgress, isPureMode, setKidsHidden, kidsHidden } from "@/data/kidsProfile";
@@ -77,7 +77,7 @@ const Index = () => {
     setKidsHidden(false);
     setKidsOn(getKidsEnabled());
     window.dispatchEvent(new Event("mushaf:appmode"));
-    toast({ title: "🎉 عاد ركن الأطفال والألعاب!" });
+    toast({ title: "عاد ركن الأطفال والألعاب" });
   };
   useEffect(() => {
     const h = () => setPlayExpired(getProgress().playExpired);
@@ -125,11 +125,11 @@ const Index = () => {
           recordTodayActivity();
           checkAndUnlockBadges();
           if (justUnlocked) {
-            toast({ title: "🎉 أحسنت! اكتمل وقت الاستماع وفتحت الألعاب" });
+            toast({ title: "أحسنت! اكتمل وقت الاستماع وفتحت الألعاب" });
             // يفتح الألعاب مباشرة عندما يتوفر الوقت — لا ننتظر
             navigate("/games", { replace: true });
           } else {
-            toast({ title: `+${stars} ⭐ من القراءة`, description: "واصل الاستماع لتربح المزيد" });
+            toast({ title: `+${stars} نجمة من القراءة`, description: "واصل الاستماع لتربح المزيد" });
           }
         }
       }
@@ -162,7 +162,7 @@ const Index = () => {
       if (Array.isArray(badges) && badges.length > 0) {
         badges.forEach((b: any) => {
           toast({
-            title: `🏆 مبارك! وسام جديد: ${b.title}`,
+            title: `مبارك! وسام جديد: ${b.title}`,
             description: `حصلت على ${b.rewardCoins} نجمة إضافية!`,
           });
         });
@@ -501,7 +501,7 @@ const Index = () => {
               <button
                 onClick={() => setFilterCategory("all")}
                 data-color-target="yellow-filter"
-                className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
                   filterCategory === "all"
                     ? "bg-amber-500 text-white border-amber-600 shadow-xs"
                     : "bg-white/80 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 border-amber-400/25 hover:border-amber-400"
@@ -512,41 +512,41 @@ const Index = () => {
               <button
                 onClick={() => setFilterCategory("juz_amma")}
                 data-color-target="gold-filter"
-                className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
                   filterCategory === "juz_amma"
                     ? "bg-amber-500 text-white border-amber-600 shadow-xs"
                     : "bg-white/80 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 border-amber-400/25 hover:border-amber-400"
                 }`}
               >
-                ⭐ جزء عمّ (قصار السور)
+                <Star className="w-3 h-3" /> جزء عمّ (قصار السور)
               </button>
               <button
                 onClick={() => setFilterCategory("meccan")}
                 data-color-target="green-meccan"
-                className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
                   filterCategory === "meccan"
                     ? "bg-amber-500 text-white border-amber-600 shadow-xs"
                     : "bg-white/80 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 border-amber-400/25 hover:border-amber-400"
                 }`}
               >
-                🕋 مكية
+                <Building2 className="w-3 h-3" /> مكية
               </button>
               <button
                 onClick={() => setFilterCategory("medinan")}
                 data-color-target="blue-medinan"
-                className={`px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold transition-all duration-300 shrink-0 border ${
                   filterCategory === "medinan"
                     ? "bg-amber-500 text-white border-amber-600 shadow-xs"
                     : "bg-white/80 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 border-amber-400/25 hover:border-amber-400"
                 }`}
               >
-                🕌 مدنية
+                <Landmark className="w-3 h-3" /> مدنية
               </button>
             </div>
 
             {/* شريط معلومات عدد السور والحالة في كبسولات دائرية ناعمة */}
             <div className="flex items-center justify-between text-[11px] sm:text-xs text-amber-950/80 dark:text-amber-200/80 px-1 font-semibold">
-              <span className="inline-flex items-center gap-1.5 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+              <span className="surface-lux inline-flex items-center gap-1.5 px-3 py-1 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                 {displaySurahs.length === 114
                   ? "جميع سور القرآن الكريم (١١٤ سورة)"
@@ -554,7 +554,7 @@ const Index = () => {
               </span>
               {isShuffled && (
                 <div className="flex items-center gap-1.5">
-                  <span className="flex items-center gap-1 text-amber-800 dark:text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
+                  <span className="surface-lux flex items-center gap-1 text-amber-800 dark:text-amber-300 px-3 py-1 rounded-full">
                     <Shuffle className="w-3 h-3" /> الترتيب العشوائي
                   </span>
                   <button
@@ -585,9 +585,9 @@ const Index = () => {
                 <p className="text-muted-foreground text-sm">{error}</p>
                 <button
                   onClick={retry}
-                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-all shadow-md active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-all shadow-md active:scale-95"
                 >
-                  🔄 إعادة المحاولة
+                  <RefreshCw className="w-4 h-4" /> إعادة المحاولة
                 </button>
               </div>
             )}

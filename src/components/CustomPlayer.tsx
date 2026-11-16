@@ -914,7 +914,7 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
                   }`}
                   title={loop ? "التكرار مفعّل للسورة" : "تكرار السورة"}
                 >
-                  <Repeat className="w-4 h-4" />
+                  <Repeat className="w-4 h-4 text-amber-600" />
                 </button>
 
                 {/* Volume Button with Popout/Slider */}

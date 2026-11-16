@@ -1,3 +1,4 @@
+import { Mic } from "lucide-react";
 import { SurahItem } from "@/hooks/useSurahData";
 
 interface Props {
@@ -22,12 +23,15 @@ const SurahList = ({
           <button
             key={surah.number}
             onClick={() => onSelect(surah)}
-            className={`surah-card group relative flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 text-right focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`surah-card surface-lux lux-lift group relative flex items-center gap-3 p-3 rounded-2xl border text-right focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:outline-none ${
               isActive
-                ? "bg-amber-500/25 dark:bg-amber-950/60 border-amber-500 shadow-lg ring-2 ring-amber-400/50 scale-[1.01]"
-                : "bg-white dark:bg-card border-amber-500/30 hover:border-amber-500 hover:shadow-lg hover:bg-white/90 dark:hover:bg-card/80 hover:scale-[1.01]"
+                ? "border-accent/70 bg-amber-500/20 dark:bg-amber-950/50 ring-2 ring-accent/40 shadow-[var(--shadow-lux-2)]"
+                : "border-accent/25 hover:border-accent/55"
             }`}
           >
+            {/* خطّ النور الذهبي أعلى البطاقة */}
+            <span className="lux-hairline" aria-hidden="true" />
+
             {/* Active glow effect */}
             {isActive && (
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400/10 to-amber-600/10 animate-breathe pointer-events-none" />
@@ -40,7 +44,7 @@ const SurahList = ({
                   : "bg-amber-500/15 text-amber-700 dark:text-amber-300 group-hover:bg-amber-500/25 group-hover:scale-105 group-hover:shadow-md"
               }`}
             >
-              {surah.revelationType === "custom" ? "🎤" : surah.number}
+              {surah.revelationType === "custom" ? <Mic className="w-4 h-4" /> : surah.number}
             </div>
 
             {/* Surah name */}

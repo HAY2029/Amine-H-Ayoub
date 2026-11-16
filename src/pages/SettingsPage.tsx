@@ -39,7 +39,10 @@ const Section = ({ label, children, className = "" }: { label: string; children:
       <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_0_3px_hsl(var(--accent)/0.12)]" aria-hidden="true" />
       {label}
     </h2>
-    <div className="card-nour overflow-hidden rounded-2xl divide-y divide-border/70 transition-shadow duration-300 hover:shadow-[var(--shadow-soft)]">{children}</div>
+    <div className="surface-lux overflow-hidden rounded-2xl divide-y divide-border/70 transition-shadow duration-300 hover:shadow-[var(--shadow-lux-2)]">
+      <span className="lux-hairline" aria-hidden="true" />
+      {children}
+    </div>
   </section>
 );
 
@@ -111,7 +114,7 @@ export default function SettingsPage() {
     setCoins(getCoins());
     setRewardCode("");
     setRewardCodeMessage(`تمت إضافة ${amount} نجمة إلى الملف النشط`);
-    toast({ title: `تمت إضافة ${amount} ⭐` });
+    toast({ title: `تمت إضافة ${amount} نجمة` });
   };
 
   // إعدادات تظليل الآيات (المعلّم وحده والطفل وحده وتعيين يدوي)
@@ -229,7 +232,7 @@ export default function SettingsPage() {
         </header>
 
         {/* بطاقة العنوان */}
-        <div className="card-nour relative isolate overflow-hidden p-4 sm:p-7 animate-fade-up lg:col-span-2">
+        <div className="card-lux relative isolate overflow-hidden p-4 sm:p-7 animate-fade-up lg:col-span-2">
           <div className="pointer-events-none absolute -left-12 -top-16 -z-10 h-52 w-52 rounded-full bg-accent/15 blur-3xl" aria-hidden="true" />
           <div className="pointer-events-none absolute -bottom-20 right-1/3 -z-10 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl" aria-hidden="true" />
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
@@ -294,10 +297,10 @@ export default function SettingsPage() {
                   key={o.key}
                   type="button"
                   onClick={o.onClick}
-                  className={`w-full p-3 sm:p-3.5 rounded-2xl border text-right transition-all flex items-center justify-between gap-3 group active:scale-[0.99] ${
+                  className={`w-full p-3 sm:p-3.5 rounded-2xl text-right transition-all flex items-center justify-between gap-3 group active:scale-[0.99] ${
                     active
-                      ? "border-accent bg-accent/15 ring-2 ring-accent/30 shadow-sm"
-                      : "border-border/70 bg-card/60 hover:bg-card hover:border-accent/40"
+                      ? "card-lux border-accent bg-accent/15 ring-2 ring-accent/30"
+                      : "surface-lux lux-lift hover:border-accent/45"
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -378,13 +381,13 @@ export default function SettingsPage() {
 
         <Section label="النجوم والمكافآت">
           <div className="p-3 space-y-3">
-            <div className="flex items-center justify-between rounded-xl bg-accent/10 border border-accent/20 p-3">
+            <div className="surface-lux flex items-center justify-between rounded-xl bg-accent/10 p-3">
               <span className="flex items-center gap-2 text-sm font-extrabold"><Star className="w-5 h-5 fill-current text-amber-500" /> رصيد الملف النشط</span>
-              <span className="text-lg font-black text-accent">{coins.toLocaleString("en-US")} ⭐</span>
+              <span className="inline-flex items-center gap-1 text-lg font-black text-accent">{coins.toLocaleString("en-US")} <Star className="w-4 h-4 fill-current" /></span>
             </div>
             <div className="space-y-2">
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                ⭐ <b>النزاهة التعليمية:</b> النجوم تُكسب حصرياً من تلاوة القرآن والاستماع للآيات؛ وهذا الحقل مخصص فقط لأكواد المكافآت الرسمية المعتمدة ولا يُسمح بإضافة نقاط عشوائية.
+                <b>النزاهة التعليمية:</b> النجوم تُكسب حصرياً من تلاوة القرآن والاستماع للآيات؛ وهذا الحقل مخصص فقط لأكواد المكافآت الرسمية المعتمدة ولا يُسمح بإضافة نقاط عشوائية.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <input
@@ -457,7 +460,7 @@ export default function SettingsPage() {
                   : "bg-secondary text-muted-foreground"
               }`}
             >
-              {!shadingSettings.hidden ? <><Eye className="w-3.5 h-3.5" /> مفعّل ✓</> : <><EyeOff className="w-3.5 h-3.5" /> مخفي ✗</>}
+              {!shadingSettings.hidden ? <><Eye className="w-3.5 h-3.5" /> مفعّل</> : <><EyeOff className="w-3.5 h-3.5" /> مخفي</>}
             </button>
           </div>
 
@@ -521,7 +524,7 @@ export default function SettingsPage() {
                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-white text-[10px]"
                       style={{ backgroundColor: activeColor }}
                     >
-                      {previewSpeaker === "teacher" ? "🎓 المعلّم" : "👶 الطفل"}: {activeColor}
+                      {previewSpeaker === "teacher" ? <><GraduationCap className="w-3 h-3" /> المعلّم</> : <><Baby className="w-3 h-3" /> الطفل</>}: {activeColor}
                     </span>
                     <span>قوة الشفافية: {Math.round(shadingSettings.opacity * 100)}%</span>
                   </div>
@@ -530,7 +533,7 @@ export default function SettingsPage() {
             })()}
           </div>
 
-          {/* 🎓 لون تظليل المعلّم وحده */}
+          {/* لون تظليل المعلّم وحده */}
           <div className="p-3.5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -634,7 +637,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* 👶 لون تظليل الطفل وحده */}
+          {/* لون تظليل الطفل وحده */}
           <div className="p-3.5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -779,7 +782,7 @@ export default function SettingsPage() {
                   opacity: DEFAULT_SETTINGS.opacity,
                   hidden: false,
                 });
-                toast({ title: "تمت استعادة إعدادات التظليل الافتراضية 🔄" });
+                toast({ title: "تمت استعادة إعدادات التظليل الافتراضية" });
               }}
               className="px-3.5 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground bg-secondary hover:bg-secondary/80 flex items-center gap-1.5 transition-all active:scale-95"
             >
@@ -815,13 +818,13 @@ export default function SettingsPage() {
                 const next = !bgAudio;
                 setBgAudio(next);
                 setBackgroundAudioEnabled(next);
-                toast({ title: next ? "تم تفعيل التشغيل في الخلفية ✅" : "تم تعطيل التشغيل في الخلفية" });
+                toast({ title: next ? "تم تفعيل التشغيل في الخلفية" : "تم تعطيل التشغيل في الخلفية" });
               }}
               className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all active:scale-95 ${
                 bgAudio ? "bg-accent text-accent-foreground shadow-soft" : "bg-secondary text-muted-foreground"
               }`}
             >
-              {bgAudio ? "مفعّل ✓" : "معطّل ✗"}
+              {bgAudio ? "مفعّل" : "معطّل"}
             </button>
           </div>
         </Section>
@@ -843,13 +846,13 @@ export default function SettingsPage() {
                 const next = !analyticsOn;
                 setAnalyticsOn(next);
                 setAnalyticsConsent(next);
-                toast({ title: next ? "تم تفعيل التحليلات ✅" : "تم إيقاف التحليلات" });
+                toast({ title: next ? "تم تفعيل التحليلات" : "تم إيقاف التحليلات" });
               }}
               className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all active:scale-95 shrink-0 ${
                 analyticsOn ? "bg-accent text-accent-foreground shadow-soft" : "bg-secondary text-muted-foreground"
               }`}
             >
-              {analyticsOn ? "مفعّل ✓" : "معطّل ✗"}
+              {analyticsOn ? "مفعّل" : "معطّل"}
             </button>
           </div>
           <Item
@@ -859,7 +862,7 @@ export default function SettingsPage() {
             onClick={() => {
               void openWhatsAppSupport();
               toast({
-                title: "جاري فتح واتساب الدعم الفني 💬",
+                title: "جاري فتح واتساب الدعم الفني",
                 description: `مراسلة فورية مباشرة على الرقم (${SUPPORT_WHATSAPP_DISPLAY})`,
               });
             }}
