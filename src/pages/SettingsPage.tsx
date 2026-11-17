@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Moon, Sun, Baby, ChevronLeft, X, BarChart3, Wrench, Pencil, User, GraduationCap, BookOpen, Lock, Settings as SettingsIcon, MessageSquare, Delete, Headphones, Power, Check, Clock, Star, Gift, Palette, Eye, EyeOff, RotateCcw, Sparkles, Mic } from "lucide-react";
+import { ArrowRight, Moon, Sun, Baby, ChevronLeft, X, BarChart3, Wrench, Pencil, User, GraduationCap, BookOpen, Lock, Settings as SettingsIcon, MessageSquare, Delete, Headphones, Power, Check, Clock, Star, Gift, Palette, Eye, EyeOff, RotateCcw, Sparkles, Mic, Download, Upload, ShieldCheck, Undo2 } from "lucide-react";
 import { isMushafDevEnabled, setMushafDev, closeTauriApp } from "../utils/tauriUtils";
 import { getAppMode, setAppMode, getProfiles, addProfile, kidsHidden, setKidsHidden, setPureMode, isPureMode, getCoins, addCoins, type AppMode } from "../data/kidsProfile";
 import { redeemOneTimeCode, syncAdminDataFromServer } from "../data/titles";
@@ -29,6 +29,7 @@ import AppNav from "../components/AppNav";
 import { isBackgroundAudioEnabled, setBackgroundAudioEnabled } from "../utils/backgroundAudio";
 import { hasAnalyticsConsent, setAnalyticsConsent } from "../utils/posthog";
 import { applyTheme, getTheme, THEME_KEY } from "../utils/theme";
+import { downloadKidsBackup, readKidsBackupFile, restoreKidsBackup, summarizeCurrentBackup, undoRestore, type KidsBackupSummary } from "../data/kidsBackup";
 import DayNightSwitch from "../components/ui/DayNightSwitch";
 import Intro3DCarousel from "../components/Intro3DCarousel";
 
@@ -72,6 +73,60 @@ export default function SettingsPage() {
     window.addEventListener("mushaf:theme", handleThemeChange);
     return () => window.removeEventListener("mushaf:theme", handleThemeChange);
   }, []);
+
+  // ── النسخ الاحتياطي لتقدّم الأطفال ──
+  const [backupSummary, setBackupSummary] = useState<KidsBackupSummary>(summarizeCurrentBackup);
+  const [undoSnapshot, setUndoSnapshot] = useState<Record<string, string> | null>(null);
+  const [restoring, setRestoring] = useState(false);
+  const backupInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExportBackup = () => {
+    const name = downloadKidsBackup();
+    if (!name) {
+      toast({ title: "تعذّر إنشاء النسخة الاحتياطية", variant: "destructive" });
+      return;
+    }
+    setBackupSummary(summarizeCurrentBackup());
+    toast({ title: "تم تصدير النسخة الاحتياطية", description: `الملف: ${name}` });
+  };
+
+  const handleImportBackup = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setRestoring(true);
+    try {
+      const result = await readKidsBackupFile(file);
+      if (!result.ok) {
+        toast({ title: "ملف غير صالح", description: result.error, variant: "destructive" });
+        return;
+      }
+      const incoming = result.file;
+      const confirmed = window.confirm(
+        "ستستبدل الاستعادة تقدّم الأطفال الحالي على هذا الجهاز.\nهل تريد المتابعة؟",
+      );
+      if (!confirmed) return;
+      const outcome = restoreKidsBackup(incoming);
+      setUndoSnapshot(outcome.snapshot);
+      setBackupSummary(summarizeCurrentBackup());
+      toast({
+        title: "تمت استعادة النسخة",
+        description: `تمت استعادة ${outcome.restored} مفتاحاً${outcome.skipped ? ` وتخطّي ${outcome.skipped}` : ""}. سيُعاد تحميل التطبيق…`,
+      });
+      setTimeout(() => window.location.reload(), 900);
+    } finally {
+      setRestoring(false);
+    }
+  };
+
+  const handleUndoRestore = () => {
+    if (!undoSnapshot) return;
+    const written = undoRestore(undoSnapshot);
+    setUndoSnapshot(null);
+    setBackupSummary(summarizeCurrentBackup());
+    toast({ title: "تم التراجع", description: `أُعيدت ${written} قيمة كما كانت قبل الاستعادة.` });
+    setTimeout(() => window.location.reload(), 900);
+  };
 
   const [owner, setOwner] = useState(isMushafDevEnabled);
   const [showAdmin, setShowAdmin] = useState(false);
@@ -404,6 +459,75 @@ export default function SettingsPage() {
               </div>
               {rewardCodeMessage && <p className="text-xs font-bold text-center text-accent">{rewardCodeMessage}</p>}
             </div>
+          </div>
+        </Section>
+
+        {/* ===== النسخ الاحتياطي لبيانات الطفل ===== */}
+        <Section label="النسخة الاحتياطية لتقدّم الأطفال" className="lg:col-span-2">
+          <div className="p-3 space-y-3">
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              نسخة واحدة تجمع <b>كل</b> تقدّم الطفل المحفوظ على هذا الجهاز: النجوم، الآيات المسموعة،
+              الشارات، السلسلة اليومية، الملفّات والشخصية، مشتريات المتجر، وجدول الوقت — حتى لا يضيع
+              جهد الطفل بمسح كاش أو تغيير جهاز.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {[
+                { label: "ملفّات الأطفال", value: String(backupSummary.profiles) },
+                { label: "رصيد النجوم", value: backupSummary.coins.toLocaleString("en-US") },
+                { label: "آيات مسموعة", value: backupSummary.listenedAyahs.toLocaleString("en-US") },
+                { label: "أيام متتالية", value: String(backupSummary.streakDays) },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-xl border border-border/70 bg-background/60 px-2.5 py-2 text-center">
+                  <div className="text-lg font-black text-accent">{stat.value}</div>
+                  <div className="text-[10px] font-bold text-muted-foreground">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-center text-[10px] font-bold text-muted-foreground">
+              حجم النسخة ≈ {backupSummary.sizeKb} كيلوبايت • {backupSummary.keyCount} عنصر محفوظ
+            </p>
+
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={handleExportBackup}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-bold text-accent-foreground active:scale-[0.99]"
+              >
+                <Download className="w-4 h-4" /> تصدير نسخة احتياطية
+              </button>
+              <button
+                type="button"
+                onClick={() => backupInputRef.current?.click()}
+                disabled={restoring}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-accent/50 bg-background px-4 py-3 text-sm font-bold text-accent disabled:opacity-50 active:scale-[0.99]"
+              >
+                <Upload className="w-4 h-4" /> {restoring ? "جارٍ التحقق…" : "استعادة من ملف"}
+              </button>
+              <input
+                ref={backupInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                onChange={handleImportBackup}
+              />
+            </div>
+
+            {undoSnapshot && (
+              <button
+                type="button"
+                onClick={handleUndoRestore}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-secondary px-4 py-2.5 text-xs font-bold text-foreground"
+              >
+                <Undo2 className="w-4 h-4" /> تراجع عن آخر استعادة
+              </button>
+            )}
+
+            <p className="flex items-start gap-1.5 text-[10px] leading-relaxed text-muted-foreground">
+              <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+              لا تتضمّن النسخة رمز ولي الأمر ولا الأسرار ولا ملفّات الصوت المخزّنة، بل بيانات التقدّم فقط.
+            </p>
           </div>
         </Section>
 

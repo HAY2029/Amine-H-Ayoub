@@ -194,11 +194,38 @@ export const isAudioAvailable = (number: number): boolean => {
 const CLOUD_CACHE_KEY = "mushaf:cloud_surahs_cache_v1";
 const CLOUD_CACHE_TTL = 1000 * 60 * 60 * 24; // 24 ساعة
 
+/** قراءة قائمة السور من الذاكرة المحلية فوراً — بلا أي طلب شبكة (تُسرّع بدء الصوت). */
+export function readCachedAvailableSurahs(): number[] {
+  if (typeof localStorage === "undefined") return [];
+  try {
+    const cached = localStorage.getItem(CLOUD_CACHE_KEY);
+    if (!cached) return [];
+    const { data, ts } = JSON.parse(cached);
+    if (Date.now() - ts >= CLOUD_CACHE_TTL || !Array.isArray(data)) return [];
+    return data.filter((n: unknown): n is number => typeof n === "number");
+  } catch {
+    return [];
+  }
+}
+
+let cloudAudioLoad: Promise<Set<number>> | null = null;
+
 /**
  * Archive metadata preserves the current supported coverage even when HF is incomplete.
  * Uses localStorage cache to avoid repeated 2MB network requests on every startup.
  */
-export async function initCloudAudioAvailability() {
+/**
+ * يحمّل قائمة السور المتوفرة مرّة واحدة فقط ويشارك نفس الوعد بين كل المستدعين،
+ * فلا يُرسَل طلب الميتاداتا الكبير (٢ ميجابايت) مرّتين عند الإقلاع.
+ */
+export function initCloudAudioAvailability(): Promise<Set<number>> {
+  if (!cloudAudioLoad) {
+    cloudAudioLoad = loadCloudAudioAvailability().catch(() => CLOUD_AVAILABLE_SURAHS);
+  }
+  return cloudAudioLoad;
+}
+
+async function loadCloudAudioAvailability(): Promise<Set<number>> {
   try {
     // 1. محاولة استرجاع السور من التخزين المحلي فوراً بدون طلب شبكة
     if (typeof localStorage !== "undefined") {
@@ -208,7 +235,7 @@ export async function initCloudAudioAvailability() {
           const { data, ts } = JSON.parse(cached);
           if (Date.now() - ts < CLOUD_CACHE_TTL && Array.isArray(data) && data.length > 0) {
             data.forEach((num: number) => CLOUD_AVAILABLE_SURAHS.add(num));
-            return;
+            return CLOUD_AVAILABLE_SURAHS;
           }
         }
       } catch { /* ignore */ }
@@ -218,7 +245,7 @@ export async function initCloudAudioAvailability() {
     const timeout = setTimeout(() => controller.abort(), 4000);
     const res = await fetch("https://archive.org/metadata/quran-audio-files-for-kids", { signal: controller.signal });
     clearTimeout(timeout);
-    if (!res.ok) return;
+    if (!res.ok) return CLOUD_AVAILABLE_SURAHS;
     const data = await res.json();
     const list: number[] = [];
     if (data && data.files) {
@@ -240,6 +267,7 @@ export async function initCloudAudioAvailability() {
   } catch (err) {
     // نتجاهل بهدوء ولا نعطل التطبيق
   }
+  return CLOUD_AVAILABLE_SURAHS;
 }
 export async function fetchAudioWithRetry(url: string, signal?: AbortSignal, maxRetries = 3): Promise<Response> {
   return fetchWithAttempts(url, signal, Math.max(0, maxRetries - 1));

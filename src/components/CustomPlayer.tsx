@@ -250,26 +250,39 @@ const CustomPlayer = forwardRef<CustomPlayerHandle, Props>(
       initialTimeApplied.current = false;
 
       const initAudio = async () => {
-        let streamUrl = audioSrc;
-        // الأولوية القصوى للملف المحلي المحمّل: تشغيل فوري 0ms وبدون استهلاك للإنترنت
-        if (!audioSrc.startsWith("blob:")) {
-          try {
-            const cached = await resolvePlayableAudioUrl(surahNumber, audioSrc);
-            if (cached) streamUrl = cached;
-          } catch {
-            /* ignore */
-          }
-        }
-        if (!active) return;
-
-        if (a.src !== streamUrl) {
-          a.src = streamUrl;
+        // ⚡ السرعة: نبدأ بالمصدر الشبكي فوراً (يبدأ التنزيل المسبق الآن) بدل انتظار
+        // بحث IndexedDB للملف المحلي، الذي كان يؤخّر أول صوت مع كل تبديل سورة.
+        if (a.src !== audioSrc) {
+          a.src = audioSrc;
         }
 
         requestPlay("audio-list", a);
         a.play().catch((err) => {
           console.debug("[CustomPlayer] Autoplay was deferred or prevented:", err);
         });
+
+        // ثم نرقّي إلى الملف المحلي/الكاش إن وُجد قبل أن يتقدّم التشغيل فعلياً،
+        // فتبقى أولوية الملف المحلي محفوظة بلا أي تأخير في البداية.
+        if (audioSrc.startsWith("blob:")) return;
+        try {
+          const cached = await resolvePlayableAudioUrl(surahNumber, audioSrc);
+          if (!active || !cached || cached === audioSrc) return;
+          if (!a.paused && a.currentTime > 0.5) return;
+          const resumeAt = a.currentTime;
+          a.src = cached;
+          a.load();
+          if (resumeAt > 0) {
+            const applyResume = () => {
+              try { a.currentTime = resumeAt; } catch { /* ignore */ }
+              a.removeEventListener("loadedmetadata", applyResume);
+            };
+            a.addEventListener("loadedmetadata", applyResume);
+          }
+          requestPlay("audio-list", a);
+          a.play().catch(() => { /* يبقى التشغيل الشبكي قائماً */ });
+        } catch {
+          /* ignore */
+        }
       };
 
       initAudio();

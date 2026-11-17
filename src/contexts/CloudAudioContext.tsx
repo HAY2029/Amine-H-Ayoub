@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { getSurahAudioUrl } from '../data/audioUrls';
+import { getSurahAudioUrl, initCloudAudioAvailability, readCachedAvailableSurahs } from '../data/audioUrls';
 
 interface CloudAudioContextType {
   availableSurahs: Set<number>;
@@ -16,37 +16,27 @@ export function CloudAudioProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let isMounted = true;
-    
-    const fetchAvailableAudio = async () => {
-      try {
-        const res = await fetch("https://archive.org/metadata/quran-audio-files-for-kids");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        
-        const available = new Set<number>();
-        if (data && data.files) {
-          data.files.forEach((item: any) => {
-            if (item.name && item.name.endsWith('.mp3')) {
-              const num = parseInt(item.name.replace('.mp3', ''), 10);
-              if (!isNaN(num)) available.add(num);
-            }
-          });
-        }
-        
-        if (isMounted) {
-          setAvailableSurahs(available);
-        }
-      } catch (err) {
-        console.error("Failed to load available audio from cloud:", err);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
 
-    fetchAvailableAudio();
-    
+    // 1) من الذاكرة المحلية فوراً — بلا شبكة ولا انتظار، فيعمل الصوت بلا تأخير
+    const cached = readCachedAvailableSurahs();
+    if (cached.length > 0) {
+      setAvailableSurahs(new Set(cached));
+      setIsLoading(false);
+    }
+
+    // 2) تحميل/تحديث القائمة من الشبكة في الخلفية عبر الوعد المشترك مع main.tsx
+    //    (نفس الطلب مرّة واحدة فقط بدل طلبين متوازيين حجمهما ~٢ ميجابايت)
+    initCloudAudioAvailability()
+      .then((available) => {
+        if (isMounted && available.size > 0) setAvailableSurahs(new Set(available));
+      })
+      .catch((err) => {
+        console.error("Failed to load available audio from cloud:", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
     return () => {
       isMounted = false;
     };
