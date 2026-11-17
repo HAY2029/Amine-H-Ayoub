@@ -36,6 +36,8 @@ export interface SilenceOptions {
   continuationFactor?: number;
   /** أقصى إزاحة لتثبيت الحدود على أخفض طاقة بالثواني (افتراضي 0.14) */
   snapWindowSec?: number;
+  /** أرضية للعتبة المحسوبة آلياً: لا تنزل العتبة دونها (0 = تلقائي بالكامل) */
+  thresholdFloor?: number;
 }
 
 /**
@@ -83,12 +85,23 @@ export const computeSilenceThreshold = (rms: number[], options: SilenceOptions =
   const percentile = options.noiseFloorPercentile ?? 0.2;
   if (rms.length === 0) return 0;
   const sorted = [...rms].sort((a, b) => a - b);
-  const noiseFloor = sorted[Math.floor(sorted.length * percentile)] || 0;
   const peak = sorted[sorted.length - 1] || 0;
-  // عتبة Otsu تُرفع بها الأرضية فقط، وبسقف ربع الذروة حتى لا تُقصّ التلاوة الهادئة
-  const otsu = Math.min(otsuThreshold(rms), peak * 0.25);
+  if (!(peak > 0)) return 0;
+
+  // أرضية الضوضاء تُقدَّر بتمريرين: بوابة = الأصغر بين المئوية وعتبة Otsu
+  // (Otsu وحدها تخطئ في التلاوات الكثيفة وتقع داخل نطاق الكلام)، ثم الوسيط
+  // للإطارات الواقعة تحت البوابة — وهي الضوضاء الحقيقية في كل الحالات.
+  const otsuRaw = otsuThreshold(rms);
+  const percentileNoise = sorted[Math.floor(sorted.length * percentile)] || 0;
+  const gate = Math.min(percentileNoise, otsuRaw);
+  const quiet = sorted.filter((v) => v < gate);
+  const noiseFloor = quiet.length > 0 ? quiet[Math.floor(quiet.length * 0.5)] : percentileNoise;
+
   // لا تتجاوز العتبة نصف الذروة حتى لا يُعتبر تسجيل هادئ كله صمتاً
-  return Math.min(Math.max(noiseFloor * noiseFloorFactor, peak * peakFactor, otsu), peak * 0.5);
+  const auto = Math.min(Math.max(noiseFloor * noiseFloorFactor, peak * peakFactor), peak * 0.5);
+  // أرضية يدوية (إن مرّرت): العتبة لا تنزل دونها مهما رأى التلقائي
+  const floor = options.thresholdFloor ?? 0;
+  return Math.min(Math.max(auto, floor), peak * 0.5);
 };
 
 /**

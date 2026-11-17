@@ -3,6 +3,7 @@ import { Play, Pause, RotateCcw, Save, Check, Trash2, Wand2, Volume2, StopCircle
 import { Link } from "react-router-dom";
 import { AYAH_COUNTS, getSavedTimings, saveSurahTimings, clearSavedSurahTimings, SurahTimings, AudioSegment } from "@/data/ayahTimings";
 import { getAudioPath as audioPath } from "@/data/audioUrls";
+import { detectSpeechSegments, alignSegmentsToCount, scoreSegments } from "@/data/audioSilence";
 
 
 const SURAH_NAMES: Record<number, string> = {
@@ -11,28 +12,33 @@ const SURAH_NAMES: Record<number, string> = {
   11: "الفيل", 12: "الهمزة", 13: "العصر", 14: "التكاثر",
 };
 
-const percentile = (values: number[], p: number) => {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  return sorted[Math.min(sorted.length - 1, Math.max(0, Math.floor(sorted.length * p)))];
-};
-
-async function detectAudioSegments(
+/**
+ * تقسيم ذكي مبني على وحدة كشف الصمت المركزية (audioSilence):
+ * عتبة Otsu تلقائية + VAD بعتبتين (لا تقطع الكلمات عند هدوء النبرة) +
+ * تثبيت الحدود على أخفض طاقة (لا يدخل نَفَس في بداية الآية) +
+ * محاذاة عدد المقاطع مع عدد الآيات باختيار أخفض طاقة في فواصل الصمت.
+ */
+async function detectViaSilenceModule(
   audioUrl: string,
-  targetCount = 0,
-  silenceThreshold = 0.012,
-  minSilenceMs = 250,
-): Promise<{ segments: AudioSegment[]; duration: number }> {
+  targetCount: number,
+  minSilenceMs: number,
+  thresholdFloor: number,
+): Promise<{ segments: AudioSegment[]; confidence: number[]; duration: number }> {
   const res = await fetch(audioUrl);
   const buf = await res.arrayBuffer();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-  const audio = await ctx.decodeAudioData(buf);
+  let audio: AudioBuffer;
+  try {
+    audio = await ctx.decodeAudioData(buf);
+  } finally {
+    try { await ctx.close(); } catch { /* ignore */ }
+  }
   const data = audio.getChannelData(0);
   const sr = audio.sampleRate;
 
-  // 10ms windows for higher precision
-  const winSize = Math.floor(sr * 0.01);
+  const frameSec = 0.02;
+  const winSize = Math.max(1, Math.floor(sr * frameSec));
   const rms: number[] = [];
   for (let i = 0; i + winSize <= data.length; i += winSize) {
     let sum = 0;
@@ -43,57 +49,23 @@ async function detectAudioSegments(
     rms.push(Math.sqrt(sum / winSize));
   }
 
-  // Adaptive thresholding
-  const noiseFloor = percentile(rms, 0.10);
-  const speechPeak = percentile(rms, 0.92);
-  const threshold = Math.max(silenceThreshold, noiseFloor + (speechPeak - noiseFloor) * 0.12);
+  const options = {
+    frameSec,
+    minGapSec: Math.max(0.05, minSilenceMs / 1000),
+    thresholdFloor: thresholdFloor > 0 ? thresholdFloor : undefined,
+  };
+  const speech = detectSpeechSegments(rms, options);
+  const aligned = targetCount > 1 ? alignSegmentsToCount(speech, targetCount, frameSec, rms) : speech;
+  const confidence = scoreSegments(rms, aligned, { frameSec });
 
-  // Smoothed activity detection (3-window)
-  const active = rms.map((_, i) => {
-    const neighbors = rms.slice(Math.max(0, i - 1), i + 2);
-    const avg = neighbors.reduce((a, b) => a + b, 0) / neighbors.length;
-    return avg >= threshold;
-  });
-
-  // Find silence gaps
-  const gaps: { start: number; end: number; duration: number; midpoint: number }[] = [];
-  let gapStart = -1;
-  for (let i = 0; i < active.length; i++) {
-    if (!active[i]) {
-      if (gapStart === -1) gapStart = i;
-    } else if (gapStart !== -1) {
-      const durSec = ((i - gapStart) * winSize) / sr;
-      if (durSec * 1000 >= minSilenceMs) {
-        const startSec = (gapStart * winSize) / sr;
-        const endSec = (i * winSize) / sr;
-        gaps.push({ start: startSec, end: endSec, duration: durSec, midpoint: (startSec + endSec) / 2 });
-      }
-      gapStart = -1;
-    }
-  }
-
-  // Use midpoints for cleaner boundaries
-  let finalBoundaries: number[] = [];
-  if (targetCount > 1 && gaps.length >= targetCount - 1) {
-    const topGaps = [...gaps].sort((a, b) => b.duration - a.duration).slice(0, targetCount - 1);
-    finalBoundaries = topGaps.map(g => g.midpoint).sort((a, b) => a - b);
-  } else {
-    finalBoundaries = gaps.map(g => g.midpoint);
-  }
-
-  const starts = [0, ...finalBoundaries];
-  const ends = [...finalBoundaries, audio.duration];
-
-  const segments: AudioSegment[] = starts.map((s, i) => ({
+  const segments: AudioSegment[] = aligned.map((s, i) => ({
     id: `${Date.now()}-${i}`,
-    start: Number(s.toFixed(3)),
-    end: Number(ends[i].toFixed(3)),
+    start: Number(s.start.toFixed(3)),
+    end: Number(s.end.toFixed(3)),
     speaker: "teacher",
     label: `آية ${i + 1}`,
   }));
-
-  ctx.close();
-  return { segments, duration: audio.duration };
+  return { segments, confidence, duration: audio.duration };
 }
 
 const fmt = (s: number) => {
@@ -114,6 +86,7 @@ const TimingsRecorder = () => {
   const [playingSegId, setPlayingSegId] = useState<string | null>(null);
   const [silenceThreshold, setSilenceThreshold] = useState(0.012);
   const [minSilenceMs, setMinSilenceMs] = useState(250);
+  const [confidence, setConfidence] = useState<number[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const stopAtRef = useRef<{ end: number; id: string } | null>(null);
   const isSeekingRef = useRef(false);
@@ -136,6 +109,7 @@ const TimingsRecorder = () => {
 
   const resetAll = () => {
     setSegments([]);
+    setConfidence([]);
     setPlayingSegId(null);
     stopAtRef.current = null;
     const a = audioRef.current; if (a) { a.pause(); a.currentTime = 0; }
@@ -145,8 +119,8 @@ const TimingsRecorder = () => {
     const a = audioRef.current; if (!a) return;
     setDetecting(true);
     try {
-      const { segments: detected } = await detectAudioSegments(
-        a.src, forceCount, silenceThreshold, minSilenceMs
+      const { segments: detected, confidence: scores } = await detectViaSilenceModule(
+        a.src, forceCount, minSilenceMs, silenceThreshold
       );
       const surahName = SURAH_NAMES[surahNum] || `سورة ${surahNum}`;
       const labeled = detected.map((seg, index) => ({
@@ -154,18 +128,21 @@ const TimingsRecorder = () => {
         label: `${surahName} - مقطع ${index + 1}`
       }));
       setSegments(labeled);
+      setConfidence(scores);
     } finally { setDetecting(false); }
   };
 
   const deleteSegment = useCallback((id: string) => {
+    const index = segments.findIndex(seg => seg.id === id);
     setSegments(items => items.filter(seg => seg.id !== id));
+    if (index >= 0) setConfidence(prev => prev.filter((_, i) => i !== index));
     if (playingSegId === id) {
       const a = audioRef.current;
       if (a) a.pause();
       setPlayingSegId(null);
       stopAtRef.current = null;
     }
-  }, [playingSegId]);
+  }, [playingSegId, segments]);
 
   const mergeWithNext = useCallback((index: number) => {
     setSegments(items => {
@@ -182,6 +159,7 @@ const TimingsRecorder = () => {
         ...items.slice(index + 2),
       ];
     });
+    setConfidence(prev => prev.filter((_, i) => i !== index + 1));
     setPlayingSegId(null);
     stopAtRef.current = null;
     const a = audioRef.current; if (a) a.pause();
@@ -318,7 +296,7 @@ const TimingsRecorder = () => {
             </p>
             <div className="grid grid-cols-2 gap-3 text-xs">
               <label className="block">
-                <span className="text-violet-300">حد الصمت: {silenceThreshold.toFixed(3)}</span>
+                <span className="text-violet-300">أرضية حد الصمت: {silenceThreshold.toFixed(3)}</span>
                 <input type="range" min={0.003} max={0.05} step={0.001}
                   value={silenceThreshold} onChange={(e) => setSilenceThreshold(parseFloat(e.target.value))}
                   className="w-full accent-violet-500" dir="ltr" />
@@ -347,7 +325,7 @@ const TimingsRecorder = () => {
               </button>
             </div>
             <p className="text-[10px] text-violet-400 text-center">
-              "كشف كل المقاطع" يجد جميع الفواصل الطبيعية · "تقسيم" يُطابق عدد الآيات
+              "كشف كل المقاطع" يجد جميع الفواصل الطبيعية · "تقسيم" يُطابق عدد الآيات — العتبة تُحسب آلياً (Otsu) وتُرفع عند الحاجة
             </p>
           </div>
         </div>
@@ -427,6 +405,17 @@ const TimingsRecorder = () => {
                         <div className="text-xs text-muted-foreground font-mono" dir="ltr">
                           {fmt(seg.start)} → {fmt(seg.end)} · {(seg.end - seg.start).toFixed(1)}s
                         </div>
+                        {confidence[i] !== undefined && (
+                          <div className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            confidence[i] >= 0.7
+                              ? "bg-emerald-950/60 text-emerald-400"
+                              : confidence[i] >= 0.45
+                              ? "bg-amber-950/60 text-amber-400"
+                              : "bg-red-950/60 text-red-400"
+                          }`}>
+                            ثقة الكشف {Math.round(confidence[i] * 100)}%
+                          </div>
+                        )}
                       </div>
 
                       {/* Speaker */}
